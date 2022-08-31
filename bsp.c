@@ -65,9 +65,6 @@ void BSP_init(void)   {
 
     SystemCoreClockUpdate();
 
-
-
-
 }
 
 void BSP_ledOff(void) { 

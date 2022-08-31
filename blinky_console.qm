@@ -126,34 +126,6 @@ $declare${AOs::Blinky_ctor}
 
 #endif /* BSP_H */</text>
   </file>
-  <!--${.::bsp.c}-->
-  <file name="bsp.c">
-   <text>/* Board Support Package implementation for desktop OS (Windows, Linux, MacOS) */
-#include &quot;qpc.h&quot;    /* QP/C framework API */
-#include &quot;bsp.h&quot;    /* Board Support Package interface */
-#include &lt;stdio.h&gt;  /* for printf()/fprintf() */
-#include &lt;stdlib.h&gt; /* for exit() */
-
-void BSP_init(void)   {
-    printf(&quot;Simple Blinky example\n&quot;
-           &quot;QP/C version: %s\n&quot;
-           &quot;Press Ctrl-C to quit...\n&quot;,
-           QP_VERSION_STR);
-}
-void BSP_ledOff(void) { printf(&quot;LED OFF\n&quot;); }
-void BSP_ledOn(void)  { printf(&quot;LED ON\n&quot;);  }
-
-/* callback functions needed by the framework ------------------------------*/
-void QF_onStartup(void) {}
-void QF_onCleanup(void) {}
-void QF_onClockTick(void) {
-    QF_TICK_X(0U, (void *)0); /* QF clock tick processing for rate 0 */
-}
-void Q_onAssert(char const * const module, int loc) {
-    fprintf(stderr, &quot;Assertion failed in %s:%d&quot;, module, loc);
-    exit(-1);
-}</text>
-  </file>
   <!--${.::main.c}-->
   <file name="main.c">
    <text>#include &quot;qpc.h&quot;    /* QP/C framework API */
@@ -182,92 +154,138 @@ int main() {
   </file>
   <!--${.::Makefile}-->
   <file name="Makefile">
-   <text># Makefile for building QP/C application on Windows and POSIX hosts
+   <text>##############################################################################
+# Product: Makefile for QP/C on NUCLEO-L053R8, QK kernel, GNU-ARM
+# Last Updated for Version: 7.0.1
+# Date of the Last Update:  2022-05-23
 #
+#                    Q u a n t u m  L e a P s
+#                    ------------------------
+#                    Modern Embedded Software
+#
+# Copyright (C) 2005-2021 Quantum Leaps, LLC. All rights reserved.
+#
+# This program is open source software: you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Alternatively, this program may be distributed and modified under the
+# terms of Quantum Leaps commercial licenses, which expressly supersede
+# the GNU General Public License and are specifically designed for
+# licensees interested in retaining the proprietary status of their code.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see &lt;http://www.gnu.org/licenses&gt;.
+#
+# Contact information:
+# &lt;www.state-machine.com/licensing&gt;
+# &lt;info@state-machine.com&gt;
+##############################################################################
 # examples of invoking this Makefile:
 # building configurations: Debug (default), Release, and Spy
 # make
 # make CONF=rel
 # make CONF=spy
-# make clean   # cleanup the build
-# make CONF=spy clean   # cleanup the build
+#
+# cleaning configurations: Debug (default), Release, and Spy
+# make clean
+# make CONF=rel clean
+# make CONF=spy clean
 #
 # NOTE:
 # To use this Makefile on Windows, you will need the GNU make utility, which
-# is included in the QTools collection for Windows, see:
+# is included in the Qtools collection for Windows, see:
 #    https://sourceforge.net/projects/qpc/files/QTools/
 #
 
 #-----------------------------------------------------------------------------
-# project name:
+# project name
 #
-PROJECT := blinky
+PROJECT     := blinky
 
 #-----------------------------------------------------------------------------
-# project directories:
+# project directories
 #
 
-# list of all source directories used by this project
-VPATH := . \
-
-# list of all include directories needed by this project
-INCLUDES := -I. \
-
-# location of the QP/C framework (if not provided in an env. variable)
+# location of the QP/C framework (if not provided in an environemnt var.)
 ifeq ($(QPC),)
-QPC := ../../..
+QPC := ../../../../..
 endif
 
+# QP port used in this project
+QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
+
+
+# list of all source directories used by this project
+VPATH = \
+    . \
+    $(QPC)/src/qf \
+    $(QPC)/src/qs \
+    $(QPC)/src/qk \
+    $(QP_PORT_DIR) \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src \
+    cube/ \
+    cube/Src 
+
+# list of all include directories needed by this project
+INCLUDES  = \
+    -I. \
+    -I$(QPC)/include \
+    -I$(QP_PORT_DIR) \
+    -Icube/Drivers/CMSIS/Device/ST/STM32G4xx/Include \
+    -Icube/Drivers/CMSIS/Include \
+    -Icube/Drivers/STM32G4xx_HAL_Driver/Inc \
+    -Icube/Inc
+
 #-----------------------------------------------------------------------------
-# project files:
+# files
 #
 
-# C source files...
+# assembler source files
+ASM_SRCS := cube/startup_stm32g431xx.s
+
+# C source files
 C_SRCS := \
     blinky.c \
     bsp.c \
-    main.c
+    main.c \
+    cube/Src/stm32g4xx_hal_msp.c \
+    cube/Src/system_stm32g4xx.c \
+    cube/Src/usart.c \
+    cube/Src/stm32g4xx_it.c \
+    cube/Src/cube_main.c \
+    cube/Src/gpio.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ex.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_cortex.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_exti.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim_ex.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc_ex.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr_ex.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma_ex.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.c \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c 
 
-# C++ source files...
+# C++ source files
 CPP_SRCS :=
 
-LIB_DIRS  :=
-LIBS      :=
+OUTPUT    := $(PROJECT)
+LD_SCRIPT := cube/STM32G431KBTx_FLASH.ld
 
-# defines...
-# QP_API_VERSION controls the QP API compatibility; 9999 means the latest API
-DEFINES   := -DQP_API_VERSION=9999
-
-ifeq (,$(CONF))
-    CONF := dbg
-endif
-
-#-----------------------------------------------------------------------------
-# add QP/C framework (depends on the OS this Makefile runs on):
-#
-ifeq ($(OS),Windows_NT)
-
-# NOTE:
-# For Windows hosts, you can choose:
-# - the single-threaded QP/C port (win32-qv) or
-# - the multithreaded QP/C port (win32).
-#
-QP_PORT_DIR := $(QPC)/ports/win32-qv
-#QP_PORT_DIR := $(QPC)/ports/win32
-LIB_DIRS += -L$(QP_PORT_DIR)/$(CONF)
-LIBS     += -lqp -lws2_32
-
-else
-
-# NOTE:
-# For POSIX hosts (Linux, MacOS), you can choose:
-# - the single-threaded QP/C port (win32-qv) or
-# - the multithreaded QP/C port (win32).
-#
-QP_PORT_DIR := $(QPC)/ports/posix-qv
-#QP_PORT_DIR := $(QPC)/ports/posix
-
-C_SRCS += \
+QP_SRCS := \
     qep_hsm.c \
     qep_msm.c \
     qf_act.c \
@@ -280,114 +298,147 @@ C_SRCS += \
     qf_qeq.c \
     qf_qmact.c \
     qf_time.c \
-    qf_port.c
+    qk.c \
+    qk_port.c
+
+QP_ASMS :=
 
 QS_SRCS := \
     qs.c \
-    qs_64bit.c \
     qs_rx.c \
-    qs_fp.c \
-    qs_port.c
+    qs_fp.c
 
-LIBS += -lpthread
+LIB_DIRS  :=
+LIBS      :=
 
+
+DEVICE_FAMILY  := STM32G4xx
+DEVICE_TYPE    := STM32G431xx
+DEVICE_DEF     := STM32G431xx
+DEVICE         := STM32G431KB
+
+# defines
+DEFINES   := \
+    -DQP_API_VERSION=9999 \
+    -D$(DEVICE_TYPE) \
+    -DUSE_HAL_DRIVER
+
+# ARM CPU, ARCH, FPU, and Float-ABI types...
+# ARM_CPU:   [cortex-m0 | cortex-m0plus | cortex-m1 | cortex-m3 | cortex-m4]
+# ARM_FPU:   [ | vfp]
+# FLOAT_ABI: [ | soft | softfp | hard]
+#
+ARM_CPU   := -mcpu=cortex-m4
+ARM_FPU   :=
+FLOAT_ABI :=
+
+#-----------------------------------------------------------------------------
+# GNU-ARM toolset (NOTE: You need to adjust to your machine)
+# see https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
+#
+ifeq ($(ARM_GCC_PATH),)
+ARM_GCC_PATH := $(QTOOLS)/ARM_GCC_PATH-none-eabi
 endif
 
-#============================================================================
-# Typically you should not need to change anything below this line
-
-VPATH    += $(QPC)/src/qf $(QP_PORT_DIR)
-INCLUDES += -I$(QPC)/include -I$(QPC)/src -I$(QP_PORT_DIR)
-
-#-----------------------------------------------------------------------------
-# GNU toolset:
-#
-# NOTE:
-# GNU toolset (MinGW) is included in the QTools collection for Windows, see:
-#     http://sourceforge.net/projects/qpc/files/QTools/
-# It is assumed that %QTOOLS%\bin directory is added to the PATH
-#
-CC    := gcc
-CPP   := g++
-LINK  := gcc    # for C programs
-#LINK  := g++   # for C++ programs
-
-#-----------------------------------------------------------------------------
-# basic utilities (depends on the OS this Makefile runs on):
-#
-ifeq ($(OS),Windows_NT)
-    MKDIR      := mkdir
-    RM         := rm
-    RMDIR      := rmdir
-    TARGET_EXT := .exe
-else ifeq ($(OSTYPE),cygwin)
-    MKDIR      := mkdir -p
-    RM         := rm -f
-    RMDIR      := rmdir
-    TARGET_EXT := .exe
-else
-    MKDIR      := mkdir -p
-    RM         := rm -f
-    RMDIR      := rmdir
-    TARGET_EXT :=
+# make sure that the GNU-ARM toolset exists...
+ifeq (&quot;$(wildcard $(ARM_GCC_PATH))&quot;,&quot;&quot;)
+$(error ARM_GCC_PATH toolset not found. Please adjust the Makefile)
 endif
 
+CC    := $(ARM_GCC_PATH)/arm-none-eabi-gcc
+CPP   := $(ARM_GCC_PATH)/arm-none-eabi-g++
+AS    := $(ARM_GCC_PATH)/arm-none-eabi-as
+LINK  := $(ARM_GCC_PATH)/arm-none-eabi-g++
+BIN   := $(ARM_GCC_PATH)/arm-none-eabi-objcopy
+SIZE    := $(ARM_GCC_PATH)/arm-none-eabi-size
+GDB     := ${ARM_GCC_PATH}/arm-none-eabi-gdb
+HEX     := $(BIN) -O ihex
+
+STM_PROG := /home/marco/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI
+
+
+##############################################################################
+# Typically, you should not need to change anything below this line
+
+# basic utilities (included in Qtools for Windows), see:
+#    http://sourceforge.net/projects/qpc/files/Qtools
+
+MKDIR := mkdir
+RM    := rm
+
 #-----------------------------------------------------------------------------
-# build configurations...
+# build options for various configurations for ARM Cortex-M
+#
+
+# combine all the soruces...
+C_SRCS += $(QP_SRCS)
+ASM_SRCS += $(QP_ASMS)
 
 ifeq (rel, $(CONF)) # Release configuration ..................................
 
-BIN_DIR := build_rel
-# gcc options:
-CFLAGS  = -c -O3 -fno-pie -std=c11 -pedantic -Wall -Wextra -W \
-    $(INCLUDES) $(DEFINES) -DNDEBUG
+BIN_DIR := rel
 
-CPPFLAGS = -c -O3 -fno-pie -std=c++11 -pedantic -Wall -Wextra \
-    -fno-rtti -fno-exceptions \
-    $(INCLUDES) $(DEFINES) -DNDEBUG
+ASFLAGS = $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
+
+CFLAGS = -c $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
+    -ffunction-sections -fdata-sections \
+    -O2 $(INCLUDES) $(DEFINES) -DNDEBUG
+
+CPPFLAGS = -c $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
+    -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
+    -O2 $(INCLUDES) $(DEFINES) -DNDEBUG
 
 else ifeq (spy, $(CONF))  # Spy configuration ................................
 
-BIN_DIR := build_spy
+BIN_DIR := spy
 
-C_SRCS   += $(QS_SRCS)
-VPATH    += $(QPC)/src/qs
+C_SRCS += $(QS_SRCS)
 
-# gcc options:
-CFLAGS  = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W \
-    $(INCLUDES) $(DEFINES) -DQ_SPY
+ASFLAGS = -g $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
 
-CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \
-    -fno-rtti -fno-exceptions \
-    $(INCLUDES) $(DEFINES) -DQ_SPY
+CFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
+    -ffunction-sections -fdata-sections \
+    -O2 $(INCLUDES) $(DEFINES) -DQ_SPY
 
-else # default Debug configuration .........................................
+CPPFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
+    -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
+    -O2 $(INCLUDES) $(DEFINES) -DQ_SPY
 
-BIN_DIR := build
+else # default Debug configuration ..........................................
 
-# gcc options:
-CFLAGS  = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W \
-    $(INCLUDES) $(DEFINES)
+BIN_DIR := dbg
 
-CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \
-    -fno-rtti -fno-exceptions \
-    $(INCLUDES) $(DEFINES)
+ASFLAGS = -g $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
 
-endif  # .....................................................................
+CFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
+    -ffunction-sections -fdata-sections \
+    -O2 $(INCLUDES) $(DEFINES)
 
-ifndef GCC_OLD
-    LINKFLAGS := -no-pie
-endif
+CPPFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
+    -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
+    -O2 $(INCLUDES) $(DEFINES)
 
-#-----------------------------------------------------------------------------
-C_OBJS       := $(patsubst %.c,%.o,   $(C_SRCS))
-CPP_OBJS     := $(patsubst %.cpp,%.o, $(CPP_SRCS))
+endif # ......................................................................
 
-TARGET_EXE   := $(BIN_DIR)/$(PROJECT)$(TARGET_EXT)
+
+LINKFLAGS = -T$(LD_SCRIPT) $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb \
+    -specs=nosys.specs -specs=nano.specs \
+    -Wl,-Map,$(BIN_DIR)/$(OUTPUT).map,--cref,--gc-sections $(LIB_DIRS)
+
+
+ASM_OBJS     := $(patsubst %.s,%.o,  $(notdir $(ASM_SRCS)))
+C_OBJS       := $(patsubst %.c,%.o,  $(notdir $(C_SRCS)))
+CPP_OBJS     := $(patsubst %.cpp,%.o,$(notdir $(CPP_SRCS)))
+
+TARGET_BIN   := $(BIN_DIR)/$(OUTPUT).bin
+TARGET_ELF   := $(BIN_DIR)/$(OUTPUT).elf
+TARGET_HEX   := $(BIN_DIR)/$(OUTPUT).hex
+
+ASM_OBJS_EXT := $(addprefix $(BIN_DIR)/, $(ASM_OBJS))
 C_OBJS_EXT   := $(addprefix $(BIN_DIR)/, $(C_OBJS))
-C_DEPS_EXT   := $(patsubst %.o,%.d, $(C_OBJS_EXT))
+C_DEPS_EXT   := $(patsubst %.o, %.d, $(C_OBJS_EXT))
 CPP_OBJS_EXT := $(addprefix $(BIN_DIR)/, $(CPP_OBJS))
-CPP_DEPS_EXT := $(patsubst %.o,%.d, $(CPP_OBJS_EXT))
+CPP_DEPS_EXT := $(patsubst %.o, %.d, $(CPP_OBJS_EXT))
 
 # create $(BIN_DIR) if it does not exist
 ifeq (&quot;$(wildcard $(BIN_DIR))&quot;,&quot;&quot;)
@@ -398,25 +449,42 @@ endif
 # rules
 #
 
-all: $(TARGET_EXE)
+all: $(TARGET_BIN) $(TARGET_HEX)
+#all: $(TARGET_ELF)
 
-$(TARGET_EXE) : $(C_OBJS_EXT) $(CPP_OBJS_EXT)
+$(TARGET_HEX): $(TARGET_ELF)
+    @echo &quot;Creating $@&quot;
+    $(HEX) $&lt; $@
+
+$(TARGET_BIN): $(TARGET_ELF)
+    @echo &quot;Creating $@&quot;
+    $(BIN) -O binary $&lt; $@
+
+$(TARGET_ELF) : $(ASM_OBJS_EXT) $(C_OBJS_EXT) $(CPP_OBJS_EXT)
+    @echo &quot;CC $@&quot;
     $(CC) $(CFLAGS) $(QPC)/include/qstamp.c -o $(BIN_DIR)/qstamp.o
-    $(LINK) $(LINKFLAGS) $(LIB_DIRS) -o $@ $^ $(BIN_DIR)/qstamp.o $(LIBS)
+    $(LINK) $(LINKFLAGS) -o $@ $^ $(BIN_DIR)/qstamp.o $(LIBS)
+    $(AT)$(SIZE) $@
 
 $(BIN_DIR)/%.d : %.c
+    @echo &quot;DCC $&lt;&quot;
     $(CC) -MM -MT $(@:.d=.o) $(CFLAGS) $&lt; &gt; $@
 
 $(BIN_DIR)/%.d : %.cpp
+    @echo &quot;DPP $&lt;&quot;
     $(CPP) -MM -MT $(@:.d=.o) $(CPPFLAGS) $&lt; &gt; $@
 
+$(BIN_DIR)/%.o : %.s
+    @echo &quot;AS $&lt;&quot;
+    $(AS) $(ASFLAGS) $&lt; -o $@
+
 $(BIN_DIR)/%.o : %.c
+    @echo &quot;CC $&lt;&quot;
     $(CC) $(CFLAGS) $&lt; -o $@
 
 $(BIN_DIR)/%.o : %.cpp
+    @echo &quot;CPP $&lt;&quot;
     $(CPP) $(CPPFLAGS) $&lt; -o $@
-
-.PHONY : clean show
 
 # include dependency files only if our goal depends on their existence
 ifneq ($(MAKECMDGOALS),clean)
@@ -425,27 +493,112 @@ ifneq ($(MAKECMDGOALS),clean)
   endif
 endif
 
-.PHONY : clean show
+# Flash Built files with STM32CubeProgrammer
+flash load:
+    @echo &quot;Flashing $(TARGET_HEX) with STM32_Programmer_CLI&quot;
+    $(AT)$(STM_PROG) -c port=SWD -w $(TARGET_HEX) -v -rst
 
-clean :
-    $(RM) $(BIN_DIR)/*.*
-    $(RMDIR) $(BIN_DIR)
 
-show :
-    @echo PROJECT      = $(PROJECT)
-    @echo TARGET_EXE   = $(TARGET_EXE)
-    @echo VPATH        = $(VPATH)
-    @echo C_SRCS       = $(C_SRCS)
-    @echo CPP_SRCS     = $(CPP_SRCS)
-    @echo C_DEPS_EXT   = $(C_DEPS_EXT)
-    @echo C_OBJS_EXT   = $(C_OBJS_EXT)
-    @echo C_DEPS_EXT   = $(C_DEPS_EXT)
+.PHONY : clean
+clean:
+    -$(RM) $(BIN_DIR)/*.o \
+    $(BIN_DIR)/*.d \
+    $(BIN_DIR)/*.bin \
+    $(BIN_DIR)/*.elf \
+    $(BIN_DIR)/*.map
+    
+show:
+    @echo PROJECT = $(PROJECT)
+    @echo CONF = $(CONF)
+    @echo DEFINES = $(DEFINES)
+    @echo ASM_FPU = $(ASM_FPU)
+    @echo ASM_SRCS = $(ASM_SRCS)
+    @echo C_SRCS = $(C_SRCS)
+    @echo CPP_SRCS = $(CPP_SRCS)
+    @echo ASM_OBJS_EXT = $(ASM_OBJS_EXT)
+    @echo C_OBJS_EXT = $(C_OBJS_EXT)
+    @echo C_DEPS_EXT = $(C_DEPS_EXT)
     @echo CPP_DEPS_EXT = $(CPP_DEPS_EXT)
-    @echo CPP_OBJS_EXT = $(CPP_OBJS_EXT)
-    @echo LIB_DIRS     = $(LIB_DIRS)
-    @echo LIBS         = $(LIBS)
-    @echo DEFINES      = $(DEFINES)
+    @echo TARGET_ELF = $(TARGET_ELF)
 
+###############################################################################
+## VS Code files
+###############################################################################
+
+VSCODE_FOLDER            := .vscode
+VS_LAUNCH_FILE           := $(VSCODE_FOLDER)/launch.json
+VS_C_CPP_PROPERTIES_FILE := $(VSCODE_FOLDER)/c_cpp_properties.json
+
+NULL  :=
+SPACE := $(NULL) #
+COMMA := ,
+
+define VS_LAUNCH
+{
+    &quot;version&quot;: &quot;0.2.0&quot;,
+    &quot;configurations&quot;: [
+        {
+            &quot;type&quot;: &quot;cortex-debug&quot;,
+            &quot;request&quot;: &quot;launch&quot;,
+            &quot;servertype&quot;: &quot;stutil&quot;,
+            &quot;cwd&quot;: &quot;$${workspaceRoot}&quot;,
+            &quot;gdbPath&quot;: &quot;${GDB}&quot;,
+            &quot;executable&quot;: &quot;$(TARGET_ELF)&quot;,
+            &quot;name&quot;: &quot;Cortex Debug (ST-Util)&quot;,
+            &quot;device&quot;: &quot;$(DEVICE)&quot;,
+            &quot;v1&quot;: false
+        },
+        {
+            &quot;type&quot;: &quot;cortex-debug&quot;,
+            &quot;request&quot;: &quot;launch&quot;,
+            &quot;servertype&quot;: &quot;jlink&quot;,
+            &quot;cwd&quot;: &quot;$${workspaceRoot}&quot;,
+            &quot;gdbPath&quot;: &quot;${GDB}&quot;,
+            &quot;executable&quot;: &quot;$(TARGET_ELF)&quot;,
+            &quot;name&quot;: &quot;Cortex Debug (J-Link)&quot;,
+            &quot;device&quot;: &quot;$(DEVICE)&quot;,
+            &quot;interface&quot;: &quot;swd&quot;,
+        }
+    ]
+}
+endef
+
+define VS_CPP_PROPERTIES
+{
+    &quot;configurations&quot;: [
+        {
+            &quot;name&quot;: &quot;STM32_TR&quot;,
+            &quot;includePath&quot;: [
+                $(subst -I,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach inc,$(INCLUDES),&quot;$(inc)&quot;))))
+            ],
+
+            &quot;defines&quot;: [
+                $(subst -D,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach def,$(DEFINES),&quot;$(def)&quot;))))
+            ],
+
+            &quot;compilerPath&quot;: &quot;${CC}&quot;,
+            &quot;cStandard&quot;: &quot;c99&quot;,
+            &quot;cppStandard&quot;: &quot;c++14&quot;,
+            &quot;intelliSenseMode&quot;: &quot;linux-gcc-arm&quot;
+        }
+    ],
+    &quot;version&quot;: 4
+}
+endef
+
+export VS_LAUNCH
+export VS_CPP_PROPERTIES
+
+vs_files: $(VS_LAUNCH_FILE) $(VS_C_CPP_PROPERTIES_FILE)
+
+$(VS_LAUNCH_FILE): config.mk Makefile | $(VSCODE_FOLDER)
+    $(AT)echo &quot;$$VS_LAUNCH&quot; &gt; $@
+
+$(VS_C_CPP_PROPERTIES_FILE): config.mk Makefile | $(VSCODE_FOLDER)
+    $(AT)echo &quot;$$VS_CPP_PROPERTIES&quot; &gt; $@
+
+$(VSCODE_FOLDER):
+    $(AT)mkdir -p $@
 </text>
   </file>
  </directory>

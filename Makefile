@@ -75,7 +75,7 @@ VPATH = \
 	$(QP_PORT_DIR) \
 	cube/Drivers/STM32G4xx_HAL_Driver/Src \
 	cube/ \
-	cube/Src 
+	cube/Src
 
 # list of all include directories needed by this project
 INCLUDES  = \
@@ -121,7 +121,7 @@ C_SRCS := \
 	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma_ex.c \
 	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c \
 	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c 
+	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c
 
 # C++ source files
 CPP_SRCS :=
@@ -350,7 +350,7 @@ clean:
 	$(BIN_DIR)/*.bin \
 	$(BIN_DIR)/*.elf \
 	$(BIN_DIR)/*.map
-	
+
 show:
 	@echo PROJECT = $(PROJECT)
 	@echo CONF = $(CONF)
@@ -379,54 +379,54 @@ COMMA := ,
 
 define VS_LAUNCH
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "cortex-debug",
-            "request": "launch",
-            "servertype": "stutil",
-            "cwd": "$${workspaceRoot}",
-            "gdbPath": "${GDB}",
-            "executable": "$(TARGET_ELF)",
-            "name": "Cortex Debug (ST-Util)",
-            "device": "$(DEVICE)",
-            "v1": false
-        },
-        {
-            "type": "cortex-debug",
-            "request": "launch",
-            "servertype": "jlink",
-            "cwd": "$${workspaceRoot}",
-            "gdbPath": "${GDB}",
-            "executable": "$(TARGET_ELF)",
-            "name": "Cortex Debug (J-Link)",
-            "device": "$(DEVICE)",
-            "interface": "swd",
-        }
-    ]
+	"version": "0.2.0",
+	"configurations": [
+	    {
+	        "type": "cortex-debug",
+	        "request": "launch",
+	        "servertype": "stutil",
+	        "cwd": "$${workspaceRoot}",
+	        "gdbPath": "${GDB}",
+	        "executable": "$(TARGET_ELF)",
+	        "name": "Cortex Debug (ST-Util)",
+	        "device": "$(DEVICE)",
+	        "v1": false
+	    },
+	    {
+	        "type": "cortex-debug",
+	        "request": "launch",
+	        "servertype": "jlink",
+	        "cwd": "$${workspaceRoot}",
+	        "gdbPath": "${GDB}",
+	        "executable": "$(TARGET_ELF)",
+	        "name": "Cortex Debug (J-Link)",
+	        "device": "$(DEVICE)",
+	        "interface": "swd",
+	    }
+	]
 }
 endef
 
 define VS_CPP_PROPERTIES
 {
-    "configurations": [
-        {
-            "name": "STM32_TR",
-            "includePath": [
-                $(subst -I,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach inc,$(INCLUDES),"$(inc)"))))
-            ],
+	"configurations": [
+	    {
+	        "name": "STM32_TR",
+	        "includePath": [
+	            $(subst -I,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach inc,$(INCLUDES),"$(inc)"))))
+	        ],
 
-            "defines": [
-                $(subst -D,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach def,$(DEFINES),"$(def)"))))
-            ],
+	        "defines": [
+	            $(subst -D,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach def,$(DEFINES),"$(def)"))))
+	        ],
 
-            "compilerPath": "${CC}",
-            "cStandard": "c99",
-            "cppStandard": "c++14",
-            "intelliSenseMode": "linux-gcc-arm"
-        }
-    ],
-    "version": 4
+	        "compilerPath": "${CC}",
+	        "cStandard": "c99",
+	        "cppStandard": "c++14",
+	        "intelliSenseMode": "linux-gcc-arm"
+	    }
+	],
+	"version": 4
 }
 endef
 
