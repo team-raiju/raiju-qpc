@@ -57,48 +57,73 @@ PROJECT     := blinky
 # project directories
 #
 
-# location of the QP/C framework (if not provided in an environemnt var.)
-ifeq ($(QPC),)
-QPC := ../../../../..
-endif
-
-# QP port used in this project
-QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
-
-
-# list of all source directories used by this project
 VPATH = \
 	. \
 	$(QPC)/src/qf \
-	$(QPC)/src/qs \
-	$(QPC)/src/qk \
-	$(QP_PORT_DIR) \
 	cube/Drivers/STM32G4xx_HAL_Driver/Src \
 	cube/ \
 	cube/Src
 
+
 # list of all include directories needed by this project
 INCLUDES  = \
 	-I. \
-	-I$(QPC)/include \
+	-I$(QPC)/include
+
+# C source files
+C_SRCS := \
+	blinky.c \
+	main.c \
+	
+ifeq (spy, $(CONF)) # SPY configuration ..................................
+
+# For POSIX hosts (Linux, MacOS), you can choose:
+# - the single-threaded QP/C port (win32-qv) or
+# - the multithreaded QP/C port (win32).
+#
+QP_PORT_DIR := $(QPC)/ports/posix-qv
+#QP_PORT_DIR := $(QPC)/ports/posix
+
+VPATH    += ./target-pc \
+			$(QPC)/src/qs \
+			$(QP_PORT_DIR)
+
+
+INCLUDES  += \
 	-I$(QP_PORT_DIR) \
+	-I./target-pc
+
+C_SRCS += \
+	./target-stm32g0/bsp.c 
+
+LD_SCRIPT := 
+
+else # uC configuration ..................................
+
+QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
+
+# list of all source directories used by this project
+VPATH += \
+	$(QP_PORT_DIR) \
+	$(QPC)/src/qk \
+	./target-stm32g0 \
+	cube/Drivers/STM32G4xx_HAL_Driver/Src \
+	cube/ \
+	cube/Src
+
+INCLUDES  += \
+	-I$(QP_PORT_DIR) \
+	-I./target-stm32g0 \
 	-Icube/Drivers/CMSIS/Device/ST/STM32G4xx/Include \
 	-Icube/Drivers/CMSIS/Include \
 	-Icube/Drivers/STM32G4xx_HAL_Driver/Inc \
 	-Icube/Inc
 
-#-----------------------------------------------------------------------------
-# files
-#
-
 # assembler source files
 ASM_SRCS := cube/startup_stm32g431xx.s
 
-# C source files
-C_SRCS := \
-	blinky.c \
-	bsp.c \
-	main.c \
+C_SRCS += \
+	./target-stm32g0/bsp.c \
 	cube/Src/stm32g4xx_hal_msp.c \
 	cube/Src/system_stm32g4xx.c \
 	cube/Src/usart.c \
@@ -123,11 +148,14 @@ C_SRCS := \
 	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.c \
 	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c
 
+	LD_SCRIPT := cube/STM32G431KBTx_FLASH.ld
+endif
+
 # C++ source files
 CPP_SRCS :=
 
 OUTPUT    := $(PROJECT)
-LD_SCRIPT := cube/STM32G431KBTx_FLASH.ld
+
 
 QP_SRCS := \
 	qep_hsm.c \
@@ -142,15 +170,28 @@ QP_SRCS := \
 	qf_qeq.c \
 	qf_qmact.c \
 	qf_time.c \
+	
+ifeq (spy, $(CONF)) # SPY configuration ..................................
+QP_SRCS += \
+	qf_port.c
+
+else # uC configuration ..................................
+QP_SRCS += \
 	qk.c \
 	qk_port.c
+
+endif
+
 
 QP_ASMS :=
 
 QS_SRCS := \
 	qs.c \
 	qs_rx.c \
-	qs_fp.c
+	qs_fp.c \
+	qs_64bit.c \
+	qs_port.c
+
 
 LIB_DIRS  :=
 LIBS      :=
@@ -163,9 +204,20 @@ DEVICE         := STM32G431KB
 
 # defines
 DEFINES   := \
-	-DQP_API_VERSION=9999 \
-	-D$(DEVICE_TYPE) \
-	-DUSE_HAL_DRIVER
+	-DQP_API_VERSION=9999
+
+ifeq (spy, $(CONF)) # SPY configuration ..................................
+
+CC    := gcc
+CPP   := g++
+AS    := as
+LINK  := gcc    # for C programs
+BIN   := objcopy
+SIZE    := size
+GDB     := gdb
+HEX     := $(BIN) -O ihex
+
+else # uC configuration ..................................
 
 # ARM CPU, ARCH, FPU, and Float-ABI types...
 # ARM_CPU:   [cortex-m0 | cortex-m0plus | cortex-m1 | cortex-m3 | cortex-m4]
@@ -176,18 +228,6 @@ ARM_CPU   := -mcpu=cortex-m4
 ARM_FPU   :=
 FLOAT_ABI :=
 
-#-----------------------------------------------------------------------------
-# GNU-ARM toolset (NOTE: You need to adjust to your machine)
-# see https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
-#
-ifeq ($(ARM_GCC_PATH),)
-ARM_GCC_PATH := $(QTOOLS)/ARM_GCC_PATH-none-eabi
-endif
-
-# make sure that the GNU-ARM toolset exists...
-ifeq ("$(wildcard $(ARM_GCC_PATH))","")
-$(error ARM_GCC_PATH toolset not found. Please adjust the Makefile)
-endif
 
 CC    := $(ARM_GCC_PATH)/arm-none-eabi-gcc
 CPP   := $(ARM_GCC_PATH)/arm-none-eabi-g++
@@ -197,6 +237,8 @@ BIN   := $(ARM_GCC_PATH)/arm-none-eabi-objcopy
 SIZE    := $(ARM_GCC_PATH)/arm-none-eabi-size
 GDB     := ${ARM_GCC_PATH}/arm-none-eabi-gdb
 HEX     := $(BIN) -O ihex
+
+endif
 
 STM_PROG := /home/marco/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI
 
@@ -234,20 +276,21 @@ CPPFLAGS = -c $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
 
 else ifeq (spy, $(CONF))  # Spy configuration ................................
 
-BIN_DIR := spy
+BIN_DIR := build_spy
 
-C_SRCS += $(QS_SRCS)
+C_SRCS   += $(QS_SRCS)
+VPATH    += $(QPC)/src/qs
 
-ASFLAGS = -g $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
+CFLAGS = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W \
+	$(INCLUDES) $(DEFINES) -DQ_SPY
 
-CFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
-	-ffunction-sections -fdata-sections \
-	-O2 $(INCLUDES) $(DEFINES) -DQ_SPY
+CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \
+	-fno-rtti -fno-exceptions \
+	$(INCLUDES) $(DEFINES) -DQ_SPY
 
-CPPFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
-	-ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
-	-O2 $(INCLUDES) $(DEFINES) -DQ_SPY
-
+ASFLAGS := 
+LINKFLAGS := -no-pie
+LIBS += -lpthread
 else # default Debug configuration ..........................................
 
 BIN_DIR := dbg
@@ -262,12 +305,15 @@ CPPFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
 	-ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
 	-O2 $(INCLUDES) $(DEFINES)
 
-endif # ......................................................................
-
-
 LINKFLAGS = -T$(LD_SCRIPT) $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb \
 	-specs=nosys.specs -specs=nano.specs \
 	-Wl,-Map,$(BIN_DIR)/$(OUTPUT).map,--cref,--gc-sections $(LIB_DIRS)
+
+DEFINES += -D$(DEVICE_TYPE) \
+	-DUSE_HAL_DRIVER
+endif # ......................................................................
+
+
 
 
 ASM_OBJS     := $(patsubst %.s,%.o,  $(notdir $(ASM_SRCS)))
@@ -277,6 +323,10 @@ CPP_OBJS     := $(patsubst %.cpp,%.o,$(notdir $(CPP_SRCS)))
 TARGET_BIN   := $(BIN_DIR)/$(OUTPUT).bin
 TARGET_ELF   := $(BIN_DIR)/$(OUTPUT).elf
 TARGET_HEX   := $(BIN_DIR)/$(OUTPUT).hex
+
+ifeq (spy, $(CONF)) # SPY configuration ..................................
+TARGET_EXE   := $(BIN_DIR)/$(OUTPUT)
+endif
 
 ASM_OBJS_EXT := $(addprefix $(BIN_DIR)/, $(ASM_OBJS))
 C_OBJS_EXT   := $(addprefix $(BIN_DIR)/, $(C_OBJS))
@@ -293,7 +343,7 @@ endif
 # rules
 #
 
-all: $(TARGET_BIN) $(TARGET_HEX)
+all: $(TARGET_BIN) $(TARGET_HEX) $(TARGET_EXE)
 #all: $(TARGET_ELF)
 
 $(TARGET_HEX): $(TARGET_ELF)
@@ -303,6 +353,11 @@ $(TARGET_HEX): $(TARGET_ELF)
 $(TARGET_BIN): $(TARGET_ELF)
 	@echo "Creating $@"
 	$(BIN) -O binary $< $@
+
+$(TARGET_EXE) : $(C_OBJS_EXT) $(CPP_OBJS_EXT)
+	@echo "Creating $@"
+	$(CC) $(CFLAGS) $(QPC)/include/qstamp.c -o $(BIN_DIR)/qstamp.o
+	$(LINK) $(LINKFLAGS) $(LIB_DIRS) -o $@ $^ $(BIN_DIR)/qstamp.o $(LIBS)
 
 $(TARGET_ELF) : $(ASM_OBJS_EXT) $(C_OBJS_EXT) $(CPP_OBJS_EXT)
 	@echo "CC $@"
