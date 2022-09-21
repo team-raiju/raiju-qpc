@@ -123,7 +123,7 @@ void QS_onCommand(uint8_t cmdId,
 {
     switch (cmdId) {
        case 0: { 
-            QEvt evt;
+            // QEvt evt;
             // evt.sig = START_RC_SIG;
             // QHsm_dispatch_(&AO_Blinky->super, &evt, 0);
             break;
