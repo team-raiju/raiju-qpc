@@ -434,7 +434,7 @@ COMMA := ,
 
 
 ifeq (spy, $(CONF)) # SPY configuration ..................................
-INTELLI_SENSE_MODE := linux-gcc-x86
+INTELLI_SENSE_MODE := linux-gcc-x64
 COMPILER_PATH := /usr/bin/$(CC)
 else
 INTELLI_SENSE_MODE := linux-gcc-arm
