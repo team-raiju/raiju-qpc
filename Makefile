@@ -275,12 +275,14 @@ else ifeq (spy, $(CONF))  # Spy configuration ................................
 
 BIN_DIR := build_spy
 
-CFLAGS = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W \
-	$(INCLUDES) $(DEFINES) -DQ_SPY -Wno-unused-result
+DEFINES += -DQ_SPY
+
+CFLAGS = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W -Wno-unused-result \
+	$(INCLUDES) $(DEFINES) -Wno-unused-result
 
 CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \
 	-fno-rtti -fno-exceptions \
-	$(INCLUDES) $(DEFINES) -DQ_SPY
+	$(INCLUDES) $(DEFINES)
 
 ASFLAGS :=
 LINKFLAGS := -no-pie
