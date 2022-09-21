@@ -642,6 +642,17 @@ NULL  :=
 SPACE := $(NULL) #
 COMMA := ,
 
+
+ifeq (spy, $(CONF)) # SPY configuration ..................................
+INTELLI_SENSE_MODE := linux-gcc-x86
+COMPILER_PATH := /usr/bin/$(CC)
+else
+INTELLI_SENSE_MODE := linux-gcc-arm
+COMPILER_PATH := $(CC)
+endif
+
+            
+
 define VS_LAUNCH
 {
     &quot;version&quot;: &quot;0.2.0&quot;,
@@ -685,10 +696,10 @@ define VS_CPP_PROPERTIES
                 $(subst -D,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach def,$(DEFINES),&quot;$(def)&quot;))))
             ],
 
-            &quot;compilerPath&quot;: &quot;${CC}&quot;,
+            &quot;compilerPath&quot;: &quot;$(COMPILER_PATH)&quot;,
             &quot;cStandard&quot;: &quot;c99&quot;,
             &quot;cppStandard&quot;: &quot;c++14&quot;,
-            &quot;intelliSenseMode&quot;: &quot;linux-gcc-arm&quot;
+            &quot;intelliSenseMode&quot;: &quot;$(INTELLI_SENSE_MODE)&quot;
         }
     ],
     &quot;version&quot;: 4
