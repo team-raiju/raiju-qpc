@@ -42,6 +42,11 @@ int main() {
 
     /* instantiate and start the Blinky active object */
     Blinky_ctor(); /* in C you must explicitly call the Blinky constructor */
+
+    #ifdef Q_SPY
+    blinky_update_qs_dict();
+    #endif
+
     QACTIVE_START(AO_Blinky, /* active object to start */
         1U,                  /* priority of the active object */
         blinky_queueSto,     /* event queue buffer */

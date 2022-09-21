@@ -97,6 +97,10 @@ void BSP_ledToggle(void)  {
 
 }
 
+void BSP_motorsOff(void)  { printf("Motors OFF\n");  }
+void BSP_ledStripeStart(void)  { printf("LED Stripe\n");  }
+void BSP_startRC(void)  { printf("START RC\n");  }
+void BSP_startAuto(void)  { printf("\n");  }
 
 /* callback functions needed by the framework ------------------------------*/
 void QF_onStartup(void) {}
@@ -123,9 +127,9 @@ void QS_onCommand(uint8_t cmdId,
 {
     switch (cmdId) {
        case 0: { 
-            // QEvt evt;
-            // evt.sig = START_RC_SIG;
-            // QHsm_dispatch_(&AO_Blinky->super, &evt, 0);
+            QEvt evt;
+            evt.sig = START_RC_SIG;
+            QHsm_dispatch_(&AO_Blinky->super, &evt, 0);
             break;
         }
        default:

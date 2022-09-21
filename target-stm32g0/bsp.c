@@ -74,6 +74,33 @@ void BSP_ledOn(void)  {
     HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
 }
 
+void BSP_ledToggle(void)  {
+    static bool toggle = false;
+    if (toggle){
+        BSP_ledOff();
+    } else {
+        BSP_ledOn();
+    }
+    toggle = !toggle;
+
+}
+
+void BSP_motorsOff(void) { 
+
+}
+
+void BSP_ledStripeStart(void) { 
+
+}
+
+void BSP_startRC(void) { 
+
+}
+
+void BSP_startAuto(void) { 
+
+}
+
 /* callback functions needed by the framework ------------------------------*/
 void QF_onStartup(void) {
         /* set up the SysTick timer to fire at BSP_TICKS_PER_SEC rate */

@@ -32,15 +32,25 @@
 #define BSP_H
 
 /* a very simple Board Support Package (BSP) -------------------------------*/
-enum { BSP_TICKS_PER_SEC = 100 }; /* number of clock ticks in a second */
+enum {
+    BSP_TICKS_PER_SEC = 100
+}; /* number of clock ticks in a second */
+
 void BSP_init(void);
 void BSP_ledOff(void);
 void BSP_ledOn(void);
+void BSP_ledToggle(void);
+void BSP_motorsOff(void);
+void BSP_ledStripeStart(void);
+void BSP_startRC(void);
+void BSP_startAuto(void);
 
 /* define the event signals used in the application ------------------------*/
 enum BlinkySignals {
     TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
-    MAX_SIG /* keep last (the number of signals) */
+    MAX_SIG, /* keep last (the number of signals) */
+    START_RC_SIG,
+    START_AUTO_SIG
 };
 
 /* active object(s) used in this application -------------------------------*/
@@ -50,5 +60,9 @@ extern QActive * const AO_Blinky; /* opaque pointer to the Blinky AO */
 /*${AOs::Blinky_ctor} ......................................................*/
 void Blinky_ctor(void);
 /*$enddecl${AOs::Blinky_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+#ifdef Q_SPY
+void blinky_update_qs_dict(void);
+#endif
 
 #endif /* BSP_H */

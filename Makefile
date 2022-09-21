@@ -74,7 +74,7 @@ INCLUDES  = \
 C_SRCS := \
 	blinky.c \
 	main.c \
-	
+
 ifeq (spy, $(CONF)) # SPY configuration ..................................
 
 # For POSIX hosts (Linux, MacOS), you can choose:
@@ -85,8 +85,8 @@ QP_PORT_DIR := $(QPC)/ports/posix-qv
 #QP_PORT_DIR := $(QPC)/ports/posix
 
 VPATH    += ./target-pc \
-			$(QPC)/src/qs \
-			$(QP_PORT_DIR)
+	        $(QPC)/src/qs \
+	        $(QP_PORT_DIR)
 
 
 INCLUDES  += \
@@ -104,7 +104,7 @@ C_SRCS += \
 	./target-stm32g0/bsp.c \
 	$(QS_SRCS)
 
-LD_SCRIPT := 
+LD_SCRIPT :=
 
 else # uC configuration ..................................
 
@@ -178,7 +178,7 @@ QP_SRCS := \
 	qf_qeq.c \
 	qf_qmact.c \
 	qf_time.c \
-	
+
 ifeq (spy, $(CONF)) # SPY configuration ..................................
 QP_SRCS += \
 	qf_port.c
@@ -276,13 +276,13 @@ else ifeq (spy, $(CONF))  # Spy configuration ................................
 BIN_DIR := build_spy
 
 CFLAGS = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W \
-	$(INCLUDES) $(DEFINES) -DQ_SPY
+	$(INCLUDES) $(DEFINES) -DQ_SPY -Wno-unused-result
 
 CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \
 	-fno-rtti -fno-exceptions \
 	$(INCLUDES) $(DEFINES) -DQ_SPY
 
-ASFLAGS := 
+ASFLAGS :=
 LINKFLAGS := -no-pie
 LIBS += -lpthread
 

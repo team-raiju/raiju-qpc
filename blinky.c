@@ -45,8 +45,9 @@ typedef struct {
 
 /* protected: */
 static QState Blinky_initial(Blinky * const me, void const * const par);
-static QState Blinky_off(Blinky * const me, QEvt const * const e);
-static QState Blinky_on(Blinky * const me, QEvt const * const e);
+static QState Blinky_Idle(Blinky * const me, QEvt const * const e);
+static QState Blinky_RCWait(Blinky * const me, QEvt const * const e);
+static QState Blinky_AutoWait(Blinky * const me, QEvt const * const e);
 /*$enddecl${AOs::Blinky} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 /* instantiate the Blinky active object ------------------------------------*/
@@ -84,22 +85,41 @@ static QState Blinky_initial(Blinky * const me, void const * const par) {
     QTimeEvt_armX(&me->timeEvt,
         BSP_TICKS_PER_SEC/2,
         BSP_TICKS_PER_SEC/2);
-    return Q_TRAN(&Blinky_off);
+    return Q_TRAN(&Blinky_Idle);
 }
 
-/*${AOs::Blinky::SM::off} ..................................................*/
-static QState Blinky_off(Blinky * const me, QEvt const * const e) {
+/*${AOs::Blinky::SM::Idle} .................................................*/
+static QState Blinky_Idle(Blinky * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::Blinky::SM::off} */
+        /*${AOs::Blinky::SM::Idle} */
         case Q_ENTRY_SIG: {
             BSP_ledOff();
+            BSP_motorsOff();
+            BSP_ledStripeStart();
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::Blinky::SM::off::TIMEOUT} */
+        /*${AOs::Blinky::SM::Idle} */
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->timeEvt);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::Blinky::SM::Idle::TIMEOUT} */
         case TIMEOUT_SIG: {
-            status_ = Q_TRAN(&Blinky_on);
+            BSP_ledToggle();
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::Blinky::SM::Idle::START_RC} */
+        case START_RC_SIG: {
+            status_ = Q_TRAN(&Blinky_RCWait);
+            break;
+        }
+        /*${AOs::Blinky::SM::Idle::START_AUTO} */
+        case START_AUTO_SIG: {
+            status_ = Q_TRAN(&Blinky_AutoWait);
             break;
         }
         default: {
@@ -110,19 +130,32 @@ static QState Blinky_off(Blinky * const me, QEvt const * const e) {
     return status_;
 }
 
-/*${AOs::Blinky::SM::on} ...................................................*/
-static QState Blinky_on(Blinky * const me, QEvt const * const e) {
+/*${AOs::Blinky::SM::RCWait} ...............................................*/
+static QState Blinky_RCWait(Blinky * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::Blinky::SM::on} */
+        /*${AOs::Blinky::SM::RCWait} */
         case Q_ENTRY_SIG: {
-            BSP_ledOn();
+            BSP_startRC();
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::Blinky::SM::on::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            status_ = Q_TRAN(&Blinky_off);
+        default: {
+            status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::Blinky::SM::AutoWait} .............................................*/
+static QState Blinky_AutoWait(Blinky * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::Blinky::SM::AutoWait} */
+        case Q_ENTRY_SIG: {
+            BSP_startAuto();
+            status_ = Q_HANDLED();
             break;
         }
         default: {
@@ -133,3 +166,22 @@ static QState Blinky_on(Blinky * const me, QEvt const * const e) {
     return status_;
 }
 /*$enddef${AOs::Blinky} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+#ifdef Q_SPY
+
+void blinky_update_qs_dict(){
+
+    QS_OBJ_DICTIONARY(&l_blinky);
+    QS_OBJ_DICTIONARY(&l_blinky.timeEvt);
+
+    QS_SIG_DICTIONARY(TIMEOUT_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(START_RC_SIG,   (void *)0);
+    QS_SIG_DICTIONARY(START_AUTO_SIG, (void *)0);
+
+
+    QS_FUN_DICTIONARY(&Blinky_Idle);
+    QS_FUN_DICTIONARY(&Blinky_AutoWait);
+    QS_FUN_DICTIONARY(&Blinky_RCWait);
+}
+
+#endif
