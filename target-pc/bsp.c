@@ -73,6 +73,7 @@ void BSP_ledOff(void) {
     printf("LED OFF\n"); 
     QS_BEGIN_ID(LED, AO_Blinky->prio)
        QS_U8(1, 0);
+       QS_U8(1, 0);
     QS_END()
 }
 
@@ -81,6 +82,7 @@ void BSP_ledOff(void) {
 void BSP_ledOn(void)  { 
     printf("LED ON\n");  
     QS_BEGIN_ID(LED, AO_Blinky->prio)
+       QS_U8(1, 0);
        QS_U8(1, 1);
     QS_END()
 
@@ -98,9 +100,28 @@ void BSP_ledToggle(void)  {
 }
 
 void BSP_motorsOff(void)  { printf("Motors OFF\n");  }
-void BSP_ledStripeStart(void)  { printf("LED Stripe\n");  }
 void BSP_startRC(void)  { printf("START RC\n");  }
 void BSP_startAuto(void)  { printf("\n");  }
+
+
+void BSP_ledStrip(int num, int stat) {
+
+    if (stat){
+        printf("Led Strip Num %d ON\n", num); 
+    } else {
+        printf("Led Strip Num %d OFF\n", num); 
+    }
+
+}
+
+void BSP_buzzer_beep(void) {
+    printf("Buzzer Beep\n");
+    QS_BEGIN_ID(LED, AO_Blinky->prio)
+       QS_U8(1, 1);
+       QS_U8(1, 1);
+    QS_END()
+
+}
 
 /* callback functions needed by the framework ------------------------------*/
 void QF_onStartup(void) {}
@@ -127,9 +148,8 @@ void QS_onCommand(uint8_t cmdId,
 {
     switch (cmdId) {
        case 0: { 
-            QEvt evt;
-            evt.sig = START_RC_SIG;
-            QHsm_dispatch_(&AO_Blinky->super, &evt, 0);
+            QEvt evt = {.sig = START_RC_SIG};
+            QHSM_DISPATCH(&AO_Blinky->super, &evt, LED);
             break;
         }
        default:

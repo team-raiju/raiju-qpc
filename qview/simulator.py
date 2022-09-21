@@ -5,6 +5,10 @@
 class SIMULATOR:
     def __init__(self):
 
+        from playsound import playsound
+        self.play = playsound
+
+
         self.x_off = 0
         self.y_off = 0
         self.count = 0
@@ -40,10 +44,6 @@ class SIMULATOR:
         # the QS Object Dictionaries produced by the application.
         current_obj(OBJ_AO, "l_blinky")
 
-        # turn lists into tuples for better performance
-        self._philo_obj = tuple(self._philo_obj)
-        self._philo_state = tuple(self._philo_state)
-
 
     # example of a custom command
     def cust_command(self):
@@ -58,16 +58,20 @@ class SIMULATOR:
 
     # Intercept the QS_USER_00 application-specific trace record.
     def QS_USER_00(self, packet):
-        # unpack: Timestamp->data[0], Philo-num->data[1], status->data[3]
-        data = qunpack("xxTxB", packet)        
-        led_stat = data[1]
-
-        if (led_stat == 1):
-            QView.canvas.itemconfig(self._led, image=self.led_on_img)
-        else:
-            QView.canvas.itemconfig(self._led, image=self.led_off_img)
+        data = qunpack("xxTxBxB", packet)        
+        log = data[1]
+        
+        if (log == 0):
+            led_stat = data[2]
+            if (led_stat == 1):
+                QView.canvas.itemconfig(self._led, image=self.led_on_img)
+            else:
+                QView.canvas.itemconfig(self._led, image=self.led_off_img)
+        
+        elif (log == 1):
+            self.play('/home/marco/Documents/Projetos/QM-State-Chart/qview/sound/beep.mp3')    
               
-        QView.print_text("Timestamp = %d; LED_Stat = %d"%(data[0], led_stat))
+        QView.print_text("Timestamp = %d; Log = %d; Argument = %d"%(data[0], log, data[2]))
         # QView.print_text("%s"%(str(packet)))
 
 #=============================================================================

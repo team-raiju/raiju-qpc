@@ -33,6 +33,10 @@ https://www.state-machine.com/qpc/exa.html</documentation>
   <class name="Blinky" superclass="qpc::QActive">
    <!--${AOs::Blinky::timeEvt}-->
    <attribute name="timeEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::Blinky::buzzerTimeEvt}-->
+   <attribute name="buzzerTimeEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::Blinky::buzzerCount}-->
+   <attribute name="buzzerCount" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::Blinky::SM}-->
    <statechart properties="0x01">
     <!--${AOs::Blinky::SM::initial}-->
@@ -41,58 +45,75 @@ https://www.state-machine.com/qpc/exa.html</documentation>
 /* arm the private time event to expire in 1/2s
 * and periodically every 1/2 second
 */
-QTimeEvt_armX(&amp;me-&gt;timeEvt,
-    BSP_TICKS_PER_SEC/2,
-    BSP_TICKS_PER_SEC/2);</action>
-     <initial_glyph conn="48,6,5,1,12,8,-3">
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
+QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+
+me-&gt;buzzerCount = 0U;</action>
+     <initial_glyph conn="56,6,5,1,29,6,-8">
       <action box="0,-2,7,2"/>
      </initial_glyph>
     </initial>
     <!--${AOs::Blinky::SM::Idle}-->
     <state name="Idle">
      <entry>BSP_ledOff();
-BSP_motorsOff();
-BSP_ledStripeStart();</entry>
+BSP_motorsOff();</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::Blinky::SM::Idle::TIMEOUT}-->
      <tran trig="TIMEOUT">
       <action>BSP_ledToggle();</action>
-      <tran_glyph conn="38,28,3,-1,14">
+      <tran_glyph conn="34,29,3,-1,14">
        <action box="0,-2,14,4"/>
       </tran_glyph>
      </tran>
      <!--${AOs::Blinky::SM::Idle::START_RC}-->
      <tran trig="START_RC" target="../../2">
-      <tran_glyph conn="38,33,3,1,35,14,-3">
+      <tran_glyph conn="77,39,1,1,12,11,-5">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::Blinky::SM::Idle::START_AUTO}-->
      <tran trig="START_AUTO" target="../../3">
-      <tran_glyph conn="38,36,3,3,-13,11,3">
+      <tran_glyph conn="34,40,3,3,-13,10,2">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="38,12,19,26">
-      <entry box="1,2,15,8"/>
-      <exit box="1,10,18,4"/>
+     <!--${AOs::Blinky::SM::Idle::PLAY_BUZZER}-->
+     <tran trig="PLAY_BUZZER">
+      <action>BSP_ledStrip(me-&gt;buzzerCount, 1);
+BSP_buzzer_beep();
+
+if (me-&gt;buzzerCount == 16) {
+    QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC, 0);
+} else if (me-&gt;buzzerCount &lt; 16){
+    QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+}
+
+
+me-&gt;buzzerCount += 1;</action>
+      <tran_glyph conn="34,33,3,-1,14">
+       <action box="0,-2,12,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="34,10,43,33">
+      <entry box="1,2,24,6"/>
+      <exit box="1,8,24,5"/>
      </state_glyph>
     </state>
     <!--${AOs::Blinky::SM::RCWait}-->
     <state name="RCWait">
      <entry>BSP_startRC();</entry>
-     <state_glyph node="54,45,16,12">
+     <state_glyph node="68,48,16,12">
       <entry box="1,2,12,4"/>
      </state_glyph>
     </state>
     <!--${AOs::Blinky::SM::AutoWait}-->
     <state name="AutoWait">
      <entry>BSP_startAuto();</entry>
-     <state_glyph node="28,45,16,12">
+     <state_glyph node="23,48,16,12">
       <entry box="1,2,12,4"/>
      </state_glyph>
     </state>
-    <state_diagram size="95,69"/>
+    <state_diagram size="119,69"/>
    </statechart>
   </class>
   <!--${AOs::Blinky_ctor}-->
@@ -100,7 +121,8 @@ BSP_ledStripeStart();</entry>
    <documentation>The Blinky &quot;constructor&quot; is provided outside of the Blinky class, so that it can be used independently from the class. This is part of the &quot;opaque pointer&quot; design idiom.</documentation>
    <code>Blinky *me = (Blinky *)AO_Blinky;
 QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;Blinky_initial));
-QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super, TIMEOUT_SIG, 0U);</code>
+QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super, TIMEOUT_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super, PLAY_BUZZER_SIG, 0U);</code>
   </operation>
  </package>
  <!--${.}-->
@@ -127,10 +149,12 @@ void blinky_update_qs_dict(){
 
     QS_OBJ_DICTIONARY(&amp;l_blinky);
     QS_OBJ_DICTIONARY(&amp;l_blinky.timeEvt);
+    QS_OBJ_DICTIONARY(&amp;l_blinky.buzzerTimeEvt);
 
-    QS_SIG_DICTIONARY(TIMEOUT_SIG,    (void *)0);
-    QS_SIG_DICTIONARY(START_RC_SIG,   (void *)0);
-    QS_SIG_DICTIONARY(START_AUTO_SIG, (void *)0);
+    QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
+    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG, (void *)0);
+    QS_SIG_DICTIONARY(START_RC_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
 
 
     QS_FUN_DICTIONARY(&amp;Blinky_Idle);
@@ -155,16 +179,18 @@ void BSP_ledOff(void);
 void BSP_ledOn(void);
 void BSP_ledToggle(void);
 void BSP_motorsOff(void);
-void BSP_ledStripeStart(void);
+void BSP_ledStrip(int num, int stat);
+void BSP_buzzer_beep(void);
 void BSP_startRC(void);
 void BSP_startAuto(void);
 
 /* define the event signals used in the application ------------------------*/
 enum BlinkySignals {
     TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
-    MAX_SIG, /* keep last (the number of signals) */
+    PLAY_BUZZER_SIG,
     START_RC_SIG,
-    START_AUTO_SIG
+    START_AUTO_SIG,
+    MAX_SIG, /* keep last (the number of signals) */
 };
 
 /* active object(s) used in this application -------------------------------*/

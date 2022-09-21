@@ -41,6 +41,8 @@ typedef struct {
 
 /* private: */
     QTimeEvt timeEvt;
+    QTimeEvt buzzerTimeEvt;
+    uint8_t buzzerCount;
 } Blinky;
 
 /* protected: */
@@ -69,6 +71,7 @@ void Blinky_ctor(void) {
     Blinky *me = (Blinky *)AO_Blinky;
     QActive_ctor(&me->super, Q_STATE_CAST(&Blinky_initial));
     QTimeEvt_ctorX(&me->timeEvt, &me->super, TIMEOUT_SIG, 0U);
+    QTimeEvt_ctorX(&me->buzzerTimeEvt, &me->super, PLAY_BUZZER_SIG, 0U);
 }
 /*$enddef${AOs::Blinky_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 /*$define${AOs::Blinky} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
@@ -82,9 +85,10 @@ static QState Blinky_initial(Blinky * const me, void const * const par) {
     /* arm the private time event to expire in 1/2s
     * and periodically every 1/2 second
     */
-    QTimeEvt_armX(&me->timeEvt,
-        BSP_TICKS_PER_SEC/2,
-        BSP_TICKS_PER_SEC/2);
+    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
+    QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+
+    me->buzzerCount = 0U;
     return Q_TRAN(&Blinky_Idle);
 }
 
@@ -96,7 +100,6 @@ static QState Blinky_Idle(Blinky * const me, QEvt const * const e) {
         case Q_ENTRY_SIG: {
             BSP_ledOff();
             BSP_motorsOff();
-            BSP_ledStripeStart();
             status_ = Q_HANDLED();
             break;
         }
@@ -120,6 +123,22 @@ static QState Blinky_Idle(Blinky * const me, QEvt const * const e) {
         /*${AOs::Blinky::SM::Idle::START_AUTO} */
         case START_AUTO_SIG: {
             status_ = Q_TRAN(&Blinky_AutoWait);
+            break;
+        }
+        /*${AOs::Blinky::SM::Idle::PLAY_BUZZER} */
+        case PLAY_BUZZER_SIG: {
+            BSP_ledStrip(me->buzzerCount, 1);
+            BSP_buzzer_beep();
+
+            if (me->buzzerCount == 16) {
+                QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC, 0);
+            } else if (me->buzzerCount < 16){
+                QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+            }
+
+
+            me->buzzerCount += 1;
+            status_ = Q_HANDLED();
             break;
         }
         default: {
@@ -173,10 +192,12 @@ void blinky_update_qs_dict(){
 
     QS_OBJ_DICTIONARY(&l_blinky);
     QS_OBJ_DICTIONARY(&l_blinky.timeEvt);
+    QS_OBJ_DICTIONARY(&l_blinky.buzzerTimeEvt);
 
-    QS_SIG_DICTIONARY(TIMEOUT_SIG,    (void *)0);
-    QS_SIG_DICTIONARY(START_RC_SIG,   (void *)0);
-    QS_SIG_DICTIONARY(START_AUTO_SIG, (void *)0);
+    QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
+    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG, (void *)0);
+    QS_SIG_DICTIONARY(START_RC_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
 
 
     QS_FUN_DICTIONARY(&Blinky_Idle);
