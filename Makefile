@@ -93,8 +93,16 @@ INCLUDES  += \
 	-I$(QP_PORT_DIR) \
 	-I./target-pc
 
+QS_SRCS := \
+	qs.c \
+	qs_rx.c \
+	qs_fp.c \
+	qs_64bit.c \
+	qs_port.c
+
 C_SRCS += \
-	./target-stm32g0/bsp.c 
+	./target-stm32g0/bsp.c \
+	$(QS_SRCS)
 
 LD_SCRIPT := 
 
@@ -185,13 +193,6 @@ endif
 
 QP_ASMS :=
 
-QS_SRCS := \
-	qs.c \
-	qs_rx.c \
-	qs_fp.c \
-	qs_64bit.c \
-	qs_port.c
-
 
 LIB_DIRS  :=
 LIBS      :=
@@ -244,10 +245,6 @@ STM_PROG := /home/marco/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM
 
 
 ##############################################################################
-# Typically, you should not need to change anything below this line
-
-# basic utilities (included in Qtools for Windows), see:
-#    http://sourceforge.net/projects/qpc/files/Qtools
 
 MKDIR := mkdir
 RM    := rm
@@ -278,9 +275,6 @@ else ifeq (spy, $(CONF))  # Spy configuration ................................
 
 BIN_DIR := build_spy
 
-C_SRCS   += $(QS_SRCS)
-VPATH    += $(QPC)/src/qs
-
 CFLAGS = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W \
 	$(INCLUDES) $(DEFINES) -DQ_SPY
 
@@ -291,9 +285,13 @@ CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \
 ASFLAGS := 
 LINKFLAGS := -no-pie
 LIBS += -lpthread
+
 else # default Debug configuration ..........................................
 
-BIN_DIR := dbg
+BIN_DIR := build
+
+DEFINES += -D$(DEVICE_TYPE) \
+	-DUSE_HAL_DRIVER
 
 ASFLAGS = -g $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
 
@@ -309,10 +307,7 @@ LINKFLAGS = -T$(LD_SCRIPT) $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb \
 	-specs=nosys.specs -specs=nano.specs \
 	-Wl,-Map,$(BIN_DIR)/$(OUTPUT).map,--cref,--gc-sections $(LIB_DIRS)
 
-DEFINES += -D$(DEVICE_TYPE) \
-	-DUSE_HAL_DRIVER
 endif # ......................................................................
-
 
 
 
@@ -404,7 +399,10 @@ clean:
 	$(BIN_DIR)/*.d \
 	$(BIN_DIR)/*.bin \
 	$(BIN_DIR)/*.elf \
-	$(BIN_DIR)/*.map
+	$(BIN_DIR)/*.map \
+	$(BIN_DIR)/*.hex \
+	$(TARGET_EXE)
+
 
 show:
 	@echo PROJECT = $(PROJECT)
@@ -466,7 +464,7 @@ define VS_CPP_PROPERTIES
 {
 	"configurations": [
 	    {
-	        "name": "STM32_TR",
+	        "name": "CONFIG",
 	        "includePath": [
 	            $(subst -I,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach inc,$(INCLUDES),"$(inc)"))))
 	        ],
