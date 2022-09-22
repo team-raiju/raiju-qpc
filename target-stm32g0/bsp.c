@@ -85,7 +85,7 @@ void BSP_ledToggle(void)  {
 
 }
 
-void BSP_motorsOff(void) { 
+void BSP_motors(int vel_esq, int vel_dir) { 
 
 }
 
