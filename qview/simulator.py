@@ -6,6 +6,9 @@ class SIMULATOR:
     def __init__(self):
 
         from playsound import playsound
+        
+        self.beep_sound = HOME_DIR + "/sound/beep.mp3"
+
         self.play = playsound
 
 
@@ -69,7 +72,7 @@ class SIMULATOR:
                 QView.canvas.itemconfig(self._led, image=self.led_off_img)
         
         elif (log == 1):
-            self.play('/home/marco/Documents/Projetos/QM-State-Chart/qview/sound/beep.mp3')    
+            self.play(self.beep_sound)    
               
         QView.print_text("Timestamp = %d; Log = %d; Argument = %d"%(data[0], log, data[2]))
         # QView.print_text("%s"%(str(packet)))

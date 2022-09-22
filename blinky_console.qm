@@ -83,7 +83,7 @@ BSP_motorsOff();</entry>
 BSP_buzzer_beep();
 
 if (me-&gt;buzzerCount == 16) {
-    QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC, 0);
+    QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
 } else if (me-&gt;buzzerCount &lt; 16){
     QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
 }
@@ -672,7 +672,7 @@ COMMA := ,
 
 
 ifeq (spy, $(CONF)) # SPY configuration ..................................
-INTELLI_SENSE_MODE := linux-gcc-x86
+INTELLI_SENSE_MODE := linux-gcc-x64
 COMPILER_PATH := /usr/bin/$(CC)
 else
 INTELLI_SENSE_MODE := linux-gcc-arm

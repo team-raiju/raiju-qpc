@@ -124,7 +124,9 @@ void BSP_buzzer_beep(void) {
 }
 
 /* callback functions needed by the framework ------------------------------*/
-void QF_onStartup(void) {}
+void QF_onStartup(void) {
+    QF_setTickRate(BSP_TICKS_PER_SEC, 50); /* desired tick rate/ticker-prio */
+}
 void QF_onCleanup(void) {}
 void QF_onClockTick(void) {
     QF_TICK_X(0U, (void *)0); /* QF clock tick processing for rate 0 */

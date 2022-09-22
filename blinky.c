@@ -131,7 +131,7 @@ static QState Blinky_Idle(Blinky * const me, QEvt const * const e) {
             BSP_buzzer_beep();
 
             if (me->buzzerCount == 16) {
-                QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC, 0);
+                QTimeEvt_armX(&me->buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
             } else if (me->buzzerCount < 16){
                 QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
             }
