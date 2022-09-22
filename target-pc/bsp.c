@@ -46,7 +46,7 @@ static QSpyId const l_clock_tick = { QS_AP_ID };
 #endif
 
 void BSP_init(void)   {
-    printf("Simple Blinky example\n"
+    printf("SumoHSM example\n"
            "QP/C version: %s\n"
            "Press Ctrl-C to quit...\n",
            QP_VERSION_STR);
@@ -71,7 +71,7 @@ void BSP_init(void)   {
 }
 void BSP_ledOff(void) { 
     printf("LED OFF\n"); 
-    QS_BEGIN_ID(LED, AO_Blinky->prio)
+    QS_BEGIN_ID(LED, AO_SumoHSM->prio)
        QS_U8(1, 0);
        QS_U8(1, 0);
     QS_END()
@@ -81,7 +81,7 @@ void BSP_ledOff(void) {
 
 void BSP_ledOn(void)  { 
     printf("LED ON\n");  
-    QS_BEGIN_ID(LED, AO_Blinky->prio)
+    QS_BEGIN_ID(LED, AO_SumoHSM->prio)
        QS_U8(1, 0);
        QS_U8(1, 1);
     QS_END()
@@ -116,7 +116,7 @@ void BSP_ledStrip(int num, int stat) {
 
 void BSP_buzzer_beep(void) {
     printf("Buzzer Beep\n");
-    QS_BEGIN_ID(LED, AO_Blinky->prio)
+    QS_BEGIN_ID(LED, AO_SumoHSM->prio)
        QS_U8(1, 1);
        QS_U8(1, 1);
     QS_END()
@@ -151,7 +151,7 @@ void QS_onCommand(uint8_t cmdId,
     switch (cmdId) {
        case 0: { 
             QEvt evt = {.sig = START_RC_SIG};
-            QHSM_DISPATCH(&AO_Blinky->super, &evt, LED);
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
             break;
         }
        default:

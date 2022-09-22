@@ -35,22 +35,22 @@ Q_DEFINE_THIS_FILE
 
 /* the main function -------------------------------------------------------*/
 int main() {
-    static QEvt const *blinky_queueSto[10]; /* event queue buffer for Blinky */
+    static QEvt const *sumoHSM_queueSto[10]; /* event queue buffer for SumoHSM */
 
     QF_init();  /* initialize the framework */
     BSP_init(); /* initialize the BSP */
 
-    /* instantiate and start the Blinky active object */
-    Blinky_ctor(); /* in C you must explicitly call the Blinky constructor */
+    /* instantiate and start the SumoHSM active object */
+    SumoHSM_ctor(); /* in C you must explicitly call the SumoHSM constructor */
 
     #ifdef Q_SPY
-    blinky_update_qs_dict();
+    sumoHSM_update_qs_dict();
     #endif
 
-    QACTIVE_START(AO_Blinky, /* active object to start */
+    QACTIVE_START(AO_SumoHSM, /* active object to start */
         1U,                  /* priority of the active object */
-        blinky_queueSto,     /* event queue buffer */
-        Q_DIM(blinky_queueSto), /* the length of the buffer */
+        sumoHSM_queueSto,     /* event queue buffer */
+        Q_DIM(sumoHSM_queueSto), /* the length of the buffer */
         (void *)0, 0U,       /* private stack (not used) */
         (QEvt *)0);          /* initialization event (not used) */
 

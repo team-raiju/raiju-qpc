@@ -45,7 +45,7 @@ class SIMULATOR:
 
         # NOTE: the names of objects for current_obj() must match
         # the QS Object Dictionaries produced by the application.
-        current_obj(OBJ_AO, "l_blinky")
+        current_obj(OBJ_AO, "l_sumo_hsm")
 
 
     # example of a custom command

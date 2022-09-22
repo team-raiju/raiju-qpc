@@ -89,16 +89,20 @@ void BSP_motorsOff(void) {
 
 }
 
-void BSP_ledStripeStart(void) { 
-
-}
-
 void BSP_startRC(void) { 
 
 }
 
 void BSP_startAuto(void) { 
 
+}
+
+void BSP_ledStrip(int num, int stat) {
+
+}
+
+void BSP_buzzer_beep(void) {
+    
 }
 
 /* callback functions needed by the framework ------------------------------*/

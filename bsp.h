@@ -47,7 +47,7 @@ void BSP_startRC(void);
 void BSP_startAuto(void);
 
 /* define the event signals used in the application ------------------------*/
-enum BlinkySignals {
+enum SumoHSMSignals {
     TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
     PLAY_BUZZER_SIG,
     START_RC_SIG,
@@ -56,15 +56,15 @@ enum BlinkySignals {
 };
 
 /* active object(s) used in this application -------------------------------*/
-extern QActive * const AO_Blinky; /* opaque pointer to the Blinky AO */
-/*$declare${AOs::Blinky_ctor} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
+extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */
+/*$declare${AOs::SumoHSM_ctor} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
 
-/*${AOs::Blinky_ctor} ......................................................*/
-void Blinky_ctor(void);
-/*$enddecl${AOs::Blinky_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+/*${AOs::SumoHSM_ctor} .....................................................*/
+void SumoHSM_ctor(void);
+/*$enddecl${AOs::SumoHSM_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 #ifdef Q_SPY
-void blinky_update_qs_dict(void);
+void sumoHSM_update_qs_dict(void);
 #endif
 
 #endif /* BSP_H */

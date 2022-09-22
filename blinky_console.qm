@@ -1,45 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model version="5.2.1" links="1">
- <documentation>About this example:
--------------------
-Simple &quot;Blinky&quot; console application for workstations (Windows, Linux, MacOS)
-(see &quot;QM Tutorial&quot; at: https://www.state-machine.com/qm/gs_tut.html)
-
-This example demonstrates:
-- Active object (Blinky) with state machine
-- Board Support Package abstraction for portability
-- BSP implementation for desktop OS (Windows, Linux, MacOS)
-- Platform-independent main() function
-- Makefile to build the generated code on desktop OS (Windows, Linux, MacOS)
-- Customized tools for building the generated code directly from QM
-
-Building the example:
----------------------
-To build this example, you will need the QP/C framework installed on your computer and the GNU-GCC compiler. Both of them will be available if you install the QP-bundle from:
-
-https://www.state-machine.com/#Downloads
-
-Running the example:
---------------------
-This example is a simple console application, which you can run from a terminal.
-
-For more QM examples for QP/C see:
-https://www.state-machine.com/qpc/exa.html</documentation>
  <!--${qpc}-->
  <framework name="qpc"/>
  <!--${AOs}-->
  <package name="AOs" stereotype="0x02">
-  <!--${AOs::Blinky}-->
-  <class name="Blinky" superclass="qpc::QActive">
-   <!--${AOs::Blinky::timeEvt}-->
+  <!--${AOs::SumoHSM}-->
+  <class name="SumoHSM" superclass="qpc::QActive">
+   <!--${AOs::SumoHSM::timeEvt}-->
    <attribute name="timeEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
-   <!--${AOs::Blinky::buzzerTimeEvt}-->
+   <!--${AOs::SumoHSM::buzzerTimeEvt}-->
    <attribute name="buzzerTimeEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
-   <!--${AOs::Blinky::buzzerCount}-->
+   <!--${AOs::SumoHSM::buzzerCount}-->
    <attribute name="buzzerCount" type="uint8_t" visibility="0x02" properties="0x00"/>
-   <!--${AOs::Blinky::SM}-->
+   <!--${AOs::SumoHSM::SM}-->
    <statechart properties="0x01">
-    <!--${AOs::Blinky::SM::initial}-->
+    <!--${AOs::SumoHSM::SM::initial}-->
     <initial target="../1">
      <action>(void)par; /* unused parameter */
 /* arm the private time event to expire in 1/2s
@@ -53,31 +28,31 @@ me-&gt;buzzerCount = 0U;</action>
       <action box="0,-2,7,2"/>
      </initial_glyph>
     </initial>
-    <!--${AOs::Blinky::SM::Idle}-->
+    <!--${AOs::SumoHSM::SM::Idle}-->
     <state name="Idle">
      <entry>BSP_ledOff();
 BSP_motorsOff();</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
-     <!--${AOs::Blinky::SM::Idle::TIMEOUT}-->
+     <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
      <tran trig="TIMEOUT">
       <action>BSP_ledToggle();</action>
       <tran_glyph conn="34,29,3,-1,14">
        <action box="0,-2,14,4"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::Blinky::SM::Idle::START_RC}-->
+     <!--${AOs::SumoHSM::SM::Idle::START_RC}-->
      <tran trig="START_RC" target="../../2">
       <tran_glyph conn="77,39,1,1,12,11,-5">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::Blinky::SM::Idle::START_AUTO}-->
+     <!--${AOs::SumoHSM::SM::Idle::START_AUTO}-->
      <tran trig="START_AUTO" target="../../3">
       <tran_glyph conn="34,40,3,3,-13,10,2">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::Blinky::SM::Idle::PLAY_BUZZER}-->
+     <!--${AOs::SumoHSM::SM::Idle::PLAY_BUZZER}-->
      <tran trig="PLAY_BUZZER">
       <action>BSP_ledStrip(me-&gt;buzzerCount, 1);
 BSP_buzzer_beep();
@@ -99,14 +74,14 @@ me-&gt;buzzerCount += 1;</action>
       <exit box="1,8,24,5"/>
      </state_glyph>
     </state>
-    <!--${AOs::Blinky::SM::RCWait}-->
+    <!--${AOs::SumoHSM::SM::RCWait}-->
     <state name="RCWait">
      <entry>BSP_startRC();</entry>
      <state_glyph node="68,48,16,12">
       <entry box="1,2,12,4"/>
      </state_glyph>
     </state>
-    <!--${AOs::Blinky::SM::AutoWait}-->
+    <!--${AOs::SumoHSM::SM::AutoWait}-->
     <state name="AutoWait">
      <entry>BSP_startAuto();</entry>
      <state_glyph node="23,48,16,12">
@@ -116,40 +91,40 @@ me-&gt;buzzerCount += 1;</action>
     <state_diagram size="119,69"/>
    </statechart>
   </class>
-  <!--${AOs::Blinky_ctor}-->
-  <operation name="Blinky_ctor" type="void" visibility="0x00" properties="0x01">
+  <!--${AOs::SumoHSM_ctor}-->
+  <operation name="SumoHSM_ctor" type="void" visibility="0x00" properties="0x01">
    <documentation>The Blinky &quot;constructor&quot; is provided outside of the Blinky class, so that it can be used independently from the class. This is part of the &quot;opaque pointer&quot; design idiom.</documentation>
-   <code>Blinky *me = (Blinky *)AO_Blinky;
-QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;Blinky_initial));
+   <code>SumoHSM *me = (SumoHSM *)AO_SumoHSM;
+QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super, TIMEOUT_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super, PLAY_BUZZER_SIG, 0U);</code>
   </operation>
  </package>
  <!--${.}-->
  <directory name=".">
-  <!--${.::blinky.c}-->
-  <file name="blinky.c">
+  <!--${.::sumo_hsm.c}-->
+  <file name="sumo_hsm.c">
    <text>#include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
 
 /* ask QM to declare the Blinky class --------------------------------------*/
-$declare${AOs::Blinky}
+$declare${AOs::SumoHSM}
 
 /* instantiate the Blinky active object ------------------------------------*/
-static Blinky l_blinky;
-QActive * const AO_Blinky = &amp;l_blinky.super;
+static SumoHSM l_sumo_hsm;
+QActive * const AO_SumoHSM = &amp;l_sumo_hsm.super;
 
 /* ask QM to define the Blinky class ---------------------------------------*/
-$define${AOs::Blinky_ctor}
-$define${AOs::Blinky}
+$define${AOs::SumoHSM_ctor}
+$define${AOs::SumoHSM}
 
 #ifdef Q_SPY
 
-void blinky_update_qs_dict(){
+void sumoHSM_update_qs_dict(){
 
-    QS_OBJ_DICTIONARY(&amp;l_blinky);
-    QS_OBJ_DICTIONARY(&amp;l_blinky.timeEvt);
-    QS_OBJ_DICTIONARY(&amp;l_blinky.buzzerTimeEvt);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvt);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.buzzerTimeEvt);
 
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
     QS_SIG_DICTIONARY(PLAY_BUZZER_SIG, (void *)0);
@@ -157,9 +132,9 @@ void blinky_update_qs_dict(){
     QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
 
 
-    QS_FUN_DICTIONARY(&amp;Blinky_Idle);
-    QS_FUN_DICTIONARY(&amp;Blinky_AutoWait);
-    QS_FUN_DICTIONARY(&amp;Blinky_RCWait);
+    QS_FUN_DICTIONARY(&amp;SumoHSM_Idle);
+    QS_FUN_DICTIONARY(&amp;SumoHSM_AutoWait);
+    QS_FUN_DICTIONARY(&amp;SumoHSM_RCWait);
 }
 
 #endif</text>
@@ -185,7 +160,7 @@ void BSP_startRC(void);
 void BSP_startAuto(void);
 
 /* define the event signals used in the application ------------------------*/
-enum BlinkySignals {
+enum SumoHSMSignals {
     TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
     PLAY_BUZZER_SIG,
     START_RC_SIG,
@@ -194,11 +169,11 @@ enum BlinkySignals {
 };
 
 /* active object(s) used in this application -------------------------------*/
-extern QActive * const AO_Blinky; /* opaque pointer to the Blinky AO */
-$declare${AOs::Blinky_ctor}
+extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */
+$declare${AOs::SumoHSM_ctor}
 
 #ifdef Q_SPY
-void blinky_update_qs_dict(void);
+void sumoHSM_update_qs_dict(void);
 #endif
 
 #endif /* BSP_H */</text>
@@ -212,22 +187,22 @@ Q_DEFINE_THIS_FILE
 
 /* the main function -------------------------------------------------------*/
 int main() {
-    static QEvt const *blinky_queueSto[10]; /* event queue buffer for Blinky */
+    static QEvt const *sumoHSM_queueSto[10]; /* event queue buffer for SumoHSM */
 
     QF_init();  /* initialize the framework */
     BSP_init(); /* initialize the BSP */
 
-    /* instantiate and start the Blinky active object */
-    Blinky_ctor(); /* in C you must explicitly call the Blinky constructor */
+    /* instantiate and start the SumoHSM active object */
+    SumoHSM_ctor(); /* in C you must explicitly call the SumoHSM constructor */
     
     #ifdef Q_SPY
-    blinky_update_qs_dict();
+    sumoHSM_update_qs_dict();
     #endif
 
-    QACTIVE_START(AO_Blinky, /* active object to start */
+    QACTIVE_START(AO_SumoHSM, /* active object to start */
         1U,                  /* priority of the active object */
-        blinky_queueSto,     /* event queue buffer */
-        Q_DIM(blinky_queueSto), /* the length of the buffer */
+        sumoHSM_queueSto,     /* event queue buffer */
+        Q_DIM(sumoHSM_queueSto), /* the length of the buffer */
         (void *)0, 0U,       /* private stack (not used) */
         (QEvt *)0);          /* initialization event (not used) */
 
@@ -289,7 +264,7 @@ int main() {
 #-----------------------------------------------------------------------------
 # project name
 #
-PROJECT     := blinky
+PROJECT     := sumo_hsm
 
 #-----------------------------------------------------------------------------
 # project directories
@@ -310,7 +285,7 @@ INCLUDES  = \
 
 # C source files
 C_SRCS := \
-    blinky.c \
+    sumo_hsm.c \
     main.c \
 
 ifeq (spy, $(CONF)) # SPY configuration ..................................
@@ -657,6 +632,11 @@ show:
     @echo C_DEPS_EXT = $(C_DEPS_EXT)
     @echo CPP_DEPS_EXT = $(CPP_DEPS_EXT)
     @echo TARGET_ELF = $(TARGET_ELF)
+
+prepare:
+    @echo &quot;Preparing cube files&quot;
+    $(AT)-mv -f cube/Src/main.c cube/Src/cube_main.c
+    $(AT)-rm -f cube/Makefile
 
 ###############################################################################
 ## VS Code files

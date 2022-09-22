@@ -51,7 +51,7 @@
 #-----------------------------------------------------------------------------
 # project name
 #
-PROJECT     := blinky
+PROJECT     := sumo_hsm
 
 #-----------------------------------------------------------------------------
 # project directories
@@ -72,7 +72,7 @@ INCLUDES  = \
 
 # C source files
 C_SRCS := \
-	blinky.c \
+	sumo_hsm.c \
 	main.c \
 
 ifeq (spy, $(CONF)) # SPY configuration ..................................
@@ -419,6 +419,11 @@ show:
 	@echo C_DEPS_EXT = $(C_DEPS_EXT)
 	@echo CPP_DEPS_EXT = $(CPP_DEPS_EXT)
 	@echo TARGET_ELF = $(TARGET_ELF)
+
+prepare:
+	@echo "Preparing cube files"
+	$(AT)-mv -f cube/Src/main.c cube/Src/cube_main.c
+	$(AT)-rm -f cube/Makefile
 
 ###############################################################################
 ## VS Code files
