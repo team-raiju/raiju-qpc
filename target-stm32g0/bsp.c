@@ -107,7 +107,9 @@ void BSP_ledStrip(int num, int stat) {
 }
 
 void BSP_buzzer_beep(void) {
-    
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+    HAL_Delay(20);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
 }
 
 /* callback functions needed by the framework ------------------------------*/
