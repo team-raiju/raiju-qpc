@@ -99,7 +99,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::Idle} */
         case Q_ENTRY_SIG: {
             BSP_ledOff();
-            BSP_motorsOff();
+            BSP_motors(0,0);
             status_ = Q_HANDLED();
             break;
         }
@@ -160,6 +160,11 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
+        /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA} */
+        case RADIO_DATA_SIG: {
+            status_ = Q_HANDLED();
+            break;
+        }
         default: {
             status_ = Q_SUPER(&QHsm_top);
             break;
@@ -174,7 +179,13 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::AutoWait} */
         case Q_ENTRY_SIG: {
-            BSP_startAuto();
+            BSP_motors(100,100);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::LINE_DETECTED} */
+        case LINE_DETECTED_SIG: {
+            BSP_motors(-100,-100);
             status_ = Q_HANDLED();
             break;
         }

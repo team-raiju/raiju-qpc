@@ -40,7 +40,7 @@ void BSP_init(void);
 void BSP_ledOff(void);
 void BSP_ledOn(void);
 void BSP_ledToggle(void);
-void BSP_motorsOff(void);
+void BSP_motors(int vel_esq, int vel_dir);
 void BSP_ledStrip(int num, int stat);
 void BSP_buzzer_beep(void);
 void BSP_startRC(void);
@@ -52,6 +52,8 @@ enum SumoHSMSignals {
     PLAY_BUZZER_SIG,
     START_RC_SIG,
     START_AUTO_SIG,
+    LINE_DETECTED_SIG,
+    RADIO_DATA_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 

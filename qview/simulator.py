@@ -17,8 +17,9 @@ class SIMULATOR:
         self.count = 0
 
         # add commands to the Custom menu...
-        QView.custom_menu.add_command(label="Custom command",
-                                      command=self.cust_command)
+        QView.custom_menu.add_command(label="Start RC", command=self.start_rc)
+        QView.custom_menu.add_command(label="Start Auto", command=self.start_auto)
+        QView.custom_menu.add_command(label="Line Detected", command=self.line_detected)
 
         # configure the custom QView.canvas...
         QView.show_canvas() # make the canvas visible
@@ -49,8 +50,14 @@ class SIMULATOR:
 
 
     # example of a custom command
-    def cust_command(self):
+    def start_rc(self):
         command(0, 0)
+    
+    def start_auto(self):
+        command(1, 0)
+    
+    def line_detected(self):
+        command(2, 0)
         
 
     def cust_pause(self, event):

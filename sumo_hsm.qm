@@ -31,7 +31,7 @@ me-&gt;buzzerCount = 0U;</action>
     <!--${AOs::SumoHSM::SM::Idle}-->
     <state name="Idle">
      <entry>BSP_ledOff();
-BSP_motorsOff();</entry>
+BSP_motors(0,0);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
@@ -43,7 +43,7 @@ QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::START_RC}-->
      <tran trig="START_RC" target="../../2">
-      <tran_glyph conn="77,39,1,1,12,11,-5">
+      <tran_glyph conn="77,39,1,1,12,11,-1">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -72,24 +72,37 @@ me-&gt;buzzerCount += 1;</action>
      </tran>
      <state_glyph node="34,10,43,33">
       <entry box="1,2,24,6"/>
-      <exit box="1,8,24,5"/>
+      <exit box="1,8,38,7"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::RCWait}-->
     <state name="RCWait">
      <entry>BSP_startRC();</entry>
-     <state_glyph node="68,48,16,12">
+     <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA}-->
+     <tran trig="RADIO_DATA">
+      <tran_glyph conn="68,58,3,-1,11">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="68,48,20,15">
       <entry box="1,2,12,4"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::AutoWait}-->
     <state name="AutoWait">
-     <entry>BSP_startAuto();</entry>
-     <state_glyph node="23,48,16,12">
-      <entry box="1,2,12,4"/>
+     <entry>BSP_motors(100,100);</entry>
+     <!--${AOs::SumoHSM::SM::AutoWait::LINE_DETECTED}-->
+     <tran trig="LINE_DETECTED">
+      <action>BSP_motors(-100,-100);</action>
+      <tran_glyph conn="23,58,3,-1,12">
+       <action box="0,-2,14,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="23,48,20,17">
+      <entry box="1,2,19,4"/>
      </state_glyph>
     </state>
-    <state_diagram size="119,69"/>
+    <state_diagram size="123,79"/>
    </statechart>
   </class>
   <!--${AOs::SumoHSM_ctor}-->
@@ -154,7 +167,7 @@ void BSP_init(void);
 void BSP_ledOff(void);
 void BSP_ledOn(void);
 void BSP_ledToggle(void);
-void BSP_motorsOff(void);
+void BSP_motors(int vel_esq, int vel_dir);
 void BSP_ledStrip(int num, int stat);
 void BSP_buzzer_beep(void);
 void BSP_startRC(void);
@@ -166,6 +179,8 @@ enum SumoHSMSignals {
     PLAY_BUZZER_SIG,
     START_RC_SIG,
     START_AUTO_SIG,
+    LINE_DETECTED_SIG,
+    RADIO_DATA_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 

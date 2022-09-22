@@ -99,9 +99,21 @@ void BSP_ledToggle(void)  {
 
 }
 
-void BSP_motorsOff(void)  { printf("Motors OFF\n");  }
+void BSP_motors(int vel_esq, int vel_dir) {
+    printf("MOT %d,%d \n", vel_esq, vel_dir); 
+    QS_BEGIN_ID(LED, AO_SumoHSM->prio)
+       QS_U8(1, 2);
+       QS_U8(1, vel_esq);
+    QS_END()
+
+    QS_BEGIN_ID(LED, AO_SumoHSM->prio)
+       QS_U8(1, 3);
+       QS_U8(1, vel_dir);
+    QS_END()
+
+}
 void BSP_startRC(void)  { printf("START RC\n");  }
-void BSP_startAuto(void)  { printf("\n");  }
+void BSP_startAuto(void)  { printf("START AUTO\n");  }
 
 
 void BSP_ledStrip(int num, int stat) {
@@ -154,6 +166,18 @@ void QS_onCommand(uint8_t cmdId,
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
             break;
         }
+        case 1: { 
+            QEvt evt = {.sig = START_AUTO_SIG};
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            break;
+        }
+
+        case 2: { 
+            QEvt evt = {.sig = LINE_DETECTED_SIG};
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            break;
+        }
+
        default:
            break;
     }
