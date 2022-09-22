@@ -9,11 +9,11 @@
   <item name="backups">0</item>
  </group>
  <group name="windows">
-  <item id=".::blinky.c">-640,0,1049,658</item>
-  <item id=".::Makefile">0,0,1049,681,*</item>
-  <item id="AOs::Blinky::SM">-640,0,1049,681</item>
+  <item id=".::sumo_hsm.c">-398,0,1049,658</item>
+  <item id=".::Makefile">0,0,1080,685,*</item>
+  <item id="AOs::SumoHSM::SM">-398,0,1049,681</item>
   <item id=".::main.c">0,0,596,300</item>
-  <item id=".::bsp.h">0,118,596,300</item>
+  <item id=".::bsp.h">55,95,596,300</item>
  </group>
  <group name="search">
   <item name="options">2032128</item>
