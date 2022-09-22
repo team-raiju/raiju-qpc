@@ -36,6 +36,11 @@
 #include <stdio.h>  /* for printf()/fprintf() */
 #include <stdlib.h> /* for exit() */
 
+
+__weak void SystemClock_Config(void);
+
+
+
 void SysTick_Handler(void) {   /* system clock tick ISR */
 
     HAL_IncTick();
