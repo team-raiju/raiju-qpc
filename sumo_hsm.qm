@@ -32,7 +32,8 @@ me-&gt;buzzerCount = 0U;</action>
     <state name="Idle">
      <entry>BSP_ledOff();
 BSP_motorsOff();</entry>
-     <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
      <tran trig="TIMEOUT">
       <action>BSP_ledToggle();</action>

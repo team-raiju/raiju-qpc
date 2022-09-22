@@ -106,6 +106,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::Idle} */
         case Q_EXIT_SIG: {
             QTimeEvt_disarm(&me->timeEvt);
+            QTimeEvt_disarm(&me->buzzerTimeEvt);
             status_ = Q_HANDLED();
             break;
         }
