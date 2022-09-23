@@ -114,12 +114,12 @@ void BSP_motors(int vel_esq, int vel_dir) {
 }
 void BSP_startRC(void)  { 
     printf("START RC\n");  
-    BSP_motors(100,-100);
+    //BSP_motors(100,-100);
 }
 
 void BSP_startAuto(void)  { 
     printf("START AUTO\n"); 
-    BSP_motors(100,-100);
+    //BSP_motors(100,-100);
 }
 
 

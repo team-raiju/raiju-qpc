@@ -620,7 +620,7 @@ class QView:
     
     @staticmethod
     def _start_auto(*args):
-        command(0, 1)
+        command(1, 0)
     
 
     @staticmethod
