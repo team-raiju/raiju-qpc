@@ -43,6 +43,11 @@ from tkinter.ttk import * # override the basic Tk widgets with Ttk widgets
 from tkinter.simpledialog import *
 from struct import pack
 
+from PIL import Image, ImageTk
+import math
+
+global action_counter
+
 #=============================================================================
 # QView GUI
 # https://www.state-machine.com/qtools/qview.html
@@ -1389,6 +1394,9 @@ class QSpy:
     @staticmethod
     def _poll():
         while True:
+
+            custom_action_on_poll()
+
             try:
                 packet = QSpy._sock.recv(4096)
                 if not packet:
@@ -1870,14 +1878,27 @@ def qunpack(fmt, bstr):
 
 def custom_qview():
     QView._view_canvas.set(1)
-    QView.canvas.configure(width=400, height=260)
+    QView.canvas.configure(width=600, height=600)
     
     global led_on_img
     global led_off_img
     global canvas_img
+    global sumo_png
+    global sumo_canvas
+    global arena_png
+    global arena_canvas
+    global angle
+
+    angle = 0
+
+    arena_png = PhotoImage(file=HOME_DIR + "/img/arena.png")
     led_on_img = PhotoImage(file=HOME_DIR + "/img/led_on.png").subsample(3,3)
     led_off_img = PhotoImage(file=HOME_DIR + "/img/led_off.png").subsample(3,3)
-    canvas_img = QView.canvas.create_image(200,  100, image=led_on_img)
+    sumo_png = PhotoImage(file=HOME_DIR + "/img/raiju.png")
+
+    arena_canvas = QView.canvas.create_image(300,  300, image=arena_png)
+    canvas_img = QView.canvas.create_image(50,  30, image=led_on_img)
+    sumo_canvas = QView.canvas.create_image(300,  300, image=sumo_png)
 
 
 def on_reset():
@@ -1905,9 +1926,38 @@ def QS_USER_00(packet):
         else:
             QView.canvas.itemconfig(canvas_img, image=led_off_img)
 
+def custom_action_on_poll():
+    global action_counter
+
+    action_counter = action_counter + 1
+    if (action_counter % 10 == 0):
+        global sumo_rotated
+        global tk_sumo_rotated
+        global angle
+
+        mot_esq = 0
+        mot_dir = -100
+
+        rotation_vel = (mot_dir - mot_esq) / 2
+        angle += (rotation_vel / 10)
+        angle = angle % 360
+
+        vel = ((mot_esq + mot_dir) / 2)
+        vel_x = int((vel * math.sin(angle * math.pi/180))/10)
+        vel_y = int((vel * math.cos(angle * math.pi/180))/10)
+
+        sumo_rotated = Image.open(HOME_DIR + "/img/raiju.png")
+        tk_sumo_rotated = ImageTk.PhotoImage(sumo_rotated.rotate(angle))
+        QView.canvas.itemconfig(sumo_canvas, image=tk_sumo_rotated)
+        QView.canvas.move(sumo_canvas, vel_x, vel_y)
+
+        
+
+
 def main():
     # process command-line arguments...
-
+    global action_counter
+    action_counter = 0
     global HOME_DIR
     HOME_DIR = os.path.dirname(__file__)
 

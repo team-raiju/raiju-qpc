@@ -16,4 +16,9 @@ This will automatically build qspy into qp/qtools/bin folder.
 
 The last tool needed is qview. You can install via ```pip install qview```, or you can use as a standalone file that is located ```cd ~/qp-linux_7.1.0/qp/qtools/qview/```.
 
-Qview requires python tkinter: ```sudo apt-get install python3-tk```
+Qview requires python tkinter: ```sudo apt-get install py
+
+
+## Extras
+sudo apt-get install python3-pil python3-pil.imagetk
+pip install playsound
