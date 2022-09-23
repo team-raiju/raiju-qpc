@@ -201,7 +201,7 @@ class QView:
 
         # Custom menu...
         m = Menu(main_menu, tearoff=0)
-        m.add_command(label="START RC",  command=QView._start_rc)
+        m.add_command(label="START AUTO",  command=QView._start_auto)
         main_menu.add_cascade(label="Custom", menu=m)
 
         QView.custom_menu = m
@@ -619,8 +619,8 @@ class QView:
                         new=2)
     
     @staticmethod
-    def _start_rc(*args):
-        command(0, 0)
+    def _start_auto(*args):
+        command(0, 1)
     
 
     @staticmethod
@@ -1917,6 +1917,9 @@ def on_run():
 def QS_USER_00(packet):
     data = qunpack("xxTxBxB", packet)        
     log = data[1]     
+    global mot_esq
+    global mot_dir
+
     QView.print_text("Timestamp = %d; Log = %d; Argument = %d"%(data[0], log, data[2]))
 
     if (log == 0):
@@ -1925,6 +1928,10 @@ def QS_USER_00(packet):
             QView.canvas.itemconfig(canvas_img, image=led_on_img)
         else:
             QView.canvas.itemconfig(canvas_img, image=led_off_img)
+    elif (log == 2):
+        mot_esq = data[2]
+    elif (log == 3):
+        mot_dir = data[2]
 
 def custom_action_on_poll():
     global action_counter
@@ -1934,9 +1941,8 @@ def custom_action_on_poll():
         global sumo_rotated
         global tk_sumo_rotated
         global angle
-
-        mot_esq = 0
-        mot_dir = -100
+        global mot_esq
+        global mot_dir
 
         rotation_vel = (mot_dir - mot_esq) / 2
         angle += (rotation_vel / 10)
@@ -1957,6 +1963,12 @@ def custom_action_on_poll():
 def main():
     # process command-line arguments...
     global action_counter
+    global mot_esq
+    global mot_dir
+
+    mot_esq = 0
+    mot_dir = 0
+
     action_counter = 0
     global HOME_DIR
     HOME_DIR = os.path.dirname(__file__)
