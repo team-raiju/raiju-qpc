@@ -90,19 +90,48 @@ me-&gt;buzzerCount += 1;</action>
     </state>
     <!--${AOs::SumoHSM::SM::AutoWait}-->
     <state name="AutoWait">
-     <entry>BSP_motors(100,100);</entry>
+     <entry>BSP_motors(60,60);</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::LINE_DETECTED}-->
-     <tran trig="LINE_DETECTED">
-      <action>BSP_motors(-100,-100);</action>
-      <tran_glyph conn="23,58,3,-1,12">
-       <action box="0,-2,14,2"/>
+     <tran trig="LINE_DETECTED" target="../1">
+      <tran_glyph conn="23,59,3,1,23,6,-2">
+       <action box="0,-2,15,3"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="23,48,20,17">
+     <!--${AOs::SumoHSM::SM::AutoWait::LineGoBack}-->
+     <state name="LineGoBack">
+      <entry>BSP_motors(-100,-100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
+      <!--${AOs::SumoHSM::SM::AutoWait::LineGoBack::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../1">
+       <tran_glyph conn="26,69,3,1,17,5,-2">
+        <action box="0,-2,16,4"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::AutoWait::LineGoBack::LineTurn}-->
+      <state name="LineTurn">
+       <entry>BSP_motors(-100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);</entry>
+       <exit>BSP_motors(60,60);</exit>
+       <!--${AOs::SumoHSM::SM::AutoWait::LineGoBack::LineTurn::TIMEOUT}-->
+       <tran trig="TIMEOUT" target="../../..">
+        <tran_glyph conn="28,82,3,3,-7,-16,2">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="28,73,13,11">
+        <entry box="1,2,6,2"/>
+        <exit box="1,4,6,2"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="26,62,18,24">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="23,48,24,42">
       <entry box="1,2,19,4"/>
      </state_glyph>
     </state>
-    <state_diagram size="123,79"/>
+    <state_diagram size="141,102"/>
    </statechart>
   </class>
   <!--${AOs::SumoHSM_ctor}-->
@@ -162,6 +191,8 @@ void sumoHSM_update_qs_dict(){
 enum { 
     BSP_TICKS_PER_SEC = 100
 }; /* number of clock ticks in a second */
+
+#define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
 
 void BSP_init(void);
 void BSP_ledOff(void);

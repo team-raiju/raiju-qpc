@@ -36,6 +36,8 @@ enum {
     BSP_TICKS_PER_SEC = 100
 }; /* number of clock ticks in a second */
 
+#define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
+
 void BSP_init(void);
 void BSP_ledOff(void);
 void BSP_ledOn(void);

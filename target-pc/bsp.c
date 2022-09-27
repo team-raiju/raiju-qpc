@@ -72,8 +72,8 @@ void BSP_init(void)   {
 void BSP_ledOff(void) { 
     printf("LED OFF\n"); 
     QS_BEGIN_ID(LED, AO_SumoHSM->prio)
-       QS_U8(1, 0);
-       QS_U8(1, 0);
+       QS_I8(1, 0);
+       QS_I8(1, 0);
     QS_END()
 }
 
@@ -82,8 +82,8 @@ void BSP_ledOff(void) {
 void BSP_ledOn(void)  { 
     printf("LED ON\n");  
     QS_BEGIN_ID(LED, AO_SumoHSM->prio)
-       QS_U8(1, 0);
-       QS_U8(1, 1);
+       QS_I8(1, 0);
+       QS_I8(1, 1);
     QS_END()
 
 }
@@ -102,13 +102,13 @@ void BSP_ledToggle(void)  {
 void BSP_motors(int vel_esq, int vel_dir) {
     printf("MOT %d,%d \n", vel_esq, vel_dir); 
     QS_BEGIN_ID(LED, AO_SumoHSM->prio)
-       QS_U8(1, 2);
-       QS_U8(1, vel_esq);
+       QS_I8(1, 2);
+       QS_I8(1, vel_esq);
     QS_END()
 
     QS_BEGIN_ID(LED, AO_SumoHSM->prio)
-       QS_U8(1, 3);
-       QS_U8(1, vel_dir);
+       QS_I8(1, 3);
+       QS_I8(1, vel_dir);
     QS_END()
 
 }
@@ -136,8 +136,8 @@ void BSP_ledStrip(int num, int stat) {
 void BSP_buzzer_beep(void) {
     printf("Buzzer Beep\n");
     QS_BEGIN_ID(LED, AO_SumoHSM->prio)
-       QS_U8(1, 1);
-       QS_U8(1, 1);
+       QS_I8(1, 1);
+       QS_I8(1, 1);
     QS_END()
 
 }

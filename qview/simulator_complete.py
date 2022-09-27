@@ -1888,8 +1888,12 @@ def custom_qview():
     global arena_png
     global arena_canvas
     global angle
+    global robot_pos_x
+    global robot_pos_y
 
     angle = 0
+    robot_pos_x = 300
+    robot_pos_y = 300
 
     arena_png = PhotoImage(file=HOME_DIR + "/img/arena.png")
     led_on_img = PhotoImage(file=HOME_DIR + "/img/led_on.png").subsample(3,3)
@@ -1898,12 +1902,16 @@ def custom_qview():
 
     arena_canvas = QView.canvas.create_image(300,  300, image=arena_png)
     canvas_img = QView.canvas.create_image(50,  30, image=led_on_img)
-    sumo_canvas = QView.canvas.create_image(300,  300, image=sumo_png)
+    sumo_canvas = QView.canvas.create_image(robot_pos_x,  robot_pos_y, image=sumo_png)
+
 
 
 def on_reset():
     # clear the lists
     return
+
+def line_command():
+        command(2, 0)
 
 
 # on_run() callback
@@ -1915,7 +1923,7 @@ def on_run():
     current_obj(OBJ_AO, "l_sumo_hsm")
 
 def QS_USER_00(packet):
-    data = qunpack("xxTxBxB", packet)        
+    data = qunpack("xxTxbxb", packet)        
     log = data[1]     
     global mot_esq
     global mot_dir
@@ -1937,10 +1945,12 @@ def custom_action_on_poll():
     global action_counter
 
     action_counter = action_counter + 1
-    if (action_counter % 10 == 0):
+    if (action_counter % 4 == 0):
         global sumo_rotated
         global tk_sumo_rotated
         global angle
+        global robot_pos_x
+        global robot_pos_y
         global mot_esq
         global mot_dir
 
@@ -1952,12 +1962,25 @@ def custom_action_on_poll():
         vel_x = int((vel * math.sin(angle * math.pi/180))/10)
         vel_y = int((vel * math.cos(angle * math.pi/180))/10)
 
+        robot_pos_x += vel_x
+        robot_pos_y += vel_y
+
         sumo_rotated = Image.open(HOME_DIR + "/img/raiju.png")
         tk_sumo_rotated = ImageTk.PhotoImage(sumo_rotated.rotate(angle))
         QView.canvas.itemconfig(sumo_canvas, image=tk_sumo_rotated)
         QView.canvas.move(sumo_canvas, vel_x, vel_y)
 
+        if (is_over_circle(robot_pos_x, robot_pos_y)):
+            line_command()
+
+
+
         
+def is_over_circle(posx, posy):
+    if (((posx - 300 ) ** 2 + (posy - 300 ) ** 2) > 200 ** 2):
+        return True
+    else:
+        return False
 
 
 def main():
@@ -1966,8 +1989,10 @@ def main():
     global mot_esq
     global mot_dir
 
+
     mot_esq = 0
     mot_dir = 0
+
 
     action_counter = 0
     global HOME_DIR

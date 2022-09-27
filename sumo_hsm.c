@@ -50,6 +50,8 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par);
 static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_LineGoBack(SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_LineTurn(SumoHSM * const me, QEvt const * const e);
 /*$enddecl${AOs::SumoHSM} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 /* instantiate the Blinky active object ------------------------------------*/
@@ -179,18 +181,71 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::AutoWait} */
         case Q_ENTRY_SIG: {
-            BSP_motors(100,100);
+            BSP_motors(60,60);
             status_ = Q_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::AutoWait::LINE_DETECTED} */
         case LINE_DETECTED_SIG: {
-            BSP_motors(-100,-100);
-            status_ = Q_HANDLED();
+            status_ = Q_TRAN(&SumoHSM_LineGoBack);
             break;
         }
         default: {
             status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::AutoWait::LineGoBack} ................................*/
+static QState SumoHSM_LineGoBack(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::AutoWait::LineGoBack} */
+        case Q_ENTRY_SIG: {
+            BSP_motors(-100,-100);
+            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::LineGoBack::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            status_ = Q_TRAN(&SumoHSM_LineTurn);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&SumoHSM_AutoWait);
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::AutoWait::LineGoBack::LineTurn} ......................*/
+static QState SumoHSM_LineTurn(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::AutoWait::LineGoBack::LineTurn} */
+        case Q_ENTRY_SIG: {
+            BSP_motors(-100,100);
+            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::LineGoBack::LineTurn} */
+        case Q_EXIT_SIG: {
+            BSP_motors(60,60);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::LineGoBack::LineTurn::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            status_ = Q_TRAN(&SumoHSM_AutoWait);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&SumoHSM_LineGoBack);
             break;
         }
     }
