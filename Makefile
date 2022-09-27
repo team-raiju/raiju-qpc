@@ -59,6 +59,7 @@ PROJECT     := sumo_hsm
 
 VPATH = \
 	. \
+	./src \
 	$(QPC)/src/qf \
 	cube/Drivers/STM32G4xx_HAL_Driver/Src \
 	cube/ \
@@ -68,12 +69,13 @@ VPATH = \
 # list of all include directories needed by this project
 INCLUDES  = \
 	-I. \
+	-I./inc \
 	-I$(QPC)/include
 
 # C source files
 C_SRCS := \
-	sumo_hsm.c \
-	main.c \
+	./src/sumo_hsm.c \
+	./src/main.c \
 
 ifeq (spy, $(CONF)) # SPY configuration ..................................
 
@@ -84,14 +86,14 @@ ifeq (spy, $(CONF)) # SPY configuration ..................................
 QP_PORT_DIR := $(QPC)/ports/posix-qv
 #QP_PORT_DIR := $(QPC)/ports/posix
 
-VPATH    += ./target-pc \
+VPATH    += ./src/target-pc \
 	        $(QPC)/src/qs \
 	        $(QP_PORT_DIR)
 
 
 INCLUDES  += \
 	-I$(QP_PORT_DIR) \
-	-I./target-pc
+	-I./inc/target-pc
 
 QS_SRCS := \
 	qs.c \
@@ -101,7 +103,7 @@ QS_SRCS := \
 	qs_port.c
 
 C_SRCS += \
-	./target-stm32g0/bsp.c \
+	./src/target-stm32g0/bsp.c \
 	$(QS_SRCS)
 
 LD_SCRIPT :=
@@ -114,14 +116,14 @@ QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
 VPATH += \
 	$(QP_PORT_DIR) \
 	$(QPC)/src/qk \
-	./target-stm32g0 \
+	./src/target-stm32g0 \
 	cube/Drivers/STM32G4xx_HAL_Driver/Src \
 	cube/ \
 	cube/Src
 
 INCLUDES  += \
 	-I$(QP_PORT_DIR) \
-	-I./target-stm32g0 \
+	-I./inc/target-stm32g0 \
 	-Icube/Drivers/CMSIS/Device/ST/STM32G4xx/Include \
 	-Icube/Drivers/CMSIS/Include \
 	-Icube/Drivers/STM32G4xx_HAL_Driver/Inc \
@@ -131,7 +133,7 @@ INCLUDES  += \
 ASM_SRCS := cube/startup_stm32g431xx.s
 
 C_SRCS += \
-	./target-stm32g0/bsp.c \
+	./src/target-stm32g0/bsp.c \
 	cube/Src/stm32g4xx_hal_msp.c \
 	cube/Src/system_stm32g4xx.c \
 	cube/Src/usart.c \
@@ -241,7 +243,7 @@ HEX     := $(BIN) -O ihex
 
 endif
 
-STM_PROG := /home/marco/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI
+STM_PROG := $(CUBE_PROGRAMMER_PATH)/STM32_Programmer_CLI
 
 
 ##############################################################################

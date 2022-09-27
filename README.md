@@ -22,3 +22,11 @@ Qview requires python tkinter: ```sudo apt-get install py
 ## Extras
 sudo apt-get install python3-pil python3-pil.imagetk
 pip install playsound
+
+
+## Env Vars
+export ARM_GCC_PATH="/home/marco/gcc-arm-none-eabi-10.3-2021.10/bin"
+export CUBE_PATH="/home/marco/STM32CubeMX"
+export CUBE_PROGRAMMER_PATH="/home/marco/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin"
+export QPC="/home/marco/qp-linux_7.1.0/qp/qpc"
+export QTOOLS="/home/marco/qp-linux_7.1.0/qp/qtools"
