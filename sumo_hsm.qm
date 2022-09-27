@@ -1,107 +1,203 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model version="5.2.1" links="1">
- <documentation>About this example:
--------------------
-Simple &quot;Blinky&quot; console application for workstations (Windows, Linux, MacOS)
-(see &quot;QM Tutorial&quot; at: https://www.state-machine.com/qm/gs_tut.html)
-
-This example demonstrates:
-- Active object (Blinky) with state machine
-- Board Support Package abstraction for portability
-- BSP implementation for desktop OS (Windows, Linux, MacOS)
-- Platform-independent main() function
-- Makefile to build the generated code on desktop OS (Windows, Linux, MacOS)
-- Customized tools for building the generated code directly from QM
-
-Building the example:
----------------------
-To build this example, you will need the QP/C framework installed on your computer and the GNU-GCC compiler. Both of them will be available if you install the QP-bundle from:
-
-https://www.state-machine.com/#Downloads
-
-Running the example:
---------------------
-This example is a simple console application, which you can run from a terminal.
-
-For more QM examples for QP/C see:
-https://www.state-machine.com/qpc/exa.html</documentation>
  <!--${qpc}-->
  <framework name="qpc"/>
  <!--${AOs}-->
  <package name="AOs" stereotype="0x02">
-  <!--${AOs::Blinky}-->
-  <class name="Blinky" superclass="qpc::QActive">
-   <!--${AOs::Blinky::timeEvt}-->
+  <!--${AOs::SumoHSM}-->
+  <class name="SumoHSM" superclass="qpc::QActive">
+   <!--${AOs::SumoHSM::timeEvt}-->
    <attribute name="timeEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
-   <!--${AOs::Blinky::SM}-->
-   <statechart properties="0x01">
-    <!--${AOs::Blinky::SM::initial}-->
+   <!--${AOs::SumoHSM::buzzerTimeEvt}-->
+   <attribute name="buzzerTimeEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::buzzerCount}-->
+   <attribute name="buzzerCount" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::strategy}-->
+   <attribute name="strategy" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::SM}-->
+   <statechart properties="0x03">
+    <!--${AOs::SumoHSM::SM::initial}-->
     <initial target="../1">
      <action>(void)par; /* unused parameter */
 /* arm the private time event to expire in 1/2s
 * and periodically every 1/2 second
 */
-QTimeEvt_armX(&amp;me-&gt;timeEvt,
-    BSP_TICKS_PER_SEC/2,
-    BSP_TICKS_PER_SEC/2);</action>
-     <initial_glyph conn="2,3,5,1,20,4,-4">
-      <action box="0,-2,6,2"/>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
+QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+
+me-&gt;buzzerCount = 0U;</action>
+     <initial_glyph conn="72,7,5,1,21,6,-8">
+      <action box="0,-2,7,2"/>
      </initial_glyph>
     </initial>
-    <!--${AOs::Blinky::SM::off}-->
-    <state name="off">
-     <entry>BSP_ledOff();</entry>
-     <!--${AOs::Blinky::SM::off::TIMEOUT}-->
-     <tran trig="TIMEOUT" target="../../2">
-      <tran_glyph conn="2,14,3,1,18,6,-2">
-       <action box="0,-2,8,2"/>
+    <!--${AOs::SumoHSM::SM::Idle}-->
+    <state name="Idle">
+     <entry>BSP_ledOff();
+BSP_motors(0,0);</entry>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
+     <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
+     <tran trig="TIMEOUT">
+      <action>BSP_ledToggle();</action>
+      <tran_glyph conn="42,30,3,-1,14">
+       <action box="0,-2,14,4"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="2,5,16,11">
+     <!--${AOs::SumoHSM::SM::Idle::START_RC}-->
+     <tran trig="START_RC" target="../../2">
+      <tran_glyph conn="85,40,1,0,34,10">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::Idle::START_AUTO}-->
+     <tran trig="START_AUTO" target="../../4">
+      <tran_glyph conn="42,41,3,3,-19,11,3">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::Idle::PLAY_BUZZER}-->
+     <tran trig="PLAY_BUZZER">
+      <action>BSP_ledStrip(me-&gt;buzzerCount, 1);
+BSP_buzzer_beep();
+
+if (me-&gt;buzzerCount == 16) {
+    QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
+} else if (me-&gt;buzzerCount &lt; 16){
+    QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+}
+
+
+me-&gt;buzzerCount += 1;</action>
+      <tran_glyph conn="42,34,3,-1,14">
+       <action box="0,-2,12,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="42,11,43,33">
+      <entry box="1,2,24,6"/>
+      <exit box="1,8,38,7"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::SumoHSM::SM::RCWait}-->
+    <state name="RCWait">
+     <entry>BSP_startRC();</entry>
+     <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA}-->
+     <tran trig="RADIO_DATA">
+      <tran_glyph conn="107,60,3,-1,11">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="107,50,20,15">
       <entry box="1,2,12,4"/>
      </state_glyph>
     </state>
-    <!--${AOs::Blinky::SM::on}-->
-    <state name="on">
-     <entry>BSP_ledOn();</entry>
-     <!--${AOs::Blinky::SM::on::TIMEOUT}-->
-     <tran trig="TIMEOUT" target="../../1">
-      <tran_glyph conn="2,28,3,1,20,-18,-4">
-       <action box="0,-2,8,2"/>
+    <!--${AOs::SumoHSM::SM::StarStrategy}-->
+    <state name="StarStrategy">
+     <entry>BSP_motors(60,60);</entry>
+     <!--${AOs::SumoHSM::SM::StarStrategy::LINE_DETECTED}-->
+     <tran trig="LINE_DETECTED" target="../1">
+      <tran_glyph conn="24,84,3,1,23,6,-2">
+       <action box="0,-2,15,3"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="2,18,16,12">
-      <entry box="1,2,12,4"/>
+     <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack}-->
+     <state name="LineGoBack">
+      <entry brief="go_back">BSP_motors(-100,-100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
+      <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../1">
+       <tran_glyph conn="27,95,3,1,17,4,-2">
+        <action box="0,-2,16,4"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack::LineTurn}-->
+      <state name="LineTurn">
+       <entry brief="turn">BSP_motors(-100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);</entry>
+       <exit brief="go_front">BSP_motors(60,60);</exit>
+       <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack::LineTurn::TIMEOUT}-->
+       <tran trig="TIMEOUT" target="../../..">
+        <tran_glyph conn="29,107,3,3,-5">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="29,98,13,11">
+        <entry box="1,2,8,2"/>
+        <exit box="1,4,11,3"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="27,87,18,24">
+       <entry box="1,2,11,3"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="24,73,24,42">
+      <entry box="1,2,19,4"/>
      </state_glyph>
     </state>
-    <state_diagram size="30,36"/>
+    <!--${AOs::SumoHSM::SM::AutoWait}-->
+    <state name="AutoWait">
+     <!--${AOs::SumoHSM::SM::AutoWait::START_AUTO}-->
+     <tran trig="START_AUTO">
+      <!--${AOs::SumoHSM::SM::AutoWait::START_AUTO::[startegy_0]}-->
+      <choice target="../../../3">
+       <guard brief="startegy_0">me-&gt;strategy == 0</guard>
+       <choice_glyph conn="38,58,4,0,15">
+        <action box="0,3,11,6"/>
+       </choice_glyph>
+      </choice>
+      <tran_glyph conn="26,58,3,-1,12">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="26,50,20,11"/>
+    </state>
+    <state_diagram size="145,181"/>
    </statechart>
   </class>
-  <!--${AOs::Blinky_ctor}-->
-  <operation name="Blinky_ctor" type="void" visibility="0x00" properties="0x01">
+  <!--${AOs::SumoHSM_ctor}-->
+  <operation name="SumoHSM_ctor" type="void" visibility="0x00" properties="0x01">
    <documentation>The Blinky &quot;constructor&quot; is provided outside of the Blinky class, so that it can be used independently from the class. This is part of the &quot;opaque pointer&quot; design idiom.</documentation>
-   <code>Blinky *me = (Blinky *)AO_Blinky;
-QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;Blinky_initial));
-QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super, TIMEOUT_SIG, 0U);</code>
+   <code>SumoHSM *me = (SumoHSM *)AO_SumoHSM;
+QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
+QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super, TIMEOUT_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super, PLAY_BUZZER_SIG, 0U);</code>
   </operation>
  </package>
  <!--${.}-->
  <directory name=".">
-  <!--${.::blinky.c}-->
-  <file name="blinky.c">
+  <!--${.::sumo_hsm.c}-->
+  <file name="sumo_hsm.c">
    <text>#include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
 
 /* ask QM to declare the Blinky class --------------------------------------*/
-$declare${AOs::Blinky}
+$declare${AOs::SumoHSM}
 
 /* instantiate the Blinky active object ------------------------------------*/
-static Blinky l_blinky;
-QActive * const AO_Blinky = &amp;l_blinky.super;
+static SumoHSM l_sumo_hsm;
+QActive * const AO_SumoHSM = &amp;l_sumo_hsm.super;
 
 /* ask QM to define the Blinky class ---------------------------------------*/
-$define${AOs::Blinky_ctor}
-$define${AOs::Blinky}</text>
+$define${AOs::SumoHSM_ctor}
+$define${AOs::SumoHSM}
+
+#ifdef Q_SPY
+
+void sumoHSM_update_qs_dict(){
+
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvt);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.buzzerTimeEvt);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.strategy);
+
+    QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
+    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG, (void *)0);
+    QS_SIG_DICTIONARY(START_RC_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
+
+
+}
+
+#endif</text>
   </file>
   <!--${.::bsp.h}-->
   <file name="bsp.h">
@@ -109,20 +205,40 @@ $define${AOs::Blinky}</text>
 #define BSP_H
 
 /* a very simple Board Support Package (BSP) -------------------------------*/
-enum { BSP_TICKS_PER_SEC = 100 }; /* number of clock ticks in a second */
+enum { 
+    BSP_TICKS_PER_SEC = 100
+}; /* number of clock ticks in a second */
+
+#define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
+
 void BSP_init(void);
 void BSP_ledOff(void);
 void BSP_ledOn(void);
+void BSP_ledToggle(void);
+void BSP_motors(int vel_esq, int vel_dir);
+void BSP_ledStrip(int num, int stat);
+void BSP_buzzer_beep(void);
+void BSP_startRC(void);
+void BSP_startAuto(void);
 
 /* define the event signals used in the application ------------------------*/
-enum BlinkySignals {
+enum SumoHSMSignals {
     TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
-    MAX_SIG /* keep last (the number of signals) */
+    PLAY_BUZZER_SIG,
+    START_RC_SIG,
+    START_AUTO_SIG,
+    LINE_DETECTED_SIG,
+    RADIO_DATA_SIG,
+    MAX_SIG, /* keep last (the number of signals) */
 };
 
 /* active object(s) used in this application -------------------------------*/
-extern QActive * const AO_Blinky; /* opaque pointer to the Blinky AO */
-$declare${AOs::Blinky_ctor}
+extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */
+$declare${AOs::SumoHSM_ctor}
+
+#ifdef Q_SPY
+void sumoHSM_update_qs_dict(void);
+#endif
 
 #endif /* BSP_H */</text>
   </file>
@@ -135,17 +251,22 @@ Q_DEFINE_THIS_FILE
 
 /* the main function -------------------------------------------------------*/
 int main() {
-    static QEvt const *blinky_queueSto[10]; /* event queue buffer for Blinky */
+    static QEvt const *sumoHSM_queueSto[10]; /* event queue buffer for SumoHSM */
 
     QF_init();  /* initialize the framework */
     BSP_init(); /* initialize the BSP */
 
-    /* instantiate and start the Blinky active object */
-    Blinky_ctor(); /* in C you must explicitly call the Blinky constructor */
-    QACTIVE_START(AO_Blinky, /* active object to start */
+    /* instantiate and start the SumoHSM active object */
+    SumoHSM_ctor(); /* in C you must explicitly call the SumoHSM constructor */
+    
+    #ifdef Q_SPY
+    sumoHSM_update_qs_dict();
+    #endif
+
+    QACTIVE_START(AO_SumoHSM, /* active object to start */
         1U,                  /* priority of the active object */
-        blinky_queueSto,     /* event queue buffer */
-        Q_DIM(blinky_queueSto), /* the length of the buffer */
+        sumoHSM_queueSto,     /* event queue buffer */
+        Q_DIM(sumoHSM_queueSto), /* the length of the buffer */
         (void *)0, 0U,       /* private stack (not used) */
         (QEvt *)0);          /* initialization event (not used) */
 
@@ -207,54 +328,87 @@ int main() {
 #-----------------------------------------------------------------------------
 # project name
 #
-PROJECT     := blinky
+PROJECT     := sumo_hsm
 
 #-----------------------------------------------------------------------------
 # project directories
 #
 
-# location of the QP/C framework (if not provided in an environemnt var.)
-ifeq ($(QPC),)
-QPC := ../../../../..
-endif
-
-# QP port used in this project
-QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
-
-
-# list of all source directories used by this project
 VPATH = \
     . \
     $(QPC)/src/qf \
-    $(QPC)/src/qs \
-    $(QPC)/src/qk \
-    $(QP_PORT_DIR) \
     cube/Drivers/STM32G4xx_HAL_Driver/Src \
     cube/ \
-    cube/Src 
+    cube/Src
+
 
 # list of all include directories needed by this project
 INCLUDES  = \
     -I. \
-    -I$(QPC)/include \
+    -I$(QPC)/include
+
+# C source files
+C_SRCS := \
+    sumo_hsm.c \
+    main.c \
+
+ifeq (spy, $(CONF)) # SPY configuration ..................................
+
+# For POSIX hosts (Linux, MacOS), you can choose:
+# - the single-threaded QP/C port (win32-qv) or
+# - the multithreaded QP/C port (win32).
+#
+QP_PORT_DIR := $(QPC)/ports/posix-qv
+#QP_PORT_DIR := $(QPC)/ports/posix
+
+VPATH    += ./target-pc \
+            $(QPC)/src/qs \
+            $(QP_PORT_DIR)
+
+
+INCLUDES  += \
     -I$(QP_PORT_DIR) \
+    -I./target-pc
+
+QS_SRCS := \
+    qs.c \
+    qs_rx.c \
+    qs_fp.c \
+    qs_64bit.c \
+    qs_port.c
+
+C_SRCS += \
+    ./target-stm32g0/bsp.c \
+    $(QS_SRCS)
+
+LD_SCRIPT :=
+
+else # uC configuration ..................................
+
+QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
+
+# list of all source directories used by this project
+VPATH += \
+    $(QP_PORT_DIR) \
+    $(QPC)/src/qk \
+    ./target-stm32g0 \
+    cube/Drivers/STM32G4xx_HAL_Driver/Src \
+    cube/ \
+    cube/Src
+
+INCLUDES  += \
+    -I$(QP_PORT_DIR) \
+    -I./target-stm32g0 \
     -Icube/Drivers/CMSIS/Device/ST/STM32G4xx/Include \
     -Icube/Drivers/CMSIS/Include \
     -Icube/Drivers/STM32G4xx_HAL_Driver/Inc \
     -Icube/Inc
 
-#-----------------------------------------------------------------------------
-# files
-#
-
 # assembler source files
 ASM_SRCS := cube/startup_stm32g431xx.s
 
-# C source files
-C_SRCS := \
-    blinky.c \
-    bsp.c \
-    main.c \
+C_SRCS += \
+    ./target-stm32g0/bsp.c \
     cube/Src/stm32g4xx_hal_msp.c \
     cube/Src/system_stm32g4xx.c \
     cube/Src/usart.c \
@@ -277,13 +431,16 @@ C_SRCS := \
     cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma_ex.c \
     cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c \
     cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c 
+    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c
+
+    LD_SCRIPT := cube/STM32G431KBTx_FLASH.ld
+endif
 
 # C++ source files
 CPP_SRCS :=
 
 OUTPUT    := $(PROJECT)
-LD_SCRIPT := cube/STM32G431KBTx_FLASH.ld
+
 
 QP_SRCS := \
     qep_hsm.c \
@@ -298,15 +455,21 @@ QP_SRCS := \
     qf_qeq.c \
     qf_qmact.c \
     qf_time.c \
+
+ifeq (spy, $(CONF)) # SPY configuration ..................................
+QP_SRCS += \
+    qf_port.c
+
+else # uC configuration ..................................
+QP_SRCS += \
     qk.c \
     qk_port.c
 
+endif
+
+
 QP_ASMS :=
 
-QS_SRCS := \
-    qs.c \
-    qs_rx.c \
-    qs_fp.c
 
 LIB_DIRS  :=
 LIBS      :=
@@ -319,9 +482,20 @@ DEVICE         := STM32G431KB
 
 # defines
 DEFINES   := \
-    -DQP_API_VERSION=9999 \
-    -D$(DEVICE_TYPE) \
-    -DUSE_HAL_DRIVER
+    -DQP_API_VERSION=9999
+
+ifeq (spy, $(CONF)) # SPY configuration ..................................
+
+CC    := gcc
+CPP   := g++
+AS    := as
+LINK  := gcc    # for C programs
+BIN   := objcopy
+SIZE    := size
+GDB     := gdb
+HEX     := $(BIN) -O ihex
+
+else # uC configuration ..................................
 
 # ARM CPU, ARCH, FPU, and Float-ABI types...
 # ARM_CPU:   [cortex-m0 | cortex-m0plus | cortex-m1 | cortex-m3 | cortex-m4]
@@ -332,18 +506,6 @@ ARM_CPU   := -mcpu=cortex-m4
 ARM_FPU   :=
 FLOAT_ABI :=
 
-#-----------------------------------------------------------------------------
-# GNU-ARM toolset (NOTE: You need to adjust to your machine)
-# see https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
-#
-ifeq ($(ARM_GCC_PATH),)
-ARM_GCC_PATH := $(QTOOLS)/ARM_GCC_PATH-none-eabi
-endif
-
-# make sure that the GNU-ARM toolset exists...
-ifeq (&quot;$(wildcard $(ARM_GCC_PATH))&quot;,&quot;&quot;)
-$(error ARM_GCC_PATH toolset not found. Please adjust the Makefile)
-endif
 
 CC    := $(ARM_GCC_PATH)/arm-none-eabi-gcc
 CPP   := $(ARM_GCC_PATH)/arm-none-eabi-g++
@@ -354,14 +516,12 @@ SIZE    := $(ARM_GCC_PATH)/arm-none-eabi-size
 GDB     := ${ARM_GCC_PATH}/arm-none-eabi-gdb
 HEX     := $(BIN) -O ihex
 
+endif
+
 STM_PROG := /home/marco/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI
 
 
 ##############################################################################
-# Typically, you should not need to change anything below this line
-
-# basic utilities (included in Qtools for Windows), see:
-#    http://sourceforge.net/projects/qpc/files/Qtools
 
 MKDIR := mkdir
 RM    := rm
@@ -390,23 +550,27 @@ CPPFLAGS = -c $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
 
 else ifeq (spy, $(CONF))  # Spy configuration ................................
 
-BIN_DIR := spy
+BIN_DIR := build_spy
 
-C_SRCS += $(QS_SRCS)
+DEFINES += -DQ_SPY
 
-ASFLAGS = -g $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
+CFLAGS = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W -Wno-unused-result \
+    $(INCLUDES) $(DEFINES) -Wno-unused-result
 
-CFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
-    -ffunction-sections -fdata-sections \
-    -O2 $(INCLUDES) $(DEFINES) -DQ_SPY
+CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \
+    -fno-rtti -fno-exceptions \
+    $(INCLUDES) $(DEFINES)
 
-CPPFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
-    -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
-    -O2 $(INCLUDES) $(DEFINES) -DQ_SPY
+ASFLAGS :=
+LINKFLAGS := -no-pie
+LIBS += -lpthread
 
 else # default Debug configuration ..........................................
 
-BIN_DIR := dbg
+BIN_DIR := build
+
+DEFINES += -D$(DEVICE_TYPE) \
+    -DUSE_HAL_DRIVER
 
 ASFLAGS = -g $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
 
@@ -417,13 +581,13 @@ CFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
 CPPFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
     -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
     -O2 $(INCLUDES) $(DEFINES)
-
-endif # ......................................................................
-
 
 LINKFLAGS = -T$(LD_SCRIPT) $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb \
     -specs=nosys.specs -specs=nano.specs \
     -Wl,-Map,$(BIN_DIR)/$(OUTPUT).map,--cref,--gc-sections $(LIB_DIRS)
+
+endif # ......................................................................
+
 
 
 ASM_OBJS     := $(patsubst %.s,%.o,  $(notdir $(ASM_SRCS)))
@@ -433,6 +597,10 @@ CPP_OBJS     := $(patsubst %.cpp,%.o,$(notdir $(CPP_SRCS)))
 TARGET_BIN   := $(BIN_DIR)/$(OUTPUT).bin
 TARGET_ELF   := $(BIN_DIR)/$(OUTPUT).elf
 TARGET_HEX   := $(BIN_DIR)/$(OUTPUT).hex
+
+ifeq (spy, $(CONF)) # SPY configuration ..................................
+TARGET_EXE   := $(BIN_DIR)/$(OUTPUT)
+endif
 
 ASM_OBJS_EXT := $(addprefix $(BIN_DIR)/, $(ASM_OBJS))
 C_OBJS_EXT   := $(addprefix $(BIN_DIR)/, $(C_OBJS))
@@ -449,7 +617,7 @@ endif
 # rules
 #
 
-all: $(TARGET_BIN) $(TARGET_HEX)
+all: $(TARGET_BIN) $(TARGET_HEX) $(TARGET_EXE)
 #all: $(TARGET_ELF)
 
 $(TARGET_HEX): $(TARGET_ELF)
@@ -459,6 +627,11 @@ $(TARGET_HEX): $(TARGET_ELF)
 $(TARGET_BIN): $(TARGET_ELF)
     @echo &quot;Creating $@&quot;
     $(BIN) -O binary $&lt; $@
+
+$(TARGET_EXE) : $(C_OBJS_EXT) $(CPP_OBJS_EXT)
+    @echo &quot;Creating $@&quot;
+    $(CC) $(CFLAGS) $(QPC)/include/qstamp.c -o $(BIN_DIR)/qstamp.o
+    $(LINK) $(LINKFLAGS) $(LIB_DIRS) -o $@ $^ $(BIN_DIR)/qstamp.o $(LIBS)
 
 $(TARGET_ELF) : $(ASM_OBJS_EXT) $(C_OBJS_EXT) $(CPP_OBJS_EXT)
     @echo &quot;CC $@&quot;
@@ -505,8 +678,11 @@ clean:
     $(BIN_DIR)/*.d \
     $(BIN_DIR)/*.bin \
     $(BIN_DIR)/*.elf \
-    $(BIN_DIR)/*.map
-    
+    $(BIN_DIR)/*.map \
+    $(BIN_DIR)/*.hex \
+    $(TARGET_EXE)
+
+
 show:
     @echo PROJECT = $(PROJECT)
     @echo CONF = $(CONF)
@@ -521,6 +697,11 @@ show:
     @echo CPP_DEPS_EXT = $(CPP_DEPS_EXT)
     @echo TARGET_ELF = $(TARGET_ELF)
 
+prepare:
+    @echo &quot;Preparing cube files&quot;
+    $(AT)-mv -f cube/Src/main.c cube/Src/cube_main.c
+    $(AT)-rm -f cube/Makefile
+
 ###############################################################################
 ## VS Code files
 ###############################################################################
@@ -532,6 +713,17 @@ VS_C_CPP_PROPERTIES_FILE := $(VSCODE_FOLDER)/c_cpp_properties.json
 NULL  :=
 SPACE := $(NULL) #
 COMMA := ,
+
+
+ifeq (spy, $(CONF)) # SPY configuration ..................................
+INTELLI_SENSE_MODE := linux-gcc-x64
+COMPILER_PATH := /usr/bin/$(CC)
+else
+INTELLI_SENSE_MODE := linux-gcc-arm
+COMPILER_PATH := $(CC)
+endif
+
+
 
 define VS_LAUNCH
 {
@@ -567,7 +759,7 @@ define VS_CPP_PROPERTIES
 {
     &quot;configurations&quot;: [
         {
-            &quot;name&quot;: &quot;STM32_TR&quot;,
+            &quot;name&quot;: &quot;CONFIG&quot;,
             &quot;includePath&quot;: [
                 $(subst -I,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach inc,$(INCLUDES),&quot;$(inc)&quot;))))
             ],
@@ -576,10 +768,10 @@ define VS_CPP_PROPERTIES
                 $(subst -D,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach def,$(DEFINES),&quot;$(def)&quot;))))
             ],
 
-            &quot;compilerPath&quot;: &quot;${CC}&quot;,
+            &quot;compilerPath&quot;: &quot;$(COMPILER_PATH)&quot;,
             &quot;cStandard&quot;: &quot;c99&quot;,
             &quot;cppStandard&quot;: &quot;c++14&quot;,
-            &quot;intelliSenseMode&quot;: &quot;linux-gcc-arm&quot;
+            &quot;intelliSenseMode&quot;: &quot;$(INTELLI_SENSE_MODE)&quot;
         }
     ],
     &quot;version&quot;: 4

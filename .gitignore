@@ -1,7 +1,6 @@
-cube/*
-!**/*.ioc
-
 build/
+build_spy/*
+
 -g
 .jlink-flash
 .cube

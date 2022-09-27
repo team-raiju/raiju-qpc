@@ -36,6 +36,11 @@
 #include <stdio.h>  /* for printf()/fprintf() */
 #include <stdlib.h> /* for exit() */
 
+
+__weak void SystemClock_Config(void);
+
+
+
 void SysTick_Handler(void) {   /* system clock tick ISR */
 
     HAL_IncTick();
@@ -72,6 +77,39 @@ void BSP_ledOff(void) {
 }
 void BSP_ledOn(void)  { 
     HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+}
+
+void BSP_ledToggle(void)  {
+    static bool toggle = false;
+    if (toggle){
+        BSP_ledOff();
+    } else {
+        BSP_ledOn();
+    }
+    toggle = !toggle;
+
+}
+
+void BSP_motors(int vel_esq, int vel_dir) { 
+
+}
+
+void BSP_startRC(void) { 
+
+}
+
+void BSP_startAuto(void) { 
+
+}
+
+void BSP_ledStrip(int num, int stat) {
+
+}
+
+void BSP_buzzer_beep(void) {
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+    HAL_Delay(20);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
 }
 
 /* callback functions needed by the framework ------------------------------*/
