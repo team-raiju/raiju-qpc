@@ -13,7 +13,7 @@
    <!--${AOs::SumoHSM::buzzerCount}-->
    <attribute name="buzzerCount" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::SM}-->
-   <statechart properties="0x01">
+   <statechart properties="0x03">
     <!--${AOs::SumoHSM::SM::initial}-->
     <initial target="../1">
      <action>(void)par; /* unused parameter */
@@ -175,9 +175,6 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
 
 
-    QS_FUN_DICTIONARY(&amp;SumoHSM_Idle);
-    QS_FUN_DICTIONARY(&amp;SumoHSM_AutoWait);
-    QS_FUN_DICTIONARY(&amp;SumoHSM_RCWait);
 }
 
 #endif</text>

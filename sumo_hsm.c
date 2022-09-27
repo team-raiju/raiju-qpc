@@ -91,6 +91,13 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
 
     me->buzzerCount = 0U;
+
+    QS_FUN_DICTIONARY(&SumoHSM_Idle);
+    QS_FUN_DICTIONARY(&SumoHSM_RCWait);
+    QS_FUN_DICTIONARY(&SumoHSM_AutoWait);
+    QS_FUN_DICTIONARY(&SumoHSM_LineGoBack);
+    QS_FUN_DICTIONARY(&SumoHSM_LineTurn);
+
     return Q_TRAN(&SumoHSM_Idle);
 }
 
@@ -267,9 +274,6 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
 
 
-    QS_FUN_DICTIONARY(&SumoHSM_Idle);
-    QS_FUN_DICTIONARY(&SumoHSM_AutoWait);
-    QS_FUN_DICTIONARY(&SumoHSM_RCWait);
 }
 
 #endif
