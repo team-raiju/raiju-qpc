@@ -51,6 +51,7 @@ void BSP_startAuto(void);
 /* define the event signals used in the application ------------------------*/
 enum SumoHSMSignals {
     TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
+    TIMEOUT_2_SIG,
     PLAY_BUZZER_SIG,
     START_RC_SIG,
     START_AUTO_SIG,

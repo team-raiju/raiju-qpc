@@ -14,6 +14,8 @@
    <attribute name="buzzerCount" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::strategy}-->
    <attribute name="strategy" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::timeEvt_2}-->
+   <attribute name="timeEvt_2" type="QTimeEvt" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::SM}-->
    <statechart properties="0x03">
     <!--${AOs::SumoHSM::SM::initial}-->
@@ -94,42 +96,12 @@ me-&gt;buzzerCount += 1;</action>
     <state name="StarStrategy">
      <entry>BSP_motors(60,60);</entry>
      <!--${AOs::SumoHSM::SM::StarStrategy::LINE_DETECTED}-->
-     <tran trig="LINE_DETECTED" target="../1">
-      <tran_glyph conn="24,84,3,1,23,6,-2">
+     <tran trig="LINE_DETECTED" target="../../6">
+      <tran_glyph conn="24,84,3,3,-1,27,16">
        <action box="0,-2,15,3"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack}-->
-     <state name="LineGoBack">
-      <entry brief="go_back">BSP_motors(-100,-100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
-      <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../1">
-       <tran_glyph conn="27,95,3,1,17,4,-2">
-        <action box="0,-2,16,4"/>
-       </tran_glyph>
-      </tran>
-      <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack::LineTurn}-->
-      <state name="LineTurn">
-       <entry brief="turn">BSP_motors(-100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);</entry>
-       <exit brief="go_front">BSP_motors(60,60);</exit>
-       <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack::LineTurn::TIMEOUT}-->
-       <tran trig="TIMEOUT" target="../../..">
-        <tran_glyph conn="29,107,3,3,-5">
-         <action box="0,-2,10,2"/>
-        </tran_glyph>
-       </tran>
-       <state_glyph node="29,98,13,11">
-        <entry box="1,2,8,2"/>
-        <exit box="1,4,11,3"/>
-       </state_glyph>
-      </state>
-      <state_glyph node="27,87,18,24">
-       <entry box="1,2,11,3"/>
-      </state_glyph>
-     </state>
-     <state_glyph node="24,73,24,42">
+     <state_glyph node="24,73,24,19">
       <entry box="1,2,19,4"/>
      </state_glyph>
     </state>
@@ -141,7 +113,14 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);</entry>
       <choice target="../../../3">
        <guard brief="startegy_0">me-&gt;strategy == 0</guard>
        <choice_glyph conn="38,58,4,0,15">
-        <action box="0,3,11,6"/>
+        <action box="-10,3,9,4"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::AutoWait::START_AUTO::[strategy_1]}-->
+      <choice target="../../../5">
+       <guard brief="strategy_1">me-&gt;strategy == 1</guard>
+       <choice_glyph conn="38,58,5,0,29,16">
+        <action box="18,2,11,3"/>
        </choice_glyph>
       </choice>
       <tran_glyph conn="26,58,3,-1,12">
@@ -149,6 +128,81 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);</entry>
       </tran_glyph>
      </tran>
      <state_glyph node="26,50,20,11"/>
+    </state>
+    <!--${AOs::SumoHSM::SM::StepsStrategy}-->
+    <state name="StepsStrategy">
+     <entry brief="arm_timer">QTimeEvt_armX(&amp;me-&gt;timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);</entry>
+     <exit brief="disarm_timer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::LINE_DETECTED}-->
+     <tran trig="LINE_DETECTED" target="../../6">
+      <tran_glyph conn="57,89,3,0,-3,18">
+       <action box="0,-1,14,3"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT}-->
+     <tran trig="TIMEOUT">
+      <action>BSP_motors(100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 100, 0);</action>
+      <tran_glyph conn="57,84,3,-1,8">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT_2}-->
+     <tran trig="TIMEOUT_2">
+      <action>BSP_motors(0,0);</action>
+      <tran_glyph conn="57,87,3,-1,11">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="57,74,24,18">
+      <entry box="1,2,19,4"/>
+      <exit box="1,6,19,2"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::SumoHSM::SM::LineGoBack}-->
+    <state name="LineGoBack">
+     <entry brief="go_back">BSP_motors(-100,-100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
+     <!--${AOs::SumoHSM::SM::LineGoBack::TIMEOUT}-->
+     <tran trig="TIMEOUT" target="../1">
+      <tran_glyph conn="39,115,3,0,8,3">
+       <action box="0,-3,16,4"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn}-->
+     <state name="LineTurn">
+      <entry brief="turn">BSP_motors(-100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);</entry>
+      <exit>BSP_motors(0,0);</exit>
+      <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT}-->
+      <tran trig="TIMEOUT">
+       <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT::[strategy_0]}-->
+       <choice target="../../../../3">
+        <guard brief="strategy_0">me-&gt;strategy == 0</guard>
+        <choice_glyph conn="60,105,5,2,-25,-13">
+         <action box="-25,-7,11,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT::[strategy_1]}-->
+       <choice target="../../../../5">
+        <guard brief="strategy_1">me-&gt;strategy == 1</guard>
+        <choice_glyph conn="60,105,5,2,10,-13">
+         <action box="1,-5,10,3"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="41,127,3,-1,19,-22">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="41,118,13,11">
+       <entry box="1,2,8,2"/>
+       <exit box="1,4,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="39,107,18,24">
+      <entry box="1,2,11,3"/>
+     </state_glyph>
     </state>
     <state_diagram size="145,181"/>
    </statechart>
@@ -159,7 +213,9 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);</entry>
    <code>SumoHSM *me = (SumoHSM *)AO_SumoHSM;
 QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super, TIMEOUT_SIG, 0U);
-QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super, PLAY_BUZZER_SIG, 0U);</code>
+QTimeEvt_ctorX(&amp;me-&gt;timeEvt_2, &amp;me-&gt;super, TIMEOUT_2_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super, PLAY_BUZZER_SIG, 0U);
+me-&gt;strategy = 0;</code>
   </operation>
  </package>
  <!--${.}-->
@@ -260,6 +316,7 @@ void BSP_startAuto(void);
 /* define the event signals used in the application ------------------------*/
 enum SumoHSMSignals {
     TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
+    TIMEOUT_2_SIG,
     PLAY_BUZZER_SIG,
     START_RC_SIG,
     START_AUTO_SIG,

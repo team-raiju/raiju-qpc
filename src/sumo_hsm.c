@@ -44,6 +44,7 @@ typedef struct {
     QTimeEvt buzzerTimeEvt;
     uint8_t buzzerCount;
     uint8_t strategy;
+    QTimeEvt timeEvt_2;
 } SumoHSM;
 
 /* protected: */
@@ -51,9 +52,10 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par);
 static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_LineGoBack(SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_LineTurn(SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e);
 /*$enddecl${AOs::SumoHSM} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 /* instantiate the Blinky active object ------------------------------------*/
@@ -75,7 +77,9 @@ void SumoHSM_ctor(void) {
     SumoHSM *me = (SumoHSM *)AO_SumoHSM;
     QActive_ctor(&me->super, Q_STATE_CAST(&SumoHSM_initial));
     QTimeEvt_ctorX(&me->timeEvt, &me->super, TIMEOUT_SIG, 0U);
+    QTimeEvt_ctorX(&me->timeEvt_2, &me->super, TIMEOUT_2_SIG, 0U);
     QTimeEvt_ctorX(&me->buzzerTimeEvt, &me->super, PLAY_BUZZER_SIG, 0U);
+    me->strategy = 0;
 }
 /*$enddef${AOs::SumoHSM_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 /*$define${AOs::SumoHSM} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
@@ -97,9 +101,10 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_Idle);
     QS_FUN_DICTIONARY(&SumoHSM_RCWait);
     QS_FUN_DICTIONARY(&SumoHSM_StarStrategy);
+    QS_FUN_DICTIONARY(&SumoHSM_AutoWait);
+    QS_FUN_DICTIONARY(&SumoHSM_StepsStrategy);
     QS_FUN_DICTIONARY(&SumoHSM_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineTurn);
-    QS_FUN_DICTIONARY(&SumoHSM_AutoWait);
 
     return Q_TRAN(&SumoHSM_Idle);
 }
@@ -208,60 +213,6 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::StarStrategy::LineGoBack} ............................*/
-static QState SumoHSM_LineGoBack(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::StarStrategy::LineGoBack} */
-        case Q_ENTRY_SIG: {
-            BSP_motors(-100,-100);
-            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);
-            status_ = Q_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::StarStrategy::LineGoBack::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            status_ = Q_TRAN(&SumoHSM_LineTurn);
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&SumoHSM_StarStrategy);
-            break;
-        }
-    }
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::StarStrategy::LineGoBack::LineTurn} ..................*/
-static QState SumoHSM_LineTurn(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::StarStrategy::LineGoBack::LineTurn} */
-        case Q_ENTRY_SIG: {
-            BSP_motors(-100,100);
-            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);
-            status_ = Q_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::StarStrategy::LineGoBack::LineTurn} */
-        case Q_EXIT_SIG: {
-            BSP_motors(60,60);
-            status_ = Q_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::StarStrategy::LineGoBack::LineTurn::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            status_ = Q_TRAN(&SumoHSM_StarStrategy);
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&SumoHSM_LineGoBack);
-            break;
-        }
-    }
-    return status_;
-}
-
 /*${AOs::SumoHSM::SM::AutoWait} ............................................*/
 static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
     QState status_;
@@ -272,6 +223,10 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             if (me->strategy == 0) {
                 status_ = Q_TRAN(&SumoHSM_StarStrategy);
             }
+            /*${AOs::SumoHSM::SM::AutoWait::START_AUTO::[strategy_1]} */
+            else if (me->strategy == 1) {
+                status_ = Q_TRAN(&SumoHSM_StepsStrategy);
+            }
             else {
                 status_ = Q_UNHANDLED();
             }
@@ -279,6 +234,113 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         }
         default: {
             status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::StepsStrategy} .......................................*/
+static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::StepsStrategy} */
+        case Q_ENTRY_SIG: {
+            QTimeEvt_armX(&me->timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StepsStrategy} */
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->timeEvt);
+            QTimeEvt_disarm(&me->timeEvt_2);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StepsStrategy::LINE_DETECTED} */
+        case LINE_DETECTED_SIG: {
+            status_ = Q_TRAN(&SumoHSM_LineGoBack);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            BSP_motors(100,100);
+            QTimeEvt_armX(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 100, 0);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT_2} */
+        case TIMEOUT_2_SIG: {
+            BSP_motors(0,0);
+            status_ = Q_HANDLED();
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::LineGoBack} ..........................................*/
+static QState SumoHSM_LineGoBack(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::LineGoBack} */
+        case Q_ENTRY_SIG: {
+            BSP_motors(-100,-100);
+            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::LineGoBack::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            status_ = Q_TRAN(&SumoHSM_LineTurn);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::LineGoBack::LineTurn} ................................*/
+static QState SumoHSM_LineTurn(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::LineGoBack::LineTurn} */
+        case Q_ENTRY_SIG: {
+            BSP_motors(-100,100);
+            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::LineGoBack::LineTurn} */
+        case Q_EXIT_SIG: {
+            BSP_motors(0,0);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            /*${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT::[strategy_0]} */
+            if (me->strategy == 0) {
+                status_ = Q_TRAN(&SumoHSM_StarStrategy);
+            }
+            /*${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT::[strategy_1]} */
+            else if (me->strategy == 1) {
+                status_ = Q_TRAN(&SumoHSM_StepsStrategy);
+            }
+            else {
+                status_ = Q_UNHANDLED();
+            }
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&SumoHSM_LineGoBack);
             break;
         }
     }
