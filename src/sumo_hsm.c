@@ -290,7 +290,7 @@ static QState SumoHSM_LineGoBack(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::LineGoBack} */
         case Q_ENTRY_SIG: {
             BSP_motors(-100,-100);
-            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);
+            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
             status_ = Q_HANDLED();
             break;
         }
@@ -314,7 +314,7 @@ static QState SumoHSM_LineTurn(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::LineGoBack::LineTurn} */
         case Q_ENTRY_SIG: {
             BSP_motors(-100,100);
-            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);
+            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);
             status_ = Q_HANDLED();
             break;
         }

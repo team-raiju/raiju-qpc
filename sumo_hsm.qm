@@ -163,7 +163,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 100, 0);</action>
     <!--${AOs::SumoHSM::SM::LineGoBack}-->
     <state name="LineGoBack">
      <entry brief="go_back">BSP_motors(-100,-100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
      <!--${AOs::SumoHSM::SM::LineGoBack::TIMEOUT}-->
      <tran trig="TIMEOUT" target="../1">
       <tran_glyph conn="39,115,3,0,8,3">
@@ -173,7 +173,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
      <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn}-->
      <state name="LineTurn">
       <entry brief="turn">BSP_motors(-100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
       <exit>BSP_motors(0,0);</exit>
       <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT}-->
       <tran trig="TIMEOUT">

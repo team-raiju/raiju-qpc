@@ -1937,9 +1937,10 @@ def QS_USER_00(packet):
         else:
             QView.canvas.itemconfig(canvas_img, image=led_off_img)
     elif (log == 2):
+        data = qunpack("xxTxbxbxb", packet)    
         mot_esq = data[2]
-    elif (log == 3):
-        mot_dir = data[2]
+        mot_dir = data[3]
+        QView.print_text("MOT_ESQ = %d; MOT_DIR = %d"%(mot_esq, mot_dir))    
 
 def custom_action_on_poll():
     global action_counter
