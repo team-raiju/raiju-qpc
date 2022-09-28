@@ -53,31 +53,36 @@
 #
 PROJECT     := sumo_hsm
 
-#-----------------------------------------------------------------------------
-# project directories
-#
+OUTPUT    := $(PROJECT)
 
-VPATH = \
-	. \
-	./src \
-	$(QPC)/src/qf \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src \
-	cube/ \
-	cube/Src
+# C source files plataform-independent
+C_SRCS := $(sort $(shell find ./src -name "*.c" -not -path "./src/target*"))
 
+# List of all include directories needed by this project plataform-independent
+C_HEADERS  = $(sort $(shell find ./inc -name "*.h" -not -path "./inc/target*"))
 
-# list of all include directories needed by this project
-INCLUDES  = \
-	-I. \
-	-I./inc \
-	-I$(QPC)/include
+INCLUDES  := $(addprefix -I, $(sort $(dir $(C_HEADERS))))
+INCLUDES += -I$(QPC)/include
 
-# C source files
-C_SRCS := \
-	./src/sumo_hsm.c \
-	./src/main.c \
+# C++ source files
+CPP_SRCS :=
+
+QP_SRCS := \
+	$(QPC)/src/qf/qep_hsm.c \
+	$(QPC)/src/qf/qep_msm.c \
+	$(QPC)/src/qf/qf_act.c \
+	$(QPC)/src/qf/qf_actq.c \
+	$(QPC)/src/qf/qf_defer.c \
+	$(QPC)/src/qf/qf_dyn.c \
+	$(QPC)/src/qf/qf_mem.c \
+	$(QPC)/src/qf/qf_ps.c \
+	$(QPC)/src/qf/qf_qact.c \
+	$(QPC)/src/qf/qf_qeq.c \
+	$(QPC)/src/qf/qf_qmact.c \
+	$(QPC)/src/qf/qf_time.c \
 
 ifeq (spy, $(CONF)) # SPY configuration ..................................
+
 
 # For POSIX hosts (Linux, MacOS), you can choose:
 # - the single-threaded QP/C port (win32-qv) or
@@ -86,119 +91,58 @@ ifeq (spy, $(CONF)) # SPY configuration ..................................
 QP_PORT_DIR := $(QPC)/ports/posix-qv
 #QP_PORT_DIR := $(QPC)/ports/posix
 
-VPATH    += ./src/target-pc \
-	        $(QPC)/src/qs \
-	        $(QP_PORT_DIR)
 
+C_HEADERS_TARGET  = $(sort $(shell find ./inc/target-pc -name "*.h"))
 
-INCLUDES  += \
-	-I$(QP_PORT_DIR) \
-	-I./inc/target-pc
+INCLUDES  += $(addprefix -I, $(sort $(dir $(C_HEADERS_TARGET))))
+INCLUDES  += -I$(QP_PORT_DIR) 
 
 QS_SRCS := \
-	qs.c \
-	qs_rx.c \
-	qs_fp.c \
-	qs_64bit.c \
-	qs_port.c
+	$(QPC)/src/qs/qs.c \
+	$(QPC)/src/qs/qs_rx.c \
+	$(QPC)/src/qs/qs_fp.c \
+	$(QPC)/src/qs/qs_64bit.c \
+	$(QP_PORT_DIR)/qs_port.c
 
-C_SRCS += \
-	./src/target-stm32g0/bsp.c \
-	$(QS_SRCS)
+C_SRCS += $(sort $(shell find ./src/target-pc -name "*.c"))
+C_SRCS += $(QS_SRCS)
 
 LD_SCRIPT :=
+
+QP_SRCS += \
+	$(QP_PORT_DIR)/qf_port.c
 
 else # uC configuration ..................................
 
 QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
 
 # list of all source directories used by this project
-VPATH += \
-	$(QP_PORT_DIR) \
-	$(QPC)/src/qk \
-	./src/target-stm32g0 \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src \
-	cube/ \
-	cube/Src
 
-INCLUDES  += \
-	-I$(QP_PORT_DIR) \
-	-I./inc/target-stm32g0 \
-	-Icube/Drivers/CMSIS/Device/ST/STM32G4xx/Include \
-	-Icube/Drivers/CMSIS/Include \
-	-Icube/Drivers/STM32G4xx_HAL_Driver/Inc \
-	-Icube/Inc
+C_HEADERS_TARGET  = $(sort $(shell find ./inc/target-stm32g0 -name "*.h"))	
+C_HEADERS_TARGET  += $(sort $(shell find ./cube -name "*.h"))	
+
+INCLUDES  += $(addprefix -I, $(sort $(dir $(C_HEADERS_TARGET))))
+INCLUDES  += -I$(QP_PORT_DIR) 
 
 # assembler source files
-ASM_SRCS := cube/startup_stm32g431xx.s
+ASM_SRCS := $(shell find ./cube/ -name "*.s")
 
-C_SRCS += \
-	./src/target-stm32g0/bsp.c \
-	cube/Src/stm32g4xx_hal_msp.c \
-	cube/Src/system_stm32g4xx.c \
-	cube/Src/usart.c \
-	cube/Src/stm32g4xx_it.c \
-	cube/Src/cube_main.c \
-	cube/Src/gpio.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ex.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_cortex.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_exti.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim_ex.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc_ex.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr_ex.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma_ex.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.c \
-	cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c
+C_SRCS += $(sort $(shell find ./src/target-stm32g0 -name "*.c"))
+C_SRCS += $(sort $(shell find ./cube -name "*.c"))
 
-	LD_SCRIPT := cube/STM32G431KBTx_FLASH.ld
-endif
+LD_SCRIPT := cube/STM32G431KBTx_FLASH.ld
 
-# C++ source files
-CPP_SRCS :=
-
-OUTPUT    := $(PROJECT)
-
-
-QP_SRCS := \
-	qep_hsm.c \
-	qep_msm.c \
-	qf_act.c \
-	qf_actq.c \
-	qf_defer.c \
-	qf_dyn.c \
-	qf_mem.c \
-	qf_ps.c \
-	qf_qact.c \
-	qf_qeq.c \
-	qf_qmact.c \
-	qf_time.c \
-
-ifeq (spy, $(CONF)) # SPY configuration ..................................
 QP_SRCS += \
-	qf_port.c
-
-else # uC configuration ..................................
-QP_SRCS += \
-	qk.c \
-	qk_port.c
+	$(QPC)/src/qk/qk.c \
+	$(QP_PORT_DIR)/qk_port.c
 
 endif
 
 
 QP_ASMS :=
 
-
 LIB_DIRS  :=
 LIBS      :=
-
 
 DEVICE_FAMILY  := STM32G4xx
 DEVICE_TYPE    := STM32G431xx
@@ -258,6 +202,10 @@ RM    := rm
 # combine all the soruces...
 C_SRCS += $(QP_SRCS)
 ASM_SRCS += $(QP_ASMS)
+
+# Specify Search directories
+VPATH = $(sort $(dir $(C_SRCS)))
+VPATH += $(sort $(dir $(ASM_SRCS)))
 
 ifeq (rel, $(CONF)) # Release configuration ..................................
 
@@ -372,15 +320,15 @@ $(BIN_DIR)/%.d : %.cpp
 	@echo "DPP $<"
 	$(CPP) -MM -MT $(@:.d=.o) $(CPPFLAGS) $< > $@
 
-$(BIN_DIR)/%.o : %.s
+$(BIN_DIR)/%.o : %.s Makefile
 	@echo "AS $<"
 	$(AS) $(ASFLAGS) $< -o $@
 
-$(BIN_DIR)/%.o : %.c
+$(BIN_DIR)/%.o : %.c Makefile
 	@echo "CC $<"
 	$(CC) $(CFLAGS) $< -o $@
 
-$(BIN_DIR)/%.o : %.cpp
+$(BIN_DIR)/%.o : %.cpp Makefile
 	@echo "CPP $<"
 	$(CPP) $(CPPFLAGS) $< -o $@
 
@@ -410,17 +358,33 @@ clean:
 
 show:
 	@echo PROJECT = $(PROJECT)
+	@echo ""
 	@echo CONF = $(CONF)
+	@echo ""
 	@echo DEFINES = $(DEFINES)
+	@echo ""
 	@echo ASM_FPU = $(ASM_FPU)
+	@echo ""
 	@echo ASM_SRCS = $(ASM_SRCS)
+	@echo ""
 	@echo C_SRCS = $(C_SRCS)
+	@echo ""
 	@echo CPP_SRCS = $(CPP_SRCS)
+	@echo ""
 	@echo ASM_OBJS_EXT = $(ASM_OBJS_EXT)
+	@echo ""
 	@echo C_OBJS_EXT = $(C_OBJS_EXT)
+	@echo ""
 	@echo C_DEPS_EXT = $(C_DEPS_EXT)
+	@echo ""
 	@echo CPP_DEPS_EXT = $(CPP_DEPS_EXT)
+	@echo ""
 	@echo TARGET_ELF = $(TARGET_ELF)
+	@echo ""
+	@echo INCLUDES = $(INCLUDES)
+	@echo ""
+	@echo VPATH = $(VPATH)
+
 
 prepare:
 	@echo "Preparing cube files"
