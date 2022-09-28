@@ -622,6 +622,14 @@ class QView:
     def _start_auto(*args):
         command(1, 0)
     
+    @staticmethod
+    def _start_rc(*args):
+        command(2, 0)
+
+    @staticmethod
+    def _change_strategy(strategy):
+        command(3, strategy)
+    
 
     @staticmethod
     def _onAbout(*args):
@@ -1893,7 +1901,7 @@ def custom_qview():
 
     angle = 0
     robot_pos_x = 300
-    robot_pos_y = 300
+    robot_pos_y = 200
 
     arena_png = PhotoImage(file=HOME_DIR + "/img/arena.png")
     led_on_img = PhotoImage(file=HOME_DIR + "/img/led_on.png").subsample(3,3)
@@ -1903,6 +1911,22 @@ def custom_qview():
     arena_canvas = QView.canvas.create_image(300,  300, image=arena_png)
     canvas_img = QView.canvas.create_image(50,  30, image=led_on_img)
     sumo_canvas = QView.canvas.create_image(robot_pos_x,  robot_pos_y, image=sumo_png)
+
+    # Buttons
+    global num_0_img
+    global num_1_img
+    global num_0_canvas
+    global num_1_canvas
+
+    num_0_img = PhotoImage(file=HOME_DIR + "/img/num0.png")
+    num_1_img = PhotoImage(file=HOME_DIR + "/img/num1.png")
+
+    num_0_canvas = QView.canvas.create_image(50, 550, image=num_0_img)
+    QView.canvas.tag_bind(num_0_canvas, "<ButtonPress>",  lambda strategy: QView._change_strategy(0))
+
+    num_1_canvas = QView.canvas.create_image(100, 550, image=num_1_img)
+    QView.canvas.tag_bind(num_1_canvas, "<ButtonPress>", lambda strategy: QView._change_strategy(1))
+
 
 
 
