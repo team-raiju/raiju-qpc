@@ -627,8 +627,12 @@ class QView:
         command(2, 0)
 
     @staticmethod
+    def _start_calib(*args):
+        command(3, 0)
+
+    @staticmethod
     def _change_strategy(strategy):
-        command(3, strategy)
+        command(4, strategy)
     
 
     @staticmethod
@@ -1914,18 +1918,37 @@ def custom_qview():
 
     # Buttons
     global num_0_img
-    global num_1_img
     global num_0_canvas
+    global num_1_img
     global num_1_canvas
+    global rc_img
+    global rc_canvas
+    global auto_img
+    global auto_canvas
+    global calib_img
+    global calib_canvas
+
 
     num_0_img = PhotoImage(file=HOME_DIR + "/img/num0.png")
     num_1_img = PhotoImage(file=HOME_DIR + "/img/num1.png")
+    rc_img = PhotoImage(file=HOME_DIR + "/img/button_rc.png")
+    auto_img = PhotoImage(file=HOME_DIR + "/img/button_auto.png")
+    calib_img = PhotoImage(file=HOME_DIR + "/img/button_calib.png")
 
-    num_0_canvas = QView.canvas.create_image(50, 550, image=num_0_img)
+    num_0_canvas = QView.canvas.create_image(50, 570, image=num_0_img)
     QView.canvas.tag_bind(num_0_canvas, "<ButtonPress>",  lambda strategy: QView._change_strategy(0))
 
-    num_1_canvas = QView.canvas.create_image(100, 550, image=num_1_img)
+    num_1_canvas = QView.canvas.create_image(100, 570, image=num_1_img)
     QView.canvas.tag_bind(num_1_canvas, "<ButtonPress>", lambda strategy: QView._change_strategy(1))
+
+    rc_canvas = QView.canvas.create_image(350, 570, image=rc_img)
+    QView.canvas.tag_bind(rc_canvas, "<ButtonPress>", QView._start_rc)
+
+    auto_canvas = QView.canvas.create_image(450, 570, image=auto_img)
+    QView.canvas.tag_bind(auto_canvas, "<ButtonPress>", QView._start_auto)
+
+    calib_canvas = QView.canvas.create_image(550, 570, image=calib_img)
+    QView.canvas.tag_bind(calib_canvas, "<ButtonPress>", QView._start_calib)
 
 
 

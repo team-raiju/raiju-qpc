@@ -194,6 +194,11 @@ void QS_onCommand(uint8_t cmdId,
         }
 
         case 3: { 
+            printf("Start Calib\r\n");
+            break;
+        }
+
+        case 4: { 
 
             SumoHSM *me = (SumoHSM *)AO_SumoHSM;
             me->strategy = param1;
