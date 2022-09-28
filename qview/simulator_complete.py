@@ -619,20 +619,20 @@ class QView:
                         new=2)
     
     @staticmethod
+    def _start_rc(*args):
+        command(0, 0)
+
+    @staticmethod
     def _start_auto(*args):
         command(1, 0)
     
     @staticmethod
-    def _start_rc(*args):
+    def _start_calib(*args):
         command(2, 0)
 
     @staticmethod
-    def _start_calib(*args):
-        command(3, 0)
-
-    @staticmethod
     def _change_strategy(strategy):
-        command(4, strategy)
+        command(3, strategy)
     
 
     @staticmethod
@@ -1958,7 +1958,7 @@ def on_reset():
     return
 
 def line_command():
-        command(2, 0)
+        command(4, 0)
 
 
 # on_run() callback

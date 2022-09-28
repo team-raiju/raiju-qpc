@@ -188,23 +188,25 @@ void QS_onCommand(uint8_t cmdId,
         }
 
         case 2: { 
-            QEvt evt = {.sig = LINE_DETECTED_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
-            break;
-        }
-
-        case 3: { 
             printf("Start Calib\r\n");
             break;
         }
 
-        case 4: { 
+        case 3: { 
 
             SumoHSM *me = (SumoHSM *)AO_SumoHSM;
             me->strategy = param1;
             printf("Strategy = %d\r\n", param1);
             break;
         }
+
+        case 4: { 
+            QEvt evt = {.sig = LINE_DETECTED_SIG};
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            break;
+        }
+
+
 
        default:
            break;
