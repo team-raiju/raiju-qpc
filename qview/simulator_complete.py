@@ -1960,6 +1960,9 @@ def on_reset():
 def line_command():
         command(4, 0)
 
+def sensor_command(sensor):
+        command(5, sensor)
+
 
 # on_run() callback
 def on_run():
@@ -2018,10 +2021,15 @@ def custom_action_on_poll():
         QView.canvas.itemconfig(sumo_canvas, image=tk_sumo_rotated)
         QView.canvas.move(sumo_canvas, vel_x, vel_y)
 
+        # Check if it is on line
         if (is_over_circle(robot_pos_x, robot_pos_y)):
             line_command()
 
-
+        # Check mouse:
+        sensor_active = is_mouse_direction(robot_pos_x, robot_pos_y, angle)
+        if (sensor_active != 0):
+            sensor_command(sensor_active)
+        
 
         
 def is_over_circle(posx, posy):
@@ -2029,6 +2037,40 @@ def is_over_circle(posx, posy):
         return True
     else:
         return False
+
+def is_mouse_direction(posx, posy, robot_angle):
+    mouse_pos_x_abs = QView.canvas.winfo_pointerx() - QView.canvas.winfo_rootx()
+    mouse_pos_y_abs = QView.canvas.winfo_pointery() - QView.canvas.winfo_rooty()
+
+    mouse_pos_x_rel = mouse_pos_x_abs - posx
+    mouse_pos_y_rel = mouse_pos_y_abs - posy
+
+    mouse_angle_rel = math.degrees(math.atan2(mouse_pos_x_rel, mouse_pos_y_rel))
+    mouse_robot_distance = math.sqrt(mouse_pos_x_rel ** 2 + mouse_pos_y_rel ** 2)
+
+    # Limit robot angle range
+    robot_angle %= 360
+    if (robot_angle > 180):
+        robot_angle -= 360
+    elif (robot_angle < -180):
+        robot_angle += 360
+    
+    anglediff = mouse_angle_rel - robot_angle
+
+    if (mouse_robot_distance < 150):
+        if (anglediff > -10 and anglediff < 10):
+            return 3
+        elif (anglediff > 25 and anglediff < 45):
+            return 4
+        elif (anglediff > 50 and anglediff < 70):
+            return 5
+        elif (anglediff > -45 and anglediff < -25):
+            return 2
+        elif (anglediff > -70 and anglediff < -50):
+            return 1
+    
+    return 0
+
 
 
 def main():
