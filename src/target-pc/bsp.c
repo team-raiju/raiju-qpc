@@ -45,6 +45,8 @@ static QSpyId const l_clock_tick = { QS_AP_ID };
 
 #endif
 
+int sensor_active = 0;
+
 void BSP_init(void)   {
     printf("SumoHSM example\n"
            "QP/C version: %s\n"
@@ -138,6 +140,13 @@ void BSP_buzzer_beep(void) {
 
 }
 
+int BSP_Check_Dist(void) {
+
+    return sensor_active;
+
+}
+
+
 /* callback functions needed by the framework ------------------------------*/
 void QF_onStartup(void) {
     QF_setTickRate(BSP_TICKS_PER_SEC, 50); /* desired tick rate/ticker-prio */
@@ -203,6 +212,14 @@ void QS_onCommand(uint8_t cmdId,
         case 4: { 
             QEvt evt = {.sig = LINE_DETECTED_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            break;
+        }
+
+        case 5: { 
+            sensor_active = param1;
+            QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            printf("Sensor Seeing = %d\r\n", param1);
             break;
         }
 

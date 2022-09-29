@@ -47,6 +47,7 @@ void BSP_ledStrip(int num, int stat);
 void BSP_buzzer_beep(void);
 void BSP_startRC(void);
 void BSP_startAuto(void);
+int BSP_Check_Dist(void);
 
 /* define the event signals used in the application ------------------------*/
 enum SumoHSMSignals {
@@ -55,7 +56,10 @@ enum SumoHSMSignals {
     PLAY_BUZZER_SIG,
     START_RC_SIG,
     START_AUTO_SIG,
+    GO_TO_IDLE_SIG,
+    STOP_AUTO_SIG,
     LINE_DETECTED_SIG,
+    DIST_SENSOR_CHANGE_SIG,
     RADIO_DATA_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };

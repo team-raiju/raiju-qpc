@@ -182,6 +182,11 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
+        /*${AOs::SumoHSM::SM::RCWait::GO_TO_IDLE} */
+        case GO_TO_IDLE_SIG: {
+            status_ = Q_TRAN(&SumoHSM_Idle);
+            break;
+        }
         default: {
             status_ = Q_SUPER(&QHsm_top);
             break;
@@ -203,6 +208,11 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::StarStrategy::LINE_DETECTED} */
         case LINE_DETECTED_SIG: {
             status_ = Q_TRAN(&SumoHSM_LineGoBack);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StarStrategy::STOP_AUTO} */
+        case STOP_AUTO_SIG: {
+            status_ = Q_TRAN(&SumoHSM_AutoWait);
             break;
         }
         default: {
@@ -272,6 +282,42 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT_2} */
         case TIMEOUT_2_SIG: {
             BSP_motors(0,0);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StepsStrategy::STOP_AUTO} */
+        case STOP_AUTO_SIG: {
+            status_ = Q_TRAN(&SumoHSM_AutoWait);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StepsStrategy::DIST_SENSOR_CHANGE} */
+        case DIST_SENSOR_CHANGE_SIG: {
+            int sensors_on = BSP_Check_Dist();
+            QTimeEvt_disarm(&me->timeEvt);
+            QTimeEvt_disarm(&me->timeEvt_2);
+
+            switch(sensors_on){
+                case 0:
+                    BSP_motors(0,0);
+                    QTimeEvt_armX(&me->timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
+                    break;
+                case 1:
+                    BSP_motors(-80,80);
+                    break;
+                case 2:
+                    BSP_motors(0,80);
+                    break;
+                case 3:
+                    BSP_motors(100,100);
+                    break;
+                case 4:
+                    BSP_motors(80,0);
+                    break;
+                case 5:
+                    BSP_motors(80,-80);
+                    break;
+            }
+
             status_ = Q_HANDLED();
             break;
         }
@@ -354,13 +400,20 @@ void sumoHSM_update_qs_dict(){
 
     QS_OBJ_DICTIONARY(&l_sumo_hsm);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvt);
+    QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvt_2);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.buzzerTimeEvt);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.strategy);
 
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
-    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG, (void *)0);
-    QS_SIG_DICTIONARY(START_RC_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
+    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(START_RC_SIG,  (void *)0);
     QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(GO_TO_IDLE_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(STOP_AUTO_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(LINE_DETECTED_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
 
 
 }

@@ -48,7 +48,7 @@ QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      <!--${AOs::SumoHSM::SM::Idle::START_RC}-->
      <tran trig="START_RC" target="../../2">
       <tran_glyph conn="85,40,1,0,34,10">
-       <action box="0,-2,10,2"/>
+       <action box="1,-2,10,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::START_AUTO}-->
@@ -88,6 +88,12 @@ me-&gt;buzzerCount += 1;</action>
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
+     <!--${AOs::SumoHSM::SM::RCWait::GO_TO_IDLE}-->
+     <tran trig="GO_TO_IDLE" target="../../1">
+      <tran_glyph conn="123,50,0,1,-14,-38">
+       <action box="-37,-17,10,2"/>
+      </tran_glyph>
+     </tran>
      <state_glyph node="107,50,20,15">
       <entry box="1,2,12,4"/>
      </state_glyph>
@@ -97,11 +103,17 @@ me-&gt;buzzerCount += 1;</action>
      <entry>BSP_motors(60,60);</entry>
      <!--${AOs::SumoHSM::SM::StarStrategy::LINE_DETECTED}-->
      <tran trig="LINE_DETECTED" target="../../6">
-      <tran_glyph conn="24,84,3,3,-1,27,16">
+      <tran_glyph conn="24,80,3,3,-1,31,16">
        <action box="0,-2,15,3"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="24,73,24,19">
+     <!--${AOs::SumoHSM::SM::StarStrategy::STOP_AUTO}-->
+     <tran trig="STOP_AUTO" target="../../4">
+      <tran_glyph conn="41,69,0,2,-8">
+       <action box="1,-6,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="24,69,24,28">
       <entry box="1,2,19,4"/>
      </state_glyph>
     </state>
@@ -112,15 +124,15 @@ me-&gt;buzzerCount += 1;</action>
       <!--${AOs::SumoHSM::SM::AutoWait::START_AUTO::[startegy_0]}-->
       <choice target="../../../3">
        <guard brief="startegy_0">me-&gt;strategy == 0</guard>
-       <choice_glyph conn="38,58,4,0,15">
-        <action box="-10,3,9,4"/>
+       <choice_glyph conn="38,58,4,0,11">
+        <action box="-9,5,9,4"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START_AUTO::[strategy_1]}-->
       <choice target="../../../5">
        <guard brief="strategy_1">me-&gt;strategy == 1</guard>
-       <choice_glyph conn="38,58,5,0,29,16">
-        <action box="18,2,11,3"/>
+       <choice_glyph conn="38,58,5,0,29,10">
+        <action box="20,5,11,3"/>
        </choice_glyph>
       </choice>
       <tran_glyph conn="26,58,3,-1,12">
@@ -136,7 +148,7 @@ me-&gt;buzzerCount += 1;</action>
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <!--${AOs::SumoHSM::SM::StepsStrategy::LINE_DETECTED}-->
      <tran trig="LINE_DETECTED" target="../../6">
-      <tran_glyph conn="57,89,3,0,-3,18">
+      <tran_glyph conn="57,83,3,0,-3,24">
        <action box="0,-1,14,3"/>
       </tran_glyph>
      </tran>
@@ -144,18 +156,56 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <tran trig="TIMEOUT">
       <action>BSP_motors(100,100);
 QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 100, 0);</action>
-      <tran_glyph conn="57,84,3,-1,8">
+      <tran_glyph conn="57,78,3,-1,8">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT_2}-->
      <tran trig="TIMEOUT_2">
       <action>BSP_motors(0,0);</action>
-      <tran_glyph conn="57,87,3,-1,11">
+      <tran_glyph conn="57,81,3,-1,11">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="57,74,24,18">
+     <!--${AOs::SumoHSM::SM::StepsStrategy::STOP_AUTO}-->
+     <tran trig="STOP_AUTO" target="../../4">
+      <tran_glyph conn="70,68,0,1,-13,-24">
+       <action box="-22,-16,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::DIST_SENSOR_CHANGE}-->
+     <tran trig="DIST_SENSOR_CHANGE">
+      <action brief="CheckSensors">int sensors_on = BSP_Check_Dist();
+QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+
+switch(sensors_on){
+    case 0:
+        BSP_motors(0,0);
+        QTimeEvt_armX(&amp;me-&gt;timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
+        break;
+    case 1:
+        BSP_motors(-80,80);
+        break;
+    case 2:
+        BSP_motors(0,80);
+        break;
+    case 3:
+        BSP_motors(100,100);
+        break;
+    case 4:
+        BSP_motors(80,0);
+        break;
+    case 5:
+        BSP_motors(80,-80);
+        break;
+}
+</action>
+      <tran_glyph conn="57,87,3,-1,14">
+       <action box="0,-2,21,5"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="57,68,24,29">
       <entry box="1,2,19,4"/>
       <exit box="1,6,19,2"/>
      </state_glyph>
@@ -180,14 +230,14 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
        <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT::[strategy_0]}-->
        <choice target="../../../../3">
         <guard brief="strategy_0">me-&gt;strategy == 0</guard>
-        <choice_glyph conn="60,105,5,2,-25,-13">
-         <action box="-25,-7,11,2"/>
+        <choice_glyph conn="60,105,5,2,-25,-8">
+         <action box="-25,-5,11,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT::[strategy_1]}-->
        <choice target="../../../../5">
         <guard brief="strategy_1">me-&gt;strategy == 1</guard>
-        <choice_glyph conn="60,105,5,2,10,-13">
+        <choice_glyph conn="60,105,5,2,10,-8">
          <action box="1,-5,10,3"/>
         </choice_glyph>
        </choice>
@@ -244,13 +294,20 @@ void sumoHSM_update_qs_dict(){
 
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvt);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvt_2);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.buzzerTimeEvt);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.strategy);
 
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
-    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG, (void *)0);
-    QS_SIG_DICTIONARY(START_RC_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
+    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(START_RC_SIG,  (void *)0);
     QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(GO_TO_IDLE_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(STOP_AUTO_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(LINE_DETECTED_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
 
 
 }
@@ -312,6 +369,7 @@ void BSP_ledStrip(int num, int stat);
 void BSP_buzzer_beep(void);
 void BSP_startRC(void);
 void BSP_startAuto(void);
+int BSP_Check_Dist(void);
 
 /* define the event signals used in the application ------------------------*/
 enum SumoHSMSignals {
@@ -320,7 +378,10 @@ enum SumoHSMSignals {
     PLAY_BUZZER_SIG,
     START_RC_SIG,
     START_AUTO_SIG,
+    GO_TO_IDLE_SIG,
+    STOP_AUTO_SIG,
     LINE_DETECTED_SIG,
+    DIST_SENSOR_CHANGE_SIG,
     RADIO_DATA_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };

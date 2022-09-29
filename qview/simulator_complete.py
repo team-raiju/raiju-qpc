@@ -1902,7 +1902,8 @@ def custom_qview():
     global angle
     global robot_pos_x
     global robot_pos_y
-
+    global last_sensor_active
+    last_sensor_active = 0
     angle = 0
     robot_pos_x = 300
     robot_pos_y = 200
@@ -2004,6 +2005,8 @@ def custom_action_on_poll():
         global robot_pos_y
         global mot_esq
         global mot_dir
+        global last_sensor_active
+
 
         rotation_vel = (mot_dir - mot_esq) / 2
         angle += (rotation_vel / 10)
@@ -2027,9 +2030,10 @@ def custom_action_on_poll():
 
         # Check mouse:
         sensor_active = is_mouse_direction(robot_pos_x, robot_pos_y, angle)
-        if (sensor_active != 0):
+        if (sensor_active != last_sensor_active):
             sensor_command(sensor_active)
-        
+
+        last_sensor_active = sensor_active
 
         
 def is_over_circle(posx, posy):
