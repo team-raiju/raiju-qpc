@@ -302,19 +302,19 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
                     QTimeEvt_armX(&me->timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
                     break;
                 case 1:
-                    BSP_motors(-80,80);
+                    BSP_motors(80,-80);
                     break;
                 case 2:
-                    BSP_motors(0,80);
+                    BSP_motors(80,0);
                     break;
                 case 3:
                     BSP_motors(100,100);
                     break;
                 case 4:
-                    BSP_motors(80,0);
+                    BSP_motors(0,80);
                     break;
                 case 5:
-                    BSP_motors(80,-80);
+                    BSP_motors(-80,80);
                     break;
             }
 
