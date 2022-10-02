@@ -69,4 +69,5 @@ dkms.conf
 !.vscode/extensions.json
 
 
+qview/__pycache__/**
 # End of https://www.gitignore.io/api/visualstudiocode,c
