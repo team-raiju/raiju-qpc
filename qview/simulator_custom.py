@@ -8,9 +8,9 @@ from struct import pack
 from PIL import Image, ImageTk
 import math
 
-from qview import command
-
 global qview_base
+global image_dict
+global canvas_dict
 
 def custom_menu_command():
     command_name = "START AUTO"
@@ -24,83 +24,63 @@ def custom_qview_init(qview):
     global qview_base
     qview_base = qview
 
-
     if (qview_base == None):
         return
 
     global HOME_DIR
-    global led_on_img
-    global led_off_img
-    global canvas_img
-    global sumo_png
-    global sumo_canvas
-    global arena_png
-    global arena_canvas
+    global image_dict
+    global canvas_dict
+
     global angle
     global robot_pos_x
     global robot_pos_y
     global last_sensor_active
     global action_counter
+    global mot_esq
+    global mot_dir
 
 
     HOME_DIR = os.path.dirname(__file__)
-
-    qview_base._view_canvas.set(1)
-    qview_base.canvas.configure(width=600, height=600)
-    
     action_counter = 0
     last_sensor_active = 0
     angle = 0
     robot_pos_x = 300
     robot_pos_y = 200
-
-    arena_png = PhotoImage(file=HOME_DIR + "/img/arena.png")
-    led_on_img = PhotoImage(file=HOME_DIR + "/img/led_on.png").subsample(3,3)
-    led_off_img = PhotoImage(file=HOME_DIR + "/img/led_off.png").subsample(3,3)
-    sumo_png = PhotoImage(file=HOME_DIR + "/img/raiju.png")
-
-    arena_canvas = qview_base.canvas.create_image(300,  300, image=arena_png)
-    canvas_img = qview_base.canvas.create_image(50,  30, image=led_on_img)
-    sumo_canvas = qview_base.canvas.create_image(robot_pos_x,  robot_pos_y, image=sumo_png)
-
-    # Buttons
-    global num_0_img
-    global num_0_canvas
-    global num_1_img
-    global num_1_canvas
-    global rc_img
-    global rc_canvas
-    global auto_img
-    global auto_canvas
-    global calib_img
-    global calib_canvas
-    global mot_esq
-    global mot_dir
-
     mot_esq = 0
     mot_dir = 0
 
+    qview_base._view_canvas.set(1)
+    qview_base.canvas.configure(width=600, height=600)
 
-    num_0_img = PhotoImage(file=HOME_DIR + "/img/num0.png")
-    num_1_img = PhotoImage(file=HOME_DIR + "/img/num1.png")
-    rc_img = PhotoImage(file=HOME_DIR + "/img/button_rc.png")
-    auto_img = PhotoImage(file=HOME_DIR + "/img/button_auto.png")
-    calib_img = PhotoImage(file=HOME_DIR + "/img/button_calib.png")
+    image_dict = {
+        "arena": PhotoImage(file=HOME_DIR + "/img/arena.png"),
+        "led_on": PhotoImage(file=HOME_DIR + "/img/led_on.png").subsample(3,3),
+        "led_off": PhotoImage(file=HOME_DIR + "/img/led_off.png").subsample(3,3),
+        "sumo": PhotoImage(file=HOME_DIR + "/img/raiju.png"),
+        "num_0" : PhotoImage(file=HOME_DIR + "/img/num0.png"),
+        "num_1" : PhotoImage(file=HOME_DIR + "/img/num1.png"),
+        "rc_button" : PhotoImage(file=HOME_DIR + "/img/button_rc.png"),
+        "auto_button" : PhotoImage(file=HOME_DIR + "/img/button_auto.png"),
+        "calib_button" : PhotoImage(file=HOME_DIR + "/img/button_calib.png")
+    }
 
-    num_0_canvas = qview_base.canvas.create_image(50, 570, image=num_0_img)
-    qview_base.canvas.tag_bind(num_0_canvas, "<ButtonPress>",  lambda strategy: change_strategy(0))
+    canvas_dict = {
+        "arena" : qview_base.canvas.create_image(300,  300, image=image_dict["arena"]), 
+        "led" : qview_base.canvas.create_image(50,  30, image=image_dict["led_on"]), 
+        "sumo" : qview_base.canvas.create_image(robot_pos_x,  robot_pos_y, image=image_dict["sumo"]), 
+        "num_0" : qview_base.canvas.create_image(50, 570, image=image_dict["num_0"]), 
+        "num_1" : qview_base.canvas.create_image(100, 570, image=image_dict["num_1"]), 
+        "rc_button" : qview_base.canvas.create_image(350, 570, image=image_dict["rc_button"]), 
+        "auto_button" : qview_base.canvas.create_image(450, 570, image=image_dict["auto_button"]), 
+        "calib_button" : qview_base.canvas.create_image(550, 570, image=image_dict["calib_button"]), 
+    }
 
-    num_1_canvas = qview_base.canvas.create_image(100, 570, image=num_1_img)
-    qview_base.canvas.tag_bind(num_1_canvas, "<ButtonPress>", lambda strategy: change_strategy(1))
-
-    rc_canvas = qview_base.canvas.create_image(350, 570, image=rc_img)
-    qview_base.canvas.tag_bind(rc_canvas, "<ButtonPress>", start_rc)
-
-    auto_canvas = qview_base.canvas.create_image(450, 570, image=auto_img)
-    qview_base.canvas.tag_bind(auto_canvas, "<ButtonPress>", start_auto)
-
-    calib_canvas = qview_base.canvas.create_image(550, 570, image=calib_img)
-    qview_base.canvas.tag_bind(calib_canvas, "<ButtonPress>", start_calib)
+    # Buttons
+    qview_base.canvas.tag_bind(canvas_dict["num_0"], "<ButtonPress>",  lambda strategy: change_strategy(0))
+    qview_base.canvas.tag_bind(canvas_dict["num_1"], "<ButtonPress>", lambda strategy: change_strategy(1))
+    qview_base.canvas.tag_bind(canvas_dict["rc_button"], "<ButtonPress>", start_rc)
+    qview_base.canvas.tag_bind(canvas_dict["auto_button"], "<ButtonPress>", start_auto)
+    qview_base.canvas.tag_bind(canvas_dict["calib_button"], "<ButtonPress>", start_calib)
 
 
 def custom_user_00_packet(packet):
@@ -114,9 +94,9 @@ def custom_user_00_packet(packet):
     if (log == 0):
         led_stat = data[2]
         if (led_stat == 1):
-            qview_base.canvas.itemconfig(canvas_img, image=led_on_img)
+            qview_base.canvas.itemconfig(canvas_dict["led"], image=image_dict["led_on"])
         else:
-            qview_base.canvas.itemconfig(canvas_img, image=led_off_img)
+            qview_base.canvas.itemconfig(canvas_dict["led"], image=image_dict["led_off"])
     elif (log == 2):
         data = qview_base.qunpack("xxTxbxbxb", packet)    
         mot_esq = data[2]
@@ -151,8 +131,8 @@ def custom_on_poll():
 
         sumo_rotated = Image.open(HOME_DIR + "/img/raiju.png")
         tk_sumo_rotated = ImageTk.PhotoImage(sumo_rotated.rotate(angle))
-        qview_base.canvas.itemconfig(sumo_canvas, image=tk_sumo_rotated)
-        qview_base.canvas.move(sumo_canvas, vel_x, vel_y)
+        qview_base.canvas.itemconfig(canvas_dict["sumo"], image=tk_sumo_rotated)
+        qview_base.canvas.move(canvas_dict["sumo"], vel_x, vel_y)
 
         # Check if it is on line
         if (is_over_circle(robot_pos_x, robot_pos_y)):
