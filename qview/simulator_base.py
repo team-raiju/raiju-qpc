@@ -187,6 +187,14 @@ class QView:
         main_menu.add_cascade(label="Commands", menu=m)
         QView._menu_commands = m
 
+        #Custom Command Menu
+        cust_name, cust_func = custom_menu_command()
+        m = Menu(main_menu, tearoff=0)
+        m.add_command(label=cust_name,  command=cust_func)
+        main_menu.add_cascade(label="Custom", menu=m)
+
+        QView.custom_menu = m
+
         # Events menu...
         m = Menu(main_menu, tearoff=0)
         m.add_command(label="Publish...",  command=QView._onEvt_PUBLISH)

@@ -8,7 +8,16 @@ from struct import pack
 from PIL import Image, ImageTk
 import math
 
+from qview import command
+
 global qview_base
+
+def custom_menu_command():
+    command_name = "START AUTO"
+    command_function =  start_auto
+
+    return (command_name, command_function)
+
 
 def custom_qview_init(qview):
 
