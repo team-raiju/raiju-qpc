@@ -8,9 +8,12 @@ from struct import pack
 from PIL import Image, ImageTk
 import math
 
+from robot import *
+
 global qview_base
 global image_dict
 global canvas_dict
+global sumo_robot
 
 def custom_menu_command():
     command_name = "START AUTO"
@@ -30,24 +33,15 @@ def custom_qview_init(qview):
     global HOME_DIR
     global image_dict
     global canvas_dict
-
-    global angle
-    global robot_pos_x
-    global robot_pos_y
     global last_sensor_active
     global action_counter
-    global mot_esq
-    global mot_dir
-
+    global sumo_robot
 
     HOME_DIR = os.path.dirname(__file__)
+
+    sumo_robot = Robot(300, 200)
     action_counter = 0
     last_sensor_active = 0
-    angle = 0
-    robot_pos_x = 300
-    robot_pos_y = 200
-    mot_esq = 0
-    mot_dir = 0
 
     qview_base._view_canvas.set(1)
     qview_base.canvas.configure(width=600, height=600)
@@ -67,7 +61,7 @@ def custom_qview_init(qview):
     canvas_dict = {
         "arena" : qview_base.canvas.create_image(300,  300, image=image_dict["arena"]), 
         "led" : qview_base.canvas.create_image(50,  30, image=image_dict["led_on"]), 
-        "sumo" : qview_base.canvas.create_image(robot_pos_x,  robot_pos_y, image=image_dict["sumo"]), 
+        "sumo" : qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"]), 
         "num_0" : qview_base.canvas.create_image(50, 570, image=image_dict["num_0"]), 
         "num_1" : qview_base.canvas.create_image(100, 570, image=image_dict["num_1"]), 
         "rc_button" : qview_base.canvas.create_image(350, 570, image=image_dict["rc_button"]), 
@@ -86,8 +80,6 @@ def custom_qview_init(qview):
 def custom_user_00_packet(packet):
     data = qview_base.qunpack("xxTxbxb", packet)        
     log = data[1]     
-    global mot_esq
-    global mot_dir
 
     qview_base.print_text("Timestamp = %d; Log = %d; Argument = %d"%(data[0], log, data[2]))
 
@@ -99,8 +91,8 @@ def custom_user_00_packet(packet):
             qview_base.canvas.itemconfig(canvas_dict["led"], image=image_dict["led_off"])
     elif (log == 2):
         data = qview_base.qunpack("xxTxbxbxb", packet)    
-        mot_esq = data[2]
-        mot_dir = data[3]
+        sumo_robot.set_motors(data[2], data[3])
+        mot_esq, mot_dir = sumo_robot.get_motors()
         qview_base.print_text("MOT_ESQ = %d; MOT_DIR = %d"%(mot_esq, mot_dir))    
 
 
@@ -109,32 +101,30 @@ def custom_on_poll():
 
     action_counter = action_counter + 1
     if (action_counter % 4 == 0):
-        global sumo_rotated
+        global sumo_rotated_canvas
         global tk_sumo_rotated
-        global angle
-        global robot_pos_x
-        global robot_pos_y
-        global mot_esq
-        global mot_dir
         global last_sensor_active
 
+        mot_esq, mot_dir = sumo_robot.get_motors()
+        angle = sumo_robot.get_angle()
+        
         rotation_vel = (mot_dir - mot_esq) / 2
         angle += (rotation_vel / 10)
-        angle = angle % 360
+        sumo_robot.set_angle(angle % 360)
 
         vel = ((mot_esq + mot_dir) / 2)
         vel_x = int((vel * math.sin(angle * math.pi/180))/10)
         vel_y = int((vel * math.cos(angle * math.pi/180))/10)
 
-        robot_pos_x += vel_x
-        robot_pos_y += vel_y
+        sumo_robot.offset_position(vel_x, vel_y)
 
-        sumo_rotated = Image.open(HOME_DIR + "/img/raiju.png")
-        tk_sumo_rotated = ImageTk.PhotoImage(sumo_rotated.rotate(angle))
+        sumo_rotated_canvas = Image.open(HOME_DIR + "/img/raiju.png")
+        tk_sumo_rotated = ImageTk.PhotoImage(sumo_rotated_canvas.rotate(angle))
         qview_base.canvas.itemconfig(canvas_dict["sumo"], image=tk_sumo_rotated)
         qview_base.canvas.move(canvas_dict["sumo"], vel_x, vel_y)
 
-        # Check if it is on line
+        robot_pos_x, robot_pos_y = sumo_robot.get_position()
+
         if (is_over_circle(robot_pos_x, robot_pos_y)):
             line_command()
 
