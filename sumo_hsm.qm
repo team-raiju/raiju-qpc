@@ -113,6 +113,35 @@ me-&gt;buzzerCount += 1;</action>
        <action box="1,-6,10,2"/>
       </tran_glyph>
      </tran>
+     <!--${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE}-->
+     <tran trig="DIST_SENSOR_CHANGE">
+      <action brief="CheckSensors">int sensors_on = BSP_Check_Dist();
+
+switch(sensors_on){
+    case 0:
+        BSP_motors(60, 60);
+        break;
+    case 1:
+        BSP_motors(80,-80);
+        break;
+    case 2:
+        BSP_motors(80,0);
+        break;
+    case 3:
+        BSP_motors(100,100);
+        break;
+    case 4:
+        BSP_motors(0,80);
+        break;
+    case 5:
+        BSP_motors(-80,80);
+        break;
+}
+</action>
+      <tran_glyph conn="24,83,3,-1,12">
+       <action box="0,-2,22,2"/>
+      </tran_glyph>
+     </tran>
      <state_glyph node="24,69,24,28">
       <entry box="1,2,19,4"/>
      </state_glyph>

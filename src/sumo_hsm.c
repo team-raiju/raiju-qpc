@@ -215,6 +215,34 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
             status_ = Q_TRAN(&SumoHSM_AutoWait);
             break;
         }
+        /*${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE} */
+        case DIST_SENSOR_CHANGE_SIG: {
+            int sensors_on = BSP_Check_Dist();
+
+            switch(sensors_on){
+                case 0:
+                    BSP_motors(60, 60);
+                    break;
+                case 1:
+                    BSP_motors(80,-80);
+                    break;
+                case 2:
+                    BSP_motors(80,0);
+                    break;
+                case 3:
+                    BSP_motors(100,100);
+                    break;
+                case 4:
+                    BSP_motors(0,80);
+                    break;
+                case 5:
+                    BSP_motors(-80,80);
+                    break;
+            }
+
+            status_ = Q_HANDLED();
+            break;
+        }
         default: {
             status_ = Q_SUPER(&QHsm_top);
             break;
