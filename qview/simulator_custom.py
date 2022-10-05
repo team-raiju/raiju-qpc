@@ -31,10 +31,8 @@ def custom_qview_init(qview):
         return
 
     global HOME_DIR
-    global image_dict
-    global canvas_dict
-    global last_sensor_active
-    global action_counter
+    global image_dict, canvas_dict
+    global last_sensor_active, action_counter
     global sumo_robot
 
     HOME_DIR = os.path.dirname(__file__)
@@ -98,8 +96,8 @@ def custom_user_00_packet(packet):
 
 def custom_on_poll():
     global action_counter
+    action_counter += 1
 
-    action_counter = action_counter + 1
     if (action_counter % 4 == 0):
         global sumo_rotated_canvas
         global tk_sumo_rotated
