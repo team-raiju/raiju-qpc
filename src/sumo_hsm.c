@@ -255,6 +255,12 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
 static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
+        /*${AOs::SumoHSM::SM::AutoWait} */
+        case Q_ENTRY_SIG: {
+            BSP_motors(0,0);
+            status_ = Q_HANDLED();
+            break;
+        }
         /*${AOs::SumoHSM::SM::AutoWait::START_AUTO} */
         case START_AUTO_SIG: {
             /*${AOs::SumoHSM::SM::AutoWait::START_AUTO::[startegy_0]} */
@@ -268,6 +274,11 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             else {
                 status_ = Q_UNHANDLED();
             }
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::GO_TO_IDLE} */
+        case GO_TO_IDLE_SIG: {
+            status_ = Q_TRAN(&SumoHSM_Idle);
             break;
         }
         default: {

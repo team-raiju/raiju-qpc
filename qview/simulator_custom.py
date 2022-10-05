@@ -53,7 +53,9 @@ def custom_qview_init(qview):
         "num_1" : PhotoImage(file=HOME_DIR + "/img/num1.png"),
         "rc_button" : PhotoImage(file=HOME_DIR + "/img/button_rc.png"),
         "auto_button" : PhotoImage(file=HOME_DIR + "/img/button_auto.png"),
-        "calib_button" : PhotoImage(file=HOME_DIR + "/img/button_calib.png")
+        "calib_button" : PhotoImage(file=HOME_DIR + "/img/button_calib.png"),
+        "idle_button" : PhotoImage(file=HOME_DIR + "/img/button_idle.png"),
+        "stop_button" : PhotoImage(file=HOME_DIR + "/img/button_stop.png"),
     }
 
     canvas_dict = {
@@ -65,6 +67,8 @@ def custom_qview_init(qview):
         "rc_button" : qview_base.canvas.create_image(350, 570, image=image_dict["rc_button"]), 
         "auto_button" : qview_base.canvas.create_image(450, 570, image=image_dict["auto_button"]), 
         "calib_button" : qview_base.canvas.create_image(550, 570, image=image_dict["calib_button"]), 
+        "idle_button" : qview_base.canvas.create_image(450, 30, image=image_dict["idle_button"]), 
+        "stop_button" : qview_base.canvas.create_image(550, 30, image=image_dict["stop_button"]), 
     }
 
     # Buttons
@@ -73,6 +77,8 @@ def custom_qview_init(qview):
     qview_base.canvas.tag_bind(canvas_dict["rc_button"], "<ButtonPress>", start_rc)
     qview_base.canvas.tag_bind(canvas_dict["auto_button"], "<ButtonPress>", start_auto)
     qview_base.canvas.tag_bind(canvas_dict["calib_button"], "<ButtonPress>", start_calib)
+    qview_base.canvas.tag_bind(canvas_dict["idle_button"], "<ButtonPress>", idle_command)
+    qview_base.canvas.tag_bind(canvas_dict["stop_button"], "<ButtonPress>", stop_command)
 
 
 def custom_user_00_packet(packet):
@@ -150,6 +156,12 @@ def line_command():
 
 def sensor_command(sensor):
     qview_base.command(5, sensor)
+
+def idle_command(sensor):
+    qview_base.command(6, 0)
+
+def stop_command(sensor):
+    qview_base.command(7, 0)
 
 def is_over_circle(posx, posy):
     if (((posx - 300 ) ** 2 + (posy - 300 ) ** 2) > 200 ** 2):

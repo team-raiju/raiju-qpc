@@ -148,6 +148,7 @@ switch(sensors_on){
     </state>
     <!--${AOs::SumoHSM::SM::AutoWait}-->
     <state name="AutoWait">
+     <entry>BSP_motors(0,0);</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START_AUTO}-->
      <tran trig="START_AUTO">
       <!--${AOs::SumoHSM::SM::AutoWait::START_AUTO::[startegy_0]}-->
@@ -160,7 +161,7 @@ switch(sensors_on){
       <!--${AOs::SumoHSM::SM::AutoWait::START_AUTO::[strategy_1]}-->
       <choice target="../../../5">
        <guard brief="strategy_1">me-&gt;strategy == 1</guard>
-       <choice_glyph conn="38,58,5,0,29,10">
+       <choice_glyph conn="38,58,5,0,29,11">
         <action box="20,5,11,3"/>
        </choice_glyph>
       </choice>
@@ -168,7 +169,15 @@ switch(sensors_on){
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="26,50,20,11"/>
+     <!--${AOs::SumoHSM::SM::AutoWait::GO_TO_IDLE}-->
+     <tran trig="GO_TO_IDLE" target="../../1">
+      <tran_glyph conn="26,54,3,3,-7,-18,23">
+       <action box="4,-21,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="26,46,20,15">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::StepsStrategy}-->
     <state name="StepsStrategy">
@@ -198,7 +207,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 100, 0);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::StepsStrategy::STOP_AUTO}-->
      <tran trig="STOP_AUTO" target="../../4">
-      <tran_glyph conn="70,68,0,1,-13,-24">
+      <tran_glyph conn="70,69,0,1,-14,-24">
        <action box="-22,-16,10,2"/>
       </tran_glyph>
      </tran>
@@ -234,9 +243,9 @@ switch(sensors_on){
        <action box="0,-2,21,5"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="57,68,24,29">
-      <entry box="1,2,19,4"/>
-      <exit box="1,6,19,2"/>
+     <state_glyph node="57,69,24,28">
+      <entry box="1,2,19,2"/>
+      <exit box="1,4,19,2"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::LineGoBack}-->

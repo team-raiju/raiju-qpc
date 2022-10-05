@@ -223,6 +223,18 @@ void QS_onCommand(uint8_t cmdId,
             break;
         }
 
+        case 6: { 
+            QEvt evt = {.sig = GO_TO_IDLE_SIG};
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            break;
+        }
+
+        case 7: { 
+            QEvt evt = {.sig = STOP_AUTO_SIG};
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            break;
+        }
+
 
 
        default:
