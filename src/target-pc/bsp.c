@@ -197,7 +197,8 @@ void QS_onCommand(uint8_t cmdId,
         }
 
         case 2: { 
-            printf("Start Calib\r\n");
+            QEvt evt = {.sig = START_CALIB_SIG};
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
             break;
         }
 

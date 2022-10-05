@@ -455,30 +455,23 @@ static QState SumoHSM_Calib(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::Calib} */
         case Q_ENTRY_SIG: {
-            if (me->calib_status == 0){
-                me->calib_time_1 = QF_TICK();
-            } else {
-                me->calib_time_2 = QF_TICK();
-            }
-
+            QTimeEvt_armX(&me->timeEvt_2, 0xFFFFFFFF, 0);
             BSP_motors(60,60);
             status_ = Q_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::Calib::GO_TO_IDLE} */
         case GO_TO_IDLE_SIG: {
+            QTimeEvt_disarm(&me->timeEvt_2);
             status_ = Q_TRAN(&SumoHSM_Idle);
             break;
         }
         /*${AOs::SumoHSM::SM::Calib::LINE_DETECTED} */
         case LINE_DETECTED_SIG: {
-            me->calib_time_1 = QF_TICK() - me->calib_time_1;
-
             if (me->calib_status == 0){
-                me->calib_time_1 = QF_TICK() - me->calib_time_1;
-                me->calib_status++;
+                me->calib_time_1 = 0xFFFFFFFF - QTimeEvt_currCtr(&me->timeEvt_2);
             } else {
-                me->calib_time_2 = QF_TICK() - me->calib_time_2;
+                me->calib_time_2 = 0xFFFFFFFF - QTimeEvt_currCtr(&me->timeEvt_2);
             }
             status_ = Q_TRAN(&SumoHSM_CalibLineGoBack);
             break;
@@ -526,20 +519,19 @@ static QState SumoHSM_CalibeLineTurn(SumoHSM * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::Calib::CalibLineGoBack::CalibeLineTurn} */
-        case Q_EXIT_SIG: {
-            BSP_motors(0,0);
-            status_ = Q_HANDLED();
-            break;
-        }
         /*${AOs::SumoHSM::SM::Calib::CalibLineGoBack::CalibeLineTurn::TIMEOUT} */
         case TIMEOUT_SIG: {
             /*${AOs::SumoHSM::SM::Calib::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_0]} */
             if (me->calib_status == 0) {
+                me->calib_status++;
+                QTimeEvt_rearm(&me->timeEvt_2, 0xFFFFFFFF);
+                BSP_motors(60,60);
                 status_ = Q_TRAN(&SumoHSM_Calib);
             }
             /*${AOs::SumoHSM::SM::Calib::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_1]} */
             else if (me->calib_status != 0) {
+                me->calib_status = 0;
+                QTimeEvt_disarm(&me->timeEvt_2);
                 status_ = Q_TRAN(&SumoHSM_Idle);
             }
             else {
