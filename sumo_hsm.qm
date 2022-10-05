@@ -16,6 +16,12 @@
    <attribute name="strategy" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::timeEvt_2}-->
    <attribute name="timeEvt_2" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::calib_time_1}-->
+   <attribute name="calib_time_1" type="uint32_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::calib_time_2}-->
+   <attribute name="calib_time_2" type="uint32_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::calib_status}-->
+   <attribute name="calib_status" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::SM}-->
    <statechart properties="0x03">
     <!--${AOs::SumoHSM::SM::initial}-->
@@ -24,7 +30,6 @@
 /* arm the private time event to expire in 1/2s
 * and periodically every 1/2 second
 */
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
 
 me-&gt;buzzerCount = 0U;</action>
@@ -35,7 +40,8 @@ me-&gt;buzzerCount = 0U;</action>
     <!--${AOs::SumoHSM::SM::Idle}-->
     <state name="Idle">
      <entry>BSP_ledOff();
-BSP_motors(0,0);</entry>
+BSP_motors(0,0);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
@@ -47,8 +53,8 @@ QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::START_RC}-->
      <tran trig="START_RC" target="../../2">
-      <tran_glyph conn="85,40,1,0,34,10">
-       <action box="1,-2,10,2"/>
+      <tran_glyph conn="85,40,1,0,45,10">
+       <action box="4,-3,10,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::START_AUTO}-->
@@ -74,6 +80,12 @@ me-&gt;buzzerCount += 1;</action>
        <action box="0,-2,12,2"/>
       </tran_glyph>
      </tran>
+     <!--${AOs::SumoHSM::SM::Idle::START_CALIB}-->
+     <tran trig="START_CALIB" target="../../7">
+      <tran_glyph conn="85,25,1,0,116,21">
+       <action box="4,-2,10,2"/>
+      </tran_glyph>
+     </tran>
      <state_glyph node="42,11,43,33">
       <entry box="1,2,24,6"/>
       <exit box="1,8,38,7"/>
@@ -84,17 +96,17 @@ me-&gt;buzzerCount += 1;</action>
      <entry>BSP_startRC();</entry>
      <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
-      <tran_glyph conn="107,60,3,-1,11">
+      <tran_glyph conn="118,60,3,-1,11">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::GO_TO_IDLE}-->
      <tran trig="GO_TO_IDLE" target="../../1">
-      <tran_glyph conn="123,50,0,1,-14,-38">
-       <action box="-37,-17,10,2"/>
+      <tran_glyph conn="134,50,0,1,-14,-49">
+       <action box="-45,-17,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="107,50,20,15">
+     <state_glyph node="118,50,20,15">
       <entry box="1,2,12,4"/>
      </state_glyph>
     </state>
@@ -292,7 +304,84 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
       <entry box="1,2,11,3"/>
      </state_glyph>
     </state>
-    <state_diagram size="145,181"/>
+    <!--${AOs::SumoHSM::SM::Calib}-->
+    <state name="Calib">
+     <entry>if (me-&gt;calib_status == 0){
+    me-&gt;calib_time_1 = QF_TICK();
+} else {
+    me-&gt;calib_time_2 = QF_TICK();
+}
+
+BSP_motors(60,60);</entry>
+     <!--${AOs::SumoHSM::SM::Calib::GO_TO_IDLE}-->
+     <tran trig="GO_TO_IDLE" target="../../1">
+      <tran_glyph conn="198,46,0,1,-17,-113">
+       <action box="-109,-20,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::Calib::LINE_DETECTED}-->
+     <tran trig="LINE_DETECTED" target="../2">
+      <action>me-&gt;calib_time_1 = QF_TICK() - me-&gt;calib_time_1;
+
+if (me-&gt;calib_status == 0){
+    me-&gt;calib_time_1 = QF_TICK() - me-&gt;calib_time_1;
+    me-&gt;calib_status++;
+} else {
+    me-&gt;calib_time_2 = QF_TICK() - me-&gt;calib_time_2;
+}</action>
+      <tran_glyph conn="192,54,3,0,16,3">
+       <action box="0,-2,15,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::Calib::CalibLineGoBack}-->
+     <state name="CalibLineGoBack">
+      <entry>BSP_motors(-100,-100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
+      <!--${AOs::SumoHSM::SM::Calib::CalibLineGoBack::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../1">
+       <tran_glyph conn="202,65,3,3,10">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::Calib::CalibLineGoBack::CalibeLineTurn}-->
+      <state name="CalibeLineTurn">
+       <entry brief="turn">BSP_motors(-100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
+       <exit>BSP_motors(0,0);</exit>
+       <!--${AOs::SumoHSM::SM::Calib::CalibLineGoBack::CalibeLineTurn::TIMEOUT}-->
+       <tran trig="TIMEOUT">
+        <!--${AOs::SumoHSM::SM::Calib::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_0]}-->
+        <choice target="../../../..">
+         <guard brief="calib_0">me-&gt;calib_status == 0</guard>
+         <choice_glyph conn="197,68,5,3,-5">
+          <action box="-4,-4,7,3"/>
+         </choice_glyph>
+        </choice>
+        <!--${AOs::SumoHSM::SM::Calib::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_1]}-->
+        <choice target="../../../../../1">
+         <guard brief="calib_1">me-&gt;calib_status != 0</guard>
+         <choice_glyph conn="197,68,4,1,3,-10,-40,-102">
+          <action box="-15,4,10,3"/>
+         </choice_glyph>
+        </choice>
+        <tran_glyph conn="212,68,3,-1,-15">
+         <action box="-10,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="212,61,13,11">
+        <entry box="1,2,8,2"/>
+        <exit box="1,4,6,2"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="202,57,28,17">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="192,46,41,35">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <state_diagram size="271,181"/>
    </statechart>
   </class>
   <!--${AOs::SumoHSM_ctor}-->
@@ -303,7 +392,10 @@ QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super, TIMEOUT_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt_2, &amp;me-&gt;super, TIMEOUT_2_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super, PLAY_BUZZER_SIG, 0U);
-me-&gt;strategy = 0;</code>
+me-&gt;strategy = 0;
+me-&gt;calib_time_1 = 0;
+me-&gt;calib_time_2 = 0;
+me-&gt;calib_status = 0;</code>
   </operation>
  </package>
  <!--${.}-->
@@ -335,12 +427,15 @@ void sumoHSM_update_qs_dict(){
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvt_2);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.buzzerTimeEvt);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.strategy);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.calib_time_1);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.calib_time_2);
 
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
     QS_SIG_DICTIONARY(PLAY_BUZZER_SIG,    (void *)0);
     QS_SIG_DICTIONARY(START_RC_SIG,  (void *)0);
     QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(START_CALIB_SIG,  (void *)0);
     QS_SIG_DICTIONARY(GO_TO_IDLE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STOP_AUTO_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LINE_DETECTED_SIG,  (void *)0);
@@ -416,6 +511,7 @@ enum SumoHSMSignals {
     PLAY_BUZZER_SIG,
     START_RC_SIG,
     START_AUTO_SIG,
+    START_CALIB_SIG,
     GO_TO_IDLE_SIG,
     STOP_AUTO_SIG,
     LINE_DETECTED_SIG,
