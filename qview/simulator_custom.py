@@ -16,8 +16,8 @@ global canvas_dict
 global sumo_robot
 
 def custom_menu_command():
-    command_name = "START AUTO"
-    command_function =  start_auto
+    command_name = "RESET POSITION"
+    command_function =  reset_position
 
     return (command_name, command_function)
 
@@ -37,7 +37,7 @@ def custom_qview_init(qview):
 
     HOME_DIR = os.path.dirname(__file__)
 
-    sumo_robot = Robot(300, 200)
+    sumo_robot = Robot(300, 100)
     action_counter = 0
     last_sensor_active = 0
 
@@ -162,6 +162,12 @@ def idle_command(sensor):
 
 def stop_command(sensor):
     qview_base.command(7, 0)
+
+def reset_position():
+    global image_dict, canvas_dict
+    sumo_robot.set_angle(0)
+    sumo_robot.set_position(300, 100)
+    canvas_dict["sumo"] = qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"])
 
 def is_over_circle(posx, posy):
     if (((posx - 300 ) ** 2 + (posy - 300 ) ** 2) > 200 ** 2):
