@@ -355,16 +355,17 @@ BSP_motors(60,60);
          <guard brief="calib_1">me-&gt;calib_status != 0</guard>
          <action brief="calibrate_turn">QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 
-int16_t time_diff = me-&gt;calib_time_1 - me-&gt;calib_time_2;
-
-if (time_diff &lt; 0){
-    time_diff = -time_diff;
+uint8_t angle_diff;
+if (me-&gt;calib_time_2 &gt; me-&gt;calib_time_1){
+    angle_diff = 0;
+} else {
+    angle_diff = ((180 / M_PI) * acos((me-&gt;calib_time_2) / (double) me-&gt;calib_time_1));
 }
 
 if (me-&gt;strategy == 0) {
-    me-&gt;turn_90_time_ms += time_diff / 4;
+    me-&gt;turn_90_time_ms += angle_diff * CALIB_ANGLE_MULT;
 } else {
-    me-&gt;turn_90_time_ms -= time_diff / 4;
+    me-&gt;turn_90_time_ms -= angle_diff * CALIB_ANGLE_MULT;
 }
 
 </action>
@@ -432,8 +433,12 @@ me-&gt;turn_90_time_ms = 500;</code>
   <directory name="src">
    <!--${.::src::sumo_hsm.c}-->
    <file name="sumo_hsm.c">
-    <text>#include &quot;qpc.h&quot;    /* QP/C framework API */
+    <text>#include &lt;math.h&gt;
+#include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
+
+#define CALIB_ANGLE_MULT    2.5
+#define M_PI                3.14159265
 
 /* ask QM to declare the Blinky class --------------------------------------*/
 $declare${AOs::SumoHSM}

@@ -28,8 +28,12 @@
 * <info@state-machine.com>
 */
 /*$endhead${.::src::sumo_hsm.c} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+#include <math.h>
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
+
+#define CALIB_ANGLE_MULT    2.5
+#define M_PI                3.14159265
 
 /* ask QM to declare the Blinky class --------------------------------------*/
 /*$declare${AOs::SumoHSM} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
@@ -533,16 +537,17 @@ static QState SumoHSM_CalibeLineTurn(SumoHSM * const me, QEvt const * const e) {
             else if (me->calib_status != 0) {
                 QTimeEvt_disarm(&me->timeEvt_2);
 
-                int16_t time_diff = me->calib_time_1 - me->calib_time_2;
-
-                if (time_diff < 0){
-                    time_diff = -time_diff;
+                uint8_t angle_diff;
+                if (me->calib_time_2 > me->calib_time_1){
+                    angle_diff = 0;
+                } else {
+                    angle_diff = ((180 / M_PI) * acos((me->calib_time_2) / (double) me->calib_time_1));
                 }
 
                 if (me->strategy == 0) {
-                    me->turn_90_time_ms += time_diff / 4;
+                    me->turn_90_time_ms += angle_diff * CALIB_ANGLE_MULT;
                 } else {
-                    me->turn_90_time_ms -= time_diff / 4;
+                    me->turn_90_time_ms -= angle_diff * CALIB_ANGLE_MULT;
                 }
 
 

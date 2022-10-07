@@ -236,7 +236,7 @@ CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \
 
 ASFLAGS :=
 LINKFLAGS := -no-pie
-LIBS += -lpthread
+LIBS += -lpthread -lm
 
 else # default Debug configuration ..........................................
 
