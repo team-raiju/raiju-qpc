@@ -52,7 +52,7 @@ typedef struct {
     uint32_t calib_time_1;
     uint32_t calib_time_2;
     uint8_t calib_status;
-    uint16_t turn_90_time_ms;
+    uint16_t turn_180_time_ms;
 } SumoHSM;
 
 /* protected: */
@@ -95,7 +95,7 @@ void SumoHSM_ctor(void) {
     me->calib_time_1 = 0;
     me->calib_time_2 = 0;
     me->calib_status = 0;
-    me->turn_90_time_ms = 500;
+    me->turn_180_time_ms = 800;
 }
 /*$enddef${AOs::SumoHSM_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 /*$define${AOs::SumoHSM} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
@@ -519,7 +519,7 @@ static QState SumoHSM_CalibeLineTurn(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn} */
         case Q_ENTRY_SIG: {
             BSP_motors(-100,100);
-            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * me->turn_90_time_ms, 0);
+            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * me->turn_180_time_ms, 0);
             status_ = Q_HANDLED();
             break;
         }
@@ -545,9 +545,9 @@ static QState SumoHSM_CalibeLineTurn(SumoHSM * const me, QEvt const * const e) {
                 }
 
                 if (me->strategy == 0) {
-                    me->turn_90_time_ms += angle_diff * CALIB_ANGLE_MULT;
+                    me->turn_180_time_ms += angle_diff * CALIB_ANGLE_MULT;
                 } else {
-                    me->turn_90_time_ms -= angle_diff * CALIB_ANGLE_MULT;
+                    me->turn_180_time_ms -= angle_diff * CALIB_ANGLE_MULT;
                 }
 
 

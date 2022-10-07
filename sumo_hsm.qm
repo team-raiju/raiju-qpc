@@ -22,8 +22,8 @@
    <attribute name="calib_time_2" type="uint32_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::calib_status}-->
    <attribute name="calib_status" type="uint8_t" visibility="0x02" properties="0x00"/>
-   <!--${AOs::SumoHSM::turn_90_time_ms}-->
-   <attribute name="turn_90_time_ms" type="uint16_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::turn_180_time_ms}-->
+   <attribute name="turn_180_time_ms" type="uint16_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::SM}-->
    <statechart properties="0x03">
     <!--${AOs::SumoHSM::SM::initial}-->
@@ -336,7 +336,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
       <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn}-->
       <state name="CalibeLineTurn">
        <entry brief="turn">BSP_motors(-100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_90_time_ms, 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms, 0);</entry>
        <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn::TIMEOUT}-->
        <tran trig="TIMEOUT">
         <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_0]}-->
@@ -363,9 +363,9 @@ if (me-&gt;calib_time_2 &gt; me-&gt;calib_time_1){
 }
 
 if (me-&gt;strategy == 0) {
-    me-&gt;turn_90_time_ms += angle_diff * CALIB_ANGLE_MULT;
+    me-&gt;turn_180_time_ms += angle_diff * CALIB_ANGLE_MULT;
 } else {
-    me-&gt;turn_90_time_ms -= angle_diff * CALIB_ANGLE_MULT;
+    me-&gt;turn_180_time_ms -= angle_diff * CALIB_ANGLE_MULT;
 }
 
 </action>
@@ -424,7 +424,7 @@ me-&gt;strategy = 0;
 me-&gt;calib_time_1 = 0;
 me-&gt;calib_time_2 = 0;
 me-&gt;calib_status = 0;
-me-&gt;turn_90_time_ms = 500;</code>
+me-&gt;turn_180_time_ms = 800;</code>
   </operation>
  </package>
  <!--${.}-->
