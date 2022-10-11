@@ -117,7 +117,7 @@ BSP_ledOff();</entry>
     </state>
     <!--${AOs::SumoHSM::SM::StarStrategy}-->
     <state name="StarStrategy">
-     <entry>BSP_motors(60,60);</entry>
+     <entry>BSP_motors(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
      <!--${AOs::SumoHSM::SM::StarStrategy::LINE_DETECTED}-->
      <tran trig="LINE_DETECTED" target="../../6">
       <tran_glyph conn="24,80,3,3,-1,31,16">
@@ -160,7 +160,7 @@ switch(sensors_on){
       </tran_glyph>
      </tran>
      <state_glyph node="24,69,24,28">
-      <entry box="1,2,19,4"/>
+      <entry box="1,2,23,6"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::AutoWait}-->
@@ -313,7 +313,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time
     <!--${AOs::SumoHSM::SM::CalibTurn}-->
     <state name="CalibTurn">
      <entry>QTimeEvt_armX(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF, 0);
-BSP_motors(60,60);</entry>
+BSP_motors(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
      <!--${AOs::SumoHSM::SM::CalibTurn::LINE_DETECTED}-->
      <tran trig="LINE_DETECTED" target="../1">
       <action>if (me-&gt;calib_status == 0){

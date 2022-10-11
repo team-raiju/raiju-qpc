@@ -235,7 +235,7 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::StarStrategy} */
         case Q_ENTRY_SIG: {
-            BSP_motors(60,60);
+            BSP_motors(me->star_velocity, me->star_velocity);
             status_ = Q_HANDLED();
             break;
         }
@@ -474,7 +474,7 @@ static QState SumoHSM_CalibTurn(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::CalibTurn} */
         case Q_ENTRY_SIG: {
             QTimeEvt_armX(&me->timeEvt_2, 0xFFFFFFFF, 0);
-            BSP_motors(60,60);
+            BSP_motors(me->star_velocity, me->star_velocity);
             status_ = Q_HANDLED();
             break;
         }
