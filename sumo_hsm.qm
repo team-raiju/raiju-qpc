@@ -24,6 +24,8 @@
    <attribute name="calib_status" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::turn_180_time_ms}-->
    <attribute name="turn_180_time_ms" type="uint16_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::star_velocity}-->
+   <attribute name="star_velocity" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::SM}-->
    <statechart properties="0x03">
     <!--${AOs::SumoHSM::SM::initial}-->
@@ -277,7 +279,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
      <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn}-->
      <state name="LineTurn">
       <entry brief="turn">BSP_motors(-100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms * (0.6), 0);</entry>
       <exit>BSP_motors(0,0);</exit>
       <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT}-->
       <tran trig="TIMEOUT">
@@ -319,7 +321,7 @@ BSP_motors(60,60);</entry>
 } else {
     me-&gt;calib_time_2 = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
 }</action>
-      <tran_glyph conn="193,69,3,0,16,3">
+      <tran_glyph conn="171,67,3,0,20,2">
        <action box="0,-2,15,2"/>
       </tran_glyph>
      </tran>
@@ -329,7 +331,7 @@ BSP_motors(60,60);</entry>
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
       <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../1">
-       <tran_glyph conn="203,80,3,3,10">
+       <tran_glyph conn="185,77,3,3,10">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -342,12 +344,12 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time
         <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_0]}-->
         <choice target="../../../..">
          <guard brief="calib_0">me-&gt;calib_status == 0</guard>
-         <action>me-&gt;calib_status++;
+         <action brief="update_calib_status">me-&gt;calib_status++;
 QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF);
 BSP_motors(60,60);
 </action>
-         <choice_glyph conn="198,83,5,3,-5">
-          <action box="-4,-4,7,3"/>
+         <choice_glyph conn="180,80,4,3,-1,-9">
+          <action box="-9,-6,14,4"/>
          </choice_glyph>
         </choice>
         <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_1]}-->
@@ -369,24 +371,24 @@ if (me-&gt;strategy == 0) {
 }
 
 </action>
-         <choice_glyph conn="198,83,4,3,3,-10,-40,13">
-          <action box="-15,4,14,6"/>
+         <choice_glyph conn="180,80,4,3,3,-15,-37,36">
+          <action box="-20,4,10,5"/>
          </choice_glyph>
         </choice>
-        <tran_glyph conn="213,83,3,-1,-15">
+        <tran_glyph conn="195,80,3,-1,-15">
          <action box="-10,-2,10,2"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="213,76,13,10">
+       <state_glyph node="195,73,13,10">
         <entry box="1,2,8,2"/>
        </state_glyph>
       </state>
-      <state_glyph node="203,72,28,17">
+      <state_glyph node="185,69,28,17">
        <entry box="1,2,6,2"/>
       </state_glyph>
      </state>
-     <state_glyph node="193,61,41,35">
-      <entry box="1,2,6,2"/>
+     <state_glyph node="171,57,43,35">
+      <entry box="1,2,41,7"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::CalibWait}-->
@@ -394,8 +396,22 @@ if (me-&gt;strategy == 0) {
      <entry>BSP_motors(0,0);
 me-&gt;calib_status = 0;</entry>
      <!--${AOs::SumoHSM::SM::CalibWait::START_CALIB}-->
-     <tran trig="START_CALIB" target="../../7">
-      <tran_glyph conn="227,45,1,1,15,22,-8">
+     <tran trig="START_CALIB">
+      <!--${AOs::SumoHSM::SM::CalibWait::START_CALIB::[strategy_0||strategy_1]}-->
+      <choice target="../../../7">
+       <guard brief="strategy_0 || strategy_1">me-&gt;strategy == 0 || me-&gt;strategy == 1</guard>
+       <choice_glyph conn="214,52,5,0,-21,5">
+        <action box="-20,0,19,3"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::CalibWait::START_CALIB::[strategy_2]}-->
+      <choice target="../../../9">
+       <guard brief="strategy_2">me-&gt;strategy == 2</guard>
+       <choice_glyph conn="214,52,5,0,29,4">
+        <action box="7,0,10,2"/>
+       </choice_glyph>
+      </choice>
+      <tran_glyph conn="214,49,2,-1,3">
        <action box="0,-2,15,2"/>
       </tran_glyph>
      </tran>
@@ -405,8 +421,58 @@ me-&gt;calib_status = 0;</entry>
        <action box="-117,-11,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="201,37,26,14">
-      <entry box="1,2,6,2"/>
+     <state_glyph node="201,37,26,12">
+      <entry box="1,2,20,7"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::SumoHSM::SM::CalibFront}-->
+    <state name="CalibFront">
+     <entry>QTimeEvt_armX(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF, 0);
+BSP_motors(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
+     <!--${AOs::SumoHSM::SM::CalibFront::LINE_DETECTED}-->
+     <tran trig="LINE_DETECTED" target="../1">
+      <action>uint32_t time_until_line = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
+
+int16_t diff_to_reference = time_until_line - 285;
+
+me-&gt;star_velocity += (diff_to_reference / 5);
+
+</action>
+      <tran_glyph conn="225,67,3,0,21,2">
+       <action box="0,-2,15,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack}-->
+     <state name="CalibFrontGoBack">
+      <entry>BSP_motors(-100,-100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
+      <!--${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../1">
+       <tran_glyph conn="234,77,3,3,9">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::CalibeFrontTurn}-->
+      <state name="CalibeFrontTurn">
+       <entry brief="turn">BSP_motors(-100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms, 0);</entry>
+       <!--${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::CalibeFrontTurn::TIMEOUT}-->
+       <tran trig="TIMEOUT" target="../../../../8">
+        <action>QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</action>
+        <tran_glyph conn="256,78,1,1,11,-36,-40">
+         <action box="-28,-39,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="243,74,13,10">
+        <entry box="1,2,8,2"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="234,69,24,17">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="225,56,35,33">
+      <entry box="1,2,29,6"/>
      </state_glyph>
     </state>
     <state_diagram size="271,181"/>
@@ -424,7 +490,8 @@ me-&gt;strategy = 0;
 me-&gt;calib_time_1 = 0;
 me-&gt;calib_time_2 = 0;
 me-&gt;calib_status = 0;
-me-&gt;turn_180_time_ms = 800;</code>
+me-&gt;turn_180_time_ms = 800;
+me-&gt;star_velocity = 60;</code>
   </operation>
  </package>
  <!--${.}-->

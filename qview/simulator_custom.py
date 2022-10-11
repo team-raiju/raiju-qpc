@@ -51,6 +51,7 @@ def custom_qview_init(qview):
         "sumo": PhotoImage(file=HOME_DIR + "/img/raiju.png"),
         "num_0" : PhotoImage(file=HOME_DIR + "/img/num0.png"),
         "num_1" : PhotoImage(file=HOME_DIR + "/img/num1.png"),
+        "num_2" : PhotoImage(file=HOME_DIR + "/img/num2.png"),
         "rc_button" : PhotoImage(file=HOME_DIR + "/img/button_rc.png"),
         "auto_button" : PhotoImage(file=HOME_DIR + "/img/button_auto.png"),
         "calib_button" : PhotoImage(file=HOME_DIR + "/img/button_calib.png"),
@@ -64,6 +65,7 @@ def custom_qview_init(qview):
         "sumo" : qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"]), 
         "num_0" : qview_base.canvas.create_image(50, 570, image=image_dict["num_0"]), 
         "num_1" : qview_base.canvas.create_image(100, 570, image=image_dict["num_1"]), 
+        "num_2" : qview_base.canvas.create_image(150, 570, image=image_dict["num_2"]), 
         "rc_button" : qview_base.canvas.create_image(350, 570, image=image_dict["rc_button"]), 
         "auto_button" : qview_base.canvas.create_image(450, 570, image=image_dict["auto_button"]), 
         "calib_button" : qview_base.canvas.create_image(550, 570, image=image_dict["calib_button"]), 
@@ -74,6 +76,7 @@ def custom_qview_init(qview):
     # Buttons
     qview_base.canvas.tag_bind(canvas_dict["num_0"], "<ButtonPress>",  lambda strategy: change_strategy(0))
     qview_base.canvas.tag_bind(canvas_dict["num_1"], "<ButtonPress>", lambda strategy: change_strategy(1))
+    qview_base.canvas.tag_bind(canvas_dict["num_2"], "<ButtonPress>", lambda strategy: change_strategy(2))
     qview_base.canvas.tag_bind(canvas_dict["rc_button"], "<ButtonPress>", start_rc)
     qview_base.canvas.tag_bind(canvas_dict["auto_button"], "<ButtonPress>", start_auto)
     qview_base.canvas.tag_bind(canvas_dict["calib_button"], "<ButtonPress>", start_calib)
