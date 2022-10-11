@@ -101,6 +101,13 @@ me-&gt;buzzerCount += 1;</action>
 BSP_ledOff();</entry>
      <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
+      <action>int coord_x = BSP_Get_Radio_X();
+int coord_y = BSP_Get_Radio_Y();
+
+int mot1 = coord_y + coord_x;
+int mot2 = coord_y - coord_x;
+
+BSP_motors(mot1, mot2);</action>
       <tran_glyph conn="118,60,3,-1,11">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -603,6 +610,8 @@ void BSP_buzzer_beep(void);
 void BSP_startRC(void);
 void BSP_startAuto(void);
 int BSP_Check_Dist(void);
+int BSP_Get_Radio_X(void);
+int BSP_Get_Radio_Y(void);
 
 /* define the event signals used in the application ------------------------*/
 enum SumoHSMSignals {

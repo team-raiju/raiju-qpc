@@ -9,9 +9,9 @@
   <item name="backups">0</item>
  </group>
  <group name="windows">
-  <item id="AOs::SumoHSM::SM">0,0,1049,681,*</item>
+  <item id="AOs::SumoHSM::SM">0,0,1080,507,*</item>
   <item id=".::src::sumo_hsm.c">0,0,596,300</item>
-  <item id=".::inc::bsp.h">0,118,596,300</item>
+  <item id=".::inc::bsp.h">-156,0,596,300</item>
  </group>
  <group name="search">
   <item name="options">2032128</item>

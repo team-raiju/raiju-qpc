@@ -213,6 +213,13 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA} */
         case RADIO_DATA_SIG: {
+            int coord_x = BSP_Get_Radio_X();
+            int coord_y = BSP_Get_Radio_Y();
+
+            int mot1 = coord_y + coord_x;
+            int mot2 = coord_y - coord_x;
+
+            BSP_motors(mot1, mot2);
             status_ = Q_HANDLED();
             break;
         }

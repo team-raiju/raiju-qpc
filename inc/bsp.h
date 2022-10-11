@@ -48,6 +48,8 @@ void BSP_buzzer_beep(void);
 void BSP_startRC(void);
 void BSP_startAuto(void);
 int BSP_Check_Dist(void);
+int BSP_Get_Radio_X(void);
+int BSP_Get_Radio_Y(void);
 
 /* define the event signals used in the application ------------------------*/
 enum SumoHSMSignals {

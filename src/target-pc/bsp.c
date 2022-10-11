@@ -46,6 +46,8 @@ static QSpyId const l_clock_tick = { QS_AP_ID };
 #endif
 
 int sensor_active = 0;
+int radio_x = 0;
+int radio_y = 0;
 
 void BSP_init(void)   {
     printf("SumoHSM example\n"
@@ -102,6 +104,19 @@ void BSP_ledToggle(void)  {
 }
 
 void BSP_motors(int vel_esq, int vel_dir) {
+
+    if (vel_esq > 100){
+        vel_esq = 100;
+    } else if (vel_esq < -100){
+        vel_esq = -100;
+    }
+
+    if (vel_dir > 100){
+        vel_dir = 100;
+    } else if (vel_dir < -100){
+        vel_dir = -100;
+    }
+
     printf("MOT %d,%d \n", vel_esq, vel_dir); 
     QS_BEGIN_ID(LED, AO_SumoHSM->prio)
        QS_I8(1, 2);
@@ -143,6 +158,18 @@ void BSP_buzzer_beep(void) {
 int BSP_Check_Dist(void) {
 
     return sensor_active;
+
+}
+
+int BSP_Get_Radio_X(){
+
+    return radio_x;
+
+}
+
+int BSP_Get_Radio_Y(){
+
+    return radio_y;
 
 }
 
@@ -233,6 +260,14 @@ void QS_onCommand(uint8_t cmdId,
         case 7: { 
             QEvt evt = {.sig = STOP_AUTO_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            break;
+        }
+
+        case 8: { 
+            QEvt evt = {.sig = RADIO_DATA_SIG};
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            radio_x = param1 - 100;
+            radio_y = param2 - 100;
             break;
         }
 

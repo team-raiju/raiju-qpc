@@ -5,6 +5,7 @@ from tkinter.ttk import * # override the basic Tk widgets with Ttk widgets
 from tkinter.simpledialog import *
 from struct import pack
 from pynput import keyboard
+# from pynput.keyboard import Key
 
 from PIL import Image, ImageTk
 import math
@@ -15,6 +16,7 @@ global qview_base
 global image_dict
 global canvas_dict
 global sumo_robot
+global key_pressed_dict
 
 def custom_menu_command():
     command_name = "RESET POSITION"
@@ -35,15 +37,27 @@ def custom_qview_init(qview):
     global image_dict, canvas_dict
     global last_sensor_active, action_counter
     global sumo_robot
+    global key_pressed_dict
+    global last_key_board
+
 
     HOME_DIR = os.path.dirname(__file__)
 
     sumo_robot = Robot(300, 100)
     action_counter = 0
     last_sensor_active = 0
+    last_key_board = (0,0)
 
     qview_base._view_canvas.set(1)
     qview_base.canvas.configure(width=600, height=600)
+
+    key_pressed_dict = {
+        "up": False,
+        "down": False,
+        "left": False,
+        "right": False,
+    }
+
 
     image_dict = {
         "arena": PhotoImage(file=HOME_DIR + "/img/arena.png"),
@@ -143,6 +157,10 @@ def custom_on_poll():
 
         last_sensor_active = sensor_active
 
+        # Send keyboard info
+        if (action_counter % 8 == 0):
+            send_keyboard()
+
 def start_rc(*args):
     qview_base.command(0, 0)
 
@@ -166,6 +184,33 @@ def idle_command(sensor):
 
 def stop_command(sensor):
     qview_base.command(7, 0)
+
+def send_keyboard():
+    global last_key_board
+
+    # x coordinate
+    x_keyboard = 0
+    if (key_pressed_dict["right"]):
+        x_keyboard = 200
+    elif (key_pressed_dict["left"]):
+        x_keyboard = 0
+    else:
+        x_keyboard = 100
+
+    # y coordinate
+    y_keyboard = 0
+    if (key_pressed_dict["up"]):
+        y_keyboard = 200
+    elif (key_pressed_dict["down"]):
+        y_keyboard = 0
+    else:
+        y_keyboard = 100
+    
+    # if (last_key_board[0] != x_keyboard or last_key_board[1] != y_keyboard):
+    qview_base.command(8, x_keyboard, y_keyboard)
+        # print((x_keyboard, y_keyboard))
+
+    # last_key_board = (x_keyboard, y_keyboard)
 
 def reset_position():
     global image_dict, canvas_dict
@@ -215,15 +260,27 @@ def is_mouse_direction(posx, posy, robot_angle):
 
 # Keyboard data simulating radio data
 def on_press(key):
-    try:
-        print('alphanumeric key {0} pressed'.format(
-            key.char))
-    except AttributeError:
-        print('special key {0} pressed'.format(
-            key))
+    global key_pressed_dict
+    if (key == keyboard.Key.up):
+        key_pressed_dict["up"] = True
+    elif (key == keyboard.Key.down):
+        key_pressed_dict["down"] = True
+    elif (key == keyboard.Key.right):
+        key_pressed_dict["right"] = True
+    elif (key == keyboard.Key.left):
+        key_pressed_dict["left"] = True
+
 
 def on_release(key):
-    print('{0} released'.format(key))
+    global key_pressed_dict
+    if (key == keyboard.Key.up):
+        key_pressed_dict["up"] = False
+    elif (key == keyboard.Key.down):
+        key_pressed_dict["down"] = False
+    elif (key == keyboard.Key.right):
+        key_pressed_dict["right"] = False
+    elif (key == keyboard.Key.left):
+        key_pressed_dict["left"] = False
     
 # ...or, in a non-blocking fashion:
 listener = keyboard.Listener(
