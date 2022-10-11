@@ -4,6 +4,7 @@ from tkinter import *
 from tkinter.ttk import * # override the basic Tk widgets with Ttk widgets
 from tkinter.simpledialog import *
 from struct import pack
+from pynput import keyboard
 
 from PIL import Image, ImageTk
 import math
@@ -211,3 +212,21 @@ def is_mouse_direction(posx, posy, robot_angle):
     
     return 0
 
+
+# Keyboard data simulating radio data
+def on_press(key):
+    try:
+        print('alphanumeric key {0} pressed'.format(
+            key.char))
+    except AttributeError:
+        print('special key {0} pressed'.format(
+            key))
+
+def on_release(key):
+    print('{0} released'.format(key))
+    
+# ...or, in a non-blocking fashion:
+listener = keyboard.Listener(
+    on_press=on_press,
+    on_release=on_release)
+listener.start()

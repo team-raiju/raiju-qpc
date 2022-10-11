@@ -22,6 +22,7 @@ Qview requires python tkinter: ```sudo apt-get install py
 ## Extras
 sudo apt-get install python3-pil python3-pil.imagetk
 pip install playsound
+pip install pyinput
 
 
 ## Env Vars
