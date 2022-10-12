@@ -14,6 +14,7 @@ from PIL import Image, ImageTk
 import math
 
 from robot import *
+from led_stripe import *
 
 USE_PS3_CONTROLLER = True
 
@@ -121,6 +122,9 @@ def custom_qview_init(qview):
     qview_base.canvas.tag_bind(canvas_dict["calib_button"], "<ButtonPress>", start_calib)
     qview_base.canvas.tag_bind(canvas_dict["idle_button"], "<ButtonPress>", idle_command)
     qview_base.canvas.tag_bind(canvas_dict["stop_button"], "<ButtonPress>", stop_command)
+
+    led_stripe_init(qview_base)
+    led_stripe_set(qview_base, 2, '#FFFFFF')
 
     if (USE_PS3_CONTROLLER):
         x = threading.Thread(target=gamepad_thread)
