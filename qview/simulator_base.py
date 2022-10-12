@@ -1774,6 +1774,8 @@ class QSpy:
                 handler = None
                 if (recID == 100):
                     handler = on_user_00
+                elif (recID == 105):
+                    handler = on_user_01
                 if handler is not None:
                     try:
                         handler(packet) # call the packet handler
@@ -1876,11 +1878,16 @@ def on_reset():
 
 def on_run():
     QView.glb_filter("QS_USER_00")
+    QView.glb_filter("QS_USER_01")
     QView.current_obj(OBJ_AO, "l_sumo_hsm")
     return
 
 def on_user_00(packet):
     custom_user_00_packet(packet)
+    return
+
+def on_user_01(packet):
+    custom_user_01_packet(packet)
     return
 
 def main():

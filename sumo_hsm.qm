@@ -97,8 +97,7 @@ me-&gt;buzzerCount += 1;</action>
     </state>
     <!--${AOs::SumoHSM::SM::RCWait}-->
     <state name="RCWait">
-     <entry>BSP_startRC();
-BSP_ledOff();</entry>
+     <entry>BSP_ledOff();</entry>
      <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
       <action>int coord_x = BSP_Get_Radio_X();
@@ -510,6 +509,8 @@ me-&gt;star_velocity = 60;</code>
     <text>#include &lt;math.h&gt;
 #include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
+#include &quot;bsp_led.h&quot;
+#include &quot;bsp_motors.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5
 #define M_PI                3.14159265
@@ -601,14 +602,7 @@ enum {
 #define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
 
 void BSP_init(void);
-void BSP_ledOff(void);
-void BSP_ledOn(void);
-void BSP_ledToggle(void);
-void BSP_motors(int vel_esq, int vel_dir);
-void BSP_ledStrip(int num, int stat);
 void BSP_buzzer_beep(void);
-void BSP_startRC(void);
-void BSP_startAuto(void);
 int BSP_Check_Dist(void);
 int BSP_Get_Radio_X(void);
 int BSP_Get_Radio_Y(void);

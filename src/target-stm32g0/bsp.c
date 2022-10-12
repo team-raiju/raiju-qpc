@@ -94,14 +94,6 @@ void BSP_motors(int vel_esq, int vel_dir) {
 
 }
 
-void BSP_startRC(void) { 
-
-}
-
-void BSP_startAuto(void) { 
-
-}
-
 void BSP_ledStrip(int num, int stat) {
 
 }

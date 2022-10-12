@@ -124,6 +124,10 @@ def custom_qview_init(qview):
 
 
 def custom_user_00_packet(packet):
+    return 
+
+
+def custom_user_01_packet(packet):
     data = qview_base.qunpack("xxTxbxb", packet)        
     log = data[1]     
 
@@ -139,8 +143,7 @@ def custom_user_00_packet(packet):
         data = qview_base.qunpack("xxTxbxbxb", packet)    
         sumo_robot.set_motors(data[2], data[3])
         mot_esq, mot_dir = sumo_robot.get_motors()
-        qview_base.print_text("MOT_ESQ = %d; MOT_DIR = %d"%(mot_esq, mot_dir))    
-
+        qview_base.print_text("MOT_ESQ = %d; MOT_DIR = %d"%(mot_esq, mot_dir))  
 
 def custom_on_poll():
     global action_counter
@@ -212,6 +215,9 @@ def idle_command(sensor):
 def stop_command(sensor):
     qview_base.command(7, 0)
 
+def send_radio_command(ch1, ch2):
+    qview_base.command(8, ch1, ch2)
+
 def send_game_pad():
 
     global last_gamepad
@@ -224,7 +230,7 @@ def send_game_pad():
 
     # Send only when there is change so that the simulator does not get slow
     if (last_gamepad[0] != ch1 or last_gamepad[1] != ch2):
-        qview_base.command(8, ch1, ch2)
+        send_radio_command(ch1, ch2)
         
     last_gamepad = (ch1, ch2)
 
@@ -252,7 +258,7 @@ def send_keyboard():
     else:
         y_keyboard = 127
     
-    qview_base.command(8, x_keyboard, y_keyboard)  
+    send_radio_command(x_keyboard, y_keyboard)  
 
 
 def reset_position():

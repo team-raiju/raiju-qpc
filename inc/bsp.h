@@ -39,14 +39,7 @@ enum {
 #define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
 
 void BSP_init(void);
-void BSP_ledOff(void);
-void BSP_ledOn(void);
-void BSP_ledToggle(void);
-void BSP_motors(int vel_esq, int vel_dir);
-void BSP_ledStrip(int num, int stat);
 void BSP_buzzer_beep(void);
-void BSP_startRC(void);
-void BSP_startAuto(void);
 int BSP_Check_Dist(void);
 int BSP_Get_Radio_X(void);
 int BSP_Get_Radio_Y(void);

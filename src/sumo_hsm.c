@@ -31,6 +31,8 @@
 #include <math.h>
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
+#include "bsp_led.h"
+#include "bsp_motors.h"
 
 #define CALIB_ANGLE_MULT    2.5
 #define M_PI                3.14159265
@@ -206,7 +208,6 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::RCWait} */
         case Q_ENTRY_SIG: {
-            BSP_startRC();
             BSP_ledOff();
             status_ = Q_HANDLED();
             break;

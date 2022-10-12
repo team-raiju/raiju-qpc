@@ -29,18 +29,18 @@
 */
 /*$endhead${.::bsp.c} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 /* Board Support Package implementation for desktop OS (Windows, Linux, MacOS) */
-#include "qpc.h"    /* QP/C framework API */
-#include "bsp.h"    /* Board Support Package interface */
 #include <stdio.h>  /* for printf()/fprintf() */
 #include <stdlib.h> /* for exit() */
 #include <stdbool.h>
 
+#include "qpc.h"    /* QP/C framework API */
+#include "bsp.h"    /* Board Support Package interface */
+#include "bsp_led.h"
+#include "bsp_motors.h"
+
 #ifdef Q_SPY
 
-enum {
-   LED = QS_USER
-};
-
+#include "qs_defines.h"
 static QSpyId const l_clock_tick = { QS_AP_ID };
 
 #endif
@@ -50,19 +50,22 @@ int radio_x = 0;
 int radio_y = 0;
 
 void BSP_init(void)   {
-    printf("SumoHSM example\n"
+    printf("SumoHSM\n"
            "QP/C version: %s\n"
            "Press Ctrl-C to quit...\n",
            QP_VERSION_STR);
 
+    BSP_ledInit();
+    BSP_motorsInit();
+
     #ifdef Q_SPY
 
     QS_INIT((void *)0);
-        
-
+    
     QS_FUN_DICTIONARY(&QHsm_top);
     QS_OBJ_DICTIONARY(&l_clock_tick);
-    QS_USR_DICTIONARY(LED);
+    QS_USR_DICTIONARY(SIMULATOR);
+    QS_USR_DICTIONARY(PERIPHERALS);
 
     /* setup the QS filters... */
     QS_GLB_FILTER(QS_ALL_RECORDS);
@@ -73,82 +76,10 @@ void BSP_init(void)   {
 
     
 }
-void BSP_ledOff(void) { 
-    printf("LED OFF\n"); 
-    QS_BEGIN_ID(LED, AO_SumoHSM->prio)
-       QS_I8(1, 0);
-       QS_I8(1, 0);
-    QS_END()
-}
-
-
-
-void BSP_ledOn(void)  { 
-    printf("LED ON\n");  
-    QS_BEGIN_ID(LED, AO_SumoHSM->prio)
-       QS_I8(1, 0);
-       QS_I8(1, 1);
-    QS_END()
-
-}
-
-void BSP_ledToggle(void)  {
-    static bool toggle = false;
-    if (toggle){
-        BSP_ledOff();
-    } else {
-        BSP_ledOn();
-    }
-    toggle = !toggle;
-
-}
-
-void BSP_motors(int vel_esq, int vel_dir) {
-
-    if (vel_esq > 100){
-        vel_esq = 100;
-    } else if (vel_esq < -100){
-        vel_esq = -100;
-    }
-
-    if (vel_dir > 100){
-        vel_dir = 100;
-    } else if (vel_dir < -100){
-        vel_dir = -100;
-    }
-
-    printf("MOT %d,%d \n", vel_esq, vel_dir); 
-    QS_BEGIN_ID(LED, AO_SumoHSM->prio)
-       QS_I8(1, 2);
-       QS_I8(1, vel_esq);
-       QS_I8(1, vel_dir);
-    QS_END()
-
-}
-void BSP_startRC(void)  { 
-    printf("START RC\n");  
-    //BSP_motors(100,-100);
-}
-
-void BSP_startAuto(void)  { 
-    printf("START AUTO\n"); 
-    //BSP_motors(100,-100);
-}
-
-
-void BSP_ledStrip(int num, int stat) {
-
-    if (stat){
-        printf("Led Strip Num %d ON\n", num); 
-    } else {
-        printf("Led Strip Num %d OFF\n", num); 
-    }
-
-}
 
 void BSP_buzzer_beep(void) {
     printf("Buzzer Beep\n");
-    QS_BEGIN_ID(LED, AO_SumoHSM->prio)
+    QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
        QS_I8(1, 1);
        QS_I8(1, 1);
     QS_END()
@@ -156,19 +87,14 @@ void BSP_buzzer_beep(void) {
 }
 
 int BSP_Check_Dist(void) {
-
     return sensor_active;
-
 }
 
 int BSP_Get_Radio_X(){
-
     return radio_x;
-
 }
 
 int BSP_Get_Radio_Y(){
-
     return radio_y;
 
 }
@@ -214,18 +140,18 @@ void QS_onCommand(uint8_t cmdId,
     switch (cmdId) {
        case 0: { 
             QEvt evt = {.sig = START_RC_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
         case 1: { 
             QEvt evt = {.sig = START_AUTO_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
         case 2: { 
             QEvt evt = {.sig = START_CALIB_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
@@ -239,33 +165,33 @@ void QS_onCommand(uint8_t cmdId,
 
         case 4: { 
             QEvt evt = {.sig = LINE_DETECTED_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
         case 5: { 
             sensor_active = param1;
             QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             printf("Sensor Seeing = %d\r\n", param1);
             break;
         }
 
         case 6: { 
             QEvt evt = {.sig = GO_TO_IDLE_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
         case 7: { 
             QEvt evt = {.sig = STOP_AUTO_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
         case 8: { 
             QEvt evt = {.sig = RADIO_DATA_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             radio_x = param1 - 127;
             radio_y = param2 - 127;
             break;
