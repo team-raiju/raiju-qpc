@@ -5,12 +5,17 @@ from tkinter.ttk import * # override the basic Tk widgets with Ttk widgets
 from tkinter.simpledialog import *
 from struct import pack
 from pynput import keyboard
-# from pynput.keyboard import Key
+from inputs import get_gamepad
+
+import threading
+
 
 from PIL import Image, ImageTk
 import math
 
 from robot import *
+
+USE_PS3_CONTROLLER = True
 
 global qview_base
 global image_dict
@@ -23,6 +28,11 @@ def custom_menu_command():
     command_function =  reset_position
 
     return (command_name, command_function)
+
+def custom_on_dettach():
+    # print("Custom action on dettach")
+    return
+        
 
 
 def custom_qview_init(qview):
@@ -37,8 +47,7 @@ def custom_qview_init(qview):
     global image_dict, canvas_dict
     global last_sensor_active, action_counter
     global sumo_robot
-    global key_pressed_dict
-    global last_key_board
+    global key_pressed_dict, gamepad_dict
 
 
     HOME_DIR = os.path.dirname(__file__)
@@ -46,7 +55,6 @@ def custom_qview_init(qview):
     sumo_robot = Robot(300, 100)
     action_counter = 0
     last_sensor_active = 0
-    last_key_board = (0,0)
 
     qview_base._view_canvas.set(1)
     qview_base.canvas.configure(width=600, height=600)
@@ -56,6 +64,13 @@ def custom_qview_init(qview):
         "down": False,
         "left": False,
         "right": False,
+    }
+
+    gamepad_dict = {
+        "ch1": 127,
+        "ch2": 127,
+        "ch3": 127,
+        "ch4": 127,
     }
 
 
@@ -97,6 +112,12 @@ def custom_qview_init(qview):
     qview_base.canvas.tag_bind(canvas_dict["calib_button"], "<ButtonPress>", start_calib)
     qview_base.canvas.tag_bind(canvas_dict["idle_button"], "<ButtonPress>", idle_command)
     qview_base.canvas.tag_bind(canvas_dict["stop_button"], "<ButtonPress>", stop_command)
+
+    if (USE_PS3_CONTROLLER):
+        x = threading.Thread(target=gamepad_thread)
+        x.daemon = True
+        x.start()
+
 
 
 def custom_user_00_packet(packet):
@@ -158,8 +179,11 @@ def custom_on_poll():
         last_sensor_active = sensor_active
 
         # Send keyboard info
-        if (action_counter % 8 == 0):
-            send_keyboard()
+        if (action_counter % 16 == 0):
+            if (USE_PS3_CONTROLLER):
+                send_game_pad()
+            else:
+                send_keyboard()
 
 def start_rc(*args):
     qview_base.command(0, 0)
@@ -185,32 +209,40 @@ def idle_command(sensor):
 def stop_command(sensor):
     qview_base.command(7, 0)
 
+def send_game_pad():
+    # x coordinate
+    ch1 = gamepad_dict["ch1"]
+    
+    # y coordinate
+    ch2 = 255 - gamepad_dict["ch2"]
+
+    qview_base.command(8, ch1, ch2)
+
+
+    return
+
 def send_keyboard():
-    global last_key_board
 
     # x coordinate
     x_keyboard = 0
     if (key_pressed_dict["right"]):
-        x_keyboard = 200
+        x_keyboard = 255
     elif (key_pressed_dict["left"]):
         x_keyboard = 0
     else:
-        x_keyboard = 100
+        x_keyboard = 127
 
     # y coordinate
     y_keyboard = 0
     if (key_pressed_dict["up"]):
-        y_keyboard = 200
+        y_keyboard = 255
     elif (key_pressed_dict["down"]):
         y_keyboard = 0
     else:
-        y_keyboard = 100
+        y_keyboard = 127
     
-    # if (last_key_board[0] != x_keyboard or last_key_board[1] != y_keyboard):
     qview_base.command(8, x_keyboard, y_keyboard)
-        # print((x_keyboard, y_keyboard))
 
-    # last_key_board = (x_keyboard, y_keyboard)
 
 def reset_position():
     global image_dict, canvas_dict
@@ -287,3 +319,18 @@ listener = keyboard.Listener(
     on_press=on_press,
     on_release=on_release)
 listener.start()
+
+
+def gamepad_thread():
+
+    global gamepad_dict
+    while(True):
+        event = get_gamepad()
+        if (event[0].code == "ABS_RX"):
+            gamepad_dict["ch1"] = event[0].state
+        elif (event[0].code == "ABS_RY"):
+            gamepad_dict["ch2"] = event[0].state
+        elif (event[0].code == "ABS_X"):
+            gamepad_dict["ch3"] = event[0].state
+        elif (event[0].code == "ABS_Y"):
+            gamepad_dict["ch4"] = event[0].state

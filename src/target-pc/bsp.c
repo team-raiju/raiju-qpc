@@ -266,8 +266,8 @@ void QS_onCommand(uint8_t cmdId,
         case 8: { 
             QEvt evt = {.sig = RADIO_DATA_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, LED);
-            radio_x = param1 - 100;
-            radio_y = param2 - 100;
+            radio_x = param1 - 127;
+            radio_y = param2 - 127;
             break;
         }
 

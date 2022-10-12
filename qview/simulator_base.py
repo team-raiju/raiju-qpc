@@ -1911,6 +1911,8 @@ def main():
     QView._gui  = None
     QSpy._detach()
 
+    custom_on_dettach()
+
     sys.exit(QView._err)
 
 #=============================================================================
