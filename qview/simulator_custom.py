@@ -87,8 +87,6 @@ def custom_qview_init(qview):
 
     image_dict = {
         "arena": PhotoImage(file=HOME_DIR + "/img/arena.png"),
-        "led_on": PhotoImage(file=HOME_DIR + "/img/led_on.png").subsample(3,3),
-        "led_off": PhotoImage(file=HOME_DIR + "/img/led_off.png").subsample(3,3),
         "sumo": PhotoImage(file=HOME_DIR + "/img/raiju.png"),
         "num_0" : PhotoImage(file=HOME_DIR + "/img/num0.png"),
         "num_1" : PhotoImage(file=HOME_DIR + "/img/num1.png"),
@@ -102,7 +100,7 @@ def custom_qview_init(qview):
 
     canvas_dict = {
         "arena" : qview_base.canvas.create_image(300,  300, image=image_dict["arena"]), 
-        "led" : qview_base.canvas.create_image(50,  30, image=image_dict["led_on"]), 
+        "led" : qview_base.canvas.create_rectangle(10, 5, 50, 45, outline = "black", fill = '#000000', width = 1), 
         "sumo" : qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"]), 
         "num_0" : qview_base.canvas.create_image(50, 570, image=image_dict["num_0"]), 
         "num_1" : qview_base.canvas.create_image(100, 570, image=image_dict["num_1"]), 
@@ -153,9 +151,9 @@ def process_led_id_packet(packet):
     data = qview_base.qunpack("xxTxbxb", packet)    
     led_stat = data[2]
     if (led_stat == 1):
-        qview_base.canvas.itemconfig(canvas_dict["led"], image=image_dict["led_on"])
+        qview_base.canvas.itemconfig(canvas_dict["led"], fill = '#FFFFFF')
     else:
-        qview_base.canvas.itemconfig(canvas_dict["led"], image=image_dict["led_off"])
+        qview_base.canvas.itemconfig(canvas_dict["led"], fill = '#000000')
     qview_base.print_text("Timestamp = %d; LED = %d"%(data[0], data[2]))  
     
 def process_motor_id_packet(packet):
