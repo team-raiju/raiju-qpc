@@ -48,6 +48,9 @@ def custom_qview_init(qview):
     global last_sensor_active, action_counter
     global sumo_robot
     global key_pressed_dict, gamepad_dict
+    global last_gamepad
+    last_gamepad = (0,0)
+
 
 
     HOME_DIR = os.path.dirname(__file__)
@@ -179,7 +182,7 @@ def custom_on_poll():
         last_sensor_active = sensor_active
 
         # Send keyboard info
-        if (action_counter % 16 == 0):
+        if (action_counter % 12 == 0):
             if (USE_PS3_CONTROLLER):
                 send_game_pad()
             else:
@@ -210,13 +213,21 @@ def stop_command(sensor):
     qview_base.command(7, 0)
 
 def send_game_pad():
+
+    global last_gamepad
+
     # x coordinate
     ch1 = gamepad_dict["ch1"]
     
     # y coordinate
     ch2 = 255 - gamepad_dict["ch2"]
 
-    qview_base.command(8, ch1, ch2)
+    # Send only when there is change so that the simulator does not get slow
+    if (last_gamepad[0] != ch1 or last_gamepad[1] != ch2):
+        qview_base.command(8, ch1, ch2)
+        
+    last_gamepad = (ch1, ch2)
+
 
 
     return
@@ -241,7 +252,7 @@ def send_keyboard():
     else:
         y_keyboard = 127
     
-    qview_base.command(8, x_keyboard, y_keyboard)
+    qview_base.command(8, x_keyboard, y_keyboard)  
 
 
 def reset_position():
