@@ -33,6 +33,8 @@
 #include "bsp.h"    /* Board Support Package interface */
 #include "bsp_led.h"
 #include "bsp_motors.h"
+#include "bsp_buzzer.h"
+#include "bsp_radio.h"
 
 #define CALIB_ANGLE_MULT    2.5
 #define M_PI                3.14159265
@@ -176,7 +178,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::Idle::PLAY_BUZZER} */
         case PLAY_BUZZER_SIG: {
             BSP_ledStrip(me->buzzerCount, 1);
-            BSP_buzzer_beep();
+            BSP_buzzerBeep();
 
             if (me->buzzerCount == 16) {
                 QTimeEvt_armX(&me->buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
@@ -214,8 +216,8 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA} */
         case RADIO_DATA_SIG: {
-            int coord_x = BSP_Get_Radio_X();
-            int coord_y = BSP_Get_Radio_Y();
+            int coord_x = BSP_radioGetChannel(RADIO_CH1);
+            int coord_y = BSP_radioGetChannel(RADIO_CH2);
 
             int mot1 = coord_y + coord_x;
             int mot2 = coord_y - coord_x;

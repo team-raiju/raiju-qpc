@@ -38,6 +38,7 @@
 #include "bsp_led.h"
 #include "bsp_motors.h"
 #include "bsp_buzzer.h"
+#include "bsp_radio.h"
 
 #ifdef Q_SPY
 
@@ -47,14 +48,9 @@ static QSpyId const l_clock_tick = { QS_AP_ID };
 #endif
 
 int sensor_active = 0;
-int radio_x = 0;
-int radio_y = 0;
 
 void BSP_init(void)   {
-    printf("SumoHSM\n"
-           "QP/C version: %s\n"
-           "Press Ctrl-C to quit...\n",
-           QP_VERSION_STR);
+    printf("SumoHSM;  QP/C version: %s\r\n",  QP_VERSION_STR);
 
     BSP_ledInit();
     BSP_motorsInit();
@@ -74,24 +70,12 @@ void BSP_init(void)   {
 
     #endif
 
-
-    
 }
 
 
 int BSP_Check_Dist(void) {
     return sensor_active;
 }
-
-int BSP_Get_Radio_X(){
-    return radio_x;
-}
-
-int BSP_Get_Radio_Y(){
-    return radio_y;
-
-}
-
 
 /* callback functions needed by the framework ------------------------------*/
 void QF_onStartup(void) {
@@ -185,8 +169,9 @@ void QS_onCommand(uint8_t cmdId,
         case 8: { 
             QEvt evt = {.sig = RADIO_DATA_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-            radio_x = param1 - 127;
-            radio_y = param2 - 127;
+            int16_t radio_x = param1 - 127;
+            int16_t radio_y = param2 - 127;
+            BSP_radioSetChannel(radio_x, radio_y);
             break;
         }
 

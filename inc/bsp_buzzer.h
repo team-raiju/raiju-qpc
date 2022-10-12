@@ -2,7 +2,7 @@
 #define BSP_BUZZER_H
 
 void BSP_buzzerInit(void);
-void BSP_buzzerBeep(int vel_esq, int vel_dir);
+void BSP_buzzerBeep(void);
 
 
 #endif /* BSP_BUZZER_H */

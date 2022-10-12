@@ -70,7 +70,7 @@ QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      <!--${AOs::SumoHSM::SM::Idle::PLAY_BUZZER}-->
      <tran trig="PLAY_BUZZER">
       <action>BSP_ledStrip(me-&gt;buzzerCount, 1);
-BSP_buzzer_beep();
+BSP_buzzerBeep();
 
 if (me-&gt;buzzerCount == 16) {
     QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
@@ -100,8 +100,8 @@ me-&gt;buzzerCount += 1;</action>
      <entry>BSP_ledOff();</entry>
      <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
-      <action>int coord_x = BSP_Get_Radio_X();
-int coord_y = BSP_Get_Radio_Y();
+      <action>int coord_x = BSP_radioGetChannel(RADIO_CH1);
+int coord_y = BSP_radioGetChannel(RADIO_CH2);
 
 int mot1 = coord_y + coord_x;
 int mot2 = coord_y - coord_x;
@@ -511,6 +511,8 @@ me-&gt;star_velocity = 60;</code>
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
 #include &quot;bsp_led.h&quot;
 #include &quot;bsp_motors.h&quot;
+#include &quot;bsp_buzzer.h&quot;
+#include &quot;bsp_radio.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5
 #define M_PI                3.14159265
@@ -602,10 +604,7 @@ enum {
 #define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
 
 void BSP_init(void);
-void BSP_buzzer_beep(void);
 int BSP_Check_Dist(void);
-int BSP_Get_Radio_X(void);
-int BSP_Get_Radio_Y(void);
 
 /* define the event signals used in the application ------------------------*/
 enum SumoHSMSignals {

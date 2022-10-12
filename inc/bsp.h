@@ -39,10 +39,7 @@ enum {
 #define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
 
 void BSP_init(void);
-void BSP_buzzer_beep(void);
 int BSP_Check_Dist(void);
-int BSP_Get_Radio_X(void);
-int BSP_Get_Radio_Y(void);
 
 /* define the event signals used in the application ------------------------*/
 enum SumoHSMSignals {
