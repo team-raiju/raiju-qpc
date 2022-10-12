@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include 
 #include "bsp_led.h"
 #include "main.h"
 #include "gpio.h"
@@ -30,6 +31,6 @@ void BSP_ledToggle(void)  {
 }
 
 
-void BSP_ledStrip(int num, int stat) {
+void BSP_ledStripe(uint8_t num, uint8_t r, uint8_t g, uint8_t b) {
  
 }

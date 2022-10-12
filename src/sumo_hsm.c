@@ -180,13 +180,14 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::Idle::PLAY_BUZZER} */
         case PLAY_BUZZER_SIG: {
-            BSP_ledStrip(me->buzzerCount, 1);
             BSP_buzzerBeep();
 
-            if (me->buzzerCount == 16) {
+            if (me->buzzerCount == 15) {
                 QTimeEvt_armX(&me->buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
-            } else if (me->buzzerCount < 16){
+                BSP_ledStripe(me->buzzerCount, 0x94, 0x00, 0xD3);
+            } else if (me->buzzerCount < 15){
                 QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+                BSP_ledStripe(me->buzzerCount, 0x94, 0x00, 0xD3);
             }
 
 

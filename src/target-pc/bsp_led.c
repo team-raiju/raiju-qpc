@@ -45,12 +45,16 @@ void BSP_ledToggle(void)  {
 }
 
 
-void BSP_ledStrip(int num, int stat) {
+void BSP_ledStripe(uint8_t num, uint8_t r, uint8_t g, uint8_t b) {
 
-    if (stat){
-        printf("Led Strip Num %d ON\n", num); 
-    } else {
-        printf("Led Strip Num %d OFF\n", num); 
-    }
+    printf("Led Strip Num %d RGB = %x,%x,%x\n", num, r, g, b); 
+
+    QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
+       QS_U8(1, QS_LED_STRIPE_ID);
+       QS_U8(1, num);
+       QS_U8(1, r);
+       QS_U8(1, g);
+       QS_U8(1, b);
+    QS_END()
 
 }

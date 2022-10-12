@@ -69,13 +69,14 @@ QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::PLAY_BUZZER}-->
      <tran trig="PLAY_BUZZER">
-      <action>BSP_ledStrip(me-&gt;buzzerCount, 1);
-BSP_buzzerBeep();
+      <action>BSP_buzzerBeep();
 
-if (me-&gt;buzzerCount == 16) {
+if (me-&gt;buzzerCount == 15) {
     QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
-} else if (me-&gt;buzzerCount &lt; 16){
+    BSP_ledStripe(me-&gt;buzzerCount, 0x94, 0x00, 0xD3);
+} else if (me-&gt;buzzerCount &lt; 15){
     QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+    BSP_ledStripe(me-&gt;buzzerCount, 0x94, 0x00, 0xD3);
 }
 
 
