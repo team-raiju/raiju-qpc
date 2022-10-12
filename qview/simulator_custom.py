@@ -57,7 +57,7 @@ def custom_qview_init(qview):
     global sumo_robot
     global key_pressed_dict, gamepad_dict
     global last_gamepad
-    last_gamepad = (0,0)
+    last_gamepad = (0,0,0,0)
 
 
 
@@ -116,10 +116,10 @@ def custom_qview_init(qview):
     qview_base.canvas.tag_bind(canvas_dict["num_0"], "<ButtonPress>",  lambda strategy: change_strategy(0))
     qview_base.canvas.tag_bind(canvas_dict["num_1"], "<ButtonPress>", lambda strategy: change_strategy(1))
     qview_base.canvas.tag_bind(canvas_dict["num_2"], "<ButtonPress>", lambda strategy: change_strategy(2))
-    qview_base.canvas.tag_bind(canvas_dict["rc_button"], "<ButtonPress>", start_rc)
-    qview_base.canvas.tag_bind(canvas_dict["auto_button"], "<ButtonPress>", start_auto)
-    qview_base.canvas.tag_bind(canvas_dict["calib_button"], "<ButtonPress>", start_calib)
-    qview_base.canvas.tag_bind(canvas_dict["idle_button"], "<ButtonPress>", idle_command)
+    qview_base.canvas.tag_bind(canvas_dict["rc_button"], "<ButtonPress>", start_command)
+    qview_base.canvas.tag_bind(canvas_dict["auto_button"], "<ButtonPress>", start_command)
+    qview_base.canvas.tag_bind(canvas_dict["calib_button"], "<ButtonPress>", radio_evt1_command)
+    qview_base.canvas.tag_bind(canvas_dict["idle_button"], "<ButtonPress>", radio_evt2_command)
     qview_base.canvas.tag_bind(canvas_dict["stop_button"], "<ButtonPress>", stop_command)
 
     led_stripe_init(qview_base)
@@ -226,32 +226,32 @@ def custom_on_poll():
             else:
                 send_keyboard()
 
-def start_rc(*args):
+def start_command(*args):
     qview_base.command(0, 0)
 
-def start_auto(*args):
+def stop_command(*args):
     qview_base.command(1, 0)
 
-def start_calib(*args):
-    qview_base.command(2, 0)
-
 def change_strategy(strategy):
-    qview_base.command(3, strategy)
+    qview_base.command(2, strategy)
 
 def line_command():
-    qview_base.command(4, 0)
+    qview_base.command(3, 0)
 
 def sensor_command(sensor):
-    qview_base.command(5, sensor)
+    qview_base.command(4, sensor)
 
-def idle_command(sensor):
+def radio_evt1_command(*args):
+    qview_base.command(5, 0)
+
+def radio_evt2_command(*args):
     qview_base.command(6, 0)
 
-def stop_command(sensor):
-    qview_base.command(7, 0)
+def send_radio_command_ch1_ch2(ch1, ch2):
+    qview_base.command(7, ch1, ch2)
 
-def send_radio_command(ch1, ch2):
-    qview_base.command(8, ch1, ch2)
+def send_radio_command_ch3_ch4(ch3, ch4):
+    qview_base.command(8, ch3, ch4)
 
 def send_game_pad():
 
@@ -263,11 +263,16 @@ def send_game_pad():
     # y coordinate
     ch2 = 255 - gamepad_dict["ch2"]
 
+    ch3 = gamepad_dict["ch3"]
+
+    ch4 = gamepad_dict["ch4"]
+
     # Send only when there is change so that the simulator does not get slow
-    if (last_gamepad[0] != ch1 or last_gamepad[1] != ch2):
-        send_radio_command(ch1, ch2)
+    if (last_gamepad[0] != ch1 or last_gamepad[1] != ch2 or last_gamepad[2] != ch3 or last_gamepad[3] != ch3):
+        send_radio_command_ch1_ch2(ch1, ch2)
+        send_radio_command_ch3_ch4(ch3, ch4)
         
-    last_gamepad = (ch1, ch2)
+    last_gamepad = (ch1, ch2, ch3, ch4)
 
 def send_keyboard():
 
@@ -289,7 +294,7 @@ def send_keyboard():
     else:
         y_keyboard = 127
     
-    send_radio_command(x_keyboard, y_keyboard)  
+    send_radio_command_ch1_ch2(x_keyboard, y_keyboard)  
 
 
 def reset_position():
@@ -378,7 +383,7 @@ def gamepad_thread():
             gamepad_dict["ch1"] = event[0].state
         elif (event[0].code == "ABS_RY"):
             gamepad_dict["ch2"] = event[0].state
-        elif (event[0].code == "ABS_X"):
+        elif (event[0].code == "BTN_DPAD_RIGHT"):
             gamepad_dict["ch3"] = event[0].state
-        elif (event[0].code == "ABS_Y"):
+        elif (event[0].code == "BTN_DPAD_UP"):
             gamepad_dict["ch4"] = event[0].state

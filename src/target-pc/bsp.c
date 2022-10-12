@@ -114,36 +114,30 @@ void QS_onCommand(uint8_t cmdId,
 
     switch (cmdId) {
        case 0: { 
-            QEvt evt = {.sig = START_RC_SIG};
+            QEvt evt = {.sig = START_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
         case 1: { 
-            QEvt evt = {.sig = START_AUTO_SIG};
+            QEvt evt = {.sig = STOP_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
         case 2: { 
-            QEvt evt = {.sig = START_CALIB_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-            break;
-        }
-
-        case 3: { 
             SumoHSM *me = (SumoHSM *)AO_SumoHSM;
             me->strategy = param1;
             printf("Strategy = %d\r\n", param1);
             break;
         }
 
-        case 4: { 
+        case 3: { 
             QEvt evt = {.sig = LINE_DETECTED_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
-        case 5: { 
+        case 4: { 
             BSP_distSensorDisableAll();
             
             if (param1 != 0){
@@ -156,25 +150,35 @@ void QS_onCommand(uint8_t cmdId,
             break;
         }
 
+        case 5: { 
+            QEvt evt = {.sig = RADIO_EVT_1_SIG};
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+            break;
+        }
+
         case 6: { 
-            QEvt evt = {.sig = GO_TO_IDLE_SIG};
+            QEvt evt = {.sig = RADIO_EVT_2_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
         case 7: { 
-            QEvt evt = {.sig = STOP_AUTO_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-            break;
-        }
-
-        case 8: { 
             QEvt evt = {.sig = RADIO_DATA_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             int16_t radio_ch1 = param1 - 127;
             int16_t radio_ch2 = param2 - 127;
             BSP_radioSetChannel(RADIO_CH1, radio_ch1);
             BSP_radioSetChannel(RADIO_CH2, radio_ch2);
+            break;
+        }
+
+        case 8: { 
+            QEvt evt = {.sig = RADIO_DATA_SIG};
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+            int16_t radio_ch3 = param1;
+            int16_t radio_ch4 = param2;
+            BSP_radioSetChannel(RADIO_CH3, radio_ch3);
+            BSP_radioSetChannel(RADIO_CH4, radio_ch4);
             break;
         }
 

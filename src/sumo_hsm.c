@@ -79,6 +79,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_CalibFront(SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_CalibFrontGoBack(SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_CalibeFrontTurn(SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e);
 /*$enddecl${AOs::SumoHSM} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 /* instantiate the Blinky active object ------------------------------------*/
@@ -139,6 +140,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_CalibFront);
     QS_FUN_DICTIONARY(&SumoHSM_CalibFrontGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_CalibeFrontTurn);
+    QS_FUN_DICTIONARY(&SumoHSM_RC);
 
     return Q_TRAN(&SumoHSM_Idle);
 }
@@ -168,13 +170,8 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::Idle::START_RC} */
-        case START_RC_SIG: {
-            status_ = Q_TRAN(&SumoHSM_RCWait);
-            break;
-        }
-        /*${AOs::SumoHSM::SM::Idle::START_AUTO} */
-        case START_AUTO_SIG: {
+        /*${AOs::SumoHSM::SM::Idle::RADIO_EVT_1} */
+        case RADIO_EVT_1_SIG: {
             status_ = Q_TRAN(&SumoHSM_AutoWait);
             break;
         }
@@ -195,11 +192,6 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::Idle::START_CALIB} */
-        case START_CALIB_SIG: {
-            status_ = Q_TRAN(&SumoHSM_CalibWait);
-            break;
-        }
         default: {
             status_ = Q_SUPER(&QHsm_top);
             break;
@@ -215,24 +207,35 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::RCWait} */
         case Q_ENTRY_SIG: {
             BSP_ledOff();
+            QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA} */
-        case RADIO_DATA_SIG: {
-            int coord_x = BSP_radioGetChannel(RADIO_CH1);
-            int coord_y = BSP_radioGetChannel(RADIO_CH2);
-
-            int mot1 = coord_y + coord_x;
-            int mot2 = coord_y - coord_x;
-
-            BSP_motors(mot1, mot2);
+        /*${AOs::SumoHSM::SM::RCWait} */
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->timeEvt);
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::RCWait::GO_TO_IDLE} */
-        case GO_TO_IDLE_SIG: {
+        /*${AOs::SumoHSM::SM::RCWait::RADIO_EVT_2} */
+        case RADIO_EVT_2_SIG: {
             status_ = Q_TRAN(&SumoHSM_Idle);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::RCWait::START} */
+        case START_SIG: {
+            status_ = Q_TRAN(&SumoHSM_RC);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::RCWait::RADIO_EVT_1} */
+        case RADIO_EVT_1_SIG: {
+            status_ = Q_TRAN(&SumoHSM_CalibWait);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::RCWait::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            BSP_ledToggle();
+            status_ = Q_HANDLED();
             break;
         }
         default: {
@@ -258,8 +261,8 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
             status_ = Q_TRAN(&SumoHSM_LineGoBack);
             break;
         }
-        /*${AOs::SumoHSM::SM::StarStrategy::STOP_AUTO} */
-        case STOP_AUTO_SIG: {
+        /*${AOs::SumoHSM::SM::StarStrategy::STOP} */
+        case STOP_SIG: {
             status_ = Q_TRAN(&SumoHSM_AutoWait);
             break;
         }
@@ -300,13 +303,13 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::AutoWait::START_AUTO} */
-        case START_AUTO_SIG: {
-            /*${AOs::SumoHSM::SM::AutoWait::START_AUTO::[strategy_0]} */
+        /*${AOs::SumoHSM::SM::AutoWait::START} */
+        case START_SIG: {
+            /*${AOs::SumoHSM::SM::AutoWait::START::[strategy_0]} */
             if (me->strategy == 0) {
                 status_ = Q_TRAN(&SumoHSM_StarStrategy);
             }
-            /*${AOs::SumoHSM::SM::AutoWait::START_AUTO::[strategy_1]} */
+            /*${AOs::SumoHSM::SM::AutoWait::START::[strategy_1]} */
             else if (me->strategy == 1) {
                 status_ = Q_TRAN(&SumoHSM_StepsStrategy);
             }
@@ -315,9 +318,14 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             }
             break;
         }
-        /*${AOs::SumoHSM::SM::AutoWait::GO_TO_IDLE} */
-        case GO_TO_IDLE_SIG: {
+        /*${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_2} */
+        case RADIO_EVT_2_SIG: {
             status_ = Q_TRAN(&SumoHSM_Idle);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_1} */
+        case RADIO_EVT_1_SIG: {
+            status_ = Q_TRAN(&SumoHSM_RCWait);
             break;
         }
         default: {
@@ -363,8 +371,8 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::StepsStrategy::STOP_AUTO} */
-        case STOP_AUTO_SIG: {
+        /*${AOs::SumoHSM::SM::StepsStrategy::STOP} */
+        case STOP_SIG: {
             status_ = Q_TRAN(&SumoHSM_AutoWait);
             break;
         }
@@ -579,16 +587,23 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
         case Q_ENTRY_SIG: {
             BSP_motors(0,0);
             me->calib_status = 0;
+            QTimeEvt_armX(&me->timeEvt, 2 * BSP_TICKS_PER_SEC, 2 * BSP_TICKS_PER_SEC);
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::CalibWait::START_CALIB} */
-        case START_CALIB_SIG: {
-            /*${AOs::SumoHSM::SM::CalibWait::START_CALIB::[strategy_0||strategy_1]} */
+        /*${AOs::SumoHSM::SM::CalibWait} */
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->timeEvt);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibWait::START} */
+        case START_SIG: {
+            /*${AOs::SumoHSM::SM::CalibWait::START::[strategy_0||strategy_1]} */
             if (me->strategy == 0 || me->strategy == 1) {
                 status_ = Q_TRAN(&SumoHSM_CalibTurn);
             }
-            /*${AOs::SumoHSM::SM::CalibWait::START_CALIB::[strategy_2]} */
+            /*${AOs::SumoHSM::SM::CalibWait::START::[strategy_2]} */
             else if (me->strategy == 2) {
                 status_ = Q_TRAN(&SumoHSM_CalibFront);
             }
@@ -597,9 +612,20 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
             }
             break;
         }
-        /*${AOs::SumoHSM::SM::CalibWait::GO_TO_IDLE} */
-        case GO_TO_IDLE_SIG: {
+        /*${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_1} */
+        case RADIO_EVT_1_SIG: {
+            status_ = Q_TRAN(&SumoHSM_AutoWait);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_2} */
+        case RADIO_EVT_2_SIG: {
             status_ = Q_TRAN(&SumoHSM_Idle);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibWait::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            BSP_ledToggle();
+            status_ = Q_HANDLED();
             break;
         }
         default: {
@@ -689,6 +715,41 @@ static QState SumoHSM_CalibeFrontTurn(SumoHSM * const me, QEvt const * const e) 
     }
     return status_;
 }
+
+/*${AOs::SumoHSM::SM::RC} ..................................................*/
+static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::RC} */
+        case Q_ENTRY_SIG: {
+            BSP_ledOff();
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::RC::RADIO_DATA} */
+        case RADIO_DATA_SIG: {
+            int coord_x = BSP_radioGetChannel(RADIO_CH1);
+            int coord_y = BSP_radioGetChannel(RADIO_CH2);
+
+            int mot1 = coord_y + coord_x;
+            int mot2 = coord_y - coord_x;
+
+            BSP_motors(mot1, mot2);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::RC::STOP} */
+        case STOP_SIG: {
+            status_ = Q_TRAN(&SumoHSM_RCWait);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
 /*$enddef${AOs::SumoHSM} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 #ifdef Q_SPY
@@ -706,11 +767,10 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
     QS_SIG_DICTIONARY(PLAY_BUZZER_SIG,    (void *)0);
-    QS_SIG_DICTIONARY(START_RC_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(START_CALIB_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(GO_TO_IDLE_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(STOP_AUTO_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(START_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(RADIO_EVT_1_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(RADIO_EVT_2_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(STOP_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LINE_DETECTED_SIG,  (void *)0);
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
