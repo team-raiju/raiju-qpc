@@ -29,6 +29,7 @@
 */
 /*$endhead${.::src::sumo_hsm.c} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 #include <math.h>
+#include "qf_custom_defines.h"
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
 #include "bsp_led.h"
@@ -38,8 +39,9 @@
 #include "bsp_dist_sensors.h"
 
 #define CALIB_ANGLE_MULT    2.5
+#ifndef M_PI
 #define M_PI                3.14159265
-
+#endif
 /* ask QM to declare the Blinky class --------------------------------------*/
 /*$declare${AOs::SumoHSM} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
 

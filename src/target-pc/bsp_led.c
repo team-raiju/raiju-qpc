@@ -1,4 +1,6 @@
 #include <stdio.h>  
+#include <stdbool.h>
+
 #include "qpc.h"  
 #include "bsp.h"
 #include "bsp_led.h"

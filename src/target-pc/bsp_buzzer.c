@@ -2,7 +2,7 @@
 #include "qpc.h"  
 #include "bsp.h"
 
-#include "bsp_motors.h"
+#include "bsp_buzzer.h"
 
 #ifdef Q_SPY
 #include "qs_defines.h"

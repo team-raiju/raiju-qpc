@@ -490,6 +490,7 @@ me-&gt;star_velocity = 60;</code>
    <!--${.::src::sumo_hsm.c}-->
    <file name="sumo_hsm.c">
     <text>#include &lt;math.h&gt;
+#include &quot;qf_custom_defines.h&quot;
 #include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
 #include &quot;bsp_led.h&quot;
@@ -499,8 +500,9 @@ me-&gt;star_velocity = 60;</code>
 #include &quot;bsp_dist_sensors.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5
+#ifndef M_PI
 #define M_PI                3.14159265
-
+#endif
 /* ask QM to declare the Blinky class --------------------------------------*/
 $declare${AOs::SumoHSM}
 
