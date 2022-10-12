@@ -634,6 +634,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_1} */
         case RADIO_EVT_1_SIG: {
+            BSP_ledStripeSetAll(0x94, 0x00, 0xD3);
             status_ = Q_TRAN(&SumoHSM_Idle);
             break;
         }

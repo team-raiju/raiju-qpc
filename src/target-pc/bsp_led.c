@@ -59,6 +59,13 @@ void BSP_ledStripe(uint8_t num, uint8_t r, uint8_t g, uint8_t b) {
 
 }
 
+void BSP_ledStripeSetAll(uint8_t r, uint8_t g, uint8_t b){
+    for (int i = 0; i < 16; i++)
+    {
+        BSP_ledStripe(i, r, g, b);
+    }
+}
+
 
 void BSP_ledStripeSetStrategyColor(uint8_t strategy_num){
     uint8_t r, g, b;
@@ -87,9 +94,7 @@ void BSP_ledStripeSetStrategyColor(uint8_t strategy_num){
             break;
     }
 
-    for (int i = 0; i < 16; i++)
-    {
-        BSP_ledStripe(i, r, g, b);
-    }
+    BSP_ledStripeSetAll(r, g, b);
+
     
 }

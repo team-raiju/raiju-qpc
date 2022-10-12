@@ -422,6 +422,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
      </tran>
      <!--${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_1}-->
      <tran trig="RADIO_EVT_1" target="../../1">
+      <action>BSP_ledStripeSetAll(0x94, 0x00, 0xD3);</action>
       <tran_glyph conn="203,46,0,1,-17,-118">
        <action box="-115,-20,17,2"/>
       </tran_glyph>
