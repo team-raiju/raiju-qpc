@@ -37,6 +37,7 @@
 #include "bsp.h"    /* Board Support Package interface */
 #include "bsp_led.h"
 #include "bsp_motors.h"
+#include "bsp_buzzer.h"
 
 #ifdef Q_SPY
 
@@ -57,6 +58,7 @@ void BSP_init(void)   {
 
     BSP_ledInit();
     BSP_motorsInit();
+    BSP_buzzerInit();
 
     #ifdef Q_SPY
 
@@ -65,7 +67,6 @@ void BSP_init(void)   {
     QS_FUN_DICTIONARY(&QHsm_top);
     QS_OBJ_DICTIONARY(&l_clock_tick);
     QS_USR_DICTIONARY(SIMULATOR);
-    QS_USR_DICTIONARY(PERIPHERALS);
 
     /* setup the QS filters... */
     QS_GLB_FILTER(QS_ALL_RECORDS);
@@ -77,14 +78,6 @@ void BSP_init(void)   {
     
 }
 
-void BSP_buzzer_beep(void) {
-    printf("Buzzer Beep\n");
-    QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
-       QS_I8(1, 1);
-       QS_I8(1, 1);
-    QS_END()
-
-}
 
 int BSP_Check_Dist(void) {
     return sensor_active;

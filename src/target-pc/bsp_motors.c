@@ -30,7 +30,7 @@ void BSP_motors(int vel_esq, int vel_dir) {
     }
 
     printf("MOT %d,%d \n", vel_esq, vel_dir); 
-    QS_BEGIN_ID(PERIPHERALS, AO_SumoHSM->prio)
+    QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
        QS_I8(1, 2);
        QS_I8(1, vel_esq);
        QS_I8(1, vel_dir);

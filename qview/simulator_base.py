@@ -1878,7 +1878,6 @@ def on_reset():
 
 def on_run():
     QView.glb_filter("QS_USER_00")
-    QView.glb_filter("QS_USER_01")
     QView.current_obj(OBJ_AO, "l_sumo_hsm")
     return
 

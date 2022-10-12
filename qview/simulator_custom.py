@@ -124,10 +124,6 @@ def custom_qview_init(qview):
 
 
 def custom_user_00_packet(packet):
-    return 
-
-
-def custom_user_01_packet(packet):
     data = qview_base.qunpack("xxTxbxb", packet)        
     log = data[1]     
 
@@ -144,6 +140,10 @@ def custom_user_01_packet(packet):
         sumo_robot.set_motors(data[2], data[3])
         mot_esq, mot_dir = sumo_robot.get_motors()
         qview_base.print_text("MOT_ESQ = %d; MOT_DIR = %d"%(mot_esq, mot_dir))  
+
+
+def custom_user_01_packet(packet):
+    return
 
 def custom_on_poll():
     global action_counter
