@@ -172,9 +172,10 @@ void QS_onCommand(uint8_t cmdId,
         case 8: { 
             QEvt evt = {.sig = RADIO_DATA_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-            int16_t radio_x = param1 - 127;
-            int16_t radio_y = param2 - 127;
-            BSP_radioSetChannel(radio_x, radio_y);
+            int16_t radio_ch1 = param1 - 127;
+            int16_t radio_ch2 = param2 - 127;
+            BSP_radioSetChannel(RADIO_CH1, radio_ch1);
+            BSP_radioSetChannel(RADIO_CH2, radio_ch2);
             break;
         }
 
