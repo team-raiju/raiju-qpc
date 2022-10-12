@@ -39,6 +39,8 @@
 #include "bsp_motors.h"
 #include "bsp_buzzer.h"
 #include "bsp_radio.h"
+#include "bsp_dist_sensors.h"
+
 
 #ifdef Q_SPY
 
@@ -47,14 +49,14 @@ static QSpyId const l_clock_tick = { QS_AP_ID };
 
 #endif
 
-int sensor_active = 0;
-
 void BSP_init(void)   {
     printf("SumoHSM;  QP/C version: %s\r\n",  QP_VERSION_STR);
 
     BSP_ledInit();
     BSP_motorsInit();
     BSP_buzzerInit();
+    BSP_radioInit();
+    BSP_distSensorsInit();
 
     #ifdef Q_SPY
 
@@ -72,10 +74,6 @@ void BSP_init(void)   {
 
 }
 
-
-int BSP_Check_Dist(void) {
-    return sensor_active;
-}
 
 /* callback functions needed by the framework ------------------------------*/
 void QF_onStartup(void) {
@@ -147,7 +145,12 @@ void QS_onCommand(uint8_t cmdId,
         }
 
         case 5: { 
-            sensor_active = param1;
+            BSP_distSensorDisableAll();
+            
+            if (param1 != 0){
+                BSP_distSensorSet(param1, true);
+            }
+
             QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             printf("Sensor Seeing = %d\r\n", param1);

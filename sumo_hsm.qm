@@ -138,29 +138,19 @@ BSP_motors(mot1, mot2);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE}-->
      <tran trig="DIST_SENSOR_CHANGE">
-      <action brief="CheckSensors">int sensors_on = BSP_Check_Dist();
-
-switch(sensors_on){
-    case 0:
-        BSP_motors(60, 60);
-        break;
-    case 1:
-        BSP_motors(80,-80);
-        break;
-    case 2:
-        BSP_motors(80,0);
-        break;
-    case 3:
-        BSP_motors(100,100);
-        break;
-    case 4:
-        BSP_motors(0,80);
-        break;
-    case 5:
-        BSP_motors(-80,80);
-        break;
-}
-</action>
+      <action brief="CheckSensors">if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
+   BSP_motors(80,-80);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
+   BSP_motors(80,0);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
+   BSP_motors(100,100);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
+   BSP_motors(0,80);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
+   BSP_motors(-80,80);
+} else {
+   BSP_motors(60,60);
+}</action>
       <tran_glyph conn="24,83,3,-1,12">
        <action box="0,-2,22,2"/>
       </tran_glyph>
@@ -237,31 +227,24 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 100, 0);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::StepsStrategy::DIST_SENSOR_CHANGE}-->
      <tran trig="DIST_SENSOR_CHANGE">
-      <action brief="CheckSensors">int sensors_on = BSP_Check_Dist();
-QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+      <action brief="CheckSensors">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 
-switch(sensors_on){
-    case 0:
-        BSP_motors(0,0);
-        QTimeEvt_armX(&amp;me-&gt;timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
-        break;
-    case 1:
-        BSP_motors(80,-80);
-        break;
-    case 2:
-        BSP_motors(80,0);
-        break;
-    case 3:
-        BSP_motors(100,100);
-        break;
-    case 4:
-        BSP_motors(0,80);
-        break;
-    case 5:
-        BSP_motors(-80,80);
-        break;
+if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
+   BSP_motors(80,-80);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
+   BSP_motors(80,0);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
+   BSP_motors(100,100);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
+   BSP_motors(0,80);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
+   BSP_motors(-80,80);
+} else {
+   BSP_motors(0,0);
+   QTimeEvt_armX(&amp;me-&gt;timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
 }
+
 </action>
       <tran_glyph conn="57,87,3,-1,14">
        <action box="0,-2,21,5"/>
@@ -513,6 +496,7 @@ me-&gt;star_velocity = 60;</code>
 #include &quot;bsp_motors.h&quot;
 #include &quot;bsp_buzzer.h&quot;
 #include &quot;bsp_radio.h&quot;
+#include &quot;bsp_dist_sensors.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5
 #define M_PI                3.14159265
@@ -604,7 +588,6 @@ enum {
 #define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
 
 void BSP_init(void);
-int BSP_Check_Dist(void);
 
 /* define the event signals used in the application ------------------------*/
 enum SumoHSMSignals {

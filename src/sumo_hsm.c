@@ -35,6 +35,7 @@
 #include "bsp_motors.h"
 #include "bsp_buzzer.h"
 #include "bsp_radio.h"
+#include "bsp_dist_sensors.h"
 
 #define CALIB_ANGLE_MULT    2.5
 #define M_PI                3.14159265
@@ -261,29 +262,19 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
-            int sensors_on = BSP_Check_Dist();
-
-            switch(sensors_on){
-                case 0:
-                    BSP_motors(60, 60);
-                    break;
-                case 1:
-                    BSP_motors(80,-80);
-                    break;
-                case 2:
-                    BSP_motors(80,0);
-                    break;
-                case 3:
-                    BSP_motors(100,100);
-                    break;
-                case 4:
-                    BSP_motors(0,80);
-                    break;
-                case 5:
-                    BSP_motors(-80,80);
-                    break;
+            if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
+               BSP_motors(80,-80);
+            } else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
+               BSP_motors(80,0);
+            } else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
+               BSP_motors(100,100);
+            } else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
+               BSP_motors(0,80);
+            } else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
+               BSP_motors(-80,80);
+            } else {
+               BSP_motors(60,60);
             }
-
             status_ = Q_HANDLED();
             break;
         }
@@ -376,31 +367,24 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::StepsStrategy::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
-            int sensors_on = BSP_Check_Dist();
             QTimeEvt_disarm(&me->timeEvt);
             QTimeEvt_disarm(&me->timeEvt_2);
 
-            switch(sensors_on){
-                case 0:
-                    BSP_motors(0,0);
-                    QTimeEvt_armX(&me->timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
-                    break;
-                case 1:
-                    BSP_motors(80,-80);
-                    break;
-                case 2:
-                    BSP_motors(80,0);
-                    break;
-                case 3:
-                    BSP_motors(100,100);
-                    break;
-                case 4:
-                    BSP_motors(0,80);
-                    break;
-                case 5:
-                    BSP_motors(-80,80);
-                    break;
+            if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
+               BSP_motors(80,-80);
+            } else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
+               BSP_motors(80,0);
+            } else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
+               BSP_motors(100,100);
+            } else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
+               BSP_motors(0,80);
+            } else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
+               BSP_motors(-80,80);
+            } else {
+               BSP_motors(0,0);
+               QTimeEvt_armX(&me->timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
             }
+
 
             status_ = Q_HANDLED();
             break;
