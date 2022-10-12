@@ -15,7 +15,7 @@ void BSP_buzzerInit(void){
 void BSP_buzzerBeep(void) {
     printf("Buzzer Beep\n");
     QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
-       QS_I8(1, 1);
+       QS_I8(1, QS_BUZZER_ID);
        QS_I8(1, 1);
     QS_END()
 

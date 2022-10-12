@@ -15,7 +15,7 @@ void BSP_ledInit(void) {
 void BSP_ledOff(void) { 
     printf("LED OFF\n"); 
     QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
-       QS_I8(1, 0);
+       QS_I8(1, QS_LED_ID);
        QS_I8(1, 0);
     QS_END()
 }
@@ -25,7 +25,7 @@ void BSP_ledOff(void) {
 void BSP_ledOn(void)  { 
     printf("LED ON\n");  
     QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
-       QS_I8(1, 0);
+       QS_I8(1, QS_LED_ID);
        QS_I8(1, 1);
     QS_END()
 

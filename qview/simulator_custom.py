@@ -23,6 +23,13 @@ global canvas_dict
 global sumo_robot
 global key_pressed_dict
 
+
+QS_USER_DATA_ID = {
+    "QS_LED_ID":    0,
+    "QS_BUZZER_ID": 1,
+    "QS_MOTOR_ID":  2,
+}
+
 def custom_menu_command():
     command_name = "RESET POSITION"
     command_function =  reset_position
@@ -32,8 +39,7 @@ def custom_menu_command():
 def custom_on_dettach():
     # print("Custom action on dettach")
     return
-        
-
+    
 
 def custom_qview_init(qview):
 
@@ -124,22 +130,37 @@ def custom_qview_init(qview):
 
 
 def custom_user_00_packet(packet):
-    data = qview_base.qunpack("xxTxbxb", packet)        
-    log = data[1]     
+    data = qview_base.qunpack("xxTxb", packet)    
+    data_id = data[1]     
 
-    qview_base.print_text("Timestamp = %d; Log = %d; Argument = %d"%(data[0], log, data[2]))
+    if (data_id == QS_USER_DATA_ID['QS_LED_ID']):
+        process_led_id_packet(packet)
+    elif (data_id == QS_USER_DATA_ID['QS_MOTOR_ID']):
+        process_motor_id_packet(packet)
+    elif (data_id == QS_USER_DATA_ID["QS_BUZZER_ID"]):
+        process_buzzer_id_packet(packet)
+    else:
+        qview_base.print_text("Timestamp = %d; ID = %d"%(data[0], data[1]))  
 
-    if (log == 0):
-        led_stat = data[2]
-        if (led_stat == 1):
-            qview_base.canvas.itemconfig(canvas_dict["led"], image=image_dict["led_on"])
-        else:
-            qview_base.canvas.itemconfig(canvas_dict["led"], image=image_dict["led_off"])
-    elif (log == 2):
-        data = qview_base.qunpack("xxTxbxbxb", packet)    
-        sumo_robot.set_motors(data[2], data[3])
-        mot_esq, mot_dir = sumo_robot.get_motors()
-        qview_base.print_text("MOT_ESQ = %d; MOT_DIR = %d"%(mot_esq, mot_dir))  
+
+def process_led_id_packet(packet):
+    data = qview_base.qunpack("xxTxbxb", packet)    
+    led_stat = data[2]
+    if (led_stat == 1):
+        qview_base.canvas.itemconfig(canvas_dict["led"], image=image_dict["led_on"])
+    else:
+        qview_base.canvas.itemconfig(canvas_dict["led"], image=image_dict["led_off"])
+    qview_base.print_text("Timestamp = %d; LED = %d"%(data[0], data[2]))  
+    
+def process_motor_id_packet(packet):
+    data = qview_base.qunpack("xxTxbxbxb", packet)    
+    sumo_robot.set_motors(data[2], data[3])
+    mot_esq, mot_dir = sumo_robot.get_motors()
+    qview_base.print_text("Timestamp = %d; MOT_ESQ = %d; MOT_DIR = %d"%(data[0], mot_esq, mot_dir))  
+
+def process_buzzer_id_packet(packet):
+    data = qview_base.qunpack("xxTxbxb", packet)    
+    qview_base.print_text("Timestamp = %d; Buzzer = %d"%(data[0], data[2]))  
 
 
 def custom_user_01_packet(packet):
@@ -233,10 +254,6 @@ def send_game_pad():
         send_radio_command(ch1, ch2)
         
     last_gamepad = (ch1, ch2)
-
-
-
-    return
 
 def send_keyboard():
 

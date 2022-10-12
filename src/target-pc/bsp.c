@@ -131,7 +131,6 @@ void QS_onCommand(uint8_t cmdId,
         }
 
         case 3: { 
-
             SumoHSM *me = (SumoHSM *)AO_SumoHSM;
             me->strategy = param1;
             printf("Strategy = %d\r\n", param1);
