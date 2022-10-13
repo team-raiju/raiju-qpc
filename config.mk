@@ -1,16 +1,17 @@
-PROJECT_NAME = stm32f103kbt6-all
+PROJECT_NAME = raiju
 VERSION := 1
 
 TARGET_BOARD := target_$(PROJECT_NAME)_$(VERSION)
 
-DEVICE_FAMILY  := STM32G4xx
-DEVICE_TYPE    := STM32G431xx
-DEVICE_DEF     := STM32G431xx
-DEVICE         := STM32G431KB
+DEVICE_FAMILY  := STM32F1xx
+DEVICE_TYPE    := STM32F103xx
+DEVICE_DEF     := STM32F103xG
+DEVICE         := STM32F103RF
+
 
 # Linker script file without .ld extension
 # Find it on cube folder after code generation
-DEVICE_LD_FILE := STM32G431KBTx_FLASH
+DEVICE_LD_FILE := STM32F103RFTx_FLASH
 
 # Lib dir
 LIB_DIR  := lib

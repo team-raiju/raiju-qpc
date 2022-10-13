@@ -118,7 +118,7 @@ QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
 
 # list of all source directories used by this project
 
-C_HEADERS_TARGET  = $(sort $(shell find ./inc/target-stm32g0 -name "*.h"))	
+C_HEADERS_TARGET  = $(sort $(shell find ./inc/target-stm32f103 -name "*.h"))	
 C_HEADERS_TARGET  += $(sort $(shell find ./cube -name "*.h"))	
 
 INCLUDES  += $(addprefix -I, $(sort $(dir $(C_HEADERS_TARGET))))
@@ -127,10 +127,10 @@ INCLUDES  += -I$(QP_PORT_DIR)
 # assembler source files
 ASM_SRCS := $(shell find ./cube/ -name "*.s")
 
-C_SRCS += $(sort $(shell find ./src/target-stm32g0 -name "*.c"))
+C_SRCS += $(sort $(shell find ./src/target-stm32f103 -name "*.c"))
 C_SRCS += $(sort $(shell find ./cube -name "*.c"))
 
-LD_SCRIPT := cube/STM32G431KBTx_FLASH.ld
+LD_SCRIPT := cube/STM32F103RFTx_FLASH.ld
 
 QP_SRCS += \
 	$(QPC)/src/qk/qk.c \
@@ -144,10 +144,10 @@ QP_ASMS :=
 LIB_DIRS  :=
 LIBS      :=
 
-DEVICE_FAMILY  := STM32G4xx
-DEVICE_TYPE    := STM32G431xx
-DEVICE_DEF     := STM32G431xx
-DEVICE         := STM32G431KB
+DEVICE_FAMILY  := STM32F1xx
+DEVICE_TYPE    := STM32F103xx
+DEVICE_DEF     := STM32F103xG
+DEVICE         := STM32F103RF
 
 # defines
 DEFINES   := \
@@ -171,7 +171,7 @@ else # uC configuration ..................................
 # ARM_FPU:   [ | vfp]
 # FLOAT_ABI: [ | soft | softfp | hard]
 #
-ARM_CPU   := -mcpu=cortex-m4
+ARM_CPU   := -mcpu=cortex-m3
 ARM_FPU   :=
 FLOAT_ABI :=
 
@@ -242,7 +242,7 @@ else # default Debug configuration ..........................................
 
 BIN_DIR := build
 
-DEFINES += -D$(DEVICE_TYPE) \
+DEFINES += -D$(DEVICE_DEF) \
 	-DUSE_HAL_DRIVER
 
 ASFLAGS = -g $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
