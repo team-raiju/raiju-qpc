@@ -118,7 +118,7 @@ QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
 
 # list of all source directories used by this project
 
-C_HEADERS_TARGET  = $(sort $(shell find ./inc/target-stm32g0 -name "*.h"))	
+C_HEADERS_TARGET  = $(sort $(shell find ./inc/target-stm32f103 -name "*.h"))	
 C_HEADERS_TARGET  += $(sort $(shell find ./cube -name "*.h"))	
 
 INCLUDES  += $(addprefix -I, $(sort $(dir $(C_HEADERS_TARGET))))
@@ -127,7 +127,7 @@ INCLUDES  += -I$(QP_PORT_DIR)
 # assembler source files
 ASM_SRCS := $(shell find ./cube/ -name "*.s")
 
-C_SRCS += $(sort $(shell find ./src/target-stm32g0 -name "*.c"))
+C_SRCS += $(sort $(shell find ./src/target-stm32f103 -name "*.c"))
 C_SRCS += $(sort $(shell find ./cube -name "*.c"))
 
 LD_SCRIPT := cube/STM32F103RFTx_FLASH.ld
