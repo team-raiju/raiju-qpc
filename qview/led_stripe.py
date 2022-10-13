@@ -35,3 +35,13 @@ def led_stripe_set(qview_led_stripe, num, r, g, b):
 
     color = '#' + r_string + g_string + b_string
     qview_led_stripe.canvas.itemconfig(led_stripe_array[num], fill = color)
+
+def led_stripe_set_all(qview_led_stripe, r, g, b):
+
+    r_string = "{:02x}".format(r)
+    g_string = "{:02x}".format(g)
+    b_string = "{:02x}".format(b)
+
+    color = '#' + r_string + g_string + b_string
+    for led in led_stripe_array:
+        qview_led_stripe.canvas.itemconfig(led, fill = color)

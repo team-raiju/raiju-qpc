@@ -49,7 +49,7 @@ void BSP_ledStripe(uint8_t num, uint8_t r, uint8_t g, uint8_t b) {
 
     printf("Led Strip Num %d RGB = %x,%x,%x\n", num, r, g, b); 
 
-    QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
+    QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio);
        QS_U8(1, QS_LED_STRIPE_ID);
        QS_U8(1, num);
        QS_U8(1, r);
@@ -60,10 +60,15 @@ void BSP_ledStripe(uint8_t num, uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void BSP_ledStripeSetAll(uint8_t r, uint8_t g, uint8_t b){
-    for (int i = 0; i < 16; i++)
-    {
-        BSP_ledStripe(i, r, g, b);
-    }
+    printf("BSP_ledStripeSetAll RGB = %x,%x,%x\n", r, g, b); 
+    
+    QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio);
+       QS_U8(1, QS_LED_STRIPE_ID);
+       QS_U8(1, 255);
+       QS_U8(1, r);
+       QS_U8(1, g);
+       QS_U8(1, b);
+    QS_END();
 }
 
 

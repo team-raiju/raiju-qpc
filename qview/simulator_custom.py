@@ -16,7 +16,7 @@ import math
 from robot import *
 from led_stripe import *
 
-USE_PS3_CONTROLLER = True
+USE_PS3_CONTROLLER = False
 
 global qview_base
 global image_dict
@@ -75,6 +75,8 @@ def custom_qview_init(qview):
         "down": False,
         "left": False,
         "right": False,
+        "three": False,
+        "four": False,
     }
 
     gamepad_dict = {
@@ -171,7 +173,10 @@ def process_led_stripe_id_packet(packet):
     g = data[4]
     b = data[5]
     qview_base.print_text("Timestamp = %d; Led Strip Num %d RGB = %x,%x,%x"%(data[0], led_idx, r, g, b)) 
-    led_stripe_set(qview_base, led_idx, r, g, b)
+    if (led_idx == 255):
+        led_stripe_set_all(qview_base, r, g, b)
+    else:
+        led_stripe_set(qview_base, led_idx, r, g, b)
 
 
 
@@ -218,10 +223,11 @@ def custom_on_poll():
         last_sensor_active = sensor_active
 
         # Send keyboard info
-        if (action_counter % 12 == 0):
-            if (USE_PS3_CONTROLLER):
+        if (USE_PS3_CONTROLLER):
+            if (action_counter % 12 == 0):
                 send_game_pad()
-            else:
+        else:
+            if (action_counter % 20 == 0):
                 send_keyboard()
 
 def start_command(*args):
@@ -291,8 +297,11 @@ def send_keyboard():
         y_keyboard = 0
     else:
         y_keyboard = 127
+
     
     send_radio_command_ch1_ch2(x_keyboard, y_keyboard)  
+    send_radio_command_ch3_ch4(key_pressed_dict["three"], key_pressed_dict["four"])
+
 
 
 def reset_position():
@@ -344,26 +353,46 @@ def is_mouse_direction(posx, posy, robot_angle):
 # Keyboard data simulating radio data
 def on_press(key):
     global key_pressed_dict
-    if (key == keyboard.Key.up):
-        key_pressed_dict["up"] = True
-    elif (key == keyboard.Key.down):
-        key_pressed_dict["down"] = True
-    elif (key == keyboard.Key.right):
-        key_pressed_dict["right"] = True
-    elif (key == keyboard.Key.left):
-        key_pressed_dict["left"] = True
+    try:
+        if (key == keyboard.Key.up):
+            key_pressed_dict["up"] = True
+        elif (key == keyboard.Key.down):
+            key_pressed_dict["down"] = True
+        elif (key == keyboard.Key.right):
+            key_pressed_dict["right"] = True
+        elif (key == keyboard.Key.left):
+            key_pressed_dict["left"] = True
+        elif (key.char == '3'):
+            key_pressed_dict["three"] = True
+        elif (key.char == '4'):
+            key_pressed_dict["four"] = True
+        
+    except AttributeError:
+        # print('special key {0} pressed'.format(key))
+        return
+
+
 
 
 def on_release(key):
     global key_pressed_dict
-    if (key == keyboard.Key.up):
-        key_pressed_dict["up"] = False
-    elif (key == keyboard.Key.down):
-        key_pressed_dict["down"] = False
-    elif (key == keyboard.Key.right):
-        key_pressed_dict["right"] = False
-    elif (key == keyboard.Key.left):
-        key_pressed_dict["left"] = False
+    try:
+        if (key == keyboard.Key.up):
+            key_pressed_dict["up"] = False
+        elif (key == keyboard.Key.down):
+            key_pressed_dict["down"] = False
+        elif (key == keyboard.Key.right):
+            key_pressed_dict["right"] = False
+        elif (key == keyboard.Key.left):
+            key_pressed_dict["left"] = False
+        elif (key.char == '3'):
+            key_pressed_dict["three"] = False
+        elif (key.char == '4'):
+            key_pressed_dict["four"] = False
+    
+    except AttributeError:
+        return
+        # print('special key {0} released'.format(key))
     
 # ...or, in a non-blocking fashion:
 listener = keyboard.Listener(
