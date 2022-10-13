@@ -29,12 +29,17 @@
 */
 /*$endhead${.::bsp.c} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 /* Board Support Package implementation for desktop OS (Windows, Linux, MacOS) */
+#include <stdlib.h> /* for exit() */
+
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
+#include "bsp_led.h"
+#include "bsp_motors.h"
+#include "bsp_buzzer.h"
+#include "bsp_radio.h"
+#include "bsp_dist_sensors.h"
 #include "main.h"
 #include "gpio.h"
-#include <stdio.h>  /* for printf()/fprintf() */
-#include <stdlib.h> /* for exit() */
 
 
 __weak void SystemClock_Config(void);
@@ -70,47 +75,14 @@ void BSP_init(void)   {
 
     SystemCoreClockUpdate();
 
-}
-
-void BSP_ledOff(void) { 
-    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-}
-void BSP_ledOn(void)  { 
-    HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-}
-
-void BSP_ledToggle(void)  {
-    static bool toggle = false;
-    if (toggle){
-        BSP_ledOff();
-    } else {
-        BSP_ledOn();
-    }
-    toggle = !toggle;
+    BSP_ledInit();
+    BSP_motorsInit();
+    BSP_buzzerInit();
+    BSP_radioInit();
+    BSP_distSensorsInit();
 
 }
 
-void BSP_motors(int vel_esq, int vel_dir) { 
-
-}
-
-void BSP_startRC(void) { 
-
-}
-
-void BSP_startAuto(void) { 
-
-}
-
-void BSP_ledStrip(int num, int stat) {
-
-}
-
-void BSP_buzzer_beep(void) {
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
-    HAL_Delay(20);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
-}
 
 /* callback functions needed by the framework ------------------------------*/
 void QF_onStartup(void) {

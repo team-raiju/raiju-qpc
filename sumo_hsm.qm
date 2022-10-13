@@ -14,6 +14,18 @@
    <attribute name="buzzerCount" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::strategy}-->
    <attribute name="strategy" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::timeEvt_2}-->
+   <attribute name="timeEvt_2" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::calib_time_1}-->
+   <attribute name="calib_time_1" type="uint32_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::calib_time_2}-->
+   <attribute name="calib_time_2" type="uint32_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::calib_status}-->
+   <attribute name="calib_status" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::turn_180_time_ms}-->
+   <attribute name="turn_180_time_ms" type="uint16_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::star_velocity}-->
+   <attribute name="star_velocity" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::SM}-->
    <statechart properties="0x03">
     <!--${AOs::SumoHSM::SM::initial}-->
@@ -22,7 +34,6 @@
 /* arm the private time event to expire in 1/2s
 * and periodically every 1/2 second
 */
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
 
 me-&gt;buzzerCount = 0U;</action>
@@ -33,7 +44,9 @@ me-&gt;buzzerCount = 0U;</action>
     <!--${AOs::SumoHSM::SM::Idle}-->
     <state name="Idle">
      <entry>BSP_ledOff();
-BSP_motors(0,0);</entry>
+BSP_motors(0,0);
+me-&gt;strategy = 0;
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
@@ -43,27 +56,22 @@ QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
        <action box="0,-2,14,4"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::Idle::START_RC}-->
-     <tran trig="START_RC" target="../../2">
-      <tran_glyph conn="85,40,1,0,34,10">
-       <action box="0,-2,10,2"/>
-      </tran_glyph>
-     </tran>
-     <!--${AOs::SumoHSM::SM::Idle::START_AUTO}-->
-     <tran trig="START_AUTO" target="../../4">
-      <tran_glyph conn="42,41,3,3,-19,11,3">
-       <action box="0,-2,10,2"/>
+     <!--${AOs::SumoHSM::SM::Idle::RADIO_EVT_1}-->
+     <tran trig="RADIO_EVT_1" target="../../4">
+      <tran_glyph conn="42,41,3,3,-19,14,3">
+       <action box="-16,-3,18,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::PLAY_BUZZER}-->
      <tran trig="PLAY_BUZZER">
-      <action>BSP_ledStrip(me-&gt;buzzerCount, 1);
-BSP_buzzer_beep();
+      <action>BSP_buzzerBeep();
 
-if (me-&gt;buzzerCount == 16) {
+if (me-&gt;buzzerCount == 15) {
     QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
-} else if (me-&gt;buzzerCount &lt; 16){
+    BSP_ledStripe(me-&gt;buzzerCount, 0x94, 0x00, 0xD3);
+} else if (me-&gt;buzzerCount &lt; 15){
     QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+    BSP_ledStripe(me-&gt;buzzerCount, 0x94, 0x00, 0xD3);
 }
 
 
@@ -79,78 +87,454 @@ me-&gt;buzzerCount += 1;</action>
     </state>
     <!--${AOs::SumoHSM::SM::RCWait}-->
     <state name="RCWait">
-     <entry>BSP_startRC();</entry>
-     <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA}-->
-     <tran trig="RADIO_DATA">
-      <tran_glyph conn="107,60,3,-1,11">
+     <entry>BSP_ledOff();
+BSP_ledStripeSetStrategyColor(me-&gt;strategy);
+BSP_motors(0,0);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);</entry>
+     <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
+     <!--${AOs::SumoHSM::SM::RCWait::START}-->
+     <tran trig="START" target="../../10">
+      <tran_glyph conn="118,65,3,3,-7,16,6">
+       <action box="-7,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::RCWait::RADIO_EVT_1}-->
+     <tran trig="RADIO_EVT_1" target="../../8">
+      <tran_glyph conn="138,55,1,3,63">
+       <action box="0,-2,18,3"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::RCWait::TIMEOUT}-->
+     <tran trig="TIMEOUT">
+      <action>BSP_ledToggle();</action>
+      <tran_glyph conn="118,63,3,-1,12,-1">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="107,50,20,15">
-      <entry box="1,2,12,4"/>
+     <!--${AOs::SumoHSM::SM::RCWait::RADIO_EVT_2}-->
+     <tran trig="RADIO_EVT_2">
+      <action brief="Update Strategy">SumoHSM_change_strategy(me);
+BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
+      <tran_glyph conn="118,66,3,-1,12">
+       <action box="0,-2,20,4"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="118,52,20,18">
+      <entry box="1,2,14,4"/>
+      <exit box="1,6,14,2"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::StarStrategy}-->
     <state name="StarStrategy">
-     <entry>BSP_motors(60,60);</entry>
+     <entry>BSP_motors(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
      <!--${AOs::SumoHSM::SM::StarStrategy::LINE_DETECTED}-->
-     <tran trig="LINE_DETECTED" target="../1">
-      <tran_glyph conn="24,84,3,1,23,6,-2">
+     <tran trig="LINE_DETECTED" target="../../6">
+      <tran_glyph conn="24,82,3,3,-1,31,16">
        <action box="0,-2,15,3"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack}-->
-     <state name="LineGoBack">
-      <entry brief="go_back">BSP_motors(-100,-100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
-      <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../1">
-       <tran_glyph conn="27,95,3,1,17,4,-2">
-        <action box="0,-2,16,4"/>
-       </tran_glyph>
-      </tran>
-      <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack::LineTurn}-->
-      <state name="LineTurn">
-       <entry brief="turn">BSP_motors(-100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);</entry>
-       <exit brief="go_front">BSP_motors(60,60);</exit>
-       <!--${AOs::SumoHSM::SM::StarStrategy::LineGoBack::LineTurn::TIMEOUT}-->
-       <tran trig="TIMEOUT" target="../../..">
-        <tran_glyph conn="29,107,3,3,-5">
-         <action box="0,-2,10,2"/>
-        </tran_glyph>
-       </tran>
-       <state_glyph node="29,98,13,11">
-        <entry box="1,2,8,2"/>
-        <exit box="1,4,11,3"/>
-       </state_glyph>
-      </state>
-      <state_glyph node="27,87,18,24">
-       <entry box="1,2,11,3"/>
-      </state_glyph>
-     </state>
-     <state_glyph node="24,73,24,42">
-      <entry box="1,2,19,4"/>
+     <!--${AOs::SumoHSM::SM::StarStrategy::STOP}-->
+     <tran trig="STOP" target="../../4">
+      <tran_glyph conn="41,71,0,2,-7">
+       <action box="1,-6,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE}-->
+     <tran trig="DIST_SENSOR_CHANGE">
+      <action brief="CheckSensors">if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
+   BSP_motors(80,-80);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
+   BSP_motors(80,0);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
+   BSP_motors(100,100);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
+   BSP_motors(0,80);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
+   BSP_motors(-80,80);
+} else {
+   BSP_motors(60,60);
+}</action>
+      <tran_glyph conn="24,85,3,-1,12">
+       <action box="0,-2,22,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="24,71,24,28">
+      <entry box="1,2,23,6"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::AutoWait}-->
     <state name="AutoWait">
-     <!--${AOs::SumoHSM::SM::AutoWait::START_AUTO}-->
-     <tran trig="START_AUTO">
-      <!--${AOs::SumoHSM::SM::AutoWait::START_AUTO::[startegy_0]}-->
+     <entry>BSP_motors(0,0);
+BSP_ledOn();
+BSP_ledStripeSetStrategyColor(me-&gt;strategy);</entry>
+     <!--${AOs::SumoHSM::SM::AutoWait::START}-->
+     <tran trig="START">
+      <!--${AOs::SumoHSM::SM::AutoWait::START::[strategy_0]}-->
       <choice target="../../../3">
-       <guard brief="startegy_0">me-&gt;strategy == 0</guard>
-       <choice_glyph conn="38,58,4,0,15">
-        <action box="0,3,11,6"/>
+       <guard brief="strategy_0">me-&gt;strategy == 0</guard>
+       <choice_glyph conn="38,61,4,0,10">
+        <action box="-9,5,9,4"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="26,58,3,-1,12">
+      <!--${AOs::SumoHSM::SM::AutoWait::START::[strategy_1]}-->
+      <choice target="../../../5">
+       <guard brief="strategy_1">me-&gt;strategy == 1</guard>
+       <choice_glyph conn="38,61,5,0,29,10">
+        <action box="20,5,11,3"/>
+       </choice_glyph>
+      </choice>
+      <tran_glyph conn="26,61,3,-1,12">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="26,50,20,11"/>
+     <!--${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_1}-->
+     <tran trig="RADIO_EVT_1" target="../../2">
+      <tran_glyph conn="46,55,1,3,72">
+       <action box="0,-3,19,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_2}-->
+     <tran trig="RADIO_EVT_2">
+      <action>SumoHSM_change_strategy(me);
+BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
+      <tran_glyph conn="26,57,3,-1,11">
+       <action box="0,-2,13,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="26,47,20,17">
+      <entry box="1,2,17,5"/>
+     </state_glyph>
     </state>
-    <state_diagram size="145,181"/>
+    <!--${AOs::SumoHSM::SM::StepsStrategy}-->
+    <state name="StepsStrategy">
+     <entry brief="arm_timer">QTimeEvt_armX(&amp;me-&gt;timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);</entry>
+     <exit brief="disarm_timer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::LINE_DETECTED}-->
+     <tran trig="LINE_DETECTED" target="../../6">
+      <tran_glyph conn="57,85,3,0,-3,24">
+       <action box="0,-1,14,3"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT}-->
+     <tran trig="TIMEOUT">
+      <action>BSP_motors(100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 100, 0);</action>
+      <tran_glyph conn="57,80,3,-1,8">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT_2}-->
+     <tran trig="TIMEOUT_2">
+      <action>BSP_motors(0,0);</action>
+      <tran_glyph conn="57,83,3,-1,11">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::STOP}-->
+     <tran trig="STOP" target="../../4">
+      <tran_glyph conn="70,71,0,1,-12,-24">
+       <action box="-23,-14,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::DIST_SENSOR_CHANGE}-->
+     <tran trig="DIST_SENSOR_CHANGE">
+      <action brief="CheckSensors">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+
+if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
+   BSP_motors(80,-80);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
+   BSP_motors(80,0);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
+   BSP_motors(100,100);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
+   BSP_motors(0,80);
+} else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
+   BSP_motors(-80,80);
+} else {
+   BSP_motors(0,0);
+   QTimeEvt_armX(&amp;me-&gt;timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
+}
+
+</action>
+      <tran_glyph conn="57,89,3,-1,14">
+       <action box="0,-2,21,5"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="57,71,24,28">
+      <entry box="1,2,19,2"/>
+      <exit box="1,4,19,2"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::SumoHSM::SM::LineGoBack}-->
+    <state name="LineGoBack">
+     <entry brief="go_back">BSP_motors(-100,-100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
+     <!--${AOs::SumoHSM::SM::LineGoBack::TIMEOUT}-->
+     <tran trig="TIMEOUT" target="../1">
+      <tran_glyph conn="39,117,3,0,8,3">
+       <action box="0,-3,16,4"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn}-->
+     <state name="LineTurn">
+      <entry brief="turn">BSP_motors(-100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms * (0.6), 0);</entry>
+      <exit>BSP_motors(0,0);</exit>
+      <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT}-->
+      <tran trig="TIMEOUT">
+       <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT::[strategy_0]}-->
+       <choice target="../../../../3">
+        <guard brief="strategy_0">me-&gt;strategy == 0</guard>
+        <choice_glyph conn="60,107,5,2,-25,-8">
+         <action box="-24,-5,11,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::LineGoBack::LineTurn::TIMEOUT::[strategy_1]}-->
+       <choice target="../../../../5">
+        <guard brief="strategy_1">me-&gt;strategy == 1</guard>
+        <choice_glyph conn="60,107,5,2,10,-8">
+         <action box="1,-5,10,3"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="41,129,3,-1,19,-22">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="41,120,13,11">
+       <entry box="1,2,8,2"/>
+       <exit box="1,4,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="39,109,18,24">
+      <entry box="1,2,11,3"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::SumoHSM::SM::CalibTurn}-->
+    <state name="CalibTurn">
+     <entry>QTimeEvt_armX(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF, 0);
+BSP_motors(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
+     <!--${AOs::SumoHSM::SM::CalibTurn::LINE_DETECTED}-->
+     <tran trig="LINE_DETECTED" target="../1">
+      <action>if (me-&gt;calib_status == 0){
+    me-&gt;calib_time_1 = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
+} else {
+    me-&gt;calib_time_2 = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
+}</action>
+      <tran_glyph conn="171,79,3,0,20,2">
+       <action box="0,-2,15,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack}-->
+     <state name="CalibLineGoBack">
+      <entry>BSP_motors(-100,-100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
+      <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../1">
+       <tran_glyph conn="185,89,3,3,10">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn}-->
+      <state name="CalibeLineTurn">
+       <entry brief="turn">BSP_motors(-100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms, 0);</entry>
+       <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn::TIMEOUT}-->
+       <tran trig="TIMEOUT">
+        <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_0]}-->
+        <choice target="../../../..">
+         <guard brief="calib_0">me-&gt;calib_status == 0</guard>
+         <action brief="update_calib_status">me-&gt;calib_status++;
+QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF);
+BSP_motors(60,60);
+</action>
+         <choice_glyph conn="180,92,4,3,-1,-9">
+          <action box="-9,-6,14,4"/>
+         </choice_glyph>
+        </choice>
+        <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_1]}-->
+        <choice target="../../../../../8">
+         <guard brief="calib_1">me-&gt;calib_status != 0</guard>
+         <action brief="calibrate_turn">QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+
+uint8_t angle_diff;
+if (me-&gt;calib_time_2 &gt; me-&gt;calib_time_1){
+    angle_diff = 0;
+} else {
+    angle_diff = ((180 / M_PI) * acos((me-&gt;calib_time_2) / (double) me-&gt;calib_time_1));
+}
+
+if (me-&gt;strategy == 0) {
+    me-&gt;turn_180_time_ms += angle_diff * CALIB_ANGLE_MULT;
+} else {
+    me-&gt;turn_180_time_ms -= angle_diff * CALIB_ANGLE_MULT;
+}
+
+</action>
+         <choice_glyph conn="180,92,4,3,3,-15,-37,36">
+          <action box="-20,4,10,5"/>
+         </choice_glyph>
+        </choice>
+        <tran_glyph conn="195,92,3,-1,-15">
+         <action box="-10,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="195,85,13,10">
+        <entry box="1,2,8,2"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="185,81,28,17">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="171,69,43,35">
+      <entry box="1,2,41,7"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::SumoHSM::SM::CalibWait}-->
+    <state name="CalibWait">
+     <entry>BSP_ledOn();
+BSP_motors(0,0);
+BSP_ledStripeSetStrategyColor(me-&gt;strategy);
+me-&gt;calib_status = 0;
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
+     <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
+     <!--${AOs::SumoHSM::SM::CalibWait::START}-->
+     <tran trig="START">
+      <!--${AOs::SumoHSM::SM::CalibWait::START::[strategy_0||strategy_1]}-->
+      <choice target="../../../7">
+       <guard brief="strategy_0 || strategy_1">me-&gt;strategy == 0 || me-&gt;strategy == 1</guard>
+       <choice_glyph conn="214,64,5,0,-21,5">
+        <action box="-20,0,19,3"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::CalibWait::START::[strategy_2]}-->
+      <choice target="../../../9">
+       <guard brief="strategy_2">me-&gt;strategy == 2</guard>
+       <choice_glyph conn="214,64,5,0,29,4">
+        <action box="7,0,10,2"/>
+       </choice_glyph>
+      </choice>
+      <tran_glyph conn="214,61,2,-1,3">
+       <action box="0,-2,15,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_1}-->
+     <tran trig="RADIO_EVT_1" target="../../1">
+      <action>BSP_ledStripeSetAll(0x94, 0x00, 0xD3);</action>
+      <tran_glyph conn="203,46,0,1,-17,-118">
+       <action box="-115,-20,17,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::CalibWait::TIMEOUT}-->
+     <tran trig="TIMEOUT">
+      <action>static bool time_long;
+
+BSP_ledToggle();
+
+if (time_long){
+    QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 150, 0);
+} else {
+    QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 1000, 0);
+}
+time_long = !time_long;
+
+</action>
+      <tran_glyph conn="201,54,3,-1,12">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_2}-->
+     <tran trig="RADIO_EVT_2">
+      <action>SumoHSM_change_strategy(me);
+BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
+      <tran_glyph conn="201,57,3,-1,12">
+       <action box="0,-2,12,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="201,46,26,15">
+      <entry box="1,2,12,2"/>
+      <exit box="1,4,13,3"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::SumoHSM::SM::CalibFront}-->
+    <state name="CalibFront">
+     <entry>QTimeEvt_armX(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF, 0);
+BSP_motors(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
+     <!--${AOs::SumoHSM::SM::CalibFront::LINE_DETECTED}-->
+     <tran trig="LINE_DETECTED" target="../1">
+      <action>uint32_t time_until_line = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
+
+int16_t diff_to_reference = time_until_line - 285;
+
+me-&gt;star_velocity += (diff_to_reference / 5);
+
+</action>
+      <tran_glyph conn="225,79,3,0,21,2">
+       <action box="0,-2,15,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack}-->
+     <state name="CalibFrontGoBack">
+      <entry>BSP_motors(-100,-100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
+      <!--${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../1">
+       <tran_glyph conn="234,89,3,3,9">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::CalibeFrontTurn}-->
+      <state name="CalibeFrontTurn">
+       <entry brief="turn">BSP_motors(-100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms, 0);</entry>
+       <!--${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::CalibeFrontTurn::TIMEOUT}-->
+       <tran trig="TIMEOUT" target="../../../../8">
+        <action>QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</action>
+        <tran_glyph conn="256,90,1,1,11,-36,-40">
+         <action box="-28,-39,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="243,86,13,10">
+        <entry box="1,2,8,2"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="234,81,24,17">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="225,68,35,33">
+      <entry box="1,2,29,6"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::SumoHSM::SM::RC}-->
+    <state name="RC">
+     <entry>BSP_ledOff();</entry>
+     <!--${AOs::SumoHSM::SM::RC::RADIO_DATA}-->
+     <tran trig="RADIO_DATA">
+      <action>int coord_x = BSP_radioGetChannel(RADIO_CH1);
+int coord_y = BSP_radioGetChannel(RADIO_CH2);
+
+int mot1 = coord_y + coord_x;
+int mot2 = coord_y - coord_x;
+
+BSP_motors(mot1, mot2);</action>
+      <tran_glyph conn="117,87,3,-1,11">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::RC::STOP}-->
+     <tran trig="STOP" target="../../2">
+      <tran_glyph conn="137,80,1,1,6,-15,-5">
+       <action box="2,-18,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="117,77,20,15">
+      <entry box="1,2,12,4"/>
+     </state_glyph>
+    </state>
+    <state_diagram size="271,181"/>
    </statechart>
   </class>
   <!--${AOs::SumoHSM_ctor}-->
@@ -159,18 +543,40 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 700, 0);</entry>
    <code>SumoHSM *me = (SumoHSM *)AO_SumoHSM;
 QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super, TIMEOUT_SIG, 0U);
-QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super, PLAY_BUZZER_SIG, 0U);</code>
+QTimeEvt_ctorX(&amp;me-&gt;timeEvt_2, &amp;me-&gt;super, TIMEOUT_2_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super, PLAY_BUZZER_SIG, 0U);
+me-&gt;strategy = 0;
+me-&gt;calib_time_1 = 0;
+me-&gt;calib_time_2 = 0;
+me-&gt;calib_status = 0;
+me-&gt;turn_180_time_ms = 800;
+me-&gt;star_velocity = 60;</code>
   </operation>
  </package>
  <!--${.}-->
  <directory name=".">
-  <!--${.::sumo_hsm.c}-->
-  <file name="sumo_hsm.c">
-   <text>#include &quot;qpc.h&quot;    /* QP/C framework API */
+  <!--${.::src}-->
+  <directory name="src">
+   <!--${.::src::sumo_hsm.c}-->
+   <file name="sumo_hsm.c">
+    <text>#include &lt;math.h&gt;
+#include &quot;qf_custom_defines.h&quot;
+#include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
+#include &quot;bsp_led.h&quot;
+#include &quot;bsp_motors.h&quot;
+#include &quot;bsp_buzzer.h&quot;
+#include &quot;bsp_radio.h&quot;
+#include &quot;bsp_dist_sensors.h&quot;
 
+#define CALIB_ANGLE_MULT    2.5
+#ifndef M_PI
+#define M_PI                3.14159265
+#endif
 /* ask QM to declare the Blinky class --------------------------------------*/
 $declare${AOs::SumoHSM}
+
+static void SumoHSM_change_strategy(SumoHSM * const me);
 
 /* instantiate the Blinky active object ------------------------------------*/
 static SumoHSM l_sumo_hsm;
@@ -178,6 +584,14 @@ QActive * const AO_SumoHSM = &amp;l_sumo_hsm.super;
 
 /* ask QM to define the Blinky class ---------------------------------------*/
 $define${AOs::SumoHSM_ctor}
+
+static void SumoHSM_change_strategy(SumoHSM * const me) {
+    me-&gt;strategy++;
+    if (me-&gt;strategy &gt; 2){
+        me-&gt;strategy = 0;
+    }
+}
+
 $define${AOs::SumoHSM}
 
 #ifdef Q_SPY
@@ -186,65 +600,31 @@ void sumoHSM_update_qs_dict(){
 
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvt);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvt_2);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.buzzerTimeEvt);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.strategy);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.calib_time_1);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.calib_time_2);
 
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
-    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG, (void *)0);
-    QS_SIG_DICTIONARY(START_RC_SIG,    (void *)0);
-    QS_SIG_DICTIONARY(START_AUTO_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
+    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(START_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(RADIO_EVT_1_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(RADIO_EVT_2_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(STOP_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(LINE_DETECTED_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
 
 
 }
 
 #endif</text>
-  </file>
-  <!--${.::bsp.h}-->
-  <file name="bsp.h">
-   <text>#ifndef BSP_H
-#define BSP_H
-
-/* a very simple Board Support Package (BSP) -------------------------------*/
-enum { 
-    BSP_TICKS_PER_SEC = 100
-}; /* number of clock ticks in a second */
-
-#define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
-
-void BSP_init(void);
-void BSP_ledOff(void);
-void BSP_ledOn(void);
-void BSP_ledToggle(void);
-void BSP_motors(int vel_esq, int vel_dir);
-void BSP_ledStrip(int num, int stat);
-void BSP_buzzer_beep(void);
-void BSP_startRC(void);
-void BSP_startAuto(void);
-
-/* define the event signals used in the application ------------------------*/
-enum SumoHSMSignals {
-    TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
-    PLAY_BUZZER_SIG,
-    START_RC_SIG,
-    START_AUTO_SIG,
-    LINE_DETECTED_SIG,
-    RADIO_DATA_SIG,
-    MAX_SIG, /* keep last (the number of signals) */
-};
-
-/* active object(s) used in this application -------------------------------*/
-extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */
-$declare${AOs::SumoHSM_ctor}
-
-#ifdef Q_SPY
-void sumoHSM_update_qs_dict(void);
-#endif
-
-#endif /* BSP_H */</text>
-  </file>
-  <!--${.::main.c}-->
-  <file name="main.c">
-   <text>#include &quot;qpc.h&quot;    /* QP/C framework API */
+   </file>
+   <!--${.::src::main.c}-->
+   <file name="main.c">
+    <text>#include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
 
 Q_DEFINE_THIS_FILE
@@ -272,526 +652,49 @@ int main() {
 
     return QF_run(); /* let the framework run the application */
 }</text>
-  </file>
-  <!--${.::Makefile}-->
-  <file name="Makefile">
-   <text>##############################################################################
-# Product: Makefile for QP/C on NUCLEO-L053R8, QK kernel, GNU-ARM
-# Last Updated for Version: 7.0.1
-# Date of the Last Update:  2022-05-23
-#
-#                    Q u a n t u m  L e a P s
-#                    ------------------------
-#                    Modern Embedded Software
-#
-# Copyright (C) 2005-2021 Quantum Leaps, LLC. All rights reserved.
-#
-# This program is open source software: you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Alternatively, this program may be distributed and modified under the
-# terms of Quantum Leaps commercial licenses, which expressly supersede
-# the GNU General Public License and are specifically designed for
-# licensees interested in retaining the proprietary status of their code.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see &lt;http://www.gnu.org/licenses&gt;.
-#
-# Contact information:
-# &lt;www.state-machine.com/licensing&gt;
-# &lt;info@state-machine.com&gt;
-##############################################################################
-# examples of invoking this Makefile:
-# building configurations: Debug (default), Release, and Spy
-# make
-# make CONF=rel
-# make CONF=spy
-#
-# cleaning configurations: Debug (default), Release, and Spy
-# make clean
-# make CONF=rel clean
-# make CONF=spy clean
-#
-# NOTE:
-# To use this Makefile on Windows, you will need the GNU make utility, which
-# is included in the Qtools collection for Windows, see:
-#    https://sourceforge.net/projects/qpc/files/QTools/
-#
-
-#-----------------------------------------------------------------------------
-# project name
-#
-PROJECT     := sumo_hsm
-
-#-----------------------------------------------------------------------------
-# project directories
-#
-
-VPATH = \
-    . \
-    $(QPC)/src/qf \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src \
-    cube/ \
-    cube/Src
-
-
-# list of all include directories needed by this project
-INCLUDES  = \
-    -I. \
-    -I$(QPC)/include
-
-# C source files
-C_SRCS := \
-    sumo_hsm.c \
-    main.c \
-
-ifeq (spy, $(CONF)) # SPY configuration ..................................
-
-# For POSIX hosts (Linux, MacOS), you can choose:
-# - the single-threaded QP/C port (win32-qv) or
-# - the multithreaded QP/C port (win32).
-#
-QP_PORT_DIR := $(QPC)/ports/posix-qv
-#QP_PORT_DIR := $(QPC)/ports/posix
-
-VPATH    += ./target-pc \
-            $(QPC)/src/qs \
-            $(QP_PORT_DIR)
-
-
-INCLUDES  += \
-    -I$(QP_PORT_DIR) \
-    -I./target-pc
-
-QS_SRCS := \
-    qs.c \
-    qs_rx.c \
-    qs_fp.c \
-    qs_64bit.c \
-    qs_port.c
-
-C_SRCS += \
-    ./target-stm32g0/bsp.c \
-    $(QS_SRCS)
-
-LD_SCRIPT :=
-
-else # uC configuration ..................................
-
-QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
-
-# list of all source directories used by this project
-VPATH += \
-    $(QP_PORT_DIR) \
-    $(QPC)/src/qk \
-    ./target-stm32g0 \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src \
-    cube/ \
-    cube/Src
-
-INCLUDES  += \
-    -I$(QP_PORT_DIR) \
-    -I./target-stm32g0 \
-    -Icube/Drivers/CMSIS/Device/ST/STM32G4xx/Include \
-    -Icube/Drivers/CMSIS/Include \
-    -Icube/Drivers/STM32G4xx_HAL_Driver/Inc \
-    -Icube/Inc
-
-# assembler source files
-ASM_SRCS := cube/startup_stm32g431xx.s
-
-C_SRCS += \
-    ./target-stm32g0/bsp.c \
-    cube/Src/stm32g4xx_hal_msp.c \
-    cube/Src/system_stm32g4xx.c \
-    cube/Src/usart.c \
-    cube/Src/stm32g4xx_it.c \
-    cube/Src/cube_main.c \
-    cube/Src/gpio.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ex.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_cortex.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_exti.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim_ex.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc_ex.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr_ex.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma_ex.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.c \
-    cube/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c
-
-    LD_SCRIPT := cube/STM32G431KBTx_FLASH.ld
-endif
-
-# C++ source files
-CPP_SRCS :=
-
-OUTPUT    := $(PROJECT)
-
-
-QP_SRCS := \
-    qep_hsm.c \
-    qep_msm.c \
-    qf_act.c \
-    qf_actq.c \
-    qf_defer.c \
-    qf_dyn.c \
-    qf_mem.c \
-    qf_ps.c \
-    qf_qact.c \
-    qf_qeq.c \
-    qf_qmact.c \
-    qf_time.c \
-
-ifeq (spy, $(CONF)) # SPY configuration ..................................
-QP_SRCS += \
-    qf_port.c
-
-else # uC configuration ..................................
-QP_SRCS += \
-    qk.c \
-    qk_port.c
-
-endif
-
-
-QP_ASMS :=
-
-
-LIB_DIRS  :=
-LIBS      :=
-
-
-DEVICE_FAMILY  := STM32G4xx
-DEVICE_TYPE    := STM32G431xx
-DEVICE_DEF     := STM32G431xx
-DEVICE         := STM32G431KB
-
-# defines
-DEFINES   := \
-    -DQP_API_VERSION=9999
-
-ifeq (spy, $(CONF)) # SPY configuration ..................................
-
-CC    := gcc
-CPP   := g++
-AS    := as
-LINK  := gcc    # for C programs
-BIN   := objcopy
-SIZE    := size
-GDB     := gdb
-HEX     := $(BIN) -O ihex
-
-else # uC configuration ..................................
-
-# ARM CPU, ARCH, FPU, and Float-ABI types...
-# ARM_CPU:   [cortex-m0 | cortex-m0plus | cortex-m1 | cortex-m3 | cortex-m4]
-# ARM_FPU:   [ | vfp]
-# FLOAT_ABI: [ | soft | softfp | hard]
-#
-ARM_CPU   := -mcpu=cortex-m4
-ARM_FPU   :=
-FLOAT_ABI :=
-
-
-CC    := $(ARM_GCC_PATH)/arm-none-eabi-gcc
-CPP   := $(ARM_GCC_PATH)/arm-none-eabi-g++
-AS    := $(ARM_GCC_PATH)/arm-none-eabi-as
-LINK  := $(ARM_GCC_PATH)/arm-none-eabi-g++
-BIN   := $(ARM_GCC_PATH)/arm-none-eabi-objcopy
-SIZE    := $(ARM_GCC_PATH)/arm-none-eabi-size
-GDB     := ${ARM_GCC_PATH}/arm-none-eabi-gdb
-HEX     := $(BIN) -O ihex
-
-endif
-
-STM_PROG := /home/marco/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI
-
-
-##############################################################################
-
-MKDIR := mkdir
-RM    := rm
-
-#-----------------------------------------------------------------------------
-# build options for various configurations for ARM Cortex-M
-#
-
-# combine all the soruces...
-C_SRCS += $(QP_SRCS)
-ASM_SRCS += $(QP_ASMS)
-
-ifeq (rel, $(CONF)) # Release configuration ..................................
-
-BIN_DIR := rel
-
-ASFLAGS = $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
-
-CFLAGS = -c $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
-    -ffunction-sections -fdata-sections \
-    -O2 $(INCLUDES) $(DEFINES) -DNDEBUG
-
-CPPFLAGS = -c $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
-    -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
-    -O2 $(INCLUDES) $(DEFINES) -DNDEBUG
-
-else ifeq (spy, $(CONF))  # Spy configuration ................................
-
-BIN_DIR := build_spy
-
-DEFINES += -DQ_SPY
-
-CFLAGS = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W -Wno-unused-result \
-    $(INCLUDES) $(DEFINES) -Wno-unused-result
-
-CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \
-    -fno-rtti -fno-exceptions \
-    $(INCLUDES) $(DEFINES)
-
-ASFLAGS :=
-LINKFLAGS := -no-pie
-LIBS += -lpthread
-
-else # default Debug configuration ..........................................
-
-BIN_DIR := build
-
-DEFINES += -D$(DEVICE_TYPE) \
-    -DUSE_HAL_DRIVER
-
-ASFLAGS = -g $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
-
-CFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
-    -ffunction-sections -fdata-sections \
-    -O2 $(INCLUDES) $(DEFINES)
-
-CPPFLAGS = -c -g $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
-    -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
-    -O2 $(INCLUDES) $(DEFINES)
-
-LINKFLAGS = -T$(LD_SCRIPT) $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb \
-    -specs=nosys.specs -specs=nano.specs \
-    -Wl,-Map,$(BIN_DIR)/$(OUTPUT).map,--cref,--gc-sections $(LIB_DIRS)
-
-endif # ......................................................................
-
-
-
-ASM_OBJS     := $(patsubst %.s,%.o,  $(notdir $(ASM_SRCS)))
-C_OBJS       := $(patsubst %.c,%.o,  $(notdir $(C_SRCS)))
-CPP_OBJS     := $(patsubst %.cpp,%.o,$(notdir $(CPP_SRCS)))
-
-TARGET_BIN   := $(BIN_DIR)/$(OUTPUT).bin
-TARGET_ELF   := $(BIN_DIR)/$(OUTPUT).elf
-TARGET_HEX   := $(BIN_DIR)/$(OUTPUT).hex
-
-ifeq (spy, $(CONF)) # SPY configuration ..................................
-TARGET_EXE   := $(BIN_DIR)/$(OUTPUT)
-endif
-
-ASM_OBJS_EXT := $(addprefix $(BIN_DIR)/, $(ASM_OBJS))
-C_OBJS_EXT   := $(addprefix $(BIN_DIR)/, $(C_OBJS))
-C_DEPS_EXT   := $(patsubst %.o, %.d, $(C_OBJS_EXT))
-CPP_OBJS_EXT := $(addprefix $(BIN_DIR)/, $(CPP_OBJS))
-CPP_DEPS_EXT := $(patsubst %.o, %.d, $(CPP_OBJS_EXT))
-
-# create $(BIN_DIR) if it does not exist
-ifeq (&quot;$(wildcard $(BIN_DIR))&quot;,&quot;&quot;)
-$(shell $(MKDIR) $(BIN_DIR))
-endif
-
-#-----------------------------------------------------------------------------
-# rules
-#
-
-all: $(TARGET_BIN) $(TARGET_HEX) $(TARGET_EXE)
-#all: $(TARGET_ELF)
-
-$(TARGET_HEX): $(TARGET_ELF)
-    @echo &quot;Creating $@&quot;
-    $(HEX) $&lt; $@
-
-$(TARGET_BIN): $(TARGET_ELF)
-    @echo &quot;Creating $@&quot;
-    $(BIN) -O binary $&lt; $@
-
-$(TARGET_EXE) : $(C_OBJS_EXT) $(CPP_OBJS_EXT)
-    @echo &quot;Creating $@&quot;
-    $(CC) $(CFLAGS) $(QPC)/include/qstamp.c -o $(BIN_DIR)/qstamp.o
-    $(LINK) $(LINKFLAGS) $(LIB_DIRS) -o $@ $^ $(BIN_DIR)/qstamp.o $(LIBS)
-
-$(TARGET_ELF) : $(ASM_OBJS_EXT) $(C_OBJS_EXT) $(CPP_OBJS_EXT)
-    @echo &quot;CC $@&quot;
-    $(CC) $(CFLAGS) $(QPC)/include/qstamp.c -o $(BIN_DIR)/qstamp.o
-    $(LINK) $(LINKFLAGS) -o $@ $^ $(BIN_DIR)/qstamp.o $(LIBS)
-    $(AT)$(SIZE) $@
-
-$(BIN_DIR)/%.d : %.c
-    @echo &quot;DCC $&lt;&quot;
-    $(CC) -MM -MT $(@:.d=.o) $(CFLAGS) $&lt; &gt; $@
-
-$(BIN_DIR)/%.d : %.cpp
-    @echo &quot;DPP $&lt;&quot;
-    $(CPP) -MM -MT $(@:.d=.o) $(CPPFLAGS) $&lt; &gt; $@
-
-$(BIN_DIR)/%.o : %.s
-    @echo &quot;AS $&lt;&quot;
-    $(AS) $(ASFLAGS) $&lt; -o $@
-
-$(BIN_DIR)/%.o : %.c
-    @echo &quot;CC $&lt;&quot;
-    $(CC) $(CFLAGS) $&lt; -o $@
-
-$(BIN_DIR)/%.o : %.cpp
-    @echo &quot;CPP $&lt;&quot;
-    $(CPP) $(CPPFLAGS) $&lt; -o $@
-
-# include dependency files only if our goal depends on their existence
-ifneq ($(MAKECMDGOALS),clean)
-  ifneq ($(MAKECMDGOALS),show)
--include $(C_DEPS_EXT) $(CPP_DEPS_EXT)
-  endif
-endif
-
-# Flash Built files with STM32CubeProgrammer
-flash load:
-    @echo &quot;Flashing $(TARGET_HEX) with STM32_Programmer_CLI&quot;
-    $(AT)$(STM_PROG) -c port=SWD -w $(TARGET_HEX) -v -rst
-
-
-.PHONY : clean
-clean:
-    -$(RM) $(BIN_DIR)/*.o \
-    $(BIN_DIR)/*.d \
-    $(BIN_DIR)/*.bin \
-    $(BIN_DIR)/*.elf \
-    $(BIN_DIR)/*.map \
-    $(BIN_DIR)/*.hex \
-    $(TARGET_EXE)
-
-
-show:
-    @echo PROJECT = $(PROJECT)
-    @echo CONF = $(CONF)
-    @echo DEFINES = $(DEFINES)
-    @echo ASM_FPU = $(ASM_FPU)
-    @echo ASM_SRCS = $(ASM_SRCS)
-    @echo C_SRCS = $(C_SRCS)
-    @echo CPP_SRCS = $(CPP_SRCS)
-    @echo ASM_OBJS_EXT = $(ASM_OBJS_EXT)
-    @echo C_OBJS_EXT = $(C_OBJS_EXT)
-    @echo C_DEPS_EXT = $(C_DEPS_EXT)
-    @echo CPP_DEPS_EXT = $(CPP_DEPS_EXT)
-    @echo TARGET_ELF = $(TARGET_ELF)
-
-prepare:
-    @echo &quot;Preparing cube files&quot;
-    $(AT)-mv -f cube/Src/main.c cube/Src/cube_main.c
-    $(AT)-rm -f cube/Makefile
-
-###############################################################################
-## VS Code files
-###############################################################################
-
-VSCODE_FOLDER            := .vscode
-VS_LAUNCH_FILE           := $(VSCODE_FOLDER)/launch.json
-VS_C_CPP_PROPERTIES_FILE := $(VSCODE_FOLDER)/c_cpp_properties.json
-
-NULL  :=
-SPACE := $(NULL) #
-COMMA := ,
-
-
-ifeq (spy, $(CONF)) # SPY configuration ..................................
-INTELLI_SENSE_MODE := linux-gcc-x64
-COMPILER_PATH := /usr/bin/$(CC)
-else
-INTELLI_SENSE_MODE := linux-gcc-arm
-COMPILER_PATH := $(CC)
-endif
-
-
-
-define VS_LAUNCH
-{
-    &quot;version&quot;: &quot;0.2.0&quot;,
-    &quot;configurations&quot;: [
-        {
-            &quot;type&quot;: &quot;cortex-debug&quot;,
-            &quot;request&quot;: &quot;launch&quot;,
-            &quot;servertype&quot;: &quot;stutil&quot;,
-            &quot;cwd&quot;: &quot;$${workspaceRoot}&quot;,
-            &quot;gdbPath&quot;: &quot;${GDB}&quot;,
-            &quot;executable&quot;: &quot;$(TARGET_ELF)&quot;,
-            &quot;name&quot;: &quot;Cortex Debug (ST-Util)&quot;,
-            &quot;device&quot;: &quot;$(DEVICE)&quot;,
-            &quot;v1&quot;: false
-        },
-        {
-            &quot;type&quot;: &quot;cortex-debug&quot;,
-            &quot;request&quot;: &quot;launch&quot;,
-            &quot;servertype&quot;: &quot;jlink&quot;,
-            &quot;cwd&quot;: &quot;$${workspaceRoot}&quot;,
-            &quot;gdbPath&quot;: &quot;${GDB}&quot;,
-            &quot;executable&quot;: &quot;$(TARGET_ELF)&quot;,
-            &quot;name&quot;: &quot;Cortex Debug (J-Link)&quot;,
-            &quot;device&quot;: &quot;$(DEVICE)&quot;,
-            &quot;interface&quot;: &quot;swd&quot;,
-        }
-    ]
-}
-endef
-
-define VS_CPP_PROPERTIES
-{
-    &quot;configurations&quot;: [
-        {
-            &quot;name&quot;: &quot;CONFIG&quot;,
-            &quot;includePath&quot;: [
-                $(subst -I,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach inc,$(INCLUDES),&quot;$(inc)&quot;))))
-            ],
-
-            &quot;defines&quot;: [
-                $(subst -D,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach def,$(DEFINES),&quot;$(def)&quot;))))
-            ],
-
-            &quot;compilerPath&quot;: &quot;$(COMPILER_PATH)&quot;,
-            &quot;cStandard&quot;: &quot;c99&quot;,
-            &quot;cppStandard&quot;: &quot;c++14&quot;,
-            &quot;intelliSenseMode&quot;: &quot;$(INTELLI_SENSE_MODE)&quot;
-        }
-    ],
-    &quot;version&quot;: 4
-}
-endef
-
-export VS_LAUNCH
-export VS_CPP_PROPERTIES
-
-vs_files: $(VS_LAUNCH_FILE) $(VS_C_CPP_PROPERTIES_FILE)
-
-$(VS_LAUNCH_FILE): config.mk Makefile | $(VSCODE_FOLDER)
-    $(AT)echo &quot;$$VS_LAUNCH&quot; &gt; $@
-
-$(VS_C_CPP_PROPERTIES_FILE): config.mk Makefile | $(VSCODE_FOLDER)
-    $(AT)echo &quot;$$VS_CPP_PROPERTIES&quot; &gt; $@
-
-$(VSCODE_FOLDER):
-    $(AT)mkdir -p $@
-</text>
-  </file>
+   </file>
+  </directory>
+  <!--${.::inc}-->
+  <directory name="inc">
+   <!--${.::inc::bsp.h}-->
+   <file name="bsp.h">
+    <text>#ifndef BSP_H
+#define BSP_H
+
+/* a very simple Board Support Package (BSP) -------------------------------*/
+enum { 
+    BSP_TICKS_PER_SEC = 100
+}; /* number of clock ticks in a second */
+
+#define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
+
+void BSP_init(void);
+
+/* define the event signals used in the application ------------------------*/
+enum SumoHSMSignals {
+    TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
+    TIMEOUT_2_SIG,
+    PLAY_BUZZER_SIG,
+    START_SIG,
+    STOP_SIG,
+    RADIO_EVT_1_SIG,
+    RADIO_EVT_2_SIG,
+    LINE_DETECTED_SIG,
+    DIST_SENSOR_CHANGE_SIG,
+    RADIO_DATA_SIG,
+    MAX_SIG, /* keep last (the number of signals) */
+};
+
+/* active object(s) used in this application -------------------------------*/
+extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */
+$declare${AOs::SumoHSM_ctor}
+
+#ifdef Q_SPY
+void sumoHSM_update_qs_dict(void);
+#endif
+
+#endif /* BSP_H */</text>
+   </file>
+  </directory>
  </directory>
 </model>

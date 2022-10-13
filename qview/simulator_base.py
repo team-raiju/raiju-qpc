@@ -43,10 +43,7 @@ from tkinter.ttk import * # override the basic Tk widgets with Ttk widgets
 from tkinter.simpledialog import *
 from struct import pack
 
-from PIL import Image, ImageTk
-import math
-
-global action_counter
+from simulator_custom import *
 
 #=============================================================================
 # QView GUI
@@ -179,7 +176,7 @@ class QView:
 
         # Commands menu...
         m = Menu(main_menu, tearoff=0)
-        m.add_command(label="Reset Target", command=reset_target)
+        m.add_command(label="Reset Target", command=QView.reset_target)
         m.add_command(label="Query Target Info", command=QView._onTargetInfo)
         m.add_command(label="Tick[0]", command=QView._onTick0)
         m.add_command(label="Tick[1]", command=QView._onTick1)
@@ -190,6 +187,14 @@ class QView:
         main_menu.add_cascade(label="Commands", menu=m)
         QView._menu_commands = m
 
+        #Custom Command Menu
+        cust_name, cust_func = custom_menu_command()
+        m = Menu(main_menu, tearoff=0)
+        m.add_command(label=cust_name,  command=cust_func)
+        main_menu.add_cascade(label="Custom", menu=m)
+
+        QView.custom_menu = m
+
         # Events menu...
         m = Menu(main_menu, tearoff=0)
         m.add_command(label="Publish...",  command=QView._onEvt_PUBLISH)
@@ -198,13 +203,6 @@ class QView:
         m.add_command(label="Dispatch...", command=QView._onEvt_DISPATCH)
         main_menu.add_cascade(label="Events", menu=m)
         QView._menu_events = m
-
-        # Custom menu...
-        m = Menu(main_menu, tearoff=0)
-        m.add_command(label="START AUTO",  command=QView._start_auto)
-        main_menu.add_cascade(label="Custom", menu=m)
-
-        QView.custom_menu = m
 
         # Help menu...
         m = Menu(main_menu, tearoff=0)
@@ -563,27 +561,27 @@ class QView:
 
     @staticmethod
     def _onQueryCurr_SM(*args):
-        query_curr(OBJ_SM)
+        QView.query_curr(OBJ_SM)
 
     @staticmethod
     def _onQueryCurr_AO(*args):
-        query_curr(OBJ_AO)
+        QView.query_curr(OBJ_AO)
 
     @staticmethod
     def _onQueryCurr_MP(*args):
-        query_curr(OBJ_MP)
+        QView.query_curr(OBJ_MP)
 
     @staticmethod
     def _onQueryCurr_EQ(*args):
-        query_curr( OBJ_EQ)
+        QView.query_curr( OBJ_EQ)
 
     @staticmethod
     def _onQueryCurr_TE(*args):
-        query_curr(OBJ_TE)
+        QView.query_curr(OBJ_TE)
 
     @staticmethod
     def _onQueryCurr_AP(*args):
-        query_curr(OBJ_AP)
+        QView.query_curr(OBJ_AP)
 
     @staticmethod
     def _onTargetInfo(*args):
@@ -591,37 +589,32 @@ class QView:
 
     @staticmethod
     def _onTick0(*args):
-        tick(0)
+        QView.tick(0)
 
     @staticmethod
     def _onTick1(*args):
-        tick(1)
+        QView.tick(1)
 
     @staticmethod
     def _onEvt_PUBLISH(*args):
-        QView._EvtDialog("Publish Event", publish)
+        QView._EvtDialog("Publish Event", QView.publish)
 
     @staticmethod
     def _onEvt_POST(*args):
-        QView._EvtDialog("Post Event", post)
+        QView._EvtDialog("Post Event", QView.post)
 
     @staticmethod
     def _onEvt_INIT(*args):
-        QView._EvtDialog("Init Event", init)
+        QView._EvtDialog("Init Event", QView.init)
 
     @staticmethod
     def _onEvt_DISPATCH(*args):
-        QView._EvtDialog("Dispatch Event", dispatch)
+        QView._EvtDialog("Dispatch Event", QView.dispatch)
 
     @staticmethod
     def _onHelp(*args):
         webbrowser.open("https://www.state-machine.com/qtools/qview.html",
                         new=2)
-    
-    @staticmethod
-    def _start_auto(*args):
-        command(1, 0)
-    
 
     @staticmethod
     def _onAbout(*args):
@@ -647,6 +640,299 @@ class QView:
             return value # integer
         except:
             return str # string
+
+    ## @brief executes a given command in the Target
+    # @sa qutest_dsl.command()
+    def command(cmdId, param1 = 0, param2 = 0, param3 = 0):
+        if isinstance(cmdId, int):
+            QSpy._sendTo(pack("<BBIII", QSpy._TRGT_COMMAND,
+                            cmdId, param1, param2, param3))
+        else:
+            QSpy._sendTo(pack("<BBIII", QSpy._QSPY_SEND_COMMAND,
+                            0, param1, param2, param3),
+            cmdId) # add string command ID to end
+
+
+    ## @brief Unpack a QS trace record
+    #
+    # @description
+    # The qunpack() facility is similar to Python `struct.unpack()`,
+    # specifically designed for unpacking binary QP/Spy packets.
+    # qunpack() handles all data formats supported by struct.unpack()`,
+    # plus data formats specific to QP/Spy. The main benefit of qunpack()
+    # is that it automatically applies the Target-supplied info about
+    # various the sizes of various elements, such as Target timestamp,
+    # Target object-pointer, Target event-signal, zero-terminated string, etc.
+    ## @brief pokes data into the Target
+    # @sa qutest_dsl.poke()
+    #
+    # @param[in] fmt  format string
+    # @param[in] bstr byte-string to unpack
+    #
+    # @returns
+    # The result is a tuple with elements corresponding to the format items.
+    #
+    # The additional format characters have the following meaning:
+    #
+    # - T : QP/Spy timestamp -> integer, 2..4-bytes (Target dependent)
+    # - O : QP/Spy object pointer -> integer, 2..8-bytes (Target dependent)
+    # - F : QP/Spy function pointer -> integer, 2..8-bytes (Target dependent)
+    # - S : QP/Spy event signal -> integer, 1..4-bytes (Target dependent)
+    # - Z : QP/Spy zero-terminated string -> string of n-bytes (variable length)
+    #
+    # @usage
+    # @include qunpack.py
+    #
+    def qunpack(fmt, bstr):
+        n = 0
+        m = len(fmt)
+        bord = "<" # default little-endian byte order
+        if fmt[0:1] in ("@", "=", "<", ">", "!"):
+            bord = fmt[0:1]
+            n += 1
+        data = []
+        offset = 0
+        while n < m:
+            fmt1 = fmt[n:(n+1)]
+            u = ()
+            if fmt1 in ("B", "b", "c", "x", "?"):
+                u = struct.unpack_from(bord + fmt1, bstr, offset)
+                offset += 1
+            elif fmt1 in ("H", "h"):
+                u = struct.unpack_from(bord + fmt1, bstr, offset)
+                offset += 2
+            elif fmt1 in ("I", "L", "i", "l", "f"):
+                u = struct.unpack_from(bord + fmt1, bstr, offset)
+                offset += 4
+            elif fmt1 in ("Q", "q", "d"):
+                u = struct.unpack_from(bord + fmt1, bstr, offset)
+                offset += 8
+            elif fmt1 == "T":
+                u = struct.unpack_from(bord + QSpy._fmt[QSpy._size_tstamp],
+                                        bstr, offset)
+                offset += QSpy._size_tstamp
+            elif fmt1 == "O":
+                u = struct.unpack_from(bord + QSpy._fmt[QSpy._size_objPtr],
+                                        bstr, offset)
+                offset += QSpy._size_objPtr
+            elif fmt1 == "F":
+                u = struct.unpack_from(bord + QSpy._fmt[QSpy._size_funPtr],
+                                        bstr, offset)
+                offset += QSpy._size_funPtr
+            elif fmt1 == "S":
+                u = struct.unpack_from(bord + QSpy._fmt[QSpy._size_sig],
+                                        bstr, offset)
+                offset += QSpy._size_sig
+            elif fmt1 == "Z": # zero-terminated C-string
+                end = offset
+                while bstr[end]: # not zero-terminator?
+                    end += 1
+                u = (bstr[offset:end].decode(),)
+                offset = end + 1 # inclue the terminating zero
+            else:
+                assert 0, "qunpack(): unknown format"
+            data.extend(u)
+            n += 1
+        return tuple(data)
+        
+        ## @brief Send the RESET packet to the Target
+    def reset_target(*args):
+        if QView._have_info:
+            QSpy._sendTo(pack("<B", QSpy._TRGT_RESET))
+        else:
+            QView._reset_request = True
+
+
+    ## @brief trigger system clock tick in the Target
+    # @sa qutest_dsl.tick()
+    def tick(tick_rate = 0):
+        QSpy._sendTo(pack("<BB", QSpy._TRGT_TICK, tick_rate))
+
+    ## @brief peeks data in the Target
+    # @sa qutest_dsl.peek()
+    def peek(offset, size, num):
+        QSpy._sendTo(pack("<BHBB", QSpy._TRGT_PEEK, offset, size, num))
+
+    ## @brief pokes data into the Target
+    # @sa qutest_dsl.poke()
+    def poke(offset, size, data):
+        fmt = "<BHBB" + ("x","B","H","x","I")[size]
+        QSpy._sendTo(pack(fmt, QSpy._TRGT_POKE, offset, size, 1, data))
+
+    ## @brief Set/clear the Global-Filter in the Target.
+    # @sa qutest_dsl.glb_filter()
+    def glb_filter(*args):
+        # internal helper function
+        def _apply(mask, is_neg):
+            if is_neg:
+                QView._glb_filter &= ~mask
+            else:
+                QView._glb_filter |= mask
+
+        QView._glb_filter = 0
+        for arg in args:
+            # NOTE: positive filter argument means 'add' (allow),
+            # negative filter argument meand 'remove' (disallow)
+            is_neg = False
+            if isinstance(arg, str):
+                is_neg = (arg[0] == '-') # is  request?
+                if is_neg:
+                    arg = arg[1:]
+                try:
+                    arg = QSpy._QS.index(arg)
+                except:
+                    QView._MessageDialog("Error in glb_filter()",
+                                        'arg="' + arg + '"\n' +
+                                        traceback.format_exc(3))
+                    sys.exit(-5) # return: event-loop might not be running yet
+            else:
+                is_neg = (arg < 0)
+                if is_neg:
+                    arg = -arg
+
+            if arg < 0x7F:
+                _apply(1 << arg, is_neg)
+            elif arg == GRP_ON:
+                _apply(QSpy._GLB_FLT_MASK_ALL, is_neg)
+            elif arg == GRP_SM:
+                _apply(QSpy._GLB_FLT_MASK_SM, is_neg)
+            elif arg == GRP_AO:
+                _apply(QSpy._GLB_FLT_MASK_AO, is_neg)
+            elif arg == GRP_MP:
+                _apply(QSpy._GLB_FLT_MASK_MP, is_neg)
+            elif arg == GRP_EQ:
+                _apply(QSpy._GLB_FLT_MASK_EQ, is_neg)
+            elif arg == GRP_TE:
+                _apply(QSpy._GLB_FLT_MASK_TE, is_neg)
+            elif arg == GRP_QF:
+                _apply(QSpy._GLB_FLT_MASK_QF, is_neg)
+            elif arg == GRP_SC:
+                _apply(QSpy._GLB_FLT_MASK_SC, is_neg)
+            elif arg == GRP_SEM:
+                _apply(QSpy._GLB_FLT_MASK_SEM, is_neg)
+            elif arg == GRP_MTX:
+                _apply(QSpy._GLB_FLT_MASK_MTX, is_neg)
+            elif arg == GRP_U0:
+                _apply(QSpy._GLB_FLT_MASK_U0, is_neg)
+            elif arg == GRP_U1:
+                _apply(QSpy._GLB_FLT_MASK_U1, is_neg)
+            elif arg == GRP_U2:
+                _apply(QSpy._GLB_FLT_MASK_U2, is_neg)
+            elif arg == GRP_U3:
+                _apply(QSpy._GLB_FLT_MASK_U3, is_neg)
+            elif arg == GRP_U4:
+                _apply(QSpy._GLB_FLT_MASK_U4, is_neg)
+            elif arg == GRP_UA:
+                _apply(QSpy._GLB_FLT_MASK_UA, is_neg)
+            else:
+                assert 0, "invalid global filter arg=0x%X"%(arg)
+
+        QSpy._sendTo(pack("<BBQQ", QSpy._TRGT_GLB_FILTER, 16,
+                        QView._glb_filter & 0xFFFFFFFFFFFFFFFF,
+                        QView._glb_filter >> 64))
+        QView._updateMenus()
+
+    ## @brief Set/clear the Local-Filter in the Target.
+    # @sa qutest_dsl.loc_filter()
+    def loc_filter(*args):
+        # internal helper function
+        def _apply(mask, is_neg):
+            if is_neg:
+                QView._loc_filter &= ~mask
+            else:
+                QView._loc_filter |= mask
+
+        for arg in args:
+            # NOTE: positive filter argument means 'add' (allow),
+            # negative filter argument means 'remove' (disallow)
+            is_neg = (arg < 0)
+            if is_neg:
+                arg = -arg
+
+            if arg < 0x7F:
+                _apply(1 << arg, is_neg)
+            elif arg == IDS_ALL:
+                _apply(QSpy._LOC_FLT_MASK_ALL, is_neg)
+            elif arg == IDS_AO:
+                _apply(QSpy._LOC_FLT_MASK_AO, is_neg)
+            elif arg == IDS_EP:
+                _apply(QSpy._LOC_FLT_MASK_EP, is_neg)
+            elif arg == IDS_EQ:
+                _apply(QSpy._LOC_FLT_MASK_EQ, is_neg)
+            elif arg == IDS_AP:
+                _apply(QSpy._LOC_FLT_MASK_AP, is_neg)
+            else:
+                assert 0, "invalid local filter arg=0x%X"%(arg)
+
+        QSpy._sendTo(pack("<BBQQ", QSpy._TRGT_LOC_FILTER, 16,
+                        QView._loc_filter & 0xFFFFFFFFFFFFFFFF,
+                        QView._loc_filter >> 64))
+
+    ## @brief Set/clear the Active-Object Local-Filter in the Target.
+    # @sa qutest_dsl.ao_filter()
+    def ao_filter(obj_id):
+        # NOTE: positive obj_id argument means 'add' (allow),
+        # negative obj_id argument means 'remove' (disallow)
+        remove = 0
+        QView._locAO_OBJ.set(obj_id)
+        QView._menu_loc_filter.entryconfig("AO-OBJ...",
+                accelerator=QView._locAO_OBJ.get())
+        if isinstance(obj_id, str):
+            if obj_id[0:1] == '-': # is it remvoe request?
+                obj_id = obj_id[1:]
+                remove = 1
+            QSpy._sendTo(pack("<BB" + QSpy._fmt[QSpy._size_objPtr],
+                QSpy._QSPY_SEND_AO_FILTER, remove, 0),
+                obj_id) # add string object-ID to end
+        else:
+            if obj_id < 0:
+                obj_id = -obj_id
+                remove = 1
+            QSpy._sendTo(pack("<BB" + QSpy._fmt[QSpy._size_objPtr],
+                QSpy._TRGT_AO_FILTER, remove, obj_id))
+
+    ## @brief Set the Current-Object in the Target.
+    # @sa qutest_dsl.current_obj()
+    def current_obj(obj_kind, obj_id):
+        if obj_id == "":
+            return
+        if isinstance(obj_id, int):
+            QSpy._sendTo(pack("<BB" + QSpy._fmt[QSpy._size_objPtr],
+                QSpy._TRGT_CURR_OBJ, obj_kind, obj_id))
+            obj_id = "0x%08X"%(obj_id)
+        else:
+            QSpy._sendTo(pack("<BB" + QSpy._fmt[QSpy._size_objPtr],
+                QSpy._QSPY_SEND_CURR_OBJ, obj_kind, 0), obj_id)
+
+        QView._currObj[obj_kind].set(obj_id)
+        QView._menu_curr_obj.entryconfig(obj_kind, accelerator=obj_id)
+        QView._updateMenus()
+
+    ## @brief query the @ref current_obj() "current object" in the Target
+    # @sa qutest_dsl.query_curr()
+    def query_curr(obj_kind):
+        QSpy._sendTo(pack("<BB", QSpy._TRGT_QUERY_CURR, obj_kind))
+
+    ## @brief publish a given event to subscribers in the Target
+    # @sa qutest_dsl.publish()
+    def publish(signal, params = None):
+        QSpy._sendEvt(QSpy._EVT_PUBLISH, signal, params)
+
+    ## @brief post a given event to the current AO object in the Target
+    # @sa qutest_dsl.post()
+    def post(signal, params = None):
+        QSpy._sendEvt(QSpy._EVT_POST, signal, params)
+
+    ## @brief take the top-most initial transition in the
+    # current SM object in the Target
+    # @sa qutest_dsl.init()
+    def init(signal = 0, params = None):
+        QSpy._sendEvt(QSpy._EVT_INIT, signal, params)
+
+    ## @brief dispatch a given event in the current SM object in the Target
+    # @sa qutest_dsl.dispatch()
+    def dispatch(signal, params = None):
+        QSpy._sendEvt(QSpy._EVT_DISPATCH, signal, params)
 
 
     #-------------------------------------------------------------------------
@@ -839,7 +1125,7 @@ class QView:
             return 1
 
         def apply(self):
-            ao_filter(self._obj)
+            QView.ao_filter(self._obj)
 
     #.........................................................................
     class _CurrObjDialog(Dialog):
@@ -862,7 +1148,7 @@ class QView:
             return 1
 
         def apply(self):
-            current_obj(self._obj_kind, self._obj)
+            QView.current_obj(self._obj_kind, self._obj)
 
     #.........................................................................
     class _CommandDialog(Dialog):
@@ -908,7 +1194,7 @@ class QView:
             return 1
 
         def apply(self):
-            command(self._cmdId, self._param1, self._param2, self._param3)
+            QView.command(self._cmdId, self._param1, self._param2, self._param3)
 
     #.........................................................................
     class _PeekDialog(Dialog):
@@ -947,7 +1233,7 @@ class QView:
             return 1
 
         def apply(self):
-            peek(self._offs, self._size, self._len)
+            QView.peek(self._offs, self._size, self._len)
 
     #.........................................................................
     class _PokeDialog(Dialog):
@@ -992,13 +1278,13 @@ class QView:
             return 1
 
         def apply(self):
-            poke(self._offs, self._size, self._data)
+            QView.poke(self._offs, self._size, self._data)
 
     #.........................................................................
     class _EvtDialog(Dialog):
         def __init__(self, title, action):
             self._action = action
-            if action == dispatch:
+            if action == QView.dispatch:
                 self._obj = QView._currObj[OBJ_SM].get()
             else:
                 self._obj = QView._currObj[OBJ_AO].get()
@@ -1394,9 +1680,7 @@ class QSpy:
     @staticmethod
     def _poll():
         while True:
-
-            custom_action_on_poll()
-
+            on_poll()
             try:
                 packet = QSpy._sock.recv(4096)
                 if not packet:
@@ -1489,7 +1773,9 @@ class QSpy:
                 # handler = getattr(QView._cust, QSpy._QS[recID], None)
                 handler = None
                 if (recID == 100):
-                    handler = QS_USER_00
+                    handler = on_user_00
+                elif (recID == 105):
+                    handler = on_user_01
                 if handler is not None:
                     try:
                         handler(packet) # call the packet handler
@@ -1582,425 +1868,33 @@ IDS_AP = (0x80 + 96)
 
 HOME_DIR = None   ##< home directory of the customization script
 
-## @brief Send the RESET packet to the Target
-def reset_target(*args):
-    if QView._have_info:
-        QSpy._sendTo(pack("<B", QSpy._TRGT_RESET))
-    else:
-        QView._reset_request = True
-
-## @brief executes a given command in the Target
-# @sa qutest_dsl.command()
-def command(cmdId, param1 = 0, param2 = 0, param3 = 0):
-    if isinstance(cmdId, int):
-        QSpy._sendTo(pack("<BBIII", QSpy._TRGT_COMMAND,
-                         cmdId, param1, param2, param3))
-    else:
-        QSpy._sendTo(pack("<BBIII", QSpy._QSPY_SEND_COMMAND,
-                         0, param1, param2, param3),
-            cmdId) # add string command ID to end
-
-## @brief trigger system clock tick in the Target
-# @sa qutest_dsl.tick()
-def tick(tick_rate = 0):
-    QSpy._sendTo(pack("<BB", QSpy._TRGT_TICK, tick_rate))
-
-## @brief peeks data in the Target
-# @sa qutest_dsl.peek()
-def peek(offset, size, num):
-    QSpy._sendTo(pack("<BHBB", QSpy._TRGT_PEEK, offset, size, num))
-
-## @brief pokes data into the Target
-# @sa qutest_dsl.poke()
-def poke(offset, size, data):
-    fmt = "<BHBB" + ("x","B","H","x","I")[size]
-    QSpy._sendTo(pack(fmt, QSpy._TRGT_POKE, offset, size, 1, data))
-
-## @brief Set/clear the Global-Filter in the Target.
-# @sa qutest_dsl.glb_filter()
-def glb_filter(*args):
-    # internal helper function
-    def _apply(mask, is_neg):
-        if is_neg:
-            QView._glb_filter &= ~mask
-        else:
-            QView._glb_filter |= mask
-
-    QView._glb_filter = 0
-    for arg in args:
-        # NOTE: positive filter argument means 'add' (allow),
-        # negative filter argument meand 'remove' (disallow)
-        is_neg = False
-        if isinstance(arg, str):
-            is_neg = (arg[0] == '-') # is  request?
-            if is_neg:
-                arg = arg[1:]
-            try:
-                arg = QSpy._QS.index(arg)
-            except:
-                QView._MessageDialog("Error in glb_filter()",
-                                     'arg="' + arg + '"\n' +
-                                     traceback.format_exc(3))
-                sys.exit(-5) # return: event-loop might not be running yet
-        else:
-            is_neg = (arg < 0)
-            if is_neg:
-                arg = -arg
-
-        if arg < 0x7F:
-            _apply(1 << arg, is_neg)
-        elif arg == GRP_ON:
-            _apply(QSpy._GLB_FLT_MASK_ALL, is_neg)
-        elif arg == GRP_SM:
-            _apply(QSpy._GLB_FLT_MASK_SM, is_neg)
-        elif arg == GRP_AO:
-            _apply(QSpy._GLB_FLT_MASK_AO, is_neg)
-        elif arg == GRP_MP:
-            _apply(QSpy._GLB_FLT_MASK_MP, is_neg)
-        elif arg == GRP_EQ:
-            _apply(QSpy._GLB_FLT_MASK_EQ, is_neg)
-        elif arg == GRP_TE:
-            _apply(QSpy._GLB_FLT_MASK_TE, is_neg)
-        elif arg == GRP_QF:
-            _apply(QSpy._GLB_FLT_MASK_QF, is_neg)
-        elif arg == GRP_SC:
-            _apply(QSpy._GLB_FLT_MASK_SC, is_neg)
-        elif arg == GRP_SEM:
-            _apply(QSpy._GLB_FLT_MASK_SEM, is_neg)
-        elif arg == GRP_MTX:
-            _apply(QSpy._GLB_FLT_MASK_MTX, is_neg)
-        elif arg == GRP_U0:
-            _apply(QSpy._GLB_FLT_MASK_U0, is_neg)
-        elif arg == GRP_U1:
-            _apply(QSpy._GLB_FLT_MASK_U1, is_neg)
-        elif arg == GRP_U2:
-            _apply(QSpy._GLB_FLT_MASK_U2, is_neg)
-        elif arg == GRP_U3:
-            _apply(QSpy._GLB_FLT_MASK_U3, is_neg)
-        elif arg == GRP_U4:
-            _apply(QSpy._GLB_FLT_MASK_U4, is_neg)
-        elif arg == GRP_UA:
-            _apply(QSpy._GLB_FLT_MASK_UA, is_neg)
-        else:
-            assert 0, "invalid global filter arg=0x%X"%(arg)
-
-    QSpy._sendTo(pack("<BBQQ", QSpy._TRGT_GLB_FILTER, 16,
-                      QView._glb_filter & 0xFFFFFFFFFFFFFFFF,
-                      QView._glb_filter >> 64))
-    QView._updateMenus()
-
-## @brief Set/clear the Local-Filter in the Target.
-# @sa qutest_dsl.loc_filter()
-def loc_filter(*args):
-    # internal helper function
-    def _apply(mask, is_neg):
-        if is_neg:
-            QView._loc_filter &= ~mask
-        else:
-            QView._loc_filter |= mask
-
-    for arg in args:
-        # NOTE: positive filter argument means 'add' (allow),
-        # negative filter argument means 'remove' (disallow)
-        is_neg = (arg < 0)
-        if is_neg:
-            arg = -arg
-
-        if arg < 0x7F:
-            _apply(1 << arg, is_neg)
-        elif arg == IDS_ALL:
-            _apply(QSpy._LOC_FLT_MASK_ALL, is_neg)
-        elif arg == IDS_AO:
-            _apply(QSpy._LOC_FLT_MASK_AO, is_neg)
-        elif arg == IDS_EP:
-            _apply(QSpy._LOC_FLT_MASK_EP, is_neg)
-        elif arg == IDS_EQ:
-            _apply(QSpy._LOC_FLT_MASK_EQ, is_neg)
-        elif arg == IDS_AP:
-            _apply(QSpy._LOC_FLT_MASK_AP, is_neg)
-        else:
-            assert 0, "invalid local filter arg=0x%X"%(arg)
-
-    QSpy._sendTo(pack("<BBQQ", QSpy._TRGT_LOC_FILTER, 16,
-                      QView._loc_filter & 0xFFFFFFFFFFFFFFFF,
-                      QView._loc_filter >> 64))
-
-## @brief Set/clear the Active-Object Local-Filter in the Target.
-# @sa qutest_dsl.ao_filter()
-def ao_filter(obj_id):
-    # NOTE: positive obj_id argument means 'add' (allow),
-    # negative obj_id argument means 'remove' (disallow)
-    remove = 0
-    QView._locAO_OBJ.set(obj_id)
-    QView._menu_loc_filter.entryconfig("AO-OBJ...",
-            accelerator=QView._locAO_OBJ.get())
-    if isinstance(obj_id, str):
-        if obj_id[0:1] == '-': # is it remvoe request?
-            obj_id = obj_id[1:]
-            remove = 1
-        QSpy._sendTo(pack("<BB" + QSpy._fmt[QSpy._size_objPtr],
-            QSpy._QSPY_SEND_AO_FILTER, remove, 0),
-            obj_id) # add string object-ID to end
-    else:
-        if obj_id < 0:
-            obj_id = -obj_id
-            remove = 1
-        QSpy._sendTo(pack("<BB" + QSpy._fmt[QSpy._size_objPtr],
-            QSpy._TRGT_AO_FILTER, remove, obj_id))
-
-## @brief Set the Current-Object in the Target.
-# @sa qutest_dsl.current_obj()
-def current_obj(obj_kind, obj_id):
-    if obj_id == "":
-        return
-    if isinstance(obj_id, int):
-        QSpy._sendTo(pack("<BB" + QSpy._fmt[QSpy._size_objPtr],
-            QSpy._TRGT_CURR_OBJ, obj_kind, obj_id))
-        obj_id = "0x%08X"%(obj_id)
-    else:
-        QSpy._sendTo(pack("<BB" + QSpy._fmt[QSpy._size_objPtr],
-            QSpy._QSPY_SEND_CURR_OBJ, obj_kind, 0), obj_id)
-
-    QView._currObj[obj_kind].set(obj_id)
-    QView._menu_curr_obj.entryconfig(obj_kind, accelerator=obj_id)
-    QView._updateMenus()
-
-## @brief query the @ref current_obj() "current object" in the Target
-# @sa qutest_dsl.query_curr()
-def query_curr(obj_kind):
-    QSpy._sendTo(pack("<BB", QSpy._TRGT_QUERY_CURR, obj_kind))
-
-## @brief publish a given event to subscribers in the Target
-# @sa qutest_dsl.publish()
-def publish(signal, params = None):
-    QSpy._sendEvt(QSpy._EVT_PUBLISH, signal, params)
-
-## @brief post a given event to the current AO object in the Target
-# @sa qutest_dsl.post()
-def post(signal, params = None):
-    QSpy._sendEvt(QSpy._EVT_POST, signal, params)
-
-## @brief take the top-most initial transition in the
-# current SM object in the Target
-# @sa qutest_dsl.init()
-def init(signal = 0, params = None):
-    QSpy._sendEvt(QSpy._EVT_INIT, signal, params)
-
-## @brief dispatch a given event in the current SM object in the Target
-# @sa qutest_dsl.dispatch()
-def dispatch(signal, params = None):
-    QSpy._sendEvt(QSpy._EVT_DISPATCH, signal, params)
-
-## @brief Unpack a QS trace record
-#
-# @description
-# The qunpack() facility is similar to Python `struct.unpack()`,
-# specifically designed for unpacking binary QP/Spy packets.
-# qunpack() handles all data formats supported by struct.unpack()`,
-# plus data formats specific to QP/Spy. The main benefit of qunpack()
-# is that it automatically applies the Target-supplied info about
-# various the sizes of various elements, such as Target timestamp,
-# Target object-pointer, Target event-signal, zero-terminated string, etc.
-## @brief pokes data into the Target
-# @sa qutest_dsl.poke()
-#
-# @param[in] fmt  format string
-# @param[in] bstr byte-string to unpack
-#
-# @returns
-# The result is a tuple with elements corresponding to the format items.
-#
-# The additional format characters have the following meaning:
-#
-# - T : QP/Spy timestamp -> integer, 2..4-bytes (Target dependent)
-# - O : QP/Spy object pointer -> integer, 2..8-bytes (Target dependent)
-# - F : QP/Spy function pointer -> integer, 2..8-bytes (Target dependent)
-# - S : QP/Spy event signal -> integer, 1..4-bytes (Target dependent)
-# - Z : QP/Spy zero-terminated string -> string of n-bytes (variable length)
-#
-# @usage
-# @include qunpack.py
-#
-def qunpack(fmt, bstr):
-    n = 0
-    m = len(fmt)
-    bord = "<" # default little-endian byte order
-    if fmt[0:1] in ("@", "=", "<", ">", "!"):
-        bord = fmt[0:1]
-        n += 1
-    data = []
-    offset = 0
-    while n < m:
-       fmt1 = fmt[n:(n+1)]
-       u = ()
-       if fmt1 in ("B", "b", "c", "x", "?"):
-           u = struct.unpack_from(bord + fmt1, bstr, offset)
-           offset += 1
-       elif fmt1 in ("H", "h"):
-           u = struct.unpack_from(bord + fmt1, bstr, offset)
-           offset += 2
-       elif fmt1 in ("I", "L", "i", "l", "f"):
-           u = struct.unpack_from(bord + fmt1, bstr, offset)
-           offset += 4
-       elif fmt1 in ("Q", "q", "d"):
-           u = struct.unpack_from(bord + fmt1, bstr, offset)
-           offset += 8
-       elif fmt1 == "T":
-           u = struct.unpack_from(bord + QSpy._fmt[QSpy._size_tstamp],
-                                  bstr, offset)
-           offset += QSpy._size_tstamp
-       elif fmt1 == "O":
-           u = struct.unpack_from(bord + QSpy._fmt[QSpy._size_objPtr],
-                                  bstr, offset)
-           offset += QSpy._size_objPtr
-       elif fmt1 == "F":
-           u = struct.unpack_from(bord + QSpy._fmt[QSpy._size_funPtr],
-                                  bstr, offset)
-           offset += QSpy._size_funPtr
-       elif fmt1 == "S":
-           u = struct.unpack_from(bord + QSpy._fmt[QSpy._size_sig],
-                                  bstr, offset)
-           offset += QSpy._size_sig
-       elif fmt1 == "Z": # zero-terminated C-string
-           end = offset
-           while bstr[end]: # not zero-terminator?
-               end += 1
-           u = (bstr[offset:end].decode(),)
-           offset = end + 1 # inclue the terminating zero
-       else:
-           assert 0, "qunpack(): unknown format"
-       data.extend(u)
-       n += 1
-    return tuple(data)
-
 #=============================================================================
-# main entry point to QView
 
-def custom_qview():
-    QView._view_canvas.set(1)
-    QView.canvas.configure(width=600, height=600)
-    
-    global led_on_img
-    global led_off_img
-    global canvas_img
-    global sumo_png
-    global sumo_canvas
-    global arena_png
-    global arena_canvas
-    global angle
-    global robot_pos_x
-    global robot_pos_y
-
-    angle = 0
-    robot_pos_x = 300
-    robot_pos_y = 300
-
-    arena_png = PhotoImage(file=HOME_DIR + "/img/arena.png")
-    led_on_img = PhotoImage(file=HOME_DIR + "/img/led_on.png").subsample(3,3)
-    led_off_img = PhotoImage(file=HOME_DIR + "/img/led_off.png").subsample(3,3)
-    sumo_png = PhotoImage(file=HOME_DIR + "/img/raiju.png")
-
-    arena_canvas = QView.canvas.create_image(300,  300, image=arena_png)
-    canvas_img = QView.canvas.create_image(50,  30, image=led_on_img)
-    sumo_canvas = QView.canvas.create_image(robot_pos_x,  robot_pos_y, image=sumo_png)
-
-
+def on_poll():
+    custom_on_poll()
 
 def on_reset():
-    # clear the lists
     return
 
-def line_command():
-        command(2, 0)
-
-
-# on_run() callback
 def on_run():
-    glb_filter("QS_USER_00")
+    QView.glb_filter("QS_USER_00")
+    QView.current_obj(OBJ_AO, "l_sumo_hsm")
+    return
 
-    # NOTE: the names of objects for current_obj() must match
-    # the QS Object Dictionaries produced by the application.
-    current_obj(OBJ_AO, "l_sumo_hsm")
+def on_user_00(packet):
+    custom_user_00_packet(packet)
+    return
 
-def QS_USER_00(packet):
-    data = qunpack("xxTxbxb", packet)        
-    log = data[1]     
-    global mot_esq
-    global mot_dir
-
-    QView.print_text("Timestamp = %d; Log = %d; Argument = %d"%(data[0], log, data[2]))
-
-    if (log == 0):
-        led_stat = data[2]
-        if (led_stat == 1):
-            QView.canvas.itemconfig(canvas_img, image=led_on_img)
-        else:
-            QView.canvas.itemconfig(canvas_img, image=led_off_img)
-    elif (log == 2):
-        mot_esq = data[2]
-    elif (log == 3):
-        mot_dir = data[2]
-
-def custom_action_on_poll():
-    global action_counter
-
-    action_counter = action_counter + 1
-    if (action_counter % 4 == 0):
-        global sumo_rotated
-        global tk_sumo_rotated
-        global angle
-        global robot_pos_x
-        global robot_pos_y
-        global mot_esq
-        global mot_dir
-
-        rotation_vel = (mot_dir - mot_esq) / 2
-        angle += (rotation_vel / 10)
-        angle = angle % 360
-
-        vel = ((mot_esq + mot_dir) / 2)
-        vel_x = int((vel * math.sin(angle * math.pi/180))/10)
-        vel_y = int((vel * math.cos(angle * math.pi/180))/10)
-
-        robot_pos_x += vel_x
-        robot_pos_y += vel_y
-
-        sumo_rotated = Image.open(HOME_DIR + "/img/raiju.png")
-        tk_sumo_rotated = ImageTk.PhotoImage(sumo_rotated.rotate(angle))
-        QView.canvas.itemconfig(sumo_canvas, image=tk_sumo_rotated)
-        QView.canvas.move(sumo_canvas, vel_x, vel_y)
-
-        if (is_over_circle(robot_pos_x, robot_pos_y)):
-            line_command()
-
-
-
-        
-def is_over_circle(posx, posy):
-    if (((posx - 300 ) ** 2 + (posy - 300 ) ** 2) > 200 ** 2):
-        return True
-    else:
-        return False
-
+def on_user_01(packet):
+    custom_user_01_packet(packet)
+    return
 
 def main():
     # process command-line arguments...
-    global action_counter
-    global mot_esq
-    global mot_dir
-
-
-    mot_esq = 0
-    mot_dir = 0
-
-
-    action_counter = 0
     global HOME_DIR
     HOME_DIR = os.path.dirname(__file__)
 
-
     QSpy._host_addr = tuple(QSpy._host_addr) # convert to immutable tuple
-    #print("Connection: ", QSpy._host_addr, QSpy._local_port)
 
     # create the QView GUI
     QView._gui = Tk()
@@ -2009,10 +1903,10 @@ def main():
                    (QView.VERSION//10) % 10, \
                     QView.VERSION % 10) + " -- " + "SIMULATOR")
     QView._init_gui(QView._gui)
+
+    custom_qview_init(QView)
+
    
-    custom_qview()
-
-
     err = QSpy._init()
 
     if err:
@@ -2022,6 +1916,8 @@ def main():
     QView._gui.mainloop()
     QView._gui  = None
     QSpy._detach()
+
+    custom_on_dettach()
 
     sys.exit(QView._err)
 
