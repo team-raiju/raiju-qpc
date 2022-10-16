@@ -40,6 +40,7 @@
 #include "bsp_buzzer.h"
 #include "bsp_radio.h"
 #include "bsp_dist_sensors.h"
+#include "bsp_line_sensors.h"
 
 
 #ifdef Q_SPY
@@ -57,6 +58,7 @@ void BSP_init(void)   {
     BSP_buzzerInit();
     BSP_radioInit();
     BSP_distSensorsInit();
+    BSP_lineSensorsInit();
 
     #ifdef Q_SPY
 
@@ -132,7 +134,12 @@ void QS_onCommand(uint8_t cmdId,
         }
 
         case 3: { 
-            QEvt evt = {.sig = LINE_DETECTED_SIG};
+            BSP_lineSensorSet(LINE_SENSOR_FL, (param1 & 8) >> 3);
+            BSP_lineSensorSet(LINE_SENSOR_FR, (param1 & 4) >> 2);
+            BSP_lineSensorSet(LINE_SENSOR_BL, (param1 & 2) >> 1);
+            BSP_lineSensorSet(LINE_SENSOR_BR, (param1 & 1));
+
+            QEvt evt = {.sig = LINE_CHANGED_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }

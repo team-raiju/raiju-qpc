@@ -32,3 +32,15 @@ export CUBE_PATH="/home/marco/STM32CubeMX"
 export CUBE_PROGRAMMER_PATH="/home/marco/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin"
 export QPC="/home/marco/qp-linux_7.1.0/qp/qpc"
 export QTOOLS="/home/marco/qp-linux_7.1.0/qp/qtools"
+
+
+# Cube configs
+Remove the following interrupts from auto code generate
+PendSV_Handler
+NMI_Handler
+SysTickhandler
+
+# QM License
+The state machine was built using QMActive scheme. So it is necessary to use a paid license. In this case we are using the free trial license locatede on qp-linux_7.0.2/qp/qpc/LICENSES/QM-EVAL-QPC.qlc.
+
+More information on: https://state-machine.com/qm/sm.html#sm_class
