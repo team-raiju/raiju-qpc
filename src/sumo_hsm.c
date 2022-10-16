@@ -74,6 +74,7 @@ typedef struct {
     struct SM_LineSubmachine {
         QMState super;
         QActionHandler const XP1; /* eXit-Point segment */
+        QActionHandler const STOP; /* eXit-Point segment */
     } const *sub_LineSubmachine;
 } SumoHSM;
 
@@ -203,6 +204,7 @@ static QMState const SumoHSM_RC_s = {
 static QState SumoHSM_line1  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_line1_e(SumoHSM * const me);
 static QState SumoHSM_line1_XP1(SumoHSM * const me);
+static QState SumoHSM_line1_STOP(SumoHSM * const me);
 static struct SM_LineSubmachine const SumoHSM_line1_s = {
     {
         QM_STATE_NULL, /* superstate (top) */
@@ -212,10 +214,12 @@ static struct SM_LineSubmachine const SumoHSM_line1_s = {
         Q_ACTION_NULL  /* no initial tran. */
     }
     ,Q_ACTION_CAST(&SumoHSM_line1_XP1)
+    ,Q_ACTION_CAST(&SumoHSM_line1_STOP)
 };
 static QState SumoHSM_line2  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_line2_e(SumoHSM * const me);
 static QState SumoHSM_line2_XP1(SumoHSM * const me);
+static QState SumoHSM_line2_STOP(SumoHSM * const me);
 static struct SM_LineSubmachine const SumoHSM_line2_s = {
     {
         QM_STATE_NULL, /* superstate (top) */
@@ -225,6 +229,7 @@ static struct SM_LineSubmachine const SumoHSM_line2_s = {
         Q_ACTION_NULL  /* no initial tran. */
     }
     ,Q_ACTION_CAST(&SumoHSM_line2_XP1)
+    ,Q_ACTION_CAST(&SumoHSM_line2_STOP)
 };
 
 /* submachine ${AOs::SumoHSM::SM::LineSubmachine} */
@@ -1148,6 +1153,22 @@ static QState SumoHSM_line1_XP1(SumoHSM * const me) {
     return QM_TRAN(&tatbl_);
 }
 /*${AOs::SumoHSM::SM::line1} */
+static QState SumoHSM_line1_STOP(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_AutoWait_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_LineSubmachine_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_AutoWait_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::line1} */
 static QState SumoHSM_line1(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
@@ -1176,6 +1197,22 @@ static QState SumoHSM_line2_XP1(SumoHSM * const me) {
         {
             Q_ACTION_CAST(&SumoHSM_LineSubmachine_x), /* submachine exit */
             Q_ACTION_CAST(&SumoHSM_StepsStrategy_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::line2} */
+static QState SumoHSM_line2_STOP(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_AutoWait_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_LineSubmachine_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_AutoWait_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -1254,6 +1291,17 @@ static QState SumoHSM_LineSubmachine_LineGoBack(SumoHSM * const me, QEvt const *
             status_ = QM_TRAN(&tatbl_);
             break;
         }
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::STOP} */
+        case STOP_SIG: {
+            static QMTranActTable const tatbl_ = { /* tran-action table */
+                &SumoHSM_LineSubmachine_s, /* target submachine */
+                {
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN_XP(me->sub_LineSubmachine->STOP, &tatbl_);
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
@@ -1281,6 +1329,21 @@ static QState SumoHSM_LineSubmachine_LineTurn(SumoHSM * const me, QEvt const * c
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurn::TIMEOUT} */
         case TIMEOUT_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_LineSubmachine_s, /* target submachine */
+                {
+                    Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurn_x), /* exit */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN_XP(me->sub_LineSubmachine->XP1, &tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurn::DIST_SENSOR_CHANGE} */
+        case DIST_SENSOR_CHANGE_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];
