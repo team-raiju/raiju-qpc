@@ -250,6 +250,21 @@ static struct SM_PreStrategy const SumoHSM_pre_strategy_s = {
     }
     ,Q_ACTION_CAST(&SumoHSM_pre_strategy_XP1)
 };
+static QState SumoHSM_line_rc  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_line_rc_e(SumoHSM * const me);
+static QState SumoHSM_line_rc_XP1(SumoHSM * const me);
+static QState SumoHSM_line_rc_STOP(SumoHSM * const me);
+static struct SM_LineSubmachine const SumoHSM_line_rc_s = {
+    {
+        QM_STATE_NULL, /* superstate (top) */
+        Q_STATE_CAST(&SumoHSM_line_rc),
+        Q_ACTION_CAST(&SumoHSM_line_rc_e),
+        Q_ACTION_NULL, /* no exit action */
+        Q_ACTION_NULL  /* no initial tran. */
+    }
+    ,Q_ACTION_CAST(&SumoHSM_line_rc_XP1)
+    ,Q_ACTION_CAST(&SumoHSM_line_rc_STOP)
+};
 
 /* submachine ${AOs::SumoHSM::SM::LineSubmachine} */
 static QState SumoHSM_LineSubmachine  (SumoHSM * const me, QEvt const * const e);
@@ -431,6 +446,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_line1);
     QS_FUN_DICTIONARY(&SumoHSM_line2);
     QS_FUN_DICTIONARY(&SumoHSM_pre_strategy);
+    QS_FUN_DICTIONARY(&SumoHSM_line_rc);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurn);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_0);
@@ -1249,6 +1265,28 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_TRAN(&tatbl_);
             break;
         }
+        /*${AOs::SumoHSM::SM::RC::LINE_DETECTED} */
+        case LINE_DETECTED_SIG: {
+            /*${AOs::SumoHSM::SM::RC::LINE_DETECTED::[strategy>0]} */
+            if (me->strategy > 0) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[3];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_LineSubmachine_s, /* target submachine */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_line_rc_e), /* entry */
+                        Q_ACTION_CAST(&SumoHSM_LineSubmachine_i), /* initial tran. */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            else {
+                status_ = QM_UNHANDLED();
+            }
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
@@ -1380,6 +1418,57 @@ static QState SumoHSM_pre_strategy_XP1(SumoHSM * const me) {
 }
 /*${AOs::SumoHSM::SM::pre_strategy} */
 static QState SumoHSM_pre_strategy(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    (void)me; /* unused parameter */
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::line_rc} .............................................*/
+/*${AOs::SumoHSM::SM::line_rc} */
+static QState SumoHSM_line_rc_e(SumoHSM * const me) {
+    me->sub_LineSubmachine = &SumoHSM_line_rc_s; /* attach submachine */
+    return QM_ENTRY(&SumoHSM_line_rc_s.super);
+}
+/*${AOs::SumoHSM::SM::line_rc} */
+static QState SumoHSM_line_rc_XP1(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_RC_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_LineSubmachine_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_RC_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::line_rc} */
+static QState SumoHSM_line_rc_STOP(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_RCWait_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_LineSubmachine_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_RCWait_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::line_rc} */
+static QState SumoHSM_line_rc(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
         default: {
