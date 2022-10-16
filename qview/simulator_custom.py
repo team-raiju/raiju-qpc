@@ -175,6 +175,10 @@ def process_led_stripe_id_packet(packet):
     qview_base.print_text("Timestamp = %d; Led Strip Num %d RGB = %x,%x,%x"%(data[0], led_idx, r, g, b)) 
     if (led_idx == 255):
         led_stripe_set_all(qview_base, r, g, b)
+    elif (led_idx == 254):
+        led_stripe_set_half(qview_base, True, r, g, b)
+    elif (led_idx == 253):
+        led_stripe_set_half(qview_base, False, r, g, b)
     else:
         led_stripe_set(qview_base, led_idx, r, g, b)
 

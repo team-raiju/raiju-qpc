@@ -137,7 +137,7 @@ BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::StarStrategy::STOP}-->
      <tran trig="STOP" target="../../4">
-      <tran_glyph conn="24,107,3,3,-12,-38,23">
+      <tran_glyph conn="24,107,3,3,-12,-35,23">
        <action box="-9,-3,6,2"/>
       </tran_glyph>
      </tran>
@@ -168,38 +168,39 @@ BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
     <state name="AutoWait">
      <entry>BSP_motors(0,0);
 BSP_ledOn();
-BSP_ledStripeSetStrategyColor(me-&gt;strategy);</entry>
+BSP_ledStripeSetStrategyColor(me-&gt;strategy);
+BSP_ledStripeSetPreStrategyColor(me-&gt;pre_strategy);</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
       <!--${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_0]}-->
       <choice target="../../../12" cpref="../../../15/0">
        <guard brief="pre_strategy_0">me-&gt;pre_strategy == 0</guard>
-       <choice_glyph conn="52,74,5,0,-22,7">
+       <choice_glyph conn="52,77,5,0,-22,8">
         <action box="-34,1,12,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_1]}-->
       <choice target="../../../12" cpref="../../../15/1">
        <guard brief="pre_strategy_1">me-&gt;pre_strategy == 1</guard>
-       <choice_glyph conn="52,74,5,0,-7,7">
+       <choice_glyph conn="52,77,5,0,-7,8">
         <action box="-20,1,13,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_2]}-->
       <choice target="../../../12" cpref="../../../15/2">
        <guard brief="pre_strategy_2">me-&gt;pre_strategy == 2</guard>
-       <choice_glyph conn="52,74,5,0,6,7">
+       <choice_glyph conn="52,77,5,0,6,8">
         <action box="-6,1,11,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_3]}-->
       <choice target="../../../12" cpref="../../../15/3">
        <guard brief="pre_strategy_3">me-&gt;pre_strategy == 3</guard>
-       <choice_glyph conn="52,74,5,0,20,7">
+       <choice_glyph conn="52,77,5,0,20,8">
         <action box="8,1,13,2"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="35,66,3,-1,17,8">
+      <tran_glyph conn="35,70,3,-1,17,7">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -211,13 +212,21 @@ BSP_ledStripeSetStrategyColor(me-&gt;strategy);</entry>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_2}-->
      <tran trig="RADIO_EVT_2">
-      <action>SumoHSM_change_strategy(me);
+      <action brief="change_strategy">SumoHSM_change_strategy(me);
 BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
       <tran_glyph conn="35,63,3,-1,11">
-       <action box="0,-3,13,2"/>
+       <action box="0,-3,29,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="35,50,36,21">
+     <!--${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_3}-->
+     <tran trig="RADIO_EVT_3">
+      <action brief="change_pre_strategy">SumoHSM_change_pre_strategy(me);
+BSP_ledStripeSetPreStrategyColor(me-&gt;pre_strategy);</action>
+      <tran_glyph conn="35,66,3,-1,12">
+       <action box="0,-2,31,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="35,48,36,26">
       <entry box="1,2,35,8"/>
      </state_glyph>
     </state>
@@ -559,22 +568,22 @@ BSP_motors(mot1, mot2);</action>
       <!--${AOs::SumoHSM::SM::pre_strategy::XP1::[strategy_0]}-->
       <choice target="../../../3">
        <guard brief="strategy_0">me-&gt;strategy == 0</guard>
-       <choice_glyph conn="52,94,5,0,-18,10">
+       <choice_glyph conn="52,98,5,0,-18,6">
         <action box="-15,-3,10,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::pre_strategy::XP1::[else]}-->
       <choice target="../../../5">
        <guard brief="else">else</guard>
-       <choice_glyph conn="52,94,5,0,21,10">
+       <choice_glyph conn="52,98,5,0,21,6">
         <action box="3,-3,10,2"/>
        </choice_glyph>
       </choice>
-      <xpseg_glyph conn="52,89,2,-1,5">
+      <xpseg_glyph conn="52,93,2,-1,5">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
-     <smstate_glyph node="23,82,57,7"/>
+     <smstate_glyph node="23,86,57,7"/>
     </smstate>
     <!--${AOs::SumoHSM::SM::line_rc}-->
     <smstate name="line_rc" submachine="../14">
@@ -700,7 +709,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</entry>
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50, 0);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../4">
-       <tran_glyph conn="8,40,3,2,-2,20,63,5">
+       <tran_glyph conn="8,20,3,2,-2,40,63,5">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -821,6 +830,13 @@ static void SumoHSM_change_strategy(SumoHSM * const me) {
     }
 }
 
+static void SumoHSM_change_pre_strategy(SumoHSM * const me) {
+    me-&gt;pre_strategy++;
+    if (me-&gt;pre_strategy &gt; 3){
+        me-&gt;pre_strategy = 0;
+    }
+}
+
 $define${AOs::SumoHSM}
 
 #ifdef Q_SPY
@@ -841,6 +857,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(START_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_EVT_1_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_EVT_2_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(RADIO_EVT_3_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STOP_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LINE_DETECTED_SIG,  (void *)0);
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
@@ -909,6 +926,7 @@ enum SumoHSMSignals {
     STOP_SIG,
     RADIO_EVT_1_SIG,
     RADIO_EVT_2_SIG,
+    RADIO_EVT_3_SIG,
     LINE_DETECTED_SIG,
     DIST_SENSOR_CHANGE_SIG,
     RADIO_DATA_SIG,

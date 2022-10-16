@@ -406,6 +406,13 @@ static void SumoHSM_change_strategy(SumoHSM * const me) {
     }
 }
 
+static void SumoHSM_change_pre_strategy(SumoHSM * const me) {
+    me->pre_strategy++;
+    if (me->pre_strategy > 3){
+        me->pre_strategy = 0;
+    }
+}
+
 /*$define${AOs::SumoHSM} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
 
 /*${AOs::SumoHSM} ..........................................................*/
@@ -673,6 +680,7 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     BSP_motors(0,0);
     BSP_ledOn();
     BSP_ledStripeSetStrategyColor(me->strategy);
+    BSP_ledStripeSetPreStrategyColor(me->pre_strategy);
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
 /*${AOs::SumoHSM::SM::AutoWait} */
@@ -765,6 +773,13 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         case RADIO_EVT_2_SIG: {
             SumoHSM_change_strategy(me);
             BSP_ledStripeSetStrategyColor(me->strategy);
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_3} */
+        case RADIO_EVT_3_SIG: {
+            SumoHSM_change_pre_strategy(me);
+            BSP_ledStripeSetPreStrategyColor(me->pre_strategy);
             status_ = QM_HANDLED();
             break;
         }
@@ -1884,6 +1899,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(START_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_EVT_1_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_EVT_2_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(RADIO_EVT_3_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STOP_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LINE_DETECTED_SIG,  (void *)0);
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);

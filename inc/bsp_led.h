@@ -2,6 +2,7 @@
 #define BSP_LED_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 void BSP_ledInit(void);
 void BSP_ledOff(void);
@@ -9,5 +10,7 @@ void BSP_ledOn(void);
 void BSP_ledToggle(void);
 void BSP_ledStripe(uint8_t num, uint8_t r, uint8_t g, uint8_t b);
 void BSP_ledStripeSetStrategyColor(uint8_t strategy_num);
+void BSP_ledStripeSetPreStrategyColor(uint8_t pre_strategy_num);
 void BSP_ledStripeSetAll(uint8_t r, uint8_t g, uint8_t b);
+void BSP_ledStripeSetHalf(bool left_half, uint8_t r, uint8_t g, uint8_t b);
 #endif /* BSP_LED_H */
