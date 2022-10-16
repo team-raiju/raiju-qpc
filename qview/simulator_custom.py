@@ -243,20 +243,19 @@ def custom_on_poll():
 
         robot_pos_x, robot_pos_y = sumo_robot.get_position()
 
-
-
+        # Line Sensor simulator
         update_line_sensor(robot_pos_x, robot_pos_y,angle)
         if (line_sensor_changed()):
             line_command()
 
-        # Check mouse:
+        # Distance Sensor simulator:
         sensor_active = is_mouse_direction(robot_pos_x, robot_pos_y, angle)
         if (sensor_active != last_sensor_active):
             sensor_command(sensor_active)
 
         last_sensor_active = sensor_active
 
-        # Send keyboard info
+        # radio Simulator
         if (USE_PS3_CONTROLLER):
             if (action_counter % 12 == 0):
                 send_game_pad()
