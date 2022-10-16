@@ -739,7 +739,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</entry>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0}-->
      <state name="PreStrategy_0">
       <entry brief="motor_on">BSP_motors(100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50, 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 10, 0);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../4">
        <tran_glyph conn="8,20,3,2,-2,40,63,5">
@@ -760,7 +760,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50, 0);</entry>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1}-->
      <state name="PreStrategy_1">
-      <entry brief="turn_left">BSP_motors(-70,70);
+      <entry brief="turn_left">BSP_motors(-60,60);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms * (0.2), 0);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../2">
@@ -785,7 +785,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub1}-->
       <state name="pre_strategy_0_sub1">
        <entry brief="motor_front">BSP_motors(100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 600, 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
        <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_s~::TIMEOUT}-->
        <tran trig="TIMEOUT" target="../../1">
         <tran_glyph conn="43,29,3,0,10,6">
