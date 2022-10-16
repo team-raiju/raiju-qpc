@@ -18,11 +18,16 @@ from led_stripe import *
 
 USE_PS3_CONTROLLER = False
 
+ROBOT_SIZE_PIXELS = 60
+ARENA_RADIUS_PIXELS = 225
+
+
 global qview_base
 global image_dict
 global canvas_dict
 global sumo_robot
 global key_pressed_dict
+global line_sensors
 
 
 QS_USER_DATA_ID = {
@@ -53,17 +58,20 @@ def custom_qview_init(qview):
 
     global HOME_DIR
     global image_dict, canvas_dict
-    global last_sensor_active, action_counter
+    global last_sensor_active, line_sensors, action_counter
     global sumo_robot
     global key_pressed_dict, gamepad_dict
     global last_gamepad
+    global last_line_sensor_state
+
     last_gamepad = (0,0,0,0)
+    last_line_sensor_state = (False, False, False, False)
 
 
 
     HOME_DIR = os.path.dirname(__file__)
 
-    sumo_robot = Robot(300, 100)
+    sumo_robot = Robot(300, 120)
     action_counter = 0
     last_sensor_active = 0
 
@@ -77,6 +85,25 @@ def custom_qview_init(qview):
         "right": False,
         "three": False,
         "four": False,
+    }
+
+    line_sensors = {
+        "FL" : {
+            "angle": 45,
+            "active": False
+        },
+        "FR" : {
+            "angle": -45,
+            "active": False
+        },
+        "BL" : {
+            "angle": 135,
+            "active": False
+        },
+        "BR" : {
+            "angle": -135,
+            "active": False
+        }
     }
 
     gamepad_dict = {
@@ -216,7 +243,10 @@ def custom_on_poll():
 
         robot_pos_x, robot_pos_y = sumo_robot.get_position()
 
-        if (is_over_circle(robot_pos_x, robot_pos_y)):
+
+
+        update_line_sensor(robot_pos_x, robot_pos_y,angle)
+        if (line_sensor_changed()):
             line_command()
 
         # Check mouse:
@@ -314,11 +344,37 @@ def reset_position():
     sumo_robot.set_position(300, 100)
     canvas_dict["sumo"] = qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"])
 
-def is_over_circle(posx, posy):
-    if (((posx - 300 ) ** 2 + (posy - 300 ) ** 2) > 200 ** 2):
-        return True
-    else:
-        return False
+def line_sensor_changed():
+    global last_line_sensor_state
+    changed = False
+    current_line_active = (line_sensors["FL"]["active"], line_sensors["FR"]["active"], line_sensors["BL"]["active"], line_sensors["BR"]["active"])
+
+    for i in range(len(current_line_active)):
+        if (current_line_active[i] != last_line_sensor_state[i]):
+            changed = True
+
+    last_line_sensor_state = current_line_active
+    return changed
+
+def update_line_sensor(posx, posy, robot_angle):
+
+    robot_angle %= 360
+    if (robot_angle > 180):
+        robot_angle -= 360
+    elif (robot_angle < -180):
+        robot_angle += 360
+    
+    line_sensors_dist_center = (ROBOT_SIZE_PIXELS/2) * math.sqrt(2)
+
+    for key, sensor in line_sensors.items():
+        relative_angle = math.radians(robot_angle + sensor["angle"])
+        sensor_x = posx + (line_sensors_dist_center * math.sin(relative_angle)) 
+        sensor_y = posy + (line_sensors_dist_center * math.cos(relative_angle))
+
+        if (((sensor_x - 300 ) ** 2 + (sensor_y - 300 ) ** 2) > ARENA_RADIUS_PIXELS ** 2):
+            sensor["active"] = True
+        else:
+            sensor["active"] = False
 
 def is_mouse_direction(posx, posy, robot_angle):
     mouse_pos_x_abs = qview_base.canvas.winfo_pointerx() - qview_base.canvas.winfo_rootx()
