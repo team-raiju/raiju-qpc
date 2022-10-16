@@ -246,7 +246,7 @@ def custom_on_poll():
         # Line Sensor simulator
         update_line_sensor(robot_pos_x, robot_pos_y,angle)
         if (line_sensor_changed()):
-            line_command()
+            line_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], line_sensors["BL"]["active"], line_sensors["BR"]["active"])
 
         # Distance Sensor simulator:
         sensor_active = is_mouse_direction(robot_pos_x, robot_pos_y, angle)
@@ -272,8 +272,10 @@ def stop_command(*args):
 def change_strategy(strategy):
     qview_base.command(2, strategy)
 
-def line_command():
-    qview_base.command(3, 0)
+def line_command(line_fl, line_fr, line_bl, line_br):
+
+    set_line_code = (line_fl << 3) | (line_fr << 2) | (line_bl << 1) | (line_br) 
+    qview_base.command(3, set_line_code)
 
 def sensor_command(sensor):
     qview_base.command(4, sensor)

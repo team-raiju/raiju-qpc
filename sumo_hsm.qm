@@ -129,8 +129,8 @@ BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
     <!--${AOs::SumoHSM::SM::StarStrategy}-->
     <state name="StarStrategy">
      <entry>BSP_motors(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
-     <!--${AOs::SumoHSM::SM::StarStrategy::LINE_DETECTED}-->
-     <tran trig="LINE_DETECTED" target="../../10">
+     <!--${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED}-->
+     <tran trig="LINE_CHANGED" target="../../10">
       <tran_glyph conn="24,115,3,3,-8,28,8">
        <action box="0,-2,15,3"/>
       </tran_glyph>
@@ -282,8 +282,8 @@ if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
        <action box="0,-2,21,5"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::StepsStrategy::LINE_DETECTED}-->
-     <tran trig="LINE_DETECTED" target="../../11">
+     <!--${AOs::SumoHSM::SM::StepsStrategy::LINE_CHANGED}-->
+     <tran trig="LINE_CHANGED" target="../../11">
       <tran_glyph conn="59,120,3,3,-1,26,3">
        <action box="0,-2,16,2"/>
       </tran_glyph>
@@ -297,8 +297,8 @@ if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
     <state name="CalibTurn">
      <entry>QTimeEvt_armX(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF, 0);
 BSP_motors(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
-     <!--${AOs::SumoHSM::SM::CalibTurn::LINE_DETECTED}-->
-     <tran trig="LINE_DETECTED" target="../1">
+     <!--${AOs::SumoHSM::SM::CalibTurn::LINE_CHANGED}-->
+     <tran trig="LINE_CHANGED" target="../1">
       <action>if (me-&gt;calib_status == 0){
     me-&gt;calib_time_1 = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
 } else {
@@ -444,8 +444,8 @@ BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
     <state name="CalibFront">
      <entry>QTimeEvt_armX(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF, 0);
 BSP_motors(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
-     <!--${AOs::SumoHSM::SM::CalibFront::LINE_DETECTED}-->
-     <tran trig="LINE_DETECTED" target="../1">
+     <!--${AOs::SumoHSM::SM::CalibFront::LINE_CHANGED}-->
+     <tran trig="LINE_CHANGED" target="../1">
       <action>uint32_t time_until_line = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
 
 int16_t diff_to_reference = time_until_line - 285;
@@ -512,9 +512,9 @@ BSP_motors(mot1, mot2);</action>
        <action box="2,-18,10,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::RC::LINE_DETECTED}-->
-     <tran trig="LINE_DETECTED">
-      <!--${AOs::SumoHSM::SM::RC::LINE_DETECTED::[strategy>0]}-->
+     <!--${AOs::SumoHSM::SM::RC::LINE_CHANGED}-->
+     <tran trig="LINE_CHANGED">
+      <!--${AOs::SumoHSM::SM::RC::LINE_CHANGED::[strategy>0]}-->
       <choice target="../../../13">
        <guard brief="strategy &gt; 0">me-&gt;strategy &gt; 0</guard>
        <choice_glyph conn="127,99,4,0,5">
@@ -624,42 +624,75 @@ BSP_motors(mot1, mot2);</action>
      <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack}-->
      <state name="LineGoBack">
       <entry brief="go_back">BSP_motors(-100,-100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
+
+if (BSP_lineSensorIsReading(LINE_SENSOR_FL)){
+    QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
+} else {
+    QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 250, 0);
+}</entry>
       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../2">
+      <tran trig="TIMEOUT" target="../3">
        <tran_glyph conn="7,19,3,0,10,2">
-        <action box="0,-3,16,4"/>
+        <action box="0,-2,16,4"/>
        </tran_glyph>
       </tran>
       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::STOP}-->
       <tran trig="STOP" target="../.." cpref="../../1">
-       <tran_glyph conn="56,23,1,2,8,22">
+       <tran_glyph conn="61,23,1,2,3,22">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurn}-->
-      <state name="LineTurn">
-       <entry brief="turn">BSP_motors(-100,100);
+      <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::TIMEOUT_2}-->
+      <tran trig="TIMEOUT_2" target="../4">
+       <tran_glyph conn="7,16,3,0,36,5">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight}-->
+      <state name="LineTurnRight">
+       <entry brief="turn right">BSP_motors(100,-100);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms * (0.6), 0);</entry>
        <exit>BSP_motors(0,0);</exit>
-       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurn::TIMEOUT}-->
+       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight::TIMEOUT}-->
        <tran trig="TIMEOUT" target="../../.." cpref="../../../0">
         <tran_glyph conn="11,33,3,0,61,-30">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
-       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurn::DIST_SENSOR_CHANGE}-->
+       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight::DIST_SENSOR_CHANGE}-->
        <tran trig="DIST_SENSOR_CHANGE" target="../../.." cpref="../../../0">
         <tran_glyph conn="11,37,3,0,61,-34">
          <action box="0,-2,23,2"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="11,21,26,22">
+       <state_glyph node="11,21,21,22">
         <entry box="1,2,10,2"/>
         <exit box="1,4,18,4"/>
        </state_glyph>
       </state>
-      <state_glyph node="7,9,49,36">
+      <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft}-->
+      <state name="LineTurnLeft">
+       <entry brief="turn left">BSP_motors(-100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms * (0.6), 0);</entry>
+       <exit>BSP_motors(0,0);</exit>
+       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft::TIMEOUT}-->
+       <tran trig="TIMEOUT" target="../../.." cpref="../../../0">
+        <tran_glyph conn="36,34,3,0,36,-31">
+         <action box="0,-3,10,2"/>
+        </tran_glyph>
+       </tran>
+       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft::DIST_SENSOR_CHANGE}-->
+       <tran trig="DIST_SENSOR_CHANGE" target="../../.." cpref="../../../0">
+        <tran_glyph conn="36,40,3,0,36,-37">
+         <action box="0,-2,23,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="36,21,21,22">
+        <entry box="1,2,10,2"/>
+        <exit box="1,4,18,4"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="7,9,54,36">
        <entry box="1,2,16,3"/>
       </state_glyph>
      </state>
@@ -806,6 +839,7 @@ me-&gt;star_velocity = 60;</code>
 #include &quot;bsp_buzzer.h&quot;
 #include &quot;bsp_radio.h&quot;
 #include &quot;bsp_dist_sensors.h&quot;
+#include &quot;bsp_line_sensors.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5
 #ifndef M_PI
@@ -859,7 +893,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(RADIO_EVT_2_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_EVT_3_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STOP_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(LINE_DETECTED_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(LINE_CHANGED_SIG,  (void *)0);
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
 
@@ -927,7 +961,7 @@ enum SumoHSMSignals {
     RADIO_EVT_1_SIG,
     RADIO_EVT_2_SIG,
     RADIO_EVT_3_SIG,
-    LINE_DETECTED_SIG,
+    LINE_CHANGED_SIG,
     DIST_SENSOR_CHANGE_SIG,
     RADIO_DATA_SIG,
     MAX_SIG, /* keep last (the number of signals) */

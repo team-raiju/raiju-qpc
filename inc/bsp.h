@@ -58,7 +58,7 @@ enum SumoHSMSignals {
     RADIO_EVT_1_SIG,
     RADIO_EVT_2_SIG,
     RADIO_EVT_3_SIG,
-    LINE_DETECTED_SIG,
+    LINE_CHANGED_SIG,
     DIST_SENSOR_CHANGE_SIG,
     RADIO_DATA_SIG,
     MAX_SIG, /* keep last (the number of signals) */
