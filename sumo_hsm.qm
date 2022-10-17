@@ -45,7 +45,7 @@ me-&gt;buzzerCount = 0U;</action>
     </initial>
     <!--${AOs::SumoHSM::SM::Idle}-->
     <state name="Idle">
-     <entry>BSP_ledOff();
+     <entry>board_led_off();
 drive(0,0);
 me-&gt;strategy = 0;
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);</entry>
@@ -53,7 +53,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);</e
 QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
      <tran trig="TIMEOUT">
-      <action>BSP_ledToggle();</action>
+      <action>board_led_toggle();</action>
       <tran_glyph conn="42,30,3,-1,14">
        <action box="0,-2,14,4"/>
       </tran_glyph>
@@ -70,10 +70,10 @@ QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
 
 if (me-&gt;buzzerCount == 15) {
     QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
-    BSP_ledStripe(me-&gt;buzzerCount, 0x94, 0x00, 0xD3);
+    led_stripe_set(me-&gt;buzzerCount, color_purple);
 } else if (me-&gt;buzzerCount &lt; 15){
     QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
-    BSP_ledStripe(me-&gt;buzzerCount, 0x94, 0x00, 0xD3);
+    led_stripe_set(me-&gt;buzzerCount, color_purple);
 }
 
 
@@ -89,8 +89,8 @@ me-&gt;buzzerCount += 1;</action>
     </state>
     <!--${AOs::SumoHSM::SM::RCWait}-->
     <state name="RCWait">
-     <entry>BSP_ledOff();
-BSP_ledStripeSetStrategyColor(me-&gt;strategy);
+     <entry>board_led_off();
+led_stripe_set_strategy_color(me-&gt;strategy);
 drive(0,0);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
@@ -108,7 +108,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);<
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::TIMEOUT}-->
      <tran trig="TIMEOUT">
-      <action>BSP_ledToggle();</action>
+      <action>board_led_toggle();</action>
       <tran_glyph conn="118,63,3,-1,12,-1">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -116,7 +116,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);<
      <!--${AOs::SumoHSM::SM::RCWait::RADIO_EVT_2}-->
      <tran trig="RADIO_EVT_2">
       <action brief="Update Strategy">SumoHSM_change_strategy(me);
-BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
+led_stripe_set_strategy_color(me-&gt;strategy);</action>
       <tran_glyph conn="118,66,3,-1,12">
        <action box="0,-2,20,4"/>
       </tran_glyph>
@@ -167,9 +167,9 @@ BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
     <!--${AOs::SumoHSM::SM::AutoWait}-->
     <state name="AutoWait">
      <entry>drive(0,0);
-BSP_ledOn();
-BSP_ledStripeSetStrategyColor(me-&gt;strategy);
-BSP_ledStripeSetPreStrategyColor(me-&gt;pre_strategy);</entry>
+board_led_on();
+led_stripe_set_strategy_color(me-&gt;strategy);
+led_stripe_set_pre_strategy_color(me-&gt;pre_strategy);</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
       <!--${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_0]}-->
@@ -213,7 +213,7 @@ BSP_ledStripeSetPreStrategyColor(me-&gt;pre_strategy);</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_2}-->
      <tran trig="RADIO_EVT_2">
       <action brief="change_strategy">SumoHSM_change_strategy(me);
-BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
+led_stripe_set_strategy_color(me-&gt;strategy);</action>
       <tran_glyph conn="35,63,3,-1,11">
        <action box="0,-3,29,2"/>
       </tran_glyph>
@@ -221,7 +221,7 @@ BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
      <!--${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_3}-->
      <tran trig="RADIO_EVT_3">
       <action brief="change_pre_strategy">SumoHSM_change_pre_strategy(me);
-BSP_ledStripeSetPreStrategyColor(me-&gt;pre_strategy);</action>
+led_stripe_set_pre_strategy_color(me-&gt;pre_strategy);</action>
       <tran_glyph conn="35,66,3,-1,12">
        <action box="0,-2,31,2"/>
       </tran_glyph>
@@ -376,9 +376,9 @@ if (me-&gt;strategy == 0) {
     </state>
     <!--${AOs::SumoHSM::SM::CalibWait}-->
     <state name="CalibWait">
-     <entry>BSP_ledOn();
+     <entry>board_led_on();
 drive(0,0);
-BSP_ledStripeSetStrategyColor(me-&gt;strategy);
+led_stripe_set_strategy_color(me-&gt;strategy);
 me-&gt;calib_status = 0;
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
@@ -404,7 +404,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
      </tran>
      <!--${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_1}-->
      <tran trig="RADIO_EVT_1" target="../../1">
-      <action>BSP_ledStripeSetAll(0x94, 0x00, 0xD3);</action>
+      <action>led_stripe_set_all(color_purple);</action>
       <tran_glyph conn="203,46,0,1,-17,-118">
        <action box="-115,-20,17,2"/>
       </tran_glyph>
@@ -413,7 +413,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
      <tran trig="TIMEOUT">
       <action>static bool time_long;
 
-BSP_ledToggle();
+board_led_toggle();
 
 if (time_long){
     QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 150, 0);
@@ -430,7 +430,7 @@ time_long = !time_long;
      <!--${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_2}-->
      <tran trig="RADIO_EVT_2">
       <action>SumoHSM_change_strategy(me);
-BSP_ledStripeSetStrategyColor(me-&gt;strategy);</action>
+led_stripe_set_strategy_color(me-&gt;strategy);</action>
       <tran_glyph conn="201,57,3,-1,12">
        <action box="0,-2,12,2"/>
       </tran_glyph>
@@ -492,7 +492,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time
     </state>
     <!--${AOs::SumoHSM::SM::RC}-->
     <state name="RC">
-     <entry>BSP_ledOff();</entry>
+     <entry>board_led_off();</entry>
      <!--${AOs::SumoHSM::SM::RC::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
       <action>int coord_x = BSP_radioGetChannel(RADIO_CH1);
@@ -834,7 +834,7 @@ me-&gt;star_velocity = 60;</code>
 #include &quot;qf_custom_defines.h&quot;
 #include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
-#include &quot;bsp_led.h&quot;
+#include &quot;led_service.h&quot;
 #include &quot;driving_service.h&quot;
 #include &quot;bsp_buzzer.h&quot;
 #include &quot;bsp_radio.h&quot;

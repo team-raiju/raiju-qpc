@@ -13,40 +13,11 @@ void BSP_ledOff(void) {
 }
 
 
-
 void BSP_ledOn(void)  { 
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
 }
 
 void BSP_ledToggle(void)  {
-    static bool toggle = false;
-    if (toggle){
-        BSP_ledOff();
-    } else {
-        BSP_ledOn();
-    }
-    toggle = !toggle;
-
+    HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 }
 
-
-void BSP_ledStripe(uint8_t num, uint8_t r, uint8_t g, uint8_t b) {
- 
-}
-
-void BSP_ledStripeSetAll(uint8_t r, uint8_t g, uint8_t b){
-    
-}
-
-void BSP_ledStripeSetHalf(bool left_half, uint8_t r, uint8_t g, uint8_t b){
-    
-}
-
-
-void BSP_ledStripeSetStrategyColor(uint8_t strategy_num){
-
-}
-
-void BSP_ledStripeSetPreStrategyColor(uint8_t pre_strategy_num){
-
-}

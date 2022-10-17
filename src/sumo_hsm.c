@@ -39,7 +39,7 @@
 #include "qf_custom_defines.h"
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
-#include "bsp_led.h"
+#include "led_service.h"
 #include "driving_service.h"
 #include "bsp_buzzer.h"
 #include "bsp_radio.h"
@@ -484,7 +484,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
 /*${AOs::SumoHSM::SM::Idle} ................................................*/
 /*${AOs::SumoHSM::SM::Idle} */
 static QState SumoHSM_Idle_e(SumoHSM * const me) {
-    BSP_ledOff();
+    board_led_off();
     drive(0,0);
     me->strategy = 0;
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
@@ -502,7 +502,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::Idle::TIMEOUT} */
         case TIMEOUT_SIG: {
-            BSP_ledToggle();
+            board_led_toggle();
             status_ = QM_HANDLED();
             break;
         }
@@ -528,10 +528,10 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
 
             if (me->buzzerCount == 15) {
                 QTimeEvt_armX(&me->buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
-                BSP_ledStripe(me->buzzerCount, 0x94, 0x00, 0xD3);
+                led_stripe_set(me->buzzerCount, color_purple);
             } else if (me->buzzerCount < 15){
                 QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
-                BSP_ledStripe(me->buzzerCount, 0x94, 0x00, 0xD3);
+                led_stripe_set(me->buzzerCount, color_purple);
             }
 
 
@@ -550,8 +550,8 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::RCWait} ..............................................*/
 /*${AOs::SumoHSM::SM::RCWait} */
 static QState SumoHSM_RCWait_e(SumoHSM * const me) {
-    BSP_ledOff();
-    BSP_ledStripeSetStrategyColor(me->strategy);
+    board_led_off();
+    led_stripe_set_strategy_color(me->strategy);
     drive(0,0);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
     return QM_ENTRY(&SumoHSM_RCWait_s);
@@ -599,14 +599,14 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::RCWait::TIMEOUT} */
         case TIMEOUT_SIG: {
-            BSP_ledToggle();
+            board_led_toggle();
             status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::RCWait::RADIO_EVT_2} */
         case RADIO_EVT_2_SIG: {
             SumoHSM_change_strategy(me);
-            BSP_ledStripeSetStrategyColor(me->strategy);
+            led_stripe_set_strategy_color(me->strategy);
             status_ = QM_HANDLED();
             break;
         }
@@ -690,9 +690,9 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::AutoWait} */
 static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     drive(0,0);
-    BSP_ledOn();
-    BSP_ledStripeSetStrategyColor(me->strategy);
-    BSP_ledStripeSetPreStrategyColor(me->pre_strategy);
+    board_led_on();
+    led_stripe_set_strategy_color(me->strategy);
+    led_stripe_set_pre_strategy_color(me->pre_strategy);
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
 /*${AOs::SumoHSM::SM::AutoWait} */
@@ -784,14 +784,14 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_2} */
         case RADIO_EVT_2_SIG: {
             SumoHSM_change_strategy(me);
-            BSP_ledStripeSetStrategyColor(me->strategy);
+            led_stripe_set_strategy_color(me->strategy);
             status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_3} */
         case RADIO_EVT_3_SIG: {
             SumoHSM_change_pre_strategy(me);
-            BSP_ledStripeSetPreStrategyColor(me->pre_strategy);
+            led_stripe_set_pre_strategy_color(me->pre_strategy);
             status_ = QM_HANDLED();
             break;
         }
@@ -1044,9 +1044,9 @@ static QState SumoHSM_CalibeLineTurn(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibWait} ...........................................*/
 /*${AOs::SumoHSM::SM::CalibWait} */
 static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
-    BSP_ledOn();
+    board_led_on();
     drive(0,0);
-    BSP_ledStripeSetStrategyColor(me->strategy);
+    led_stripe_set_strategy_color(me->strategy);
     me->calib_status = 0;
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
     return QM_ENTRY(&SumoHSM_CalibWait_s);
@@ -1110,7 +1110,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
-            BSP_ledStripeSetAll(0x94, 0x00, 0xD3);
+            led_stripe_set_all(color_purple);
             status_ = QM_TRAN(&tatbl_);
             break;
         }
@@ -1118,7 +1118,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
         case TIMEOUT_SIG: {
             static bool time_long;
 
-            BSP_ledToggle();
+            board_led_toggle();
 
             if (time_long){
                 QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 150, 0);
@@ -1134,7 +1134,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_2} */
         case RADIO_EVT_2_SIG: {
             SumoHSM_change_strategy(me);
-            BSP_ledStripeSetStrategyColor(me->strategy);
+            led_stripe_set_strategy_color(me->strategy);
             status_ = QM_HANDLED();
             break;
         }
@@ -1259,7 +1259,7 @@ static QState SumoHSM_CalibeFrontTurn(SumoHSM * const me, QEvt const * const e) 
 /*${AOs::SumoHSM::SM::RC} ..................................................*/
 /*${AOs::SumoHSM::SM::RC} */
 static QState SumoHSM_RC_e(SumoHSM * const me) {
-    BSP_ledOff();
+    board_led_off();
     (void)me; /* unused parameter */
     return QM_ENTRY(&SumoHSM_RC_s);
 }
