@@ -40,7 +40,7 @@
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
 #include "bsp_led.h"
-#include "bsp_motors.h"
+#include "driving_service.h"
 #include "bsp_buzzer.h"
 #include "bsp_radio.h"
 #include "bsp_dist_sensors.h"
@@ -485,7 +485,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
 /*${AOs::SumoHSM::SM::Idle} */
 static QState SumoHSM_Idle_e(SumoHSM * const me) {
     BSP_ledOff();
-    BSP_motors(0,0);
+    drive(0,0);
     me->strategy = 0;
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
     return QM_ENTRY(&SumoHSM_Idle_s);
@@ -552,7 +552,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
 static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     BSP_ledOff();
     BSP_ledStripeSetStrategyColor(me->strategy);
-    BSP_motors(0,0);
+    drive(0,0);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
     return QM_ENTRY(&SumoHSM_RCWait_s);
 }
@@ -621,7 +621,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::StarStrategy} ........................................*/
 /*${AOs::SumoHSM::SM::StarStrategy} */
 static QState SumoHSM_StarStrategy_e(SumoHSM * const me) {
-    BSP_motors(me->star_velocity, me->star_velocity);
+    drive(me->star_velocity, me->star_velocity);
     return QM_ENTRY(&SumoHSM_StarStrategy_s);
 }
 /*${AOs::SumoHSM::SM::StarStrategy} */
@@ -662,17 +662,17 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
             if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
-               BSP_motors(80,-80);
+               drive(80,-80);
             } else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
-               BSP_motors(80,0);
+               drive(80,0);
             } else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
-               BSP_motors(100,100);
+               drive(100,100);
             } else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
-               BSP_motors(0,80);
+               drive(0,80);
             } else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
-               BSP_motors(-80,80);
+               drive(-80,80);
             } else {
-               BSP_motors(60,60);
+               drive(60,60);
             }
             status_ = QM_HANDLED();
             break;
@@ -689,7 +689,7 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::AutoWait} ............................................*/
 /*${AOs::SumoHSM::SM::AutoWait} */
 static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
-    BSP_motors(0,0);
+    drive(0,0);
     BSP_ledOn();
     BSP_ledStripeSetStrategyColor(me->strategy);
     BSP_ledStripeSetPreStrategyColor(me->pre_strategy);
@@ -806,7 +806,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::StepsStrategy} .......................................*/
 /*${AOs::SumoHSM::SM::StepsStrategy} */
 static QState SumoHSM_StepsStrategy_e(SumoHSM * const me) {
-    BSP_motors(0,0);
+    drive(0,0);
     QTimeEvt_armX(&me->timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
     return QM_ENTRY(&SumoHSM_StepsStrategy_s);
 }
@@ -822,14 +822,14 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT} */
         case TIMEOUT_SIG: {
-            BSP_motors(100,100);
+            drive(100,100);
             QTimeEvt_armX(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 100, 0);
             status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT_2} */
         case TIMEOUT_2_SIG: {
-            BSP_motors(0,0);
+            drive(0,0);
             status_ = QM_HANDLED();
             break;
         }
@@ -855,17 +855,17 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
             QTimeEvt_disarm(&me->timeEvt_2);
 
             if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
-               BSP_motors(80,-80);
+               drive(80,-80);
             } else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
-               BSP_motors(80,0);
+               drive(80,0);
             } else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
-               BSP_motors(100,100);
+               drive(100,100);
             } else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
-               BSP_motors(0,80);
+               drive(0,80);
             } else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
-               BSP_motors(-80,80);
+               drive(-80,80);
             } else {
-               BSP_motors(0,0);
+               drive(0,0);
                QTimeEvt_armX(&me->timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
             }
 
@@ -902,7 +902,7 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibTurn} */
 static QState SumoHSM_CalibTurn_e(SumoHSM * const me) {
     QTimeEvt_armX(&me->timeEvt_2, 0xFFFFFFFF, 0);
-    BSP_motors(me->star_velocity, me->star_velocity);
+    drive(me->star_velocity, me->star_velocity);
     return QM_ENTRY(&SumoHSM_CalibTurn_s);
 }
 /*${AOs::SumoHSM::SM::CalibTurn} */
@@ -940,7 +940,7 @@ static QState SumoHSM_CalibTurn(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack} ..........................*/
 /*${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack} */
 static QState SumoHSM_CalibLineGoBack_e(SumoHSM * const me) {
-    BSP_motors(-100,-100);
+    drive(-100,-100);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
     return QM_ENTRY(&SumoHSM_CalibLineGoBack_s);
 }
@@ -974,7 +974,7 @@ static QState SumoHSM_CalibLineGoBack(SumoHSM * const me, QEvt const * const e) 
 /*${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn} ..........*/
 /*${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn} */
 static QState SumoHSM_CalibeLineTurn_e(SumoHSM * const me) {
-    BSP_motors(-100,100);
+    drive(-100,100);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * me->turn_180_time_ms, 0);
     return QM_ENTRY(&SumoHSM_CalibeLineTurn_s);
 }
@@ -994,7 +994,7 @@ static QState SumoHSM_CalibeLineTurn(SumoHSM * const me, QEvt const * const e) {
                 };
                 me->calib_status++;
                 QTimeEvt_rearm(&me->timeEvt_2, 0xFFFFFFFF);
-                BSP_motors(60,60);
+                drive(60,60);
 
                 status_ = QM_TRAN(&tatbl_);
             }
@@ -1045,7 +1045,7 @@ static QState SumoHSM_CalibeLineTurn(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibWait} */
 static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     BSP_ledOn();
-    BSP_motors(0,0);
+    drive(0,0);
     BSP_ledStripeSetStrategyColor(me->strategy);
     me->calib_status = 0;
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
@@ -1150,7 +1150,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibFront} */
 static QState SumoHSM_CalibFront_e(SumoHSM * const me) {
     QTimeEvt_armX(&me->timeEvt_2, 0xFFFFFFFF, 0);
-    BSP_motors(me->star_velocity, me->star_velocity);
+    drive(me->star_velocity, me->star_velocity);
     return QM_ENTRY(&SumoHSM_CalibFront_s);
 }
 /*${AOs::SumoHSM::SM::CalibFront} */
@@ -1190,7 +1190,7 @@ static QState SumoHSM_CalibFront(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack} ........................*/
 /*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack} */
 static QState SumoHSM_CalibFrontGoBack_e(SumoHSM * const me) {
-    BSP_motors(-100,-100);
+    drive(-100,-100);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
     return QM_ENTRY(&SumoHSM_CalibFrontGoBack_s);
 }
@@ -1224,7 +1224,7 @@ static QState SumoHSM_CalibFrontGoBack(SumoHSM * const me, QEvt const * const e)
 /*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::CalibeFrontTurn} .......*/
 /*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::CalibeFrontTurn} */
 static QState SumoHSM_CalibeFrontTurn_e(SumoHSM * const me) {
-    BSP_motors(-100,100);
+    drive(-100,100);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * me->turn_180_time_ms, 0);
     return QM_ENTRY(&SumoHSM_CalibeFrontTurn_s);
 }
@@ -1275,7 +1275,7 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
             int mot1 = coord_y + coord_x;
             int mot2 = coord_y - coord_x;
 
-            BSP_motors(mot1, mot2);
+            drive(mot1, mot2);
             status_ = QM_HANDLED();
             break;
         }
@@ -1567,7 +1567,7 @@ static QState SumoHSM_LineSubmachine(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack} ..........................*/
 /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack} */
 static QState SumoHSM_LineSubmachine_LineGoBack_e(SumoHSM * const me) {
-    BSP_motors(-100,-100);
+    drive(-100,-100);
 
     if (BSP_lineSensorIsReading(LINE_SENSOR_FL)){
         QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
@@ -1632,13 +1632,13 @@ static QState SumoHSM_LineSubmachine_LineGoBack(SumoHSM * const me, QEvt const *
 /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} ...........*/
 /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} */
 static QState SumoHSM_LineSubmachine_LineTurnRight_e(SumoHSM * const me) {
-    BSP_motors(100,-100);
+    drive(100,-100);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * me->turn_180_time_ms * (0.6), 0);
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineTurnRight_s);
 }
 /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} */
 static QState SumoHSM_LineSubmachine_LineTurnRight_x(SumoHSM * const me) {
-    BSP_motors(0,0);
+    drive(0,0);
     (void)me; /* unused parameter */
     return QM_EXIT(&SumoHSM_LineSubmachine_LineTurnRight_s);
 }
@@ -1687,13 +1687,13 @@ static QState SumoHSM_LineSubmachine_LineTurnRight(SumoHSM * const me, QEvt cons
 /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} ............*/
 /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} */
 static QState SumoHSM_LineSubmachine_LineTurnLeft_e(SumoHSM * const me) {
-    BSP_motors(-100,100);
+    drive(-100,100);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * me->turn_180_time_ms * (0.6), 0);
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineTurnLeft_s);
 }
 /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} */
 static QState SumoHSM_LineSubmachine_LineTurnLeft_x(SumoHSM * const me) {
-    BSP_motors(0,0);
+    drive(0,0);
     (void)me; /* unused parameter */
     return QM_EXIT(&SumoHSM_LineSubmachine_LineTurnLeft_s);
 }
@@ -1814,7 +1814,7 @@ static QState SumoHSM_PreStrategy_EP3_ep(SumoHSM * const me) {
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0} ..........................*/
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0} */
 static QState SumoHSM_PreStrategy_PreStrategy_0_e(SumoHSM * const me) {
-    BSP_motors(100,100);
+    drive(100,100);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 10, 0);
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_0_s);
 }
@@ -1872,7 +1872,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_3(SumoHSM * const me, QEvt const *
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1} ..........................*/
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1} */
 static QState SumoHSM_PreStrategy_PreStrategy_1_e(SumoHSM * const me) {
-    BSP_motors(-60,60);
+    drive(-60,60);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * me->turn_180_time_ms * (0.2), 0);
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_1_s);
 }
@@ -1906,7 +1906,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_1(SumoHSM * const me, QEvt const *
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub2} .....*/
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub2} */
 static QState SumoHSM_PreStrategy_pre_strategy_0_sub2_e(SumoHSM * const me) {
-    BSP_motors(100,-100);
+    drive(100,-100);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * me->turn_180_time_ms * (0.4), 0);
     return QM_ENTRY(&SumoHSM_PreStrategy_pre_strategy_0_sub2_s);
 }
@@ -1936,7 +1936,7 @@ static QState SumoHSM_PreStrategy_pre_strategy_0_sub2(SumoHSM * const me, QEvt c
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub1} .....*/
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub1} */
 static QState SumoHSM_PreStrategy_pre_strategy_0_sub1_e(SumoHSM * const me) {
-    BSP_motors(100,100);
+    drive(100,100);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);
     return QM_ENTRY(&SumoHSM_PreStrategy_pre_strategy_0_sub1_s);
 }

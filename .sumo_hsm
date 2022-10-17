@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <session version="5.2.1">
- <item name="license">GPL</item>
  <group name="locked"/>
  <group name="settings">
   <item name="tabs">1</item>
@@ -9,9 +8,9 @@
   <item name="backups">0</item>
  </group>
  <group name="windows">
-  <item id="AOs::SumoHSM::SM">0,0,1080,507,*</item>
+  <item id="AOs::SumoHSM::SM">0,0,1109,682,*</item>
   <item id=".::src::sumo_hsm.c">0,0,596,300</item>
-  <item id=".::inc::bsp.h">-156,0,596,300</item>
+  <item id=".::inc::bsp.h">0,119,596,300</item>
  </group>
  <group name="search">
   <item name="options">2032128</item>
