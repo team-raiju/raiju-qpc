@@ -3,9 +3,6 @@
 // #include "bsp_gpio"
 #include "utils.h"
 
-#define MAX_SPEED 100
-
-
 void driving_init(){
     BSP_motorsInit();
 }

@@ -110,8 +110,8 @@ void BSP_motorsInit(void){
 
 void BSP_motors(int16_t vel_left, int16_t vel_right) {
 
-    vel_left = constrain(vel_left, -99, 99);
-    vel_right = constrain(vel_right, -99, 99);
+    vel_left = constrain(vel_left, -(MAX_SPEED - 1), (MAX_SPEED - 1));
+    vel_right = constrain(vel_right, -(MAX_SPEED - 1), (MAX_SPEED - 1));
 
     // deadzone
     if (abs(vel_left) < 10) {
