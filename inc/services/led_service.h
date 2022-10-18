@@ -15,6 +15,8 @@ void board_led_toggle();
 void board_led_on();
 void board_led_off();
 
+void led_stripe_init();
+void led_stripe_send();
 
 void led_stripe_set(uint8_t idx, color_t color);
 void led_stripe_set_range(uint8_t from, uint8_t to, color_t color);

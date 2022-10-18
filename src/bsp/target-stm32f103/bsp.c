@@ -40,7 +40,8 @@
 #include "bsp_dist_sensors.h"
 #include "main.h"
 #include "gpio.h"
-
+#include "dma.h"
+#include "tim.h"
 
 __weak void SystemClock_Config(void);
 
@@ -75,8 +76,17 @@ void BSP_init(void)   {
 
     SystemCoreClockUpdate();
 
+    MX_DMA_Init();
+
+    // MX_USART1_UART_Init();
+    // MX_USART3_UART_Init();
+
+    MX_TIM1_Init(); // Motors Timer
+    MX_TIM2_Init(); // Led Stripe Timer
+    // MX_TIM7_Init();
+    // MX_TIM12_Init();
+
     BSP_ledInit();
-    BSP_motorsInit();
     BSP_buzzerInit();
     BSP_radioInit();
     BSP_distSensorsInit();

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model version="5.2.1" links="1">
  <!--${qpc}-->
- <framework name="qpc" license="../../../qp-linux_7.0.2/qp/qpc/LICENSES/QM-EVAL-QPC.qlc"/>
+ <framework name="qpc" license="../../../qp-linux_7.1.0/qp/qpc/LICENSES/QM-EVAL-QPC.qlc"/>
  <!--${AOs}-->
  <package name="AOs" stereotype="0x02">
   <!--${AOs::SumoHSM}-->
@@ -906,6 +906,7 @@ void sumoHSM_update_qs_dict(){
    <file name="main.c">
     <text>#include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
+#include &quot;app.h&quot;
 
 Q_DEFINE_THIS_FILE
 
@@ -915,6 +916,7 @@ int main() {
 
     QF_init();  /* initialize the framework */
     BSP_init(); /* initialize the BSP */
+    APP_init();
 
     /* instantiate and start the SumoHSM active object */
     SumoHSM_ctor(); /* in C you must explicitly call the SumoHSM constructor */

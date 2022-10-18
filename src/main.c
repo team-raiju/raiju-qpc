@@ -37,6 +37,7 @@
 /*$endhead${.::src::main.c} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
+#include "app.h"
 
 Q_DEFINE_THIS_FILE
 
@@ -46,6 +47,7 @@ int main() {
 
     QF_init();  /* initialize the framework */
     BSP_init(); /* initialize the BSP */
+    APP_init();
 
     /* instantiate and start the SumoHSM active object */
     SumoHSM_ctor(); /* in C you must explicitly call the SumoHSM constructor */

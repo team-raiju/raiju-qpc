@@ -18,7 +18,7 @@
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
-
+static void led_stripe_prepare(uint8_t idx, color_t color);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
@@ -35,6 +35,10 @@ color_t color_purple = {
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
+static void led_stripe_prepare(uint8_t idx, color_t color){
+    BSP_ws2812_set(idx, color.R, color.G, color.B);
+}
+
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
@@ -50,8 +54,21 @@ void board_led_off(){
     BSP_ledOff();
 }
 
+// Led Stripe
+
+void led_stripe_init(){
+    BSP_ws2812_init();
+    led_stripe_reset();
+}
+
+void led_stripe_send(){
+    BSP_ws2812_send();
+}
+
+
 void led_stripe_set(uint8_t idx, color_t color){
-    BSP_ws2812_set(idx, color.R, color.G, color.B);
+    led_stripe_prepare(idx, color);
+    led_stripe_send();
 }
 
 
@@ -60,8 +77,10 @@ void led_stripe_set_range(uint8_t from, uint8_t to, color_t color){
     to = min(to, LED_STRIPE_NUM);
 
     for (uint8_t i = from; i < to; i++) {
-        led_stripe_set(i, color);
+        led_stripe_prepare(i, color);
     }
+
+    led_stripe_send();
 }
 
 
