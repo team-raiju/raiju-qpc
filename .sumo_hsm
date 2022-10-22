@@ -11,7 +11,8 @@
   <item id="AOs::SumoHSM::SM">-669,0,1109,682</item>
   <item id=".::src::sumo_hsm.c">0,0,596,300</item>
   <item id=".::inc::bsp.h">-156,0,596,300</item>
-  <item id=".::src::main.c">0,0,1080,507,*</item>
+  <item id=".::src::main.c">0,0,1080,507</item>
+  <item id="AOs::SumoHSM::SM::LineSubmachine">0,0,1080,507,*</item>
  </group>
  <group name="search">
   <item name="options">2032128</item>
