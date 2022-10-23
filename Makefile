@@ -421,11 +421,11 @@ define VS_LAUNCH
 	    {
 	        "type": "cortex-debug",
 	        "request": "launch",
-	        "servertype": "stutil",
+	        "servertype": "stlink",
 	        "cwd": "$${workspaceRoot}",
 	        "gdbPath": "${GDB}",
 	        "executable": "$(TARGET_ELF)",
-	        "name": "Cortex Debug (ST-Util)",
+	        "name": "Cortex Debug (ST-Link)",
 	        "device": "$(DEVICE)",
 	        "v1": false
 	    },
