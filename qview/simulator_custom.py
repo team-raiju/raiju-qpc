@@ -38,10 +38,10 @@ QS_USER_DATA_ID = {
 }
 
 def custom_menu_command():
-    command_name = "RESET POSITION"
-    command_function =  reset_position
+    command_names = ["RESET POSITION 1", "RESET POSITION 2"]
+    command_functions = [reset_position, reset_position_2]
 
-    return (command_name, command_function)
+    return (command_names, command_functions)
 
 def custom_on_dettach():
     # print("Custom action on dettach")
@@ -340,6 +340,12 @@ def send_keyboard():
 
 
 def reset_position():
+    global image_dict, canvas_dict
+    sumo_robot.set_angle(0)
+    sumo_robot.set_position(300, 120)
+    canvas_dict["sumo"] = qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"])
+
+def reset_position_2():
     global image_dict, canvas_dict
     sumo_robot.set_angle(0)
     sumo_robot.set_position(300, 100)

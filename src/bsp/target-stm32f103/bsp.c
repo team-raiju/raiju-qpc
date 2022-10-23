@@ -89,7 +89,6 @@ void BSP_init(void)   {
 
     MX_ADC1_Init();
 
-    BSP_ledInit();
     BSP_buzzerInit();
     BSP_radioInit();
     BSP_distSensorsInit();
