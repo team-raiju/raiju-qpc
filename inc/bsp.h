@@ -44,7 +44,7 @@ enum {
 }; /* number of clock ticks in a second */
 
 typedef enum {
-   SIMULATOR = QS_USER0,
+   SIMULATOR = 100, //QS_USER0 on qs.h file. only useful on Qspy config
 } qs_user_names_t;
 
 
