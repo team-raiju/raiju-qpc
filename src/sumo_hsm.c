@@ -44,7 +44,7 @@
 #include "bsp_buzzer.h"
 #include "bsp_radio.h"
 #include "bsp_dist_sensors.h"
-#include "bsp_line_sensors.h"
+#include "line_service.h"
 
 #define CALIB_ANGLE_MULT    2.5
 #ifndef M_PI
@@ -1569,7 +1569,7 @@ static QState SumoHSM_LineSubmachine(SumoHSM * const me, QEvt const * const e) {
 static QState SumoHSM_LineSubmachine_LineGoBack_e(SumoHSM * const me) {
     drive(-100,-100);
 
-    if (BSP_lineSensorIsReading(LINE_SENSOR_FL)){
+    if (line_is_white(LINE_FL)){
         QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
     } else {
         QTimeEvt_armX(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 250, 0);

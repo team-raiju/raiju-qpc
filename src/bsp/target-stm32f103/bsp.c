@@ -42,6 +42,7 @@
 #include "gpio.h"
 #include "dma.h"
 #include "tim.h"
+#include "adc.h"
 
 __weak void SystemClock_Config(void);
 
@@ -85,6 +86,8 @@ void BSP_init(void)   {
     MX_TIM2_Init(); // Led Stripe Timer
     // MX_TIM7_Init();
     // MX_TIM12_Init();
+
+    MX_ADC1_Init();
 
     BSP_ledInit();
     BSP_buzzerInit();

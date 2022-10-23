@@ -4,17 +4,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef enum line_position {
-    FR1 = 3,     // ou 4,
-    BR = 5,      // ou 6,
-    FL1 = 2,
-    BL = 1,
-    FR2 = 4,
-    FL2 = 6,
-} line_position_t;
+#define NUM_OF_LINE_SENSORS 4
 
-void line_start();
-bool line_is_white(line_position_t position);
-uint16_t line_raw_reading(line_position_t pos);
+// Position of sensor on ADC DMA buffer
+typedef enum line_sensor 
+{
+    LINE_FR, 
+    LINE_FL,
+    LINE_BR,      
+    LINE_BL,
+} line_sensor_t;
+
+
+void line_service_init(void);
+bool line_is_white(line_sensor_t position);
 
 #endif /* LINE_SERVICE_H */

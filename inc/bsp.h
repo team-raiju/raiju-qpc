@@ -43,6 +43,11 @@ enum {
     BSP_TICKS_PER_SEC = 100
 }; /* number of clock ticks in a second */
 
+typedef enum {
+   SIMULATOR = QS_USER0,
+} qs_user_names_t;
+
+
 #define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
 
 void BSP_init(void);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model version="5.2.1" links="1">
  <!--${qpc}-->
- <framework name="qpc" license="../../../qp-linux_7.1.0/qp/qpc/LICENSES/QM-EVAL-QPC.qlc"/>
+ <framework name="qpc" license="../../../qp-linux_7.1.2/qp/qpc/LICENSES/QM-EVAL-QPC.qlc"/>
  <!--${AOs}-->
  <package name="AOs" stereotype="0x02">
   <!--${AOs::SumoHSM}-->
@@ -625,7 +625,7 @@ drive(mot1, mot2);</action>
      <state name="LineGoBack">
       <entry brief="go_back">drive(-100,-100);
 
-if (BSP_lineSensorIsReading(LINE_SENSOR_FL)){
+if (line_is_white(LINE_FL)){
     QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
 } else {
     QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 250, 0);
@@ -839,7 +839,7 @@ me-&gt;star_velocity = 60;</code>
 #include &quot;bsp_buzzer.h&quot;
 #include &quot;bsp_radio.h&quot;
 #include &quot;bsp_dist_sensors.h&quot;
-#include &quot;bsp_line_sensors.h&quot;
+#include &quot;line_service.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5
 #ifndef M_PI
@@ -947,6 +947,11 @@ int main() {
 enum { 
     BSP_TICKS_PER_SEC = 100
 }; /* number of clock ticks in a second */
+
+typedef enum {
+   SIMULATOR = QS_USER0,
+} qs_user_names_t;
+
 
 #define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
 
