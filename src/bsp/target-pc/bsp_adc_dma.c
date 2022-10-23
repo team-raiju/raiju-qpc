@@ -39,16 +39,16 @@ void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br) {
         for (uint16_t j = 0; j < ADC_DMA_CHANNELS; j++) {
             switch (j) {
                 case FAKE_LINE_POS_FR:
-                    dma_buffer[i + j] = fl;
+                    dma_buffer[i + j] = 2000 * fr;
                     break;
                 case FAKE_LINE_POS_FL:
-                    dma_buffer[i + j] = fr;
+                    dma_buffer[i + j] = 2000 * fl;
                     break;
                 case FAKE_LINE_POS_BR:
-                    dma_buffer[i + j] = bl;
+                    dma_buffer[i + j] = 2000 * bl;
                     break;
                 case FAKE_LINE_POS_BL:
-                    dma_buffer[i + j] = br;
+                    dma_buffer[i + j] = 2000 * br;
                     break;
                 default:
                     dma_buffer[i + j] = 0;
