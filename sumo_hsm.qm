@@ -143,15 +143,15 @@ led_stripe_set_strategy_color(me-&gt;strategy);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE}-->
      <tran trig="DIST_SENSOR_CHANGE">
-      <action brief="CheckSensors">if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
+      <action brief="CheckSensors">if (distance_is_active(DIST_SENSOR_R)) {
    drive(80,-80);
-} else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
+} else if (distance_is_active(DIST_SENSOR_FR)) {
    drive(80,0);
-} else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
+} else if (distance_is_active(DIST_SENSOR_F)) {
    drive(100,100);
-} else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
+} else if (distance_is_active(DIST_SENSOR_FL)) {
    drive(0,80);
-} else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
+} else if (distance_is_active(DIST_SENSOR_L)) {
    drive(-80,80);
 } else {
    drive(60,60);
@@ -262,15 +262,15 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 100, 0);</action>
       <action brief="CheckSensors">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 
-if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
+if (distance_is_active(DIST_SENSOR_R)) {
    drive(80,-80);
-} else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
+} else if (distance_is_active(DIST_SENSOR_FR)) {
    drive(80,0);
-} else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
+} else if (distance_is_active(DIST_SENSOR_F)) {
    drive(100,100);
-} else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
+} else if (distance_is_active(DIST_SENSOR_FL)) {
    drive(0,80);
-} else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
+} else if (distance_is_active(DIST_SENSOR_L)) {
    drive(-80,80);
 } else {
    drive(0,0);
@@ -838,7 +838,7 @@ me-&gt;star_velocity = 60;</code>
 #include &quot;driving_service.h&quot;
 #include &quot;bsp_buzzer.h&quot;
 #include &quot;bsp_radio.h&quot;
-#include &quot;bsp_dist_sensors.h&quot;
+#include &quot;distance_service.h&quot;
 #include &quot;line_service.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5

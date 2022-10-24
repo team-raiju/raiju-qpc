@@ -37,7 +37,6 @@
 #include "bsp_motors.h"
 #include "bsp_buzzer.h"
 #include "bsp_radio.h"
-#include "bsp_dist_sensors.h"
 #include "main.h"
 #include "gpio.h"
 #include "dma.h"
@@ -91,7 +90,6 @@ void BSP_init(void)   {
 
     BSP_buzzerInit();
     BSP_radioInit();
-    BSP_distSensorsInit();
 
 }
 

@@ -43,7 +43,7 @@
 #include "driving_service.h"
 #include "bsp_buzzer.h"
 #include "bsp_radio.h"
-#include "bsp_dist_sensors.h"
+#include "distance_service.h"
 #include "line_service.h"
 
 #define CALIB_ANGLE_MULT    2.5
@@ -661,15 +661,15 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
-            if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
+            if (distance_is_active(DIST_SENSOR_R)) {
                drive(80,-80);
-            } else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
+            } else if (distance_is_active(DIST_SENSOR_FR)) {
                drive(80,0);
-            } else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
+            } else if (distance_is_active(DIST_SENSOR_F)) {
                drive(100,100);
-            } else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
+            } else if (distance_is_active(DIST_SENSOR_FL)) {
                drive(0,80);
-            } else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
+            } else if (distance_is_active(DIST_SENSOR_L)) {
                drive(-80,80);
             } else {
                drive(60,60);
@@ -854,15 +854,15 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
             QTimeEvt_disarm(&me->timeEvt);
             QTimeEvt_disarm(&me->timeEvt_2);
 
-            if (BSP_distSensorIsReading(DIST_SENSOR_R)) {
+            if (distance_is_active(DIST_SENSOR_R)) {
                drive(80,-80);
-            } else if (BSP_distSensorIsReading(DIST_SENSOR_FR)) {
+            } else if (distance_is_active(DIST_SENSOR_FR)) {
                drive(80,0);
-            } else if (BSP_distSensorIsReading(DIST_SENSOR_F)) {
+            } else if (distance_is_active(DIST_SENSOR_F)) {
                drive(100,100);
-            } else if (BSP_distSensorIsReading(DIST_SENSOR_FL)) {
+            } else if (distance_is_active(DIST_SENSOR_FL)) {
                drive(0,80);
-            } else if (BSP_distSensorIsReading(DIST_SENSOR_L)) {
+            } else if (distance_is_active(DIST_SENSOR_L)) {
                drive(-80,80);
             } else {
                drive(0,0);
