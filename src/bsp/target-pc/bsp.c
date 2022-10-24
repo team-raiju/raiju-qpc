@@ -39,8 +39,9 @@
 #include "bsp_motors.h"
 #include "bsp_buzzer.h"
 #include "bsp_radio.h"
-#include "bsp_dist_sensors.h"
 #include "bsp_adc_fake.h"
+#include "bsp_gpio_fake.h"
+
 
 
 #ifdef Q_SPY
@@ -144,15 +145,15 @@ void QS_onCommand(uint8_t cmdId,
         }
 
         case 4: { 
-            BSP_distSensorDisableAll();
-            
-            if (param1 != 0){
-                BSP_distSensorSet(param1, true);
-            }
 
-            QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-            printf("Sensor Seeing = %d\r\n", param1);
+            static uint16_t last_sensor_updated;
+            
+            HAL_Fake_GPIO_EXTI_Callback(last_sensor_updated, false);
+            if (param1 != 0){
+                HAL_Fake_GPIO_EXTI_Callback(param1, true);
+            } 
+
+            last_sensor_updated = param1;
             break;
         }
 

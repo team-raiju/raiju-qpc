@@ -406,13 +406,13 @@ def is_mouse_direction(posx, posy, robot_angle):
         if (anglediff > -15 and anglediff < 15):
             return 3
         elif (anglediff > 15 and anglediff < 40):
-            return 4
-        elif (anglediff > 40 and anglediff < 60):
-            return 5
-        elif (anglediff > -40 and anglediff < -15):
             return 2
-        elif (anglediff > -60 and anglediff < -40):
+        elif (anglediff > 40 and anglediff < 60):
             return 1
+        elif (anglediff > -40 and anglediff < -15):
+            return 4
+        elif (anglediff > -60 and anglediff < -40):
+            return 5
     
     return 0
 
