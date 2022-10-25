@@ -7,30 +7,48 @@
 
 #include "bsp_gpio.h"
 #include "bsp_gpio_fake.h"
-
-#define DIST_SENSOR_MAX_GPIOS 9
-#define BUTTON_GPIO_PIN       IO_PIN_15
+#include "bsp_gpio_mapping.h"
 
 
-static bsp_gpio_callback_t dist_callback_function = NULL;
+static bsp_gpio_dist_callback_t dist_callback_function = NULL;
 static bsp_button_callback_t button_callback_function = NULL;
-
-
-static io_pin_t dist_sensor_pins[DIST_SENSOR_MAX_GPIOS] = {0};
 static io_level_t gpio_emulation[4][16] = {0};
-static uint8_t dist_sensor_amount = 0;
 
 
-void HAL_Fake_GPIO_EXTI_Callback(uint16_t sensor_num) {
 
-    printf("Sensor Callback. Pin = %d; Dist Sensor Pin = %d\r\n", sensor_num, dist_sensor_pins[sensor_num]);
+static uint16_t BSP_GPIO_Pin_Mapping(io_pin_t io_pin){
 
-    if (sensor_num == BUTTON_GPIO_PIN && button_callback_function != NULL){
-        button_callback_function();
+    uint16_t hardware_pin_num[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+
+    if (io_pin < sizeof(hardware_pin_num)/sizeof(uint16_t) ){
+        return hardware_pin_num[io_pin];
     }
 
-    else if (dist_callback_function != NULL){
-        dist_callback_function(dist_sensor_pins[sensor_num]);
+    return 0;
+
+}
+
+
+void HAL_Fake_GPIO_EXTI_Callback(uint16_t pin) {
+
+    printf("Sensor Callback. Hardware Pin = %dr\n", pin);
+
+    // Button
+    if (pin == BSP_GPIO_Pin_Mapping(GPIO_BUTTON_PIN)){
+        if (button_callback_function != NULL){
+            button_callback_function();
+        }
+        return;
+    }
+
+    // Distance Sensors
+    for (int i = 0; i < BOARD_NUM_DIST_SENSORS; i++) {
+        if (pin == BSP_GPIO_Pin_Mapping(gpio_dist_sensor_pins[i])){
+            if (dist_callback_function != NULL){
+                dist_callback_function(i);
+            }
+        return;
+        }
     }
 
 }
@@ -44,7 +62,7 @@ void BSP_GPIO_Write_Pin(io_port_t port, io_pin_t gpio_pin, io_level_t level){
 }
 
 
-void BSP_GPIO_Register_Distance_Callback(bsp_gpio_callback_t callback_function){
+void BSP_GPIO_Register_Distance_Callback(bsp_gpio_dist_callback_t callback_function){
 
     dist_callback_function = callback_function;
 
@@ -53,19 +71,6 @@ void BSP_GPIO_Register_Distance_Callback(bsp_gpio_callback_t callback_function){
 void BSP_GPIO_Register_Button_Callback(bsp_button_callback_t callback_function){
 
     button_callback_function = callback_function;
-
-}
-
-
-void BSP_GPIO_Register_Distance_Pins(io_pin_t * pins, uint8_t amount){
-
-    if (amount > DIST_SENSOR_MAX_GPIOS){
-        return;
-    }
-
-    dist_sensor_amount = amount;
-
-    memcpy(dist_sensor_pins, pins, dist_sensor_amount * sizeof(io_pin_t));
 
 }
 

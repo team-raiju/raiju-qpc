@@ -42,8 +42,7 @@
 #include "bsp_adc_fake.h"
 #include "bsp_gpio_fake.h"
 #include "bsp_gpio.h"
-#include "bsp_dist_sensor.h"
-
+#include "bsp_gpio_mapping.h"
 
 #ifdef Q_SPY
 
@@ -149,17 +148,17 @@ void QS_onCommand(uint8_t cmdId,
 
             static uint8_t last_sensor_updated;
 
-            uint8_t sensor_num = param1;
+            uint8_t sensor_pin = param1;
 
-            if (sensor_num != 0){
-                BSP_GPIO_Write_Pin(bsp_dist_sensor_port(sensor_num), bsp_dist_sensor_pin(sensor_num), true);
-                HAL_Fake_GPIO_EXTI_Callback(sensor_num);
+            if (sensor_pin != 0){
+                BSP_GPIO_Write_Pin(gpio_dist_sensor_pins[sensor_pin], gpio_dist_sensor_ports[sensor_pin], true);
+                HAL_Fake_GPIO_EXTI_Callback(sensor_pin);
             } 
 
-            BSP_GPIO_Write_Pin(bsp_dist_sensor_port(last_sensor_updated), bsp_dist_sensor_pin(last_sensor_updated), false);
+            BSP_GPIO_Write_Pin(gpio_dist_sensor_pins[sensor_pin], gpio_dist_sensor_ports[sensor_pin], false);
             HAL_Fake_GPIO_EXTI_Callback(last_sensor_updated);
 
-            last_sensor_updated = sensor_num;
+            last_sensor_updated = sensor_pin;
             break;
         }
 
