@@ -42,7 +42,7 @@ typedef enum io_pin {
 
 } io_pin_t;
 
-typedef void( * bsp_gpio_dist_callback_t) (uint8_t sensor_num);
+typedef void( * bsp_gpio_dist_callback_t) (uint8_t sensor_num, io_level_t state);
 typedef void( * bsp_button_callback_t) (void);
 
 

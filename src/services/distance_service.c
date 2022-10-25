@@ -7,7 +7,6 @@
 
 #include "distance_service.h"
 #include "bsp_gpio.h"
-#include "bsp_gpio_mapping.h"
 
 
 /***************************************************************************************************
@@ -23,7 +22,7 @@
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
 
-static void sensor_data_interrupt(uint8_t sensor_num);
+static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state);
 
 /***************************************************************************************************
  * LOCAL VARIABLES
@@ -49,18 +48,18 @@ static uint8_t sensor_num_to_position[NUM_OF_DIST_SENSORS] = {
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void sensor_data_interrupt(uint8_t sensor_num){
+static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state){
 
-    for (int i = 0; i < NUM_OF_DIST_SENSORS; i++) {
-        if (sensor_num == i){
-            dist_sensor_is_active[sensor_num_to_position[i]] = BSP_GPIO_Read_Pin(gpio_dist_sensor_pins[sensor_num], gpio_dist_sensor_ports[sensor_num]);
-
-            QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-        }
+    if (sensor_num > (NUM_OF_DIST_SENSORS - 1)){
+        return;
     }
-    
 
+    dist_sensor_t sensor_position = sensor_num_to_position[sensor_num];
+    dist_sensor_is_active[sensor_position] = state;
+
+    QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
+    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    
 
 }
 

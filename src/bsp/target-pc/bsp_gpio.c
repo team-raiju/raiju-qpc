@@ -14,6 +14,30 @@ static bsp_gpio_dist_callback_t dist_callback_function = NULL;
 static bsp_button_callback_t button_callback_function = NULL;
 static io_level_t gpio_emulation[4][16] = {0};
 
+static uint8_t gpio_dist_sensor_pins[BOARD_NUM_DIST_SENSORS] = {
+    GPIO_DIST_SENSOR_0_PIN, 
+    GPIO_DIST_SENSOR_1_PIN,
+    GPIO_DIST_SENSOR_2_PIN,
+    GPIO_DIST_SENSOR_3_PIN,
+    GPIO_DIST_SENSOR_4_PIN,
+    GPIO_DIST_SENSOR_5_PIN,
+    GPIO_DIST_SENSOR_6_PIN,
+    GPIO_DIST_SENSOR_7_PIN,
+    GPIO_DIST_SENSOR_8_PIN,
+};
+
+static uint8_t gpio_dist_sensor_ports[BOARD_NUM_DIST_SENSORS] = {
+    GPIO_DIST_SENSOR_0_PORT,
+    GPIO_DIST_SENSOR_1_PORT,
+    GPIO_DIST_SENSOR_2_PORT,
+    GPIO_DIST_SENSOR_3_PORT,
+    GPIO_DIST_SENSOR_4_PORT,
+    GPIO_DIST_SENSOR_5_PORT,
+    GPIO_DIST_SENSOR_6_PORT,
+    GPIO_DIST_SENSOR_7_PORT,
+    GPIO_DIST_SENSOR_8_PORT,
+};
+
 
 
 static uint16_t BSP_GPIO_Pin_Mapping(io_pin_t io_pin){
@@ -31,7 +55,7 @@ static uint16_t BSP_GPIO_Pin_Mapping(io_pin_t io_pin){
 
 void HAL_Fake_GPIO_EXTI_Callback(uint16_t pin) {
 
-    printf("Sensor Callback. Hardware Pin = %dr\n", pin);
+    printf("Sensor Callback. Hardware Pin = %d\r\n", pin);
 
     // Button
     if (pin == BSP_GPIO_Pin_Mapping(GPIO_BUTTON_PIN)){
@@ -45,9 +69,10 @@ void HAL_Fake_GPIO_EXTI_Callback(uint16_t pin) {
     for (int i = 0; i < BOARD_NUM_DIST_SENSORS; i++) {
         if (pin == BSP_GPIO_Pin_Mapping(gpio_dist_sensor_pins[i])){
             if (dist_callback_function != NULL){
-                dist_callback_function(i);
+                io_level_t state = BSP_GPIO_Read_Pin(gpio_dist_sensor_ports[i], gpio_dist_sensor_pins[i]);
+                dist_callback_function(i, state);
             }
-        return;
+            return;
         }
     }
 

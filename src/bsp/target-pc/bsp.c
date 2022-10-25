@@ -151,11 +151,11 @@ void QS_onCommand(uint8_t cmdId,
             uint8_t sensor_pin = param1;
 
             if (sensor_pin != 0){
-                BSP_GPIO_Write_Pin(gpio_dist_sensor_pins[sensor_pin], gpio_dist_sensor_ports[sensor_pin], true);
+                BSP_GPIO_Write_Pin(IO_PORTA, sensor_pin , true);
                 HAL_Fake_GPIO_EXTI_Callback(sensor_pin);
             } 
 
-            BSP_GPIO_Write_Pin(gpio_dist_sensor_pins[sensor_pin], gpio_dist_sensor_ports[sensor_pin], false);
+            BSP_GPIO_Write_Pin(IO_PORTA, last_sensor_updated, false);
             HAL_Fake_GPIO_EXTI_Callback(last_sensor_updated);
 
             last_sensor_updated = sensor_pin;
