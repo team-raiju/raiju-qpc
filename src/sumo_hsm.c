@@ -1991,6 +1991,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(LINE_CHANGED_SIG,  (void *)0);
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
 
 
 }

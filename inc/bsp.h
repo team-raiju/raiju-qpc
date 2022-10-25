@@ -66,6 +66,7 @@ enum SumoHSMSignals {
     LINE_CHANGED_SIG,
     DIST_SENSOR_CHANGE_SIG,
     RADIO_DATA_SIG,
+    BUTTON_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 
