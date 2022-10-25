@@ -6,7 +6,6 @@
 
 #define NUM_OF_DIST_SENSORS 7
 
-// Position of sensor on ADC DMA buffer
 typedef enum dist_sensor 
 {
     DIST_SENSOR_L,
@@ -17,6 +16,7 @@ typedef enum dist_sensor
     DIST_SENSOR_FR,
     DIST_SENSOR_R,
 } dist_sensor_t;
+
 
 
 void distance_service_init(void);

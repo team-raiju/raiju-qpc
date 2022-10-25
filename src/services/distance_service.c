@@ -6,6 +6,7 @@
 #include "bsp.h"
 
 #include "distance_service.h"
+#include "bsp_dist_sensor.h"
 #include "bsp_gpio.h"
 
 
@@ -13,47 +14,32 @@
  * LOCAL DEFINES
  **************************************************************************************************/
 
-#define SENSOR_DISABLED 0xff
-
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
 
-enum dist_sensor_num {
-    DIST_1,
-    DIST_2,
-    DIST_3,
-    DIST_4,
-    DIST_5,
-    DIST_6,
-    DIST_7,
-    DIST_8,
-    DIST_9,
-};
-
-uint8_t dist_sensor_gpio_mapping[] = {
-    [DIST_1] = DIST_SENSOR_DR,
-    [DIST_2] = DIST_SENSOR_R,
-    [DIST_3] = DIST_SENSOR_FR,
-    [DIST_4] = DIST_SENSOR_F,
-    [DIST_5] = DIST_SENSOR_FL,
-    [DIST_6] = DIST_SENSOR_L,
-    [DIST_7] = DIST_SENSOR_DL,
-    [DIST_8] = SENSOR_DISABLED,
-    [DIST_9] = SENSOR_DISABLED,
-};
 
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
 
-static void sensor_data_interrupt(uint16_t sensor_num, bool gpio_level);
+static void sensor_data_interrupt(io_pin_t sensor_pin);
 
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
 
 volatile bool dist_sensor_is_active[NUM_OF_DIST_SENSORS];
+
+static uint8_t sensor_num_to_position[NUM_OF_DIST_SENSORS] = {
+    DIST_SENSOR_DR,
+    DIST_SENSOR_R,
+    DIST_SENSOR_FR,
+    DIST_SENSOR_F,
+    DIST_SENSOR_FL,
+    DIST_SENSOR_L,
+    DIST_SENSOR_DL,
+};
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -63,11 +49,11 @@ volatile bool dist_sensor_is_active[NUM_OF_DIST_SENSORS];
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void sensor_data_interrupt(uint16_t sensor_num, bool gpio_level){
+static void sensor_data_interrupt(io_pin_t sensor_pin){
 
     for (int i = 0; i < NUM_OF_DIST_SENSORS; i++) {
-        if (sensor_num == i && dist_sensor_gpio_mapping[i] != SENSOR_DISABLED){
-            dist_sensor_is_active[i] = gpio_level;
+        if (sensor_pin == bsp_dist_sensor_pin(i)){
+            dist_sensor_is_active[sensor_num_to_position[i]] = BSP_GPIO_Read_Pin(bsp_dist_sensor_port(i), bsp_dist_sensor_pin(i));
 
             QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
@@ -83,7 +69,15 @@ static void sensor_data_interrupt(uint16_t sensor_num, bool gpio_level){
  **************************************************************************************************/
 
 void distance_service_init() {
-    BSP_GPIO_Distance_Register_Callback(sensor_data_interrupt);
+    BSP_GPIO_Register_Distance_Callback(sensor_data_interrupt);
+
+
+    io_pin_t dist_pins[NUM_OF_DIST_SENSORS];
+    for (int i = 0; i < NUM_OF_DIST_SENSORS; i++) {
+        dist_pins[i] = bsp_dist_sensor_pin(i);
+    }
+    
+    BSP_GPIO_Register_Distance_Pins(dist_pins, NUM_OF_DIST_SENSORS);
 }
 
 

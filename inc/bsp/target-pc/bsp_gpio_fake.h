@@ -3,6 +3,6 @@
 
 #include <stdint.h>
 
-void HAL_Fake_GPIO_EXTI_Callback(uint16_t sensor_num, bool sensor_level);
+void HAL_Fake_GPIO_EXTI_Callback(uint16_t sensor_num);
 
 #endif /* BSP_GPIO_FAKE_H */
