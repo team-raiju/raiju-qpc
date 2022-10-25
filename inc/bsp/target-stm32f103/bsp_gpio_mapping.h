@@ -9,6 +9,10 @@
 #define GPIO_BUTTON_PIN          IO_PIN_15
 #define GPIO_BUTTON_PORT         IO_PORTC
 
+// MOT EN
+#define GPIO_MOT_EN_PIN          IO_PIN_12
+#define GPIO_MOT_EN_PORT         IO_PORTA
+
 // Distance Sensors
 #define GPIO_DIST_SENSOR_0_PIN   IO_PIN_0      
 #define GPIO_DIST_SENSOR_0_PORT  IO_PORTB      
