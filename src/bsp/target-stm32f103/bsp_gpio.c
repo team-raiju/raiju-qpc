@@ -1,15 +1,29 @@
-
+/***************************************************************************************************
+ * INCLUDES
+ **************************************************************************************************/
 
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "bsp_gpio.h"
 #include "gpio.h"
 #include "bsp_gpio_mapping.h"
 
+/***************************************************************************************************
+ * LOCAL DEFINES
+ **************************************************************************************************/
 
+/***************************************************************************************************
+ * LOCAL TYPEDEFS
+ **************************************************************************************************/
 
+/***************************************************************************************************
+ * LOCAL FUNCTION PROTOTYPES
+ **************************************************************************************************/
+
+/***************************************************************************************************
+ * LOCAL VARIABLES
+ **************************************************************************************************/
 static bsp_gpio_dist_callback_t dist_callback_function = NULL;
 static bsp_button_callback_t button_callback_function = NULL;
 
@@ -38,7 +52,13 @@ static uint8_t gpio_dist_sensor_ports[BOARD_NUM_DIST_SENSORS] = {
     GPIO_DIST_SENSOR_8_PORT,
 };
 
+/***************************************************************************************************
+ * GLOBAL VARIABLES
+ **************************************************************************************************/
 
+/***************************************************************************************************
+ * LOCAL FUNCTIONS
+ **************************************************************************************************/
 static uint16_t BSP_GPIO_Pin_Mapping(io_pin_t io_pin){
 
     uint16_t hardware_pin_num[] = {
@@ -85,9 +105,9 @@ static GPIO_TypeDef* BSP_GPIO_Port_Mapping(io_port_t io_port){
 
 }
 
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
+    // Button
     if (GPIO_Pin == BSP_GPIO_Pin_Mapping(GPIO_BUTTON_PIN)){
         if (button_callback_function != NULL){
             button_callback_function();
@@ -95,6 +115,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         return;
     }
 
+    // Distance sensors
     for (int i = 0; i < BOARD_NUM_DIST_SENSORS; i++) {
         if (GPIO_Pin == BSP_GPIO_Pin_Mapping(gpio_dist_sensor_pins[i])){
             if (dist_callback_function != NULL){
@@ -107,6 +128,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 }
 
+/***************************************************************************************************
+ * GLOBAL FUNCTIONS
+ **************************************************************************************************/
 io_level_t BSP_GPIO_Read_Pin(io_port_t port, io_pin_t gpio_pin){
 
     return (io_level_t) HAL_GPIO_ReadPin(BSP_GPIO_Port_Mapping(port), BSP_GPIO_Pin_Mapping(gpio_pin));
