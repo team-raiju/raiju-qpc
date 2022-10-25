@@ -52,7 +52,11 @@ static uint16_t gpio_pin_mapping[] = {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
-    if (dist_callback_function != NULL){
+    if (GPIO_Pin == gpio_pin_mapping[BUTTON_GPIO_PIN] && button_callback_function != NULL){
+        button_callback_function();
+    }
+
+    else if (dist_callback_function != NULL){
         for (int i = 0; i < dist_sensor_amount; i++) {
             if (GPIO_Pin == gpio_pin_mapping[dist_sensor_pins[i]]){
                 dist_callback_function(dist_sensor_pins[i]);
@@ -61,9 +65,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         }
     }
 
-    else if (GPIO_Pin == gpio_pin_mapping[BUTTON_GPIO_PIN] && button_callback_function != NULL){
-        button_callback_function();
-    }
 }
 
 io_level_t BSP_GPIO_Read_Pin(io_port_t port, io_pin_t gpio_pin){
