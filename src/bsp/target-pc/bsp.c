@@ -115,13 +115,11 @@ void QS_onCommand(uint8_t cmdId,
 
     switch (cmdId) {
        case 0: { 
-            QEvt evt = {.sig = START_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+            BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , true);
             break;
         }
         case 1: { 
-            QEvt evt = {.sig = STOP_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+             BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , false);
             break;
         }
 

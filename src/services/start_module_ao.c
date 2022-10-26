@@ -5,6 +5,7 @@
 #include "qpc.h"
 #include "start_module_ao.h"
 #include "bsp.h"
+#include "bsp_gpio_mapping.h"
 #include <stdio.h> 
 
 Q_DEFINE_THIS_FILE
@@ -15,10 +16,6 @@ Q_DEFINE_THIS_FILE
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
-enum BlinkySignals {
-    START_MODULE_CHECK_SIG = MAX_SIG_SUMO_HSM,
-    MAX_SIG_START_MODULE
-};
 
 typedef struct start_module {
     QActive super;
@@ -56,7 +53,7 @@ static void start_module_ctor(void) {
 static QState StartModule_Initial(start_module_t * const me, void const * const par) {
 
     (void)par; /* unused parameter */
-    QTimeEvt_armX(&me->timeEvt, 100,100);
+    QTimeEvt_armX(&me->timeEvt, 1000 * BSP_TICKS_PER_MILISSEC, 1000 * BSP_TICKS_PER_MILISSEC);
 
     QS_FUN_DICTIONARY(&StartModule_Check);
 
@@ -71,7 +68,16 @@ static QState StartModule_Check(start_module_t * const me, QEvt const * const e)
             break;
         }
         case START_MODULE_CHECK_SIG: {
-            printf("Check Sensor \r\n");
+            static io_level_t last_state;
+            io_level_t state = BSP_GPIO_Read_Pin(GPIO_START_MODULE_PORT, GPIO_START_MODULE_PIN);
+
+            if (last_state != state){
+                QSignal sinal = (state == IO_HIGH) ? START_SIG : STOP_SIG;
+                QEvt evt = {.sig = sinal};
+                QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+            }
+            
+            last_state = state;
         }
         default: {
             status_ = Q_SUPER(&QHsm_top);
