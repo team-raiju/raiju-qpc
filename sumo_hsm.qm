@@ -908,6 +908,7 @@ void sumoHSM_update_qs_dict(){
     <text>#include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
 #include &quot;app.h&quot;
+#include &quot;start_module_ao.h&quot;
 
 Q_DEFINE_THIS_FILE
 
@@ -927,11 +928,13 @@ int main() {
     #endif
 
     QACTIVE_START(AO_SumoHSM, /* active object to start */
-        1U,                  /* priority of the active object */
+        2U,                  /* priority of the active object */
         sumoHSM_queueSto,     /* event queue buffer */
         Q_DIM(sumoHSM_queueSto), /* the length of the buffer */
         (void *)0, 0U,       /* private stack (not used) */
         (QEvt *)0);          /* initialization event (not used) */
+
+    start_module_ao_init();
 
     return QF_run(); /* let the framework run the application */
 }</text>
@@ -973,7 +976,7 @@ enum SumoHSMSignals {
     DIST_SENSOR_CHANGE_SIG,
     RADIO_DATA_SIG,
     BUTTON_SIG,
-    MAX_SIG, /* keep last (the number of signals) */
+    MAX_SIG_SUMO_HSM, /* keep last (the number of signals) */
 };
 
 /* active object(s) used in this application -------------------------------*/

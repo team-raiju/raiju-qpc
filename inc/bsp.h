@@ -67,7 +67,7 @@ enum SumoHSMSignals {
     DIST_SENSOR_CHANGE_SIG,
     RADIO_DATA_SIG,
     BUTTON_SIG,
-    MAX_SIG, /* keep last (the number of signals) */
+    MAX_SIG_SUMO_HSM, /* keep last (the number of signals) */
 };
 
 /* active object(s) used in this application -------------------------------*/

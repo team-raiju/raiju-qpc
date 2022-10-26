@@ -8,10 +8,10 @@
   <item name="backups">0</item>
  </group>
  <group name="windows">
-  <item id="AOs::SumoHSM::SM">-640,0,1109,682</item>
-  <item id=".::src::sumo_hsm.c">0,0,1109,682,*</item>
-  <item id=".::inc::bsp.h">0,119,596,300</item>
-  <item id=".::src::main.c">0,0,1080,507</item>
+  <item id="AOs::SumoHSM::SM">-669,0,1109,682</item>
+  <item id=".::src::sumo_hsm.c">0,0,1080,507</item>
+  <item id=".::inc::bsp.h">-640,0,1080,507</item>
+  <item id=".::src::main.c">0,0,1080,534,*</item>
   <item id="AOs::SumoHSM::SM::LineSubmachine">0,0,1109,682</item>
  </group>
  <group name="search">

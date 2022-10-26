@@ -38,6 +38,7 @@
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
 #include "app.h"
+#include "start_module_ao.h"
 
 Q_DEFINE_THIS_FILE
 
@@ -57,11 +58,13 @@ int main() {
     #endif
 
     QACTIVE_START(AO_SumoHSM, /* active object to start */
-        1U,                  /* priority of the active object */
+        2U,                  /* priority of the active object */
         sumoHSM_queueSto,     /* event queue buffer */
         Q_DIM(sumoHSM_queueSto), /* the length of the buffer */
         (void *)0, 0U,       /* private stack (not used) */
         (QEvt *)0);          /* initialization event (not used) */
+
+    start_module_ao_init();
 
     return QF_run(); /* let the framework run the application */
 }
