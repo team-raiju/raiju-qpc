@@ -33,9 +33,6 @@
 
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
-#include "bsp_led.h"
-#include "bsp_motors.h"
-#include "bsp_buzzer.h"
 #include "bsp_radio.h"
 #include "main.h"
 #include "gpio.h"
@@ -83,13 +80,12 @@ void BSP_init(void)   {
 
     MX_TIM1_Init(); // Motors Timer
     MX_TIM2_Init(); // Led Stripe Timer
-    // MX_TIM7_Init();
-    // MX_TIM12_Init();
+    MX_TIM12_Init(); // Buzzer
 
     MX_ADC1_Init();
 
-    BSP_buzzerInit();
-    BSP_radioInit();
+    // MX_TIM7_Init();
+    // BSP_radioInit();
 
 }
 

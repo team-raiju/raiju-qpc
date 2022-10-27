@@ -41,7 +41,7 @@
 #include "bsp.h"    /* Board Support Package interface */
 #include "led_service.h"
 #include "driving_service.h"
-#include "bsp_buzzer.h"
+#include "buzzer_service.h"
 #include "bsp_radio.h"
 #include "distance_service.h"
 #include "line_service.h"
@@ -524,7 +524,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::Idle::PLAY_BUZZER} */
         case PLAY_BUZZER_SIG: {
-            BSP_buzzerBeep();
+            buzzer_toggle();
 
             if (me->buzzerCount == 15) {
                 QTimeEvt_armX(&me->buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);

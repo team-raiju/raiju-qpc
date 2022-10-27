@@ -7,6 +7,7 @@ from struct import pack
 from pynput import keyboard
 from inputs import get_gamepad
 
+# from playsound import playsound
 import threading
 
 
@@ -28,7 +29,6 @@ global canvas_dict
 global sumo_robot
 global key_pressed_dict
 global line_sensors
-
 
 QS_USER_DATA_ID = {
     "QS_LED_ID":    0,
@@ -190,8 +190,18 @@ def process_motor_id_packet(packet):
     qview_base.print_text("Timestamp = %d; MOT_ESQ = %d; MOT_DIR = %d"%(data[0], mot_esq, mot_dir))  
 
 def process_buzzer_id_packet(packet):
-    data = qview_base.qunpack("xxTxbxb", packet)    
-    qview_base.print_text("Timestamp = %d; Buzzer = %d"%(data[0], data[2]))  
+    data = qview_base.qunpack("xxTxBxBxBxB", packet)  
+    subcommand = data[2]
+    if(subcommand == 0):
+        # if (data[3] == 1):
+        #     playsound(HOME_DIR + '/sound/beep.mp3')
+        qview_base.print_text("Timestamp = %d; Buzzer Enabled = %d"%(data[0],data[3]))  
+    elif(subcommand == 1):
+        qview_base.print_text("Timestamp = %d; Buzzer Duty Cycle = %d"%(data[0], data[3]))  
+    elif(subcommand == 2):
+        qview_base.print_text("Timestamp = %d; Buzzer Frequency = %d"%(data[0], ((data[3] << 8) + data[4])))  
+
+
 
 def process_led_stripe_id_packet(packet):
     data = qview_base.qunpack("xxTxBxBxBxBxB", packet)    

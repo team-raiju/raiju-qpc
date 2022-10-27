@@ -4,6 +4,7 @@
 #include "led_service.h"
 #include "line_service.h"
 #include "button.h"
+#include "buzzer_service.h"
 
 void APP_init(){
 
@@ -12,5 +13,6 @@ void APP_init(){
     led_stripe_init();
     line_service_init();
     button_init();
+    buzzer_service_init();
 
 }

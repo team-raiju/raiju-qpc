@@ -78,6 +78,8 @@ static QState StartModule_Check(start_module_t * const me, QEvt const * const e)
             }
             
             last_state = state;
+            status_ = Q_HANDLED();
+            break;
         }
         default: {
             status_ = Q_SUPER(&QHsm_top);

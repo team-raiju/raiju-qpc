@@ -66,7 +66,7 @@ QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::PLAY_BUZZER}-->
      <tran trig="PLAY_BUZZER">
-      <action>BSP_buzzerBeep();
+      <action>buzzer_toggle();
 
 if (me-&gt;buzzerCount == 15) {
     QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
@@ -836,7 +836,7 @@ me-&gt;star_velocity = 60;</code>
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
 #include &quot;led_service.h&quot;
 #include &quot;driving_service.h&quot;
-#include &quot;bsp_buzzer.h&quot;
+#include &quot;buzzer_service.h&quot;
 #include &quot;bsp_radio.h&quot;
 #include &quot;distance_service.h&quot;
 #include &quot;line_service.h&quot;
