@@ -74,6 +74,8 @@ if (me-&gt;buzzerCount == 15) {
 } else if (me-&gt;buzzerCount &lt; 15){
     QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
     led_stripe_set(me-&gt;buzzerCount, color_purple);
+} else{
+    buzzer_stop();
 }
 
 

@@ -532,6 +532,8 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             } else if (me->buzzerCount < 15){
                 QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
                 led_stripe_set(me->buzzerCount, color_purple);
+            } else{
+                buzzer_stop();
             }
 
 
