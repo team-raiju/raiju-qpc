@@ -4,6 +4,7 @@
 #include "bsp_gpio.h"
 
 #define BOARD_NUM_DIST_SENSORS  9
+#define BOARD_NUM_OF_PPMS       4
 
 // Button
 #define GPIO_BUTTON_PIN          IO_PIN_15
@@ -16,6 +17,21 @@
 // Start Module
 #define GPIO_START_MODULE_PIN    IO_PIN_2
 #define GPIO_START_MODULE_PORT   IO_PORTA
+
+
+// PPMS 
+#define GPIO_PPM_1_PIN           IO_PIN_6
+#define GPIO_PPM_1_PORT          IO_PORTC
+
+#define GPIO_PPM_2_PIN           IO_PIN_7
+#define GPIO_PPM_2_PORT          IO_PORTC
+
+#define GPIO_PPM_3_PIN           IO_PIN_8
+#define GPIO_PPM_3_PORT          IO_PORTC
+
+#define GPIO_PPM_4_PIN           IO_PIN_9
+#define GPIO_PPM_4_PORT          IO_PORTC
+
 
 // Distance Sensors
 #define GPIO_DIST_SENSOR_0_PIN   IO_PIN_0      

@@ -43,12 +43,15 @@ typedef enum io_pin {
 } io_pin_t;
 
 typedef void( * bsp_gpio_dist_callback_t) (uint8_t sensor_num, io_level_t state);
+typedef void( * bsp_gpio_ppm_callback_t) (uint8_t ppm_num, io_level_t state);
 typedef void( * bsp_button_callback_t) (void);
 
 
-void BSP_GPIO_Register_Distance_Callback(bsp_gpio_dist_callback_t callback_function);
-void BSP_GPIO_Register_Button_Callback(bsp_button_callback_t callback_function);
 io_level_t BSP_GPIO_Read_Pin(io_port_t port, io_pin_t gpio_pin);
 void BSP_GPIO_Write_Pin(io_port_t port, io_pin_t gpio_pin, io_level_t level);
+
+void BSP_GPIO_Register_Distance_Callback(bsp_gpio_dist_callback_t callback_function);
+void BSP_GPIO_Register_Button_Callback(bsp_button_callback_t callback_function);
+void BSP_GPIO_Register_PPM_Callback(bsp_gpio_ppm_callback_t callback_function);
 
 #endif /* BSP_GPIO_H */

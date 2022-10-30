@@ -84,7 +84,6 @@ void BSP_init(void)   {
 
     MX_ADC1_Init();
 
-    // MX_TIM7_Init();
     // BSP_radioInit();
 
 }
