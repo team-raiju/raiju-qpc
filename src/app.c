@@ -5,6 +5,7 @@
 #include "line_service.h"
 #include "button.h"
 #include "buzzer_service.h"
+#include "radio_service.h"
 
 void APP_init(){
 
@@ -14,5 +15,6 @@ void APP_init(){
     line_service_init();
     button_init();
     buzzer_service_init();
+    radio_service_init();
 
 }

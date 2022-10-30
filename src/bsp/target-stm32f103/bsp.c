@@ -33,7 +33,6 @@
 
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
-#include "bsp_radio.h"
 #include "main.h"
 #include "gpio.h"
 #include "dma.h"
@@ -83,8 +82,6 @@ void BSP_init(void)   {
     MX_TIM12_Init(); // Buzzer
 
     MX_ADC1_Init();
-
-    // BSP_radioInit();
 
 }
 

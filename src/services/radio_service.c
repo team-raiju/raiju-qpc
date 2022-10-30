@@ -95,8 +95,8 @@ static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
 
 void radio_service_init(){
 
-
     #ifndef UART_RADIO
+    bsp_ppm_init();
     bsp_ppm_register_callback(radio_data_interrupt_ppm);
     #endif 
 

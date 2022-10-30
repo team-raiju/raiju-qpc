@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<model version="5.2.1" links="1">
+<model version="5.2.2" links="1">
  <!--${qpc}-->
  <framework name="qpc" license="../../../qp-linux_7.1.2/qp/qpc/LICENSES/QM-EVAL-QPC.qlc"/>
  <!--${AOs}-->
@@ -497,8 +497,8 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time
      <entry>board_led_off();</entry>
      <!--${AOs::SumoHSM::SM::RC::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
-      <action>int coord_x = BSP_radioGetChannel(RADIO_CH1);
-int coord_y = BSP_radioGetChannel(RADIO_CH2);
+      <action>int coord_x = radio_service_get_channel(RADIO_CH1);
+int coord_y = radio_service_get_channel(RADIO_CH2);
 
 int mot1 = coord_y + coord_x;
 int mot2 = coord_y - coord_x;
@@ -839,7 +839,7 @@ me-&gt;star_velocity = 60;</code>
 #include &quot;led_service.h&quot;
 #include &quot;driving_service.h&quot;
 #include &quot;buzzer_service.h&quot;
-#include &quot;bsp_radio.h&quot;
+#include &quot;radio_service.h&quot;
 #include &quot;distance_service.h&quot;
 #include &quot;line_service.h&quot;
 

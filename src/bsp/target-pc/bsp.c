@@ -38,7 +38,6 @@
 #include "bsp_led.h"
 #include "bsp_motors.h"
 #include "bsp_buzzer.h"
-#include "bsp_radio.h"
 #include "bsp_adc_fake.h"
 #include "bsp_gpio_fake.h"
 #include "bsp_gpio.h"
@@ -57,7 +56,7 @@ void BSP_init(void)   {
     BSP_ledInit();
     BSP_motorsInit();
     BSP_buzzerInit();
-    BSP_radioInit();
+    // BSP_radioInit();
 
     #ifdef Q_SPY
 
