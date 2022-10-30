@@ -4,6 +4,8 @@
 #include "bsp_gpio.h"
 
 #define BOARD_NUM_DIST_SENSORS  9
+#define BOARD_NUM_OF_PPMS       4
+
 
 // Button
 #define GPIO_BUTTON_PIN          IO_PIN_15

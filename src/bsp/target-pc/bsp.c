@@ -40,6 +40,7 @@
 #include "bsp_buzzer.h"
 #include "bsp_adc_fake.h"
 #include "bsp_gpio_fake.h"
+#include "bsp_ppm_fake.h"
 #include "bsp_gpio.h"
 #include "bsp_gpio_mapping.h"
 
@@ -172,26 +173,23 @@ void QS_onCommand(uint8_t cmdId,
         }
 
         case 7: { 
-            QEvt evt = {.sig = RADIO_DATA_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-            int16_t radio_ch1 = param1 - 127;
-            int16_t radio_ch2 = param2 - 127;
-            BSP_radioSetChannel(RADIO_CH1, radio_ch1);
-            BSP_radioSetChannel(RADIO_CH2, radio_ch2);
+            int16_t radio_ch1_val = param1;
+            int16_t radio_ch2_val = param2;
+
+            fake_ppm_exti_callback(0, radio_ch1_val);
+            fake_ppm_exti_callback(1, radio_ch2_val);
+
             break;
         }
 
         case 8: { 
-            QEvt evt = {.sig = RADIO_DATA_SIG};
-            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             int16_t radio_ch3 = param1;
             int16_t radio_ch4 = param2;
-            BSP_radioSetChannel(RADIO_CH3, radio_ch3);
-            BSP_radioSetChannel(RADIO_CH4, radio_ch4);
+
+            fake_ppm_exti_callback(2, radio_ch3);
+            fake_ppm_exti_callback(3, radio_ch4);
             break;
         }
-
-
 
        default:
            break;

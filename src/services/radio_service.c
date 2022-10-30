@@ -26,6 +26,8 @@
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
+static void radio_dispatch_events(void);
+
 #ifndef UART_RADIO
 static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val);
 #endif 
@@ -34,8 +36,8 @@ static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-volatile uint8_t radio_data[NUM_OF_RADIO_CHANNELS];
-volatile uint8_t last_radio_data[NUM_OF_RADIO_CHANNELS];
+volatile int8_t radio_data[NUM_OF_RADIO_CHANNELS];
+volatile int8_t last_radio_data[NUM_OF_RADIO_CHANNELS];
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -77,9 +79,8 @@ static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
     }
 
     ppm_val = constrain(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS);
-    ppm_val = map(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS, CHANNEL_MIN_VAL, CHANNEL_MAX_VAL);
 
-    radio_data[ppm_num] = ppm_val;
+    radio_data[ppm_num] = map(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS, CHANNEL_MIN_VAL, CHANNEL_MAX_VAL);
 
     radio_dispatch_events();
 
@@ -121,7 +122,7 @@ void radio_service_disable(){
 
 
 
-uint8_t radio_service_get_channel(radio_channel_t ch){
+int8_t radio_service_get_channel(radio_channel_t ch){
 
     if (ch > NUM_OF_RADIO_CHANNELS){
         return 0;

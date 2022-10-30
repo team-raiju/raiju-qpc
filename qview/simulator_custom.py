@@ -343,9 +343,21 @@ def send_keyboard():
     else:
         y_keyboard = 127
 
+    # ch 3
+    if (key_pressed_dict["three"]):
+        ch3 = 255
+    else:
+        ch3 = 127
+
+    # ch 4
+    if (key_pressed_dict["four"]):
+        ch4 = 255
+    else:
+        ch4 = 127
+
     
     send_radio_command_ch1_ch2(x_keyboard, y_keyboard)  
-    send_radio_command_ch3_ch4(key_pressed_dict["three"], key_pressed_dict["four"])
+    send_radio_command_ch3_ch4(ch3, ch4)
 
 
 
