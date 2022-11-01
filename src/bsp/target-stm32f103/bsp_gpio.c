@@ -27,7 +27,7 @@
 static bsp_gpio_dist_callback_t dist_callback_function = NULL;
 static bsp_button_callback_t button_callback_function = NULL;
 
-#ifndef UART_RADIO
+#if defined (RADIO_MODE_PPM)
 
 static bsp_gpio_ppm_callback_t ppm_callback_function = NULL;
 static uint8_t gpio_ppm_pins[BOARD_NUM_OF_PPMS] = {
@@ -144,7 +144,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         }
     }
 
-    #ifndef UART_RADIO
+    #if defined (RADIO_MODE_PPM)
     // PPMS
     for (int i = 0; i < BOARD_NUM_OF_PPMS; i++) {
         if (GPIO_Pin == BSP_GPIO_Pin_Mapping(gpio_ppm_pins[i])){
@@ -190,8 +190,10 @@ void BSP_GPIO_Register_Button_Callback(bsp_button_callback_t callback_function){
 
 }
 
+#if defined (RADIO_MODE_PPM)
 void BSP_GPIO_Register_PPM_Callback(bsp_gpio_ppm_callback_t callback_function){
 
     ppm_callback_function = callback_function;
 
 }
+#endif

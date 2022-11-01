@@ -7,9 +7,9 @@
 #include "radio_service.h"
 #include "utils.h"
 
-#ifndef UART_RADIO
+#if defined (RADIO_MODE_PPM)
 #include "bsp_ppm.h"
-#else
+#elif defined (RADIO_MODE_UART)
 #include "bsp_uart_radio.h"
 #endif 
 
@@ -30,8 +30,10 @@
  **************************************************************************************************/
 static void radio_dispatch_events(void);
 
-#ifndef UART_RADIO
+#if defined (RADIO_MODE_PPM)
 static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val);
+#elif defined (RADIO_MODE_UART)
+static void radio_data_interrupt_uart(uint16_t * ch_data, uint8_t ch_amount);
 #endif 
 
 
@@ -72,7 +74,7 @@ static void radio_dispatch_events(){
 
 }
 
-#ifndef UART_RADIO
+#if defined (RADIO_MODE_PPM)
 
 static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
 
@@ -90,21 +92,24 @@ static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
     
 }
 
-#else 
+#elif defined (RADIO_MODE_UART) 
 
-static void radio_data_interrupt_uart(uint8_t ch_num, uint16_t ch_val){
+static void radio_data_interrupt_uart(uint16_t * ch_data, uint8_t ch_amount){
 
-    if (ch_num >= NUM_OF_RADIO_CHANNELS){
-        return;
+    for (uint8_t i = 0; i < ch_amount; i++) {
+        if (i >= NUM_OF_RADIO_CHANNELS){
+            break;
+        }
+        uint16_t ch_val = constrain(*(ch_data + i), RX_RADIO_MIN_VALUE, RX_RADIO_MAX_VALUE);
+        radio_data[i] = map(ch_val, RX_RADIO_MIN_VALUE, RX_RADIO_MAX_VALUE, CHANNEL_MIN_VAL, CHANNEL_MAX_VAL);
     }
-
-    ch_val = constrain(ch_val, RX_RADIO_MIN_VALUE, RX_RADIO_MAX_VALUE);
-
-    radio_data[ch_num] = map(ch_num, RX_RADIO_MIN_VALUE, RX_RADIO_MAX_VALUE, CHANNEL_MIN_VAL, CHANNEL_MAX_VAL);
-
+    
     radio_dispatch_events();
 
-    last_radio_data[ch_num] = radio_data[ch_num];
+    for (uint8_t i = 0; i < NUM_OF_RADIO_CHANNELS; i++) {
+        last_radio_data[i] = radio_data[i];
+    }
+
     
 }
 
@@ -116,9 +121,12 @@ static void radio_data_interrupt_uart(uint8_t ch_num, uint16_t ch_val){
 
 void radio_service_init(){
 
-    #ifndef UART_RADIO
+    #if defined (RADIO_MODE_PPM)
     bsp_ppm_init();
     bsp_ppm_register_callback(radio_data_interrupt_ppm);
+    #elif defined (RADIO_MODE_UART) 
+    bsp_uart_radio_init();
+    bsp_uart_radio_register_callback(radio_data_interrupt_uart);
     #endif 
 
 
@@ -126,16 +134,20 @@ void radio_service_init(){
 
 void radio_service_enable(){
 
-    #ifndef UART_RADIO
+    #if defined (RADIO_MODE_PPM)
     bsp_ppm_start();
+    #elif defined (RADIO_MODE_UART) 
+    bsp_uart_radio_start();
     #endif 
 
 }
 
 void radio_service_disable(){
 
-    #ifndef UART_RADIO
+    #if defined (RADIO_MODE_PPM)
     bsp_ppm_stop();
+    #elif defined (RADIO_MODE_UART) 
+    bsp_uart_radio_stop();
     #endif 
 
 }

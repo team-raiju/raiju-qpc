@@ -33,7 +33,7 @@ typedef struct ppm_input {
  * LOCAL VARIABLES
  **************************************************************************************************/
 static volatile ppm_input_t ppms[BOARD_NUM_OF_PPMS];
-bsp_ppm_callback_t external_callback;
+static bsp_ppm_callback_t external_callback;
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/

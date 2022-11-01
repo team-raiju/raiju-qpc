@@ -9,7 +9,7 @@
  * LOCAL DEFINES
  **************************************************************************************************/
 #define RXDATA_SIZE 25
-#define CHANNELS 16
+#define RADIO_UART_CHANELS  9
 #define RX_RADIO_FIRST_BYTE 0x0F
 #define RX_RADIO_LAST_BYTE  0x00
 
@@ -24,10 +24,11 @@
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-uint8_t rxdata[RXDATA_SIZE] = {0};
-uint16_t channels[CHANNELS] = {0};
-bool last_data_broken;
-bsp_uart_radio_callback_t external_callback;
+static uint8_t rxdata[RXDATA_SIZE] = {0};
+static uint16_t channels[RADIO_UART_CHANELS] = {0};
+static bsp_uart_radio_callback_t external_callback;
+static bool stop_uart;
+// static bool last_data_broken;
 
 
 /***************************************************************************************************
@@ -46,8 +47,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
 
     do {
         // invalid packet; Ignore packet
-        if (rxdata[0] != RX_RADIO_FIRST_BYTE || rxdata[RXDATA_SIZE - 1] != RX_RADIO_LAST_BYTE) {
-            memset(channels, 1000, sizeof(channels));
+        if ((rxdata[0] != RX_RADIO_FIRST_BYTE) || (rxdata[RXDATA_SIZE - 1] != RX_RADIO_LAST_BYTE)) {
+            for (int i = 0; i < RADIO_UART_CHANELS; i++) {
+                channels[i] = (RX_RADIO_MAX_VALUE/2);
+            }
             break;
         }
 
@@ -74,18 +77,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
         channels[6] = ((rxdata[9] >> 2 | rxdata[10] << 6) & 0x07FF);
         channels[7] = ((rxdata[10] >> 5 | rxdata[11] << 3) & 0x07FF);
         channels[8] = ((rxdata[12] | rxdata[13] << 8) & 0x07FF);
-        /* UNUSED */
-        // channels[9] = ((rxdata[13] >> 3 | rxdata[14] << 5) & 0x07FF);
-        // channels[10] = ((rxdata[14] >> 6 | rxdata[15] << 2 | rxdata[16] << 10) & 0x07FF);
-        // channels[11] = ((rxdata[16] >> 1 | rxdata[17] << 7) & 0x07FF);
-        // channels[12] = ((rxdata[17] >> 4 | rxdata[18] << 4) & 0x07FF);
-        // channels[13] = ((rxdata[18] >> 7 | rxdata[19] << 1 | rxdata[20] << 9) & 0x07FF);
-        // channels[14] = ((rxdata[20] >> 2 | rxdata[21] << 6) & 0x07FF);
-        // channels[15] = ((rxdata[21] >> 5 | rxdata[22] << 3) & 0x07FF);
+        
     } while (0);
     
-    // external_callback()
-    HAL_UART_Receive_IT(&huart1, rxdata, RXDATA_SIZE);
+    external_callback(channels, RADIO_UART_CHANELS);
+
+    // Continuous receive
+    if (!stop_uart){
+        HAL_UART_Receive_IT(&huart1, rxdata, RXDATA_SIZE);
+    }
 
 }
 
@@ -93,3 +93,26 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
+
+
+void bsp_uart_radio_init() {
+
+    MX_USART1_UART_Init();
+    HAL_UART_Receive_IT(&huart1, rxdata, RXDATA_SIZE);
+    stop_uart = false;
+
+}
+
+void bsp_uart_radio_start() {
+    stop_uart = false;
+    HAL_UART_Receive_IT(&huart1, rxdata, RXDATA_SIZE);
+}
+
+void bsp_uart_radio_stop() {
+    stop_uart = true;
+}
+
+
+void bsp_uart_radio_register_callback(bsp_uart_radio_callback_t callback_function){
+    external_callback = callback_function;
+}
