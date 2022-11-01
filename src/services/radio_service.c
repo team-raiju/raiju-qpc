@@ -9,6 +9,8 @@
 
 #ifndef UART_RADIO
 #include "bsp_ppm.h"
+#else
+#include "bsp_uart_radio.h"
 #endif 
 
 /***************************************************************************************************
@@ -85,6 +87,24 @@ static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
     radio_dispatch_events();
 
     last_radio_data[ppm_num] = radio_data[ppm_num];
+    
+}
+
+#else 
+
+static void radio_data_interrupt_uart(uint8_t ch_num, uint16_t ch_val){
+
+    if (ch_num >= NUM_OF_RADIO_CHANNELS){
+        return;
+    }
+
+    ch_val = constrain(ch_val, RX_RADIO_MIN_VALUE, RX_RADIO_MAX_VALUE);
+
+    radio_data[ch_num] = map(ch_num, RX_RADIO_MIN_VALUE, RX_RADIO_MAX_VALUE, CHANNEL_MIN_VAL, CHANNEL_MAX_VAL);
+
+    radio_dispatch_events();
+
+    last_radio_data[ch_num] = radio_data[ch_num];
     
 }
 
