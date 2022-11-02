@@ -40,9 +40,15 @@
 #include "bsp_buzzer.h"
 #include "bsp_adc_fake.h"
 #include "bsp_gpio_fake.h"
-#include "bsp_ppm_fake.h"
 #include "bsp_gpio.h"
 #include "bsp_gpio_mapping.h"
+
+#if defined (RADIO_MODE_PPM)
+#include "bsp_ppm_fake.h"
+#elif defined (RADIO_MODE_UART)
+#include "bsp_uart_fake.h"
+#endif 
+
 
 #ifdef Q_SPY
 
@@ -176,18 +182,32 @@ void QS_onCommand(uint8_t cmdId,
             int16_t radio_ch1_val = param1;
             int16_t radio_ch2_val = param2;
 
+            #if defined (RADIO_MODE_PPM)
             fake_ppm_exti_callback(0, radio_ch1_val);
             fake_ppm_exti_callback(1, radio_ch2_val);
+            #elif defined (RADIO_MODE_UART)
+            HAL_UART_Fake_RadioData(0, radio_ch1_val);
+            HAL_UART_Fake_RadioData(1, radio_ch2_val);
+            #endif 
+
+
 
             break;
         }
 
         case 8: { 
-            int16_t radio_ch3 = param1;
-            int16_t radio_ch4 = param2;
+            int16_t radio_ch3_val = param1;
+            int16_t radio_ch4_val = param2;
 
-            fake_ppm_exti_callback(2, radio_ch3);
-            fake_ppm_exti_callback(3, radio_ch4);
+            #if defined (RADIO_MODE_PPM)
+            fake_ppm_exti_callback(2, radio_ch3_val);
+            fake_ppm_exti_callback(3, radio_ch4_val);
+            #elif defined (RADIO_MODE_UART)
+            HAL_UART_Fake_RadioData(2, radio_ch3_val);
+            HAL_UART_Fake_RadioData(3, radio_ch4_val);
+            #endif 
+
+
             break;
         }
 

@@ -3,15 +3,15 @@
  **************************************************************************************************/
 
 #include <stdbool.h>
-#include "usart.h"
+#include <stdio.h>
 #include "bsp_uart_radio.h"
+#include "utils.h"
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-#define RXDATA_SIZE 25
 #define RADIO_UART_CHANNELS  9
-#define RX_RADIO_FIRST_BYTE 0x0F
-#define RX_RADIO_LAST_BYTE  0x00
+static uint16_t channels[RADIO_UART_CHANNELS] = {0};
+
 
 /***************************************************************************************************
  * LOCAL TYPEDEFS
@@ -24,11 +24,8 @@
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-static uint8_t rxdata[RXDATA_SIZE] = {0};
-static uint16_t channels[RADIO_UART_CHANNELS] = {0};
 static bsp_uart_radio_callback_t external_callback;
 static bool stop_uart;
-// static bool last_data_broken;
 
 
 /***************************************************************************************************
@@ -39,53 +36,17 @@ static bool stop_uart;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
+void HAL_UART_Fake_RadioData(uint8_t channel, uint16_t data) {
 
-    if (huart->Instance != huart1.Instance){
-        return;
-    }
+    channels[channel] = map(data, 0, 255, RX_RADIO_MIN_VALUE, RX_RADIO_MAX_VALUE);
 
-    do {
-        // invalid packet; Ignore packet
-        if ((rxdata[0] != RX_RADIO_FIRST_BYTE) || (rxdata[RXDATA_SIZE - 1] != RX_RADIO_LAST_BYTE)) {
-            for (int i = 0; i < RADIO_UART_CHANNELS; i++) {
-                channels[i] = (RX_RADIO_MAX_VALUE/2);
-            }
-            break;
+    // Fake implementation of uart radio service
+    if (channel == 3){
+        if (!stop_uart){
+            external_callback(channels, RADIO_UART_CHANNELS);
         }
-
-        /* SBUS_SIGNAL_LOST */
-        // if (rxdata[23] & (1 << 2)) {
-        //     memset(channels, 1000, sizeof(channels));
-        //     break;
-        // }
-
-        // /* SBUS_SIGNAL_FAILSAFE */
-        // if (rxdata[23] & (1 << 3)) {
-        //     memset(channels, 1000, sizeof(channels));
-        //     break;
-        // }
-
-        // last_sbus_packet.reset();
-
-        channels[0] = ((rxdata[1] | rxdata[2] << 8) & 0x07FF);
-        channels[1] = ((rxdata[2] >> 3 | rxdata[3] << 5) & 0x07FF);
-        channels[2] = ((rxdata[3] >> 6 | rxdata[4] << 2 | rxdata[5] << 10) & 0x07FF);
-        channels[3] = ((rxdata[5] >> 1 | rxdata[6] << 7) & 0x07FF);
-        channels[4] = ((rxdata[6] >> 4 | rxdata[7] << 4) & 0x07FF);
-        channels[5] = ((rxdata[7] >> 7 | rxdata[8] << 1 | rxdata[9] << 9) & 0x07FF);
-        channels[6] = ((rxdata[9] >> 2 | rxdata[10] << 6) & 0x07FF);
-        channels[7] = ((rxdata[10] >> 5 | rxdata[11] << 3) & 0x07FF);
-        channels[8] = ((rxdata[12] | rxdata[13] << 8) & 0x07FF);
-        
-    } while (0);
-    
-    external_callback(channels, RADIO_UART_CHANNELS);
-
-    // Continuous receive
-    if (!stop_uart){
-        HAL_UART_Receive_IT(&huart1, rxdata, RXDATA_SIZE);
     }
+
 
 }
 
@@ -96,16 +57,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
 
 
 void bsp_uart_radio_init() {
-
-    MX_USART1_UART_Init();
-    HAL_UART_Receive_IT(&huart1, rxdata, RXDATA_SIZE);
+    printf("UART RADIO INIT \r\n");
     stop_uart = false;
-
 }
 
 void bsp_uart_radio_start() {
     stop_uart = false;
-    HAL_UART_Receive_IT(&huart1, rxdata, RXDATA_SIZE);
 }
 
 void bsp_uart_radio_stop() {
