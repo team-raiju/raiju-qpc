@@ -42,6 +42,7 @@
 #include "bsp_gpio_fake.h"
 #include "bsp_gpio.h"
 #include "bsp_gpio_mapping.h"
+#include "bsp_eeprom.h"
 
 #if defined (RADIO_MODE_PPM)
 #include "bsp_ppm_fake.h"
@@ -64,6 +65,8 @@ void BSP_init(void)   {
     BSP_motorsInit();
     BSP_buzzerInit();
     // BSP_radioInit();
+    bsp_eeprom_write(5,5);
+    bsp_eeprom_read(5,5);
 
     #ifdef Q_SPY
 
