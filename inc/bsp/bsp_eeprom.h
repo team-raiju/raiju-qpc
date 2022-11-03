@@ -11,7 +11,7 @@ typedef enum eeprom_result {
 } eeprom_result_t;
 
 eeprom_result_t bsp_eeprom_init();
-eeprom_result_t bsp_eeprom_read(uint16_t address, uint32_t data);
+eeprom_result_t bsp_eeprom_read(uint16_t address, uint32_t* data);
 eeprom_result_t bsp_eeprom_write(uint16_t address, uint32_t data);
 
 

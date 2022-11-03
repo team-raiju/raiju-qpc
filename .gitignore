@@ -73,3 +73,4 @@ dkms.conf
 
 qview/__pycache__/**
 # End of https://www.gitignore.io/api/visualstudiocode,c
+simulated_eeprom.txt
