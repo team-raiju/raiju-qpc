@@ -35,6 +35,10 @@ eeprom_result_t bsp_eeprom_read(uint16_t address, uint32_t* data){
 
 eeprom_result_t bsp_eeprom_write(uint16_t address, uint32_t data){
 
+    if (address > MAX_ADDRESSES){
+        return EEPROM_ERROR;
+    }
+
     printf("EEPROM Write %d in address %d\r\n", data, address);
 
     FILE *fp, *fp_aux;
