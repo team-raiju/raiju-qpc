@@ -45,6 +45,7 @@
 #include "radio_service.h"
 #include "distance_service.h"
 #include "line_service.h"
+#include "bsp_eeprom.h"
 
 #define CALIB_ANGLE_MULT    2.5
 #ifndef M_PI
@@ -181,24 +182,6 @@ static QMState const SumoHSM_CalibFront_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_CalibFrontGoBack  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_CalibFrontGoBack_e(SumoHSM * const me);
-static QMState const SumoHSM_CalibFrontGoBack_s = {
-    &SumoHSM_CalibFront_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_CalibFrontGoBack),
-    Q_ACTION_CAST(&SumoHSM_CalibFrontGoBack_e),
-    Q_ACTION_NULL, /* no exit action */
-    Q_ACTION_NULL  /* no initial tran. */
-};
-static QState SumoHSM_CalibeFrontTurn  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_CalibeFrontTurn_e(SumoHSM * const me);
-static QMState const SumoHSM_CalibeFrontTurn_s = {
-    &SumoHSM_CalibFrontGoBack_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_CalibeFrontTurn),
-    Q_ACTION_CAST(&SumoHSM_CalibeFrontTurn_e),
-    Q_ACTION_NULL, /* no exit action */
-    Q_ACTION_NULL  /* no initial tran. */
-};
 static QState SumoHSM_RC  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_RC_e(SumoHSM * const me);
 static QMState const SumoHSM_RC_s = {
@@ -265,6 +248,24 @@ static struct SM_LineSubmachine const SumoHSM_line_rc_s = {
     }
     ,Q_ACTION_CAST(&SumoHSM_line_rc_XP1)
     ,Q_ACTION_CAST(&SumoHSM_line_rc_STOP)
+};
+static QState SumoHSM_CalibFrontGoBack  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_CalibFrontGoBack_e(SumoHSM * const me);
+static QMState const SumoHSM_CalibFrontGoBack_s = {
+    QM_STATE_NULL, /* superstate (top) */
+    Q_STATE_CAST(&SumoHSM_CalibFrontGoBack),
+    Q_ACTION_CAST(&SumoHSM_CalibFrontGoBack_e),
+    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_NULL  /* no initial tran. */
+};
+static QState SumoHSM_CalibeFrontTurn  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_CalibeFrontTurn_e(SumoHSM * const me);
+static QMState const SumoHSM_CalibeFrontTurn_s = {
+    QM_STATE_NULL, /* superstate (top) */
+    Q_STATE_CAST(&SumoHSM_CalibeFrontTurn),
+    Q_ACTION_CAST(&SumoHSM_CalibeFrontTurn_e),
+    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_NULL  /* no initial tran. */
 };
 
 /* submachine ${AOs::SumoHSM::SM::LineSubmachine} */
@@ -405,8 +406,24 @@ void SumoHSM_ctor(void) {
     me->calib_time_1 = 0;
     me->calib_time_2 = 0;
     me->calib_status = 0;
-    me->turn_180_time_ms = 800;
-    me->star_velocity = 60;
+
+    // EEPROM VAriables
+    uint32_t eeprom_data;
+
+    if (BSP_eeprom_read(TURN_180_TIME_ADDR, &eeprom_data) ==  EEPROM_OK){
+        me->turn_180_time_ms = eeprom_data;
+    } else {
+        me->turn_180_time_ms = 800;
+        BSP_eeprom_write(TURN_180_TIME_ADDR, me->turn_180_time_ms);
+    }
+
+    if (BSP_eeprom_read(STAR_VELOCITY_ADDR, &eeprom_data) ==  EEPROM_OK){
+        me->star_velocity = eeprom_data;
+    } else {
+        me->star_velocity = 60;
+        BSP_eeprom_write(STAR_VELOCITY_ADDR, me->star_velocity);
+    }
+
 }
 /*$enddef${AOs::SumoHSM_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
@@ -459,13 +476,13 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_CalibeLineTurn);
     QS_FUN_DICTIONARY(&SumoHSM_CalibWait);
     QS_FUN_DICTIONARY(&SumoHSM_CalibFront);
-    QS_FUN_DICTIONARY(&SumoHSM_CalibFrontGoBack);
-    QS_FUN_DICTIONARY(&SumoHSM_CalibeFrontTurn);
     QS_FUN_DICTIONARY(&SumoHSM_RC);
     QS_FUN_DICTIONARY(&SumoHSM_line1);
     QS_FUN_DICTIONARY(&SumoHSM_line2);
     QS_FUN_DICTIONARY(&SumoHSM_pre_strategy);
     QS_FUN_DICTIONARY(&SumoHSM_line_rc);
+    QS_FUN_DICTIONARY(&SumoHSM_CalibFrontGoBack);
+    QS_FUN_DICTIONARY(&SumoHSM_CalibeFrontTurn);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurnLeft);
@@ -630,8 +647,9 @@ static QState SumoHSM_StarStrategy_e(SumoHSM * const me) {
 static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED} */
-        case LINE_CHANGED_SIG: {
+        /*${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED_FL, LINE_CHANGED_FR} */
+        case LINE_CHANGED_FL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FR_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[3];
@@ -875,8 +893,9 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::StepsStrategy::LINE_CHANGED} */
-        case LINE_CHANGED_SIG: {
+        /*${AOs::SumoHSM::SM::StepsStrategy::LINE_CHANGED_FL, LINE_CHANGED_FR} */
+        case LINE_CHANGED_FL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FR_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[4];
@@ -911,8 +930,9 @@ static QState SumoHSM_CalibTurn_e(SumoHSM * const me) {
 static QState SumoHSM_CalibTurn(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::CalibTurn::LINE_CHANGED} */
-        case LINE_CHANGED_SIG: {
+        /*${AOs::SumoHSM::SM::CalibTurn::LINE_CHANGED_FL, LINE_CHANGED_FR} */
+        case LINE_CHANGED_FL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FR_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];
@@ -923,11 +943,6 @@ static QState SumoHSM_CalibTurn(SumoHSM * const me, QEvt const * const e) {
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
-            if (me->calib_status == 0){
-                me->calib_time_1 = 0xFFFFFFFF - QTimeEvt_currCtr(&me->timeEvt_2);
-            } else {
-                me->calib_time_2 = 0xFFFFFFFF - QTimeEvt_currCtr(&me->timeEvt_2);
-            }
             status_ = QM_TRAN(&tatbl_);
             break;
         }
@@ -942,7 +957,15 @@ static QState SumoHSM_CalibTurn(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack} ..........................*/
 /*${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack} */
 static QState SumoHSM_CalibLineGoBack_e(SumoHSM * const me) {
+    if (me->calib_status == 0){
+        me->calib_time_1 = 0xFFFFFFFF - QTimeEvt_currCtr(&me->timeEvt_2);
+    } else {
+        me->calib_time_2 = 0xFFFFFFFF - QTimeEvt_currCtr(&me->timeEvt_2);
+    }
+
+
     drive(-100,-100);
+    QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
     return QM_ENTRY(&SumoHSM_CalibLineGoBack_s);
 }
@@ -1026,6 +1049,8 @@ static QState SumoHSM_CalibeLineTurn(SumoHSM * const me, QEvt const * const e) {
                 } else {
                     me->turn_180_time_ms -= angle_diff * CALIB_ANGLE_MULT;
                 }
+
+                BSP_eeprom_write(TURN_180_TIME_ADDR, me->turn_180_time_ms);
 
 
                 status_ = QM_TRAN(&tatbl_);
@@ -1159,8 +1184,9 @@ static QState SumoHSM_CalibFront_e(SumoHSM * const me) {
 static QState SumoHSM_CalibFront(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::CalibFront::LINE_CHANGED} */
-        case LINE_CHANGED_SIG: {
+        /*${AOs::SumoHSM::SM::CalibFront::LINE_CHANGED_FL, LINE_CHANGED_FR} */
+        case LINE_CHANGED_FL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FR_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];
@@ -1171,71 +1197,11 @@ static QState SumoHSM_CalibFront(SumoHSM * const me, QEvt const * const e) {
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
-            uint32_t time_until_line = 0xFFFFFFFF - QTimeEvt_currCtr(&me->timeEvt_2);
-
-            int16_t diff_to_reference = time_until_line - 285;
-
-            me->star_velocity += (diff_to_reference / 5);
-
-
             status_ = QM_TRAN(&tatbl_);
             break;
         }
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack} ........................*/
-/*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack} */
-static QState SumoHSM_CalibFrontGoBack_e(SumoHSM * const me) {
-    drive(-100,-100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
-    return QM_ENTRY(&SumoHSM_CalibFrontGoBack_s);
-}
-/*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack} */
-static QState SumoHSM_CalibFrontGoBack(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[2];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_CalibeFrontTurn_s, /* target state */
-                {
-                    Q_ACTION_CAST(&SumoHSM_CalibeFrontTurn_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN(&tatbl_);
-            break;
-        }
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::CalibeFrontTurn} .......*/
-/*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::CalibeFrontTurn} */
-static QState SumoHSM_CalibeFrontTurn_e(SumoHSM * const me) {
-    drive(-100,100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * me->turn_180_time_ms, 0);
-    return QM_ENTRY(&SumoHSM_CalibeFrontTurn_s);
-}
-/*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::CalibeFrontTurn} */
-static QState SumoHSM_CalibeFrontTurn(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::CalibFront::CalibFrontGoBack::CalibeFrontTurn::TIMEOUT} */
-        case TIMEOUT_SIG: {
+        /*${AOs::SumoHSM::SM::CalibFront::STOP} */
+        case STOP_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];
@@ -1246,7 +1212,6 @@ static QState SumoHSM_CalibeFrontTurn(SumoHSM * const me, QEvt const * const e) 
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
-            QTimeEvt_disarm(&me->timeEvt_2);
             status_ = QM_TRAN(&tatbl_);
             break;
         }
@@ -1296,9 +1261,10 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_TRAN(&tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::RC::LINE_CHANGED} */
-        case LINE_CHANGED_SIG: {
-            /*${AOs::SumoHSM::SM::RC::LINE_CHANGED::[strategy>0]} */
+        /*${AOs::SumoHSM::SM::RC::LINE_CHANGED_FL, LINE_CHANGED_FR} */
+        case LINE_CHANGED_FL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FR_SIG: {
+            /*${AOs::SumoHSM::SM::RC::LINE_CHANGED_FL,~::[strategy>0]} */
             if (me->strategy > 0) {
                 static struct {
                     QMState const *target;
@@ -1530,6 +1496,99 @@ static QState SumoHSM_line_rc(SumoHSM * const me, QEvt const * const e) {
         }
     }
     (void)me; /* unused parameter */
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::CalibFrontGoBack} ....................................*/
+/*${AOs::SumoHSM::SM::CalibFrontGoBack} */
+static QState SumoHSM_CalibFrontGoBack_e(SumoHSM * const me) {
+    const int reference = 285;
+
+    uint32_t time_until_line = 0xFFFFFFFF - QTimeEvt_currCtr(&me->timeEvt_2);
+    int16_t diff_to_reference = time_until_line - reference;
+    me->star_velocity += (diff_to_reference / 5);
+    BSP_eeprom_write(STAR_VELOCITY_ADDR, me->star_velocity);
+
+    drive(-100,-100);
+    QTimeEvt_disarm(&me->timeEvt);
+    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
+    return QM_ENTRY(&SumoHSM_CalibFrontGoBack_s);
+}
+/*${AOs::SumoHSM::SM::CalibFrontGoBack} */
+static QState SumoHSM_CalibFrontGoBack(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::CalibFrontGoBack::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibeFrontTurn_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibeFrontTurn_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibFrontGoBack::STOP} */
+        case STOP_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibWait_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibWait_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::CalibeFrontTurn} .....................................*/
+/*${AOs::SumoHSM::SM::CalibeFrontTurn} */
+static QState SumoHSM_CalibeFrontTurn_e(SumoHSM * const me) {
+    drive(-100,100);
+    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * me->turn_180_time_ms, 0);
+    return QM_ENTRY(&SumoHSM_CalibeFrontTurn_s);
+}
+/*${AOs::SumoHSM::SM::CalibeFrontTurn} */
+static QState SumoHSM_CalibeFrontTurn(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::CalibeFrontTurn::TIMEOUT, STOP} */
+        case TIMEOUT_SIG: /* intentionally fall through */
+        case STOP_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibWait_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibWait_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            QTimeEvt_disarm(&me->timeEvt_2);
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
     return status_;
 }
 
@@ -1990,7 +2049,10 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(RADIO_EVT_2_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_EVT_3_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STOP_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(LINE_CHANGED_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(LINE_CHANGED_FL_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(LINE_CHANGED_FR_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(LINE_CHANGED_BL_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(LINE_CHANGED_BR_SIG,  (void *)0);
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);

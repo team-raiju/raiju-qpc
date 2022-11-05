@@ -31,6 +31,7 @@ typedef enum line_position_in_adc
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
 
+static void gen_line_events();
 static void line_data_interrupt(uint32_t* out_data);
 
 /***************************************************************************************************
@@ -48,6 +49,39 @@ volatile bool line_sensor_is_white_last[NUM_OF_LINE_SENSORS];
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
+static void gen_line_events(){
+
+    bool line_changed[NUM_OF_LINE_SENSORS] = {0};
+    for (int i = 0; i < NUM_OF_LINE_SENSORS; i++) {
+        if (line_sensor_is_white_last[i] != line_sensor_is_white[i]){
+            line_changed[i] = true;
+        }
+    }
+
+    if (line_changed[LINE_FR]){
+        QEvt evt = {.sig = LINE_CHANGED_FR_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+    if (line_changed[LINE_FL]){
+        QEvt evt = {.sig = LINE_CHANGED_FL_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+
+    if (line_changed[LINE_BR]){
+        QEvt evt = {.sig = LINE_CHANGED_BR_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+
+    if (line_changed[LINE_BL]){
+        QEvt evt = {.sig = LINE_CHANGED_BL_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+}
+
 static void line_sensor_update(uint32_t* adc_raw_data) {
 
     line_sensor_is_white[LINE_FR] = (adc_raw_data[LINE_POS_FR] < WHITE_THRESHOLD);
@@ -55,22 +89,12 @@ static void line_sensor_update(uint32_t* adc_raw_data) {
     line_sensor_is_white[LINE_BR] = (adc_raw_data[LINE_POS_BR] < WHITE_THRESHOLD);
     line_sensor_is_white[LINE_BL] = (adc_raw_data[LINE_POS_BL] < WHITE_THRESHOLD);
 
-    bool line_changed;
+    gen_line_events();
+
     for (int i = 0; i < NUM_OF_LINE_SENSORS; i++) {
-
-        if (line_sensor_is_white_last[i] != line_sensor_is_white[i]){
-            line_changed = true;
-        }
         line_sensor_is_white_last[i] = line_sensor_is_white[i];
-
     }
 
-    if (line_changed) {
-        QEvt evt = {.sig = LINE_CHANGED_SIG};
-        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-    }
-    
-    
 
 }
 

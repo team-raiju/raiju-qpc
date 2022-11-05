@@ -11,6 +11,15 @@ typedef enum eeprom_result {
 
 } eeprom_result_t;
 
+
+typedef enum eeprom_addresses {
+
+    STAR_VELOCITY_ADDR,
+    TURN_180_TIME_ADDR,
+
+} eeprom_addresses_t;
+
+
 eeprom_result_t BSP_eeprom_init();
 eeprom_result_t BSP_eeprom_read(uint16_t address, uint32_t* data);
 eeprom_result_t BSP_eeprom_write(uint16_t address, uint32_t data);

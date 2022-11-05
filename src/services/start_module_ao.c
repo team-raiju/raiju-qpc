@@ -6,7 +6,6 @@
 #include "start_module_ao.h"
 #include "bsp.h"
 #include "bsp_gpio_mapping.h"
-#include <stdio.h> 
 
 Q_DEFINE_THIS_FILE
 /***************************************************************************************************

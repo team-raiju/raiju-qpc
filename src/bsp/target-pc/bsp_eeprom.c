@@ -10,7 +10,7 @@ eeprom_result_t BSP_eeprom_init(){
     printf("EEPROM INIT\r\n");
 
     FILE *fp;
-    fp = fopen(SIMULATED_EEPROM_FILE, "w");
+    fp = fopen(SIMULATED_EEPROM_FILE, "a");
     fclose(fp);
 
     return EEPROM_OK;
@@ -26,7 +26,7 @@ eeprom_result_t BSP_eeprom_read(uint16_t address, uint32_t* data){
     }
 
     FILE *fp;
-    fp = fopen(SIMULATED_EEPROM_FILE, "r+");
+    fp = fopen(SIMULATED_EEPROM_FILE, "r");
 
     char line[MAX_ADDRESSES]; 
 
