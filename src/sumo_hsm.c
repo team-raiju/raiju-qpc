@@ -408,7 +408,7 @@ void SumoHSM_ctor(void) {
     me->calib_status = 0;
 
     // EEPROM VAriables
-    uint32_t eeprom_data;
+    uint16_t eeprom_data;
 
     if (BSP_eeprom_read(TURN_180_TIME_ADDR, &eeprom_data) ==  EEPROM_OK){
         me->turn_180_time_ms = eeprom_data;

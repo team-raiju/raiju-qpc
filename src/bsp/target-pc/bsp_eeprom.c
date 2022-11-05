@@ -17,7 +17,7 @@ eeprom_result_t BSP_eeprom_init(){
 
 }
 
-eeprom_result_t BSP_eeprom_read(uint16_t address, uint32_t* data){
+eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t* data){
 
     if (address > MAX_ADDRESSES){
         printf("EEPROM INVALID ADDRESS %hu\r\n", address);
@@ -33,11 +33,11 @@ eeprom_result_t BSP_eeprom_read(uint16_t address, uint32_t* data){
     // find address to read
     while (fgets(line, MAX_ADDRESSES, fp) != NULL){
         uint16_t read_address;
-        uint32_t read_data;
-        sscanf(line, "%hu : %u", &read_address, &read_data);
+        uint16_t read_data;
+        sscanf(line, "%hu : %hu", &read_address, &read_data);
         if (read_address == address){
             *data = read_data;
-            printf("EEPROM read %u from address %u\r\n", *data, address);
+            printf("EEPROM read %hu from address %hu\r\n", *data, address);
             fclose(fp);
             return EEPROM_OK;
         }
@@ -50,14 +50,14 @@ eeprom_result_t BSP_eeprom_read(uint16_t address, uint32_t* data){
 }
 
 
-eeprom_result_t BSP_eeprom_write(uint16_t address, uint32_t data){
+eeprom_result_t BSP_eeprom_write(uint16_t address, uint16_t data){
 
     if (address > MAX_ADDRESSES){
         printf("EEPROM INVALID ADDRESS %hu\r\n", address);
         return EEPROM_ERROR;
     }
 
-    printf("EEPROM Write %u in address %hu\r\n", data, address);
+    printf("EEPROM Write %hu in address %hu\r\n", data, address);
 
     FILE *fp, *fp_aux;
     fp = fopen(SIMULATED_EEPROM_FILE, "r+");
@@ -72,7 +72,7 @@ eeprom_result_t BSP_eeprom_write(uint16_t address, uint32_t data){
         sscanf(line, "%hu : ", &read_address);
         if (read_address == address){
             uint8_t buf[32];
-            sprintf((char * restrict)buf, "%hu : %u\r\n", address, data);
+            sprintf((char * restrict)buf, "%hu : %hu\r\n", address, data);
             address_in_file = true;
             fputs((char * restrict)buf, fp_aux);
         } else {
@@ -83,7 +83,7 @@ eeprom_result_t BSP_eeprom_write(uint16_t address, uint32_t data){
 
     if (!address_in_file){
         uint8_t buf[32];
-        sprintf((char * restrict)buf, "\r\n%hu : %u", address, data);
+        sprintf((char * restrict)buf, "\r\n%hu : %hu", address, data);
         fputs((char * restrict)buf, fp_aux);
     }
 

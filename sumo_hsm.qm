@@ -852,7 +852,7 @@ me-&gt;calib_time_2 = 0;
 me-&gt;calib_status = 0;
 
 // EEPROM VAriables
-uint32_t eeprom_data;
+uint16_t eeprom_data;
 
 if (BSP_eeprom_read(TURN_180_TIME_ADDR, &amp;eeprom_data) ==  EEPROM_OK){
     me-&gt;turn_180_time_ms = eeprom_data;
