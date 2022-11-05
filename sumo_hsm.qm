@@ -175,28 +175,28 @@ led_stripe_set_pre_strategy_color(me-&gt;pre_strategy);</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
       <!--${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_0]}-->
-      <choice target="../../../12" cpref="../../../17/0">
+      <choice target="../../../12" cpref="../../../19/0">
        <guard brief="pre_strategy_0">me-&gt;pre_strategy == 0</guard>
        <choice_glyph conn="52,77,5,0,-22,8">
         <action box="-34,1,12,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_1]}-->
-      <choice target="../../../12" cpref="../../../17/1">
+      <choice target="../../../12" cpref="../../../19/1">
        <guard brief="pre_strategy_1">me-&gt;pre_strategy == 1</guard>
        <choice_glyph conn="52,77,5,0,-7,8">
         <action box="-20,1,13,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_2]}-->
-      <choice target="../../../12" cpref="../../../17/2">
+      <choice target="../../../12" cpref="../../../19/2">
        <guard brief="pre_strategy_2">me-&gt;pre_strategy == 2</guard>
        <choice_glyph conn="52,77,5,0,6,8">
         <action box="-6,1,11,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_3]}-->
-      <choice target="../../../12" cpref="../../../17/3">
+      <choice target="../../../12" cpref="../../../19/3">
        <guard brief="pre_strategy_3">me-&gt;pre_strategy == 3</guard>
        <choice_glyph conn="52,77,5,0,20,8">
         <action box="8,1,13,2"/>
@@ -300,85 +300,19 @@ if (distance_is_active(DIST_SENSOR_R)) {
      <entry>QTimeEvt_armX(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF, 0);
 drive(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
      <!--${AOs::SumoHSM::SM::CalibTurn::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
-     <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR" target="../1">
-      <tran_glyph conn="171,79,3,0,20,2">
-       <action box="0,-2,15,2"/>
+     <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../16">
+      <tran_glyph conn="175,79,3,1,43,9,-4">
+       <action box="0,-2,42,3"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack}-->
-     <state name="CalibLineGoBack">
-      <entry>if (me-&gt;calib_status == 0){
-    me-&gt;calib_time_1 = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
-} else {
-    me-&gt;calib_time_2 = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
-}
-
-
-drive(-100,-100);
-QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
-      <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../1">
-       <tran_glyph conn="185,89,3,3,10">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn}-->
-      <state name="CalibeLineTurn">
-       <entry brief="turn">drive(-100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms, 0);</entry>
-       <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn::TIMEOUT}-->
-       <tran trig="TIMEOUT">
-        <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_0]}-->
-        <choice target="../../../..">
-         <guard brief="calib_0">me-&gt;calib_status == 0</guard>
-         <action brief="update_calib_status">me-&gt;calib_status++;
-QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF);
-drive(60,60);
-</action>
-         <choice_glyph conn="180,92,4,3,-1,-9">
-          <action box="-9,-6,14,4"/>
-         </choice_glyph>
-        </choice>
-        <!--${AOs::SumoHSM::SM::CalibTurn::CalibLineGoBack::CalibeLineTurn::TIMEOUT::[calib_1]}-->
-        <choice target="../../../../../7">
-         <guard brief="calib_1">me-&gt;calib_status != 0</guard>
-         <action brief="calibrate_turn">QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
-
-uint8_t angle_diff;
-if (me-&gt;calib_time_2 &gt; me-&gt;calib_time_1){
-    angle_diff = 0;
-} else {
-    angle_diff = ((180 / M_PI) * acos((me-&gt;calib_time_2) / (double) me-&gt;calib_time_1));
-}
-
-if (me-&gt;strategy == 0) {
-    me-&gt;turn_180_time_ms += angle_diff * CALIB_ANGLE_MULT;
-} else {
-    me-&gt;turn_180_time_ms -= angle_diff * CALIB_ANGLE_MULT;
-}
-
-BSP_eeprom_write(TURN_180_TIME_ADDR, me-&gt;turn_180_time_ms);
-
-</action>
-         <choice_glyph conn="180,92,4,3,3,-15,-37,36">
-          <action box="-20,4,10,5"/>
-         </choice_glyph>
-        </choice>
-        <tran_glyph conn="195,92,3,-1,-15">
-         <action box="-10,-2,10,2"/>
-        </tran_glyph>
-       </tran>
-       <state_glyph node="195,85,13,10">
-        <entry box="1,2,8,2"/>
-       </state_glyph>
-      </state>
-      <state_glyph node="185,81,28,17">
-       <entry box="1,2,6,2"/>
-      </state_glyph>
-     </state>
-     <state_glyph node="171,69,43,35">
-      <entry box="1,2,41,7"/>
+     <!--${AOs::SumoHSM::SM::CalibTurn::STOP}-->
+     <tran trig="STOP" target="../../7">
+      <tran_glyph conn="175,74,3,3,-2,-14,28">
+       <action box="17,-16,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="175,69,39,13">
+      <entry box="1,2,37,7"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::CalibWait}-->
@@ -387,6 +321,8 @@ BSP_eeprom_write(TURN_180_TIME_ADDR, me-&gt;turn_180_time_ms);
 drive(0,0);
 led_stripe_set_strategy_color(me-&gt;strategy);
 me-&gt;calib_status = 0;
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::CalibWait::START}-->
@@ -394,7 +330,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
       <!--${AOs::SumoHSM::SM::CalibWait::START::[strategy_0||strategy_1]}-->
       <choice target="../../../6">
        <guard brief="strategy_0 || strategy_1">me-&gt;strategy == 0 || me-&gt;strategy == 1</guard>
-       <choice_glyph conn="214,64,5,0,-21,5">
+       <choice_glyph conn="214,64,5,0,-24,5">
         <action box="-20,0,19,3"/>
        </choice_glyph>
       </choice>
@@ -507,15 +443,15 @@ drive(mot1, mot2);</action>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::line1}-->
-    <smstate name="line1" submachine="../16">
+    <smstate name="line1" submachine="../18">
      <!--${AOs::SumoHSM::SM::line1::XP1}-->
-     <xpseg xpref="../../16/0" target="../../3">
+     <xpseg xpref="../../18/0" target="../../3">
       <xpseg_glyph conn="45,138,0,2,-4,2,-2">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::line1::STOP}-->
-     <xpseg xpref="../../16/1" target="../../4">
+     <xpseg xpref="../../18/1" target="../../4">
       <xpseg_glyph conn="42,150,2,1,3,55,-89,-26">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
@@ -523,15 +459,15 @@ drive(mot1, mot2);</action>
      <smstate_glyph node="24,138,24,12"/>
     </smstate>
     <!--${AOs::SumoHSM::SM::line2}-->
-    <smstate name="line2" submachine="../16">
+    <smstate name="line2" submachine="../18">
      <!--${AOs::SumoHSM::SM::line2::XP1}-->
-     <xpseg xpref="../../16/0" target="../../5">
+     <xpseg xpref="../../18/0" target="../../5">
       <xpseg_glyph conn="82,138,0,2,-6">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::line2::STOP}-->
-     <xpseg xpref="../../16/1" target="../../4">
+     <xpseg xpref="../../18/1" target="../../4">
       <xpseg_glyph conn="79,150,2,1,2,17,-86,-25">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
@@ -539,9 +475,9 @@ drive(mot1, mot2);</action>
      <smstate_glyph node="61,138,24,12"/>
     </smstate>
     <!--${AOs::SumoHSM::SM::pre_strategy}-->
-    <smstate name="pre_strategy" submachine="../17">
+    <smstate name="pre_strategy" submachine="../19">
      <!--${AOs::SumoHSM::SM::pre_strategy::XP1}-->
-     <xpseg xpref="../../17/4">
+     <xpseg xpref="../../19/4">
       <!--${AOs::SumoHSM::SM::pre_strategy::XP1::[strategy_0]}-->
       <choice target="../../../3">
        <guard brief="strategy_0">me-&gt;strategy == 0</guard>
@@ -563,15 +499,15 @@ drive(mot1, mot2);</action>
      <smstate_glyph node="23,86,57,7"/>
     </smstate>
     <!--${AOs::SumoHSM::SM::line_rc}-->
-    <smstate name="line_rc" submachine="../16">
+    <smstate name="line_rc" submachine="../18">
      <!--${AOs::SumoHSM::SM::line_rc::XP1}-->
-     <xpseg xpref="../../16/0" target="../../9">
+     <xpseg xpref="../../18/0" target="../../9">
       <xpseg_glyph conn="138,104,0,1,-2,2,-9,-3">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::line_rc::STOP}-->
-     <xpseg xpref="../../16/1" target="../../2">
+     <xpseg xpref="../../18/1" target="../../2">
       <xpseg_glyph conn="134,110,2,1,2,13,-52,-9">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
@@ -618,6 +554,80 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time
       </tran_glyph>
      </tran>
      <state_glyph node="225,95,36,8">
+      <entry box="1,2,8,2"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::SumoHSM::SM::CalibLineGoBack}-->
+    <state name="CalibLineGoBack">
+     <entry>if (me-&gt;calib_status == 0){
+    me-&gt;calib_time_1 = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
+} else {
+    me-&gt;calib_time_2 = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
+}
+
+
+drive(-100,-100);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
+     <!--${AOs::SumoHSM::SM::CalibLineGoBack::TIMEOUT}-->
+     <tran trig="TIMEOUT" target="../../17">
+      <tran_glyph conn="214,92,1,1,5,8,-5">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="175,84,39,10">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::SumoHSM::SM::CalibeLineTurn}-->
+    <state name="CalibeLineTurn">
+     <entry brief="turn">drive(-100,100);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms, 0);
+</entry>
+     <!--${AOs::SumoHSM::SM::CalibeLineTurn::TIMEOUT}-->
+     <tran trig="TIMEOUT">
+      <!--${AOs::SumoHSM::SM::CalibeLineTurn::TIMEOUT::[calib_0]}-->
+      <choice target="../../../6">
+       <guard brief="calib_0">me-&gt;calib_status == 0</guard>
+       <action brief="update_calib_status">me-&gt;calib_status++;
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+drive(60,60);
+</action>
+       <choice_glyph conn="166,103,4,3,-23,9">
+        <action box="-7,-28,14,4"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::CalibeLineTurn::TIMEOUT::[calib_1]}-->
+      <choice target="../../../7">
+       <guard brief="calib_1">me-&gt;calib_status != 0</guard>
+       <action brief="calibrate_turn">QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+
+uint8_t angle_diff;
+if (me-&gt;calib_time_2 &gt; me-&gt;calib_time_1){
+    angle_diff = 0;
+} else {
+    angle_diff = ((180 / M_PI) * acos((me-&gt;calib_time_2) / (double) me-&gt;calib_time_1));
+}
+
+if (me-&gt;strategy == 0) {
+    me-&gt;turn_180_time_ms += angle_diff * CALIB_ANGLE_MULT;
+} else {
+    me-&gt;turn_180_time_ms -= angle_diff * CALIB_ANGLE_MULT;
+}
+
+BSP_eeprom_write(TURN_180_TIME_ADDR, me-&gt;turn_180_time_ms);
+
+</action>
+       <choice_glyph conn="166,103,5,3,-10,-45,45">
+        <action box="-9,-44,10,5"/>
+       </choice_glyph>
+      </choice>
+      <tran_glyph conn="175,104,3,-1,-1,2,-8,-3">
+       <action box="0,-3,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="175,96,39,9">
       <entry box="1,2,8,2"/>
      </state_glyph>
     </state>
