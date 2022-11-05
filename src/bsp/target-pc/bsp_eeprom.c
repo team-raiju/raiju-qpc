@@ -6,40 +6,58 @@
 #define SIMULATED_EEPROM_FILE "./simulated_eeprom.txt"
 #define MAX_ADDRESSES          128
 
-eeprom_result_t bsp_eeprom_init(){
-    return EEPROM_OK;
+eeprom_result_t BSP_eeprom_init(){
+    printf("EEPROM INIT\r\n");
 
-}
-
-eeprom_result_t bsp_eeprom_read(uint16_t address, uint32_t* data){
-
-
-    // FILE *fp;
-    // char buff[255];
-
-    // fp = fopen("/tmp/test.txt", "r");
-    // fscanf(fp, "%s", buff);
-    // printf("1 : %s\n", buff );
-
-    // fgets(buff, 255, (FILE*)fp);
-    // printf("2: %s\n", buff );
-
-    // fgets(buff, 255, (FILE*)fp);
-    // printf("3: %s\n", buff );
-    // fclose(fp);
+    FILE *fp;
+    fp = fopen(SIMULATED_EEPROM_FILE, "w");
+    fclose(fp);
 
     return EEPROM_OK;
 
 }
 
-
-eeprom_result_t bsp_eeprom_write(uint16_t address, uint32_t data){
+eeprom_result_t BSP_eeprom_read(uint16_t address, uint32_t* data){
 
     if (address > MAX_ADDRESSES){
+        printf("EEPROM INVALID ADDRESS %hu\r\n", address);
+        *data = 0;
         return EEPROM_ERROR;
     }
 
-    printf("EEPROM Write %d in address %d\r\n", data, address);
+    FILE *fp;
+    fp = fopen(SIMULATED_EEPROM_FILE, "r+");
+
+    char line[MAX_ADDRESSES]; 
+
+    // find address to read
+    while (fgets(line, MAX_ADDRESSES, fp) != NULL){
+        uint16_t read_address;
+        uint32_t read_data;
+        sscanf(line, "%hu : %u", &read_address, &read_data);
+        if (read_address == address){
+            *data = read_data;
+            printf("EEPROM read %u from address %u\r\n", *data, address);
+            fclose(fp);
+            return EEPROM_OK;
+        }
+    }
+
+    fclose(fp);
+    *data = 0;
+    printf("EEPROM_DATA_NOT_FOUND at addr %d\r\n", address);
+    return EEPROM_DATA_NOT_FOUND;
+}
+
+
+eeprom_result_t BSP_eeprom_write(uint16_t address, uint32_t data){
+
+    if (address > MAX_ADDRESSES){
+        printf("EEPROM INVALID ADDRESS %hu\r\n", address);
+        return EEPROM_ERROR;
+    }
+
+    printf("EEPROM Write %u in address %hu\r\n", data, address);
 
     FILE *fp, *fp_aux;
     fp = fopen(SIMULATED_EEPROM_FILE, "r+");
@@ -50,11 +68,11 @@ eeprom_result_t bsp_eeprom_write(uint16_t address, uint32_t data){
 
     // find address to write
     while (fgets(line, MAX_ADDRESSES, fp) != NULL){
-        int read_address;
-        sscanf(line, "%d: ", &read_address);
+        uint16_t read_address;
+        sscanf(line, "%hu : ", &read_address);
         if (read_address == address){
             uint8_t buf[32];
-            sprintf((char * restrict)buf, "%d : %d\r\n", address, data);
+            sprintf((char * restrict)buf, "%hu : %u\r\n", address, data);
             address_in_file = true;
             fputs((char * restrict)buf, fp_aux);
         } else {
@@ -65,7 +83,7 @@ eeprom_result_t bsp_eeprom_write(uint16_t address, uint32_t data){
 
     if (!address_in_file){
         uint8_t buf[32];
-        sprintf((char * restrict)buf, "\r\n%d : %d", address, data);
+        sprintf((char * restrict)buf, "\r\n%hu : %u", address, data);
         fputs((char * restrict)buf, fp_aux);
     }
 
