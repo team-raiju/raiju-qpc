@@ -2,17 +2,13 @@
 #include "eeprom.h"
 
 
-uint16_t VirtAddVarTab[NB_OF_VAR];
+uint16_t VirtAddVarTab[EEPROM_NB_OF_VAR];
 
 
 eeprom_result_t BSP_eeprom_init(){
 
-    for (int i = 0; i < NB_OF_VAR; i++) {
-        if (i >= EEPROM_MAX_VARIABLES){
-            VirtAddVarTab[i] = 0;
-        } else {
-            VirtAddVarTab[i] = i;
-        }
+    for (int i = 0; i < EEPROM_NB_OF_VAR; i++) {
+        VirtAddVarTab[i] = i;
     }
     
     HAL_FLASH_Unlock();
@@ -29,7 +25,7 @@ eeprom_result_t BSP_eeprom_init(){
 
 eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t* data){
 
-    if (address >= NB_OF_VAR){
+    if (address >= EEPROM_NB_OF_VAR){
         *data = 0;
         return EEPROM_ERROR;
     }
@@ -51,7 +47,7 @@ eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t* data){
 
 eeprom_result_t BSP_eeprom_write(uint16_t address, uint16_t data){
 
-    if (address >= NB_OF_VAR){
+    if (address >= EEPROM_NB_OF_VAR){
         return EEPROM_ERROR;
     }
 

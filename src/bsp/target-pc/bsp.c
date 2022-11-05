@@ -65,7 +65,6 @@ void BSP_init(void)   {
     BSP_motorsInit();
     BSP_buzzerInit();
     // BSP_radioInit();
-    BSP_eeprom_init();
    
 
     #ifdef Q_SPY

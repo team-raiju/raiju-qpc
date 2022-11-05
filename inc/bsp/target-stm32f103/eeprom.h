@@ -831,7 +831,9 @@
 #define PAGE_FULL             ((uint8_t)0x80)
 
 /* Variables' number */
-#define NB_OF_VAR             ((uint8_t)0x02)
+#ifndef EEPROM_NB_OF_VAR
+#define EEPROM_NB_OF_VAR       ((uint8_t)0x02)
+#endif 
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/

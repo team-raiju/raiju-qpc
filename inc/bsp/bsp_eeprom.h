@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+
+#define EEPROM_NB_OF_VAR    ((uint8_t)0x02)
+
 typedef enum eeprom_result {
 
     EEPROM_OK,
@@ -16,7 +19,6 @@ typedef enum eeprom_addresses {
 
     STAR_VELOCITY_ADDR,
     TURN_180_TIME_ADDR,
-    EEPROM_MAX_VARIABLES,
 
 } eeprom_addresses_t;
 

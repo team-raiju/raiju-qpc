@@ -33,7 +33,7 @@
 uint16_t DataVar = 0;
 
 /* Virtual address defined by the user: 0xFFFF value is prohibited */
-extern uint16_t VirtAddVarTab[NB_OF_VAR];
+extern uint16_t VirtAddVarTab[EEPROM_NB_OF_VAR];
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -124,7 +124,7 @@ uint16_t EE_Init(void)
       if (pagestatus1 == VALID_PAGE) /* Page0 receive, Page1 valid */
       {
         /* Transfer data from Page1 to Page0 */
-        for (varidx = 0; varidx < NB_OF_VAR; varidx++)
+        for (varidx = 0; varidx < EEPROM_NB_OF_VAR; varidx++)
         {
           if (( *(__IO uint16_t*)(PAGE0_BASE_ADDRESS + 6)) == VirtAddVarTab[varidx])
           {
@@ -233,7 +233,7 @@ uint16_t EE_Init(void)
       else /* Page0 valid, Page1 receive */
       {
         /* Transfer data from Page0 to Page1 */
-        for (varidx = 0; varidx < NB_OF_VAR; varidx++)
+        for (varidx = 0; varidx < EEPROM_NB_OF_VAR; varidx++)
         {
           if ((*(__IO uint16_t*)(PAGE1_BASE_ADDRESS + 6)) == VirtAddVarTab[varidx])
           {
@@ -659,7 +659,7 @@ static uint16_t EE_PageTransfer(uint16_t VirtAddress, uint16_t Data)
   }
 
   /* Transfer process: transfer variables from old to the new active page */
-  for (varidx = 0; varidx < NB_OF_VAR; varidx++)
+  for (varidx = 0; varidx < EEPROM_NB_OF_VAR; varidx++)
   {
     if (VirtAddVarTab[varidx] != VirtAddress)  /* Check each variable except the one passed as parameter */
     {
