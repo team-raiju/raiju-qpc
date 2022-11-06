@@ -67,21 +67,15 @@ void BSP_init(void)   {
     HAL_Init();
 
     SystemClock_Config();
-
-    MX_GPIO_Init();
-
     SystemCoreClockUpdate();
 
+    MX_GPIO_Init();
     MX_DMA_Init();
 
+    MX_ADC1_Init();
     // MX_USART1_UART_Init();
     // MX_USART3_UART_Init();
 
-    MX_TIM1_Init(); // Motors Timer
-    MX_TIM2_Init(); // Led Stripe Timer
-    MX_TIM12_Init(); // Buzzer
-
-    MX_ADC1_Init();
 
 }
 

@@ -5,7 +5,7 @@
 
 
 void BSP_buzzerInit(){
-
+    MX_TIM12_Init();
 }
 
 

@@ -91,6 +91,8 @@ static void set_motor_pwm(motor_t* motor, int32_t speed){
 
 
 void BSP_motorsInit(void){
+    MX_TIM1_Init(); // Motors Timer
+    
     /* Motor Right */
     HAL_TIM_PWM_Start(right_motor.black_pwm.htim, right_motor.black_pwm.channel);
     HAL_TIM_PWM_Start(right_motor.red_pwm.htim, right_motor.red_pwm.channel);

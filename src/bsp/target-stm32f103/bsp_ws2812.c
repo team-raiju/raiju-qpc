@@ -83,8 +83,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim) {
  **************************************************************************************************/
 
 void BSP_ws2812_init(){
-    // MX_DMA_Init();
-    // MX_TIM2_Init();
+    MX_TIM2_Init(); // Led Stripe Timer
 }
 
 
