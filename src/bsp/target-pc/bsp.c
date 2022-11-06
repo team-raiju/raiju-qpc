@@ -184,15 +184,13 @@ void QS_onCommand(uint8_t cmdId,
         case 7: { 
             int16_t radio_ch1_val = param1;
             int16_t radio_ch2_val = param2;
-            int16_t data[3] = {0, radio_ch1_val, radio_ch2_val};
 
 
             #if defined (RADIO_MODE_PPM)
             fake_ppm_exti_callback(0, radio_ch1_val);
             fake_ppm_exti_callback(1, radio_ch2_val);
-            #elif defined (RADIO_MODE_UART)
-            HAL_UART_Fake_UartData(UART_NUM_4, data);
-            #elif defined (RADIO_MODE_UART_CRSF)
+            #elif defined (RADIO_MODE_UART) || defined (RADIO_MODE_UART_CRSF)
+            int16_t data[3] = {0, radio_ch1_val, radio_ch2_val};
             HAL_UART_Fake_UartData(UART_NUM_4, data);
             #endif 
 
@@ -202,15 +200,13 @@ void QS_onCommand(uint8_t cmdId,
         case 8: { 
             int16_t radio_ch3_val = param1;
             int16_t radio_ch4_val = param2;
-            int16_t data[3] = {1, radio_ch3_val, radio_ch4_val};
 
 
             #if defined (RADIO_MODE_PPM)
             fake_ppm_exti_callback(2, radio_ch3_val);
             fake_ppm_exti_callback(3, radio_ch4_val);
-            #elif defined (RADIO_MODE_UART)
-            HAL_UART_Fake_UartData(UART_NUM_4, data);
-            #elif defined (RADIO_MODE_UART_CRSF)
+            #elif defined (RADIO_MODE_UART) || defined (RADIO_MODE_UART_CRSF)
+            int16_t data[3] = {1, radio_ch3_val, radio_ch4_val};
             HAL_UART_Fake_UartData(UART_NUM_4, data);
             #endif 
 

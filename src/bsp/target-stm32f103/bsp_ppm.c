@@ -2,6 +2,8 @@
  * INCLUDES
  **************************************************************************************************/
 
+#ifdef RADIO_MODE_PPM
+
 #include "tim.h"
 #include "gpio.h"
 #include "bsp_gpio_mapping.h"
@@ -100,3 +102,4 @@ void bsp_ppm_register_callback(bsp_ppm_callback_t callback_function){
     external_callback = callback_function;
 }
 
+#endif

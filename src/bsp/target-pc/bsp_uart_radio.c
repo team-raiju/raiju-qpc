@@ -7,6 +7,8 @@
 #include "bsp_uart_radio.h"
 #include "utils.h"
 #include "bsp_uart.h"
+
+#ifdef RADIO_MODE_UART
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
@@ -87,3 +89,5 @@ void bsp_uart_radio_stop() {
 void bsp_uart_radio_register_callback(bsp_uart_radio_callback_t callback_function){
     external_callback = callback_function;
 }
+
+#endif

@@ -8,6 +8,7 @@
 #include "bsp_uart_crsf.h"
 #include "utils.h"
 
+#ifdef RADIO_MODE_UART_CRSF
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
@@ -92,3 +93,5 @@ void bsp_uart_crsf_stop() {
 void bsp_uart_crsf_register_callback(bsp_uart_crsf_callback_t callback_function){
     external_callback = callback_function;
 }
+
+#endif

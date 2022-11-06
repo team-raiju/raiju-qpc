@@ -1,3 +1,5 @@
+#ifdef RADIO_MODE_UART
+
 /***************************************************************************************************
  * INCLUDES
  **************************************************************************************************/
@@ -44,7 +46,7 @@ static bool stop_uart;
 
 static void uart_callback(void *arg) {
     UNUSED(arg);
-    
+
     do {
         // invalid packet; Ignore packet
         if ((rxdata[0] != RX_RADIO_FIRST_BYTE) || (rxdata[RXDATA_SIZE - 1] != RX_RADIO_LAST_BYTE)) {
@@ -101,3 +103,6 @@ void bsp_uart_radio_stop() {
 void bsp_uart_radio_register_callback(bsp_uart_radio_callback_t callback_function){
     external_callback = callback_function;
 }
+
+
+#endif

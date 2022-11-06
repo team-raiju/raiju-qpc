@@ -9,6 +9,7 @@
 
 #include "bsp_ppm_fake.h"
 #include "utils.h"
+#ifdef RADIO_MODE_PPM
 
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -81,4 +82,4 @@ void bsp_ppm_register_callback(bsp_ppm_callback_t callback_function){
     external_callback = callback_function;
 }
 
-
+#endif
