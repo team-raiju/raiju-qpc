@@ -28,7 +28,7 @@
 static uint8_t rxdata[RXDATA_SIZE] = {0};
 static uint16_t channels[RADIO_UART_CHANNELS] = {0};
 static bsp_uart_radio_callback_t external_callback;
-static void uart_callback(void);
+static void uart_callback(void *arg);
 
 static bool stop_uart;
 // static bool last_data_broken;
@@ -42,8 +42,8 @@ static bool stop_uart;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void uart_callback(void) {
-
+static void uart_callback(void *arg) {
+    UNUSED(arg);
     
     do {
         // invalid packet; Ignore packet

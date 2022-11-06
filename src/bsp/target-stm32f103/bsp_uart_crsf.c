@@ -24,8 +24,8 @@
  * LOCAL VARIABLES
  **************************************************************************************************/
 static uint8_t rx_data[1];
-static void uart_callback(void);
-static void uart_error_callback(void);
+static void uart_callback(void *arg);
+static void uart_error_callback(void *arg);
 uint16_t rc_channels[RADIO_CRSF_MAX_CHANNELS];
 static bsp_uart_crsf_callback_t external_callback;
 
@@ -38,7 +38,9 @@ static bsp_uart_crsf_callback_t external_callback;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void uart_callback(void) {
+static void uart_callback(void *arg) {
+
+    UNUSED(arg);
 
     crsf_packet_ret_t ret = crsf_parse_byte(rx_data[0]);
 
@@ -53,7 +55,9 @@ static void uart_callback(void) {
 }
 
 
-void uart_error_callback(){
+void uart_error_callback(void *arg){
+    UNUSED(arg);
+
 	HAL_UART_Receive_DMA(&huart4, rx_data, 1);
 
 }

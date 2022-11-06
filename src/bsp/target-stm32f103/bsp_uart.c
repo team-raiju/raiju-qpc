@@ -11,11 +11,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
 
     if (huart->Instance == huart3.Instance){
         if (uart_custom_callbacks[UART_NUM_3] != NULL){
-            uart_custom_callbacks[UART_NUM_3]();
+            uart_custom_callbacks[UART_NUM_3](NULL);
         }
     } else if (huart->Instance == huart4.Instance){
         if (uart_custom_callbacks[UART_NUM_4] != NULL){
-            uart_custom_callbacks[UART_NUM_4]();
+            uart_custom_callbacks[UART_NUM_4](NULL);
         }
     }
 
@@ -25,11 +25,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart){
 	if (huart->Instance == huart3.Instance){
         if (uart_custom_error_callbacks[UART_NUM_3] != NULL){
-            uart_custom_error_callbacks[UART_NUM_3]();
+            uart_custom_error_callbacks[UART_NUM_3](NULL);
         }
     } else if (huart->Instance == huart4.Instance){
         if (uart_custom_error_callbacks[UART_NUM_4] != NULL){
-            uart_custom_error_callbacks[UART_NUM_4]();
+            uart_custom_error_callbacks[UART_NUM_4](NULL);
         }
     }
 }
