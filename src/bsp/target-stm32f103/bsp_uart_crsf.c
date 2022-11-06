@@ -1,45 +1,35 @@
 /***************************************************************************************************
  * INCLUDES
  **************************************************************************************************/
-
-#include "qpc.h"    
-#include "bsp.h"
-
-#include "distance_service.h"
-#include "bsp_gpio.h"
-
+#include <stdbool.h>
+#include "usart.h"
+#include "bsp_uart.h"
+#include "bsp_uart_crsf.h"
+#include "radio_crsf.h"
 
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-
+#define RADIO_CRSF_CHANNELS  8
+#define RADIO_CRSF_MAX_CHANNELS  16
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
-
 
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
 
-static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state);
-
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
+static uint8_t rx_data[1];
+static bool stop_uart;
+static void uart_callback(void);
+static void uart_error_callback(void);
+uint16_t rc_channels[RADIO_CRSF_MAX_CHANNELS];
+static bsp_uart_crsf_callback_t external_callback;
 
-volatile bool dist_sensor_is_active[NUM_OF_DIST_SENSORS];
-
-/* Adjust looking at  gpio_dist_sensor_pins in bsp_gpio.c*/
-static uint8_t sensor_num_to_position[NUM_OF_DIST_SENSORS] = {
-    DIST_SENSOR_DR, /* HARDWARE SILK DIST 1 */
-    DIST_SENSOR_R,  /* HARDWARE SILK DIST 2 */
-    DIST_SENSOR_FR, /* HARDWARE SILK DIST 3 */
-    DIST_SENSOR_F,  /* HARDWARE SILK DIST 6 */
-    DIST_SENSOR_FL, /* HARDWARE SILK DIST 7 */
-    DIST_SENSOR_L,  /* HARDWARE SILK DIST 8 */
-    DIST_SENSOR_DL, /* HARDWARE SILK DIST 9 */
-};
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -49,18 +39,23 @@ static uint8_t sensor_num_to_position[NUM_OF_DIST_SENSORS] = {
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state){
+static void uart_callback(void) {
 
-    if (sensor_num > (NUM_OF_DIST_SENSORS - 1)){
-        return;
+    crsf_packet_ret_t ret = crsf_parse_byte(rx_data[0]);
+
+    if (ret == CRSF_PACKET_COMPLETE){
+	    crsf_get_rc_data(rc_channels, RADIO_CRSF_CHANNELS);
+        external_callback(rc_channels, RADIO_CRSF_CHANNELS);
     }
-
-    dist_sensor_t sensor_position = sensor_num_to_position[sensor_num];
-    dist_sensor_is_active[sensor_position] = state;
-
-    QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
-    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     
+	// HAL_UART_Receive_DMA(&huart4, rx_data, 1);
+
+
+}
+
+
+void uart_error_callback(){
+	HAL_UART_Receive_DMA(&huart4, rx_data, 1);
 
 }
 
@@ -68,18 +63,29 @@ static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state){
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void distance_service_init() {
-    BSP_GPIO_Register_Distance_Callback(sensor_data_interrupt);
+void bsp_uart_crsf_init() {
+
+    MX_UART4_Init();
+    BSP_UART_Register_Callback(UART_NUM_4, uart_callback);
+    BSP_UART_Register_Error_Callback(UART_NUM_4, uart_error_callback);
+
+    stop_uart = false;
+
+}
+
+void bsp_uart_crsf_start() {
+    stop_uart = false;
+    HAL_UART_Receive_DMA(&huart4, rx_data, 1);
+
+}
+
+void bsp_uart_crsf_stop() {
+    stop_uart = true;
+    HAL_UART_DMAStop(&huart4);
+
 }
 
 
-
-bool distance_is_active(dist_sensor_t position){
-
-    if (position > NUM_OF_DIST_SENSORS){
-        return 0;
-    }
-
-    return dist_sensor_is_active[position];
-
+void bsp_uart_crsf_register_callback(bsp_uart_crsf_callback_t callback_function){
+    external_callback = callback_function;
 }

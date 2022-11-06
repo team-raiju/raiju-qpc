@@ -19,10 +19,7 @@
 #define GPIO_START_MODULE_PIN    IO_PIN_2
 #define GPIO_START_MODULE_PORT   IO_PORTB
 
-// DIstance Sensors
-#define GPIO_DIST_SENSOR_0_PIN   IO_PIN_0      
-#define GPIO_DIST_SENSOR_0_PORT  IO_PORTA      
-
+// Distance Sensors
 #define GPIO_DIST_SENSOR_1_PIN   IO_PIN_1     
 #define GPIO_DIST_SENSOR_1_PORT  IO_PORTA      
 
@@ -32,19 +29,19 @@
 #define GPIO_DIST_SENSOR_3_PIN   IO_PIN_3      
 #define GPIO_DIST_SENSOR_3_PORT  IO_PORTA      
 
-#define GPIO_DIST_SENSOR_4_PIN   IO_PIN_4      
-#define GPIO_DIST_SENSOR_4_PORT  IO_PORTA      
+// #define GPIO_DIST_SENSOR_4_PIN   IO_PIN_4      
+// #define GPIO_DIST_SENSOR_4_PORT  IO_PORTA      
 
-#define GPIO_DIST_SENSOR_5_PIN   IO_PIN_5      
-#define GPIO_DIST_SENSOR_5_PORT  IO_PORTA      
+// #define GPIO_DIST_SENSOR_5_PIN   IO_PIN_5      
+// #define GPIO_DIST_SENSOR_5_PORT  IO_PORTA      
 
-#define GPIO_DIST_SENSOR_6_PIN   IO_PIN_6      
+#define GPIO_DIST_SENSOR_6_PIN   IO_PIN_4      
 #define GPIO_DIST_SENSOR_6_PORT  IO_PORTA      
 
-#define GPIO_DIST_SENSOR_7_PIN   IO_PIN_7      
+#define GPIO_DIST_SENSOR_7_PIN   IO_PIN_5      
 #define GPIO_DIST_SENSOR_7_PORT  IO_PORTA      
 
-#define GPIO_DIST_SENSOR_8_PIN   IO_PIN_8      
+#define GPIO_DIST_SENSOR_8_PIN   IO_PIN_6      
 #define GPIO_DIST_SENSOR_8_PORT  IO_PORTA      
 
 

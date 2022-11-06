@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 #include "usart.h"
+#include "bsp_uart.h"
 #include "bsp_uart_radio.h"
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -27,6 +28,8 @@
 static uint8_t rxdata[RXDATA_SIZE] = {0};
 static uint16_t channels[RADIO_UART_CHANNELS] = {0};
 static bsp_uart_radio_callback_t external_callback;
+static void uart_callback(void);
+
 static bool stop_uart;
 // static bool last_data_broken;
 
@@ -39,12 +42,9 @@ static bool stop_uart;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
+static void uart_callback(void) {
 
-    if (huart->Instance != huart1.Instance){
-        return;
-    }
-
+    
     do {
         // invalid packet; Ignore packet
         if ((rxdata[0] != RX_RADIO_FIRST_BYTE) || (rxdata[RXDATA_SIZE - 1] != RX_RADIO_LAST_BYTE)) {
@@ -53,20 +53,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
             }
             break;
         }
-
-        /* SBUS_SIGNAL_LOST */
-        // if (rxdata[23] & (1 << 2)) {
-        //     memset(channels, 1000, sizeof(channels));
-        //     break;
-        // }
-
-        // /* SBUS_SIGNAL_FAILSAFE */
-        // if (rxdata[23] & (1 << 3)) {
-        //     memset(channels, 1000, sizeof(channels));
-        //     break;
-        // }
-
-        // last_sbus_packet.reset();
 
         channels[0] = ((rxdata[1] | rxdata[2] << 8) & 0x07FF);
         channels[1] = ((rxdata[2] >> 3 | rxdata[3] << 5) & 0x07FF);
@@ -84,7 +70,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
 
     // Continuous receive
     if (!stop_uart){
-        HAL_UART_Receive_IT(&huart1, rxdata, RXDATA_SIZE);
+        HAL_UART_Receive_IT(&huart3, rxdata, RXDATA_SIZE);
     }
 
 }
@@ -97,15 +83,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
 
 void bsp_uart_radio_init() {
 
-    MX_USART1_UART_Init();
-    HAL_UART_Receive_IT(&huart1, rxdata, RXDATA_SIZE);
-    stop_uart = false;
+    MX_UART4_Init();
+    BSP_UART_Register_Callback(UART_NUM_4, uart_callback);
 
 }
 
 void bsp_uart_radio_start() {
     stop_uart = false;
-    HAL_UART_Receive_IT(&huart1, rxdata, RXDATA_SIZE);
+    HAL_UART_Receive_IT(&huart4, rxdata, RXDATA_SIZE);
 }
 
 void bsp_uart_radio_stop() {

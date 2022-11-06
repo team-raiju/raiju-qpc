@@ -56,4 +56,18 @@ inline int map(int former_value, int former_min, int former_max, int new_min, in
 }
 
 
+static inline uint16_t MAP_U16(uint16_t x, uint16_t in_min, uint16_t in_max,
+                               uint16_t out_min, uint16_t out_max)
+{
+    return constrain((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min, out_min, out_max);
+};
+
+static inline uint16_t MAP_I16(int16_t x, int16_t in_min, int16_t in_max,
+                               int16_t out_min, int16_t out_max)
+{
+    return constrain((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min, out_min, out_max);
+};
+
+
+
 #endif /* UTILS_H */
