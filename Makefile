@@ -176,7 +176,7 @@ BIN_DIR := build_spy
 
 DEFINES += -DQ_SPY -D$(PROJECT_DEFS)
 
-CFLAGS = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W -Wno-unused-result \
+CFLAGS = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W -Wno-unused-result -Wno-type-limits\
 	$(INCLUDES) $(DEFINES) -Wno-unused-result
 
 CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \

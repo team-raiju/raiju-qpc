@@ -3,7 +3,7 @@
 
 #include "bsp_gpio.h"
 
-#define BOARD_NUM_DIST_SENSORS  9
+#define BOARD_NUM_DIST_SENSORS  7
 #define BOARD_NUM_OF_PPMS       4
 
 
@@ -43,6 +43,9 @@
 
 #define GPIO_DIST_SENSOR_8_PIN   IO_PIN_6      
 #define GPIO_DIST_SENSOR_8_PORT  IO_PORTA      
+
+#define GPIO_DIST_SENSOR_9_PIN   IO_PIN_7      
+#define GPIO_DIST_SENSOR_9_PORT  IO_PORTA      
 
 
 #endif /* BSP_GPIO_MAPPING_H */

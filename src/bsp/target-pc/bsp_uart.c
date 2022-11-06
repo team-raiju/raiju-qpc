@@ -1,35 +1,34 @@
 #include <stdlib.h>
-#include "usart.h"
 #include "bsp_uart.h"
-
+#include "bsp_uart_fake.h"
 
 static bsp_uart_callback_t uart_custom_callbacks[MAX_UART_NUM];
 static bsp_uart_callback_t uart_custom_error_callbacks[MAX_UART_NUM];
 
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
+void HAL_UART_Fake_UartData(uint8_t uart_num, int16_t* data) {
 
-    if (huart->Instance == huart3.Instance){
+    if (uart_num == UART_NUM_3){
         if (uart_custom_callbacks[UART_NUM_3] != NULL){
-            uart_custom_callbacks[UART_NUM_3]();
+            uart_custom_callbacks[UART_NUM_3](data);
         }
-    } else if (huart->Instance == huart4.Instance){
+    } else if (uart_num == UART_NUM_4){
         if (uart_custom_callbacks[UART_NUM_4] != NULL){
-            uart_custom_callbacks[UART_NUM_4]();
+            uart_custom_callbacks[UART_NUM_4](data);
         }
     }
 
 
 }
 
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart){
-	if (huart->Instance == huart3.Instance){
+void HAL_UART_Fake_UartError(uint8_t uart_num){
+	if (uart_num == UART_NUM_3){
         if (uart_custom_error_callbacks[UART_NUM_3] != NULL){
-            uart_custom_error_callbacks[UART_NUM_3]();
+            uart_custom_error_callbacks[UART_NUM_3](NULL);
         }
-    } else if (huart->Instance == huart4.Instance){
+    } else if (uart_num == UART_NUM_4){
         if (uart_custom_error_callbacks[UART_NUM_4] != NULL){
-            uart_custom_error_callbacks[UART_NUM_4]();
+            uart_custom_error_callbacks[UART_NUM_4](NULL);
         }
     }
 }

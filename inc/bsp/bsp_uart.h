@@ -3,7 +3,7 @@
 
 #define MAX_UART_NUM    5
 
-typedef void( * bsp_uart_callback_t) (void);
+typedef void( * bsp_uart_callback_t) (void *args);
 
 typedef enum {
 

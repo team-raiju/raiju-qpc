@@ -2,10 +2,11 @@
  * INCLUDES
  **************************************************************************************************/
 #include <stdbool.h>
-#include "usart.h"
+#include <stdlib.h>
+#include <stdio.h>
 #include "bsp_uart.h"
 #include "bsp_uart_crsf.h"
-#include "radio_crsf.h"
+#include "utils.h"
 
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -23,9 +24,10 @@
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-static uint8_t rx_data[1];
-static void uart_callback(void);
-static void uart_error_callback(void);
+
+static bool stop_uart;
+static void uart_callback(void *arg);
+static void uart_error_callback(void *arg);
 uint16_t rc_channels[RADIO_CRSF_MAX_CHANNELS];
 static bsp_uart_crsf_callback_t external_callback;
 
@@ -38,24 +40,32 @@ static bsp_uart_crsf_callback_t external_callback;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void uart_callback(void) {
+static void uart_callback(void *arg) {
 
-    crsf_packet_ret_t ret = crsf_parse_byte(rx_data[0]);
+    int16_t data[3];
 
-    if (ret == CRSF_PACKET_COMPLETE){
-	    crsf_get_rc_data(rc_channels, RADIO_CRSF_CHANNELS);
-        external_callback(rc_channels, RADIO_CRSF_CHANNELS);
+    data[0] = *(((int16_t*) (arg)) + 0); 
+    data[1] = *(((int16_t*) (arg)) + 1); 
+    data[2] = *(((int16_t*) (arg)) + 2);
+
+    // Fake implementation of uart radio service
+    if (data[0] == 0){
+        rc_channels[0] = map(data[1], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
+        rc_channels[1] = map(data[2], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
+    } else if (data[0] == 1){
+        rc_channels[2] = map(data[1], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
+        rc_channels[3] = map(data[2], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
+        if (!stop_uart){
+            external_callback(rc_channels, RADIO_CRSF_CHANNELS);
+        }
+    
     }
     
-	// HAL_UART_Receive_DMA(&huart4, rx_data, 1);
-
-
 }
 
 
-void uart_error_callback(){
-	HAL_UART_Receive_DMA(&huart4, rx_data, 1);
-
+void uart_error_callback(void *arg){
+    (void)(arg); // Unused Parameter
 }
 
 /***************************************************************************************************
@@ -63,20 +73,19 @@ void uart_error_callback(){
  **************************************************************************************************/
 
 void bsp_uart_crsf_init() {
-
-    MX_UART4_Init();
+    printf("UART RADIO CRSF INIT \r\n");
     BSP_UART_Register_Callback(UART_NUM_4, uart_callback);
     BSP_UART_Register_Error_Callback(UART_NUM_4, uart_error_callback);
+    stop_uart = true;
+
 }
 
 void bsp_uart_crsf_start() {
-    HAL_UART_Receive_DMA(&huart4, rx_data, 1);
-
+    stop_uart = false;
 }
 
 void bsp_uart_crsf_stop() {
-    HAL_UART_DMAStop(&huart4);
-
+    stop_uart = true;
 }
 
 
