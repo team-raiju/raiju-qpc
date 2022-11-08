@@ -172,7 +172,7 @@ class VivaldiAdvertisement(Advertisement):
         )
         self.add_service_uuid(VivaldiS1Service.ESPRESSO_SVC_UUID)
 
-        self.add_local_name("Vivaldi")
+        self.add_local_name("Raiju")
         self.include_tx_power = True
 
 
