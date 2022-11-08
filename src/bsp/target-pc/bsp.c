@@ -214,6 +214,12 @@ void QS_onCommand(uint8_t cmdId,
             break;
         }
 
+        case 9: {
+
+            printf("BLE RECEIVED = %d\r\n", param1);
+
+        }
+
        default:
            break;
     }

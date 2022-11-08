@@ -6,6 +6,8 @@ from tkinter.simpledialog import *
 from struct import pack
 from pynput import keyboard
 from inputs import get_gamepad
+import socket
+
 
 # from playsound import playsound
 import threading
@@ -156,6 +158,9 @@ def custom_qview_init(qview):
         x.daemon = True
         x.start()
 
+    thread2 = threading.Thread(target=bluetooth_thread)
+    thread2.daemon = True
+    thread2.start()
 
 
 def custom_user_00_packet(packet):
@@ -301,6 +306,10 @@ def send_radio_command_ch1_ch2(ch1, ch2):
 
 def send_radio_command_ch3_ch4(ch3, ch4):
     qview_base.command(8, ch3, ch4)
+
+def send_ble_command(val):
+    qview_base.command(9, val)
+
 
 def send_game_pad():
 
@@ -503,3 +512,28 @@ def gamepad_thread():
             gamepad_dict["ch3"] = event[0].state
         elif (event[0].code == "BTN_DPAD_UP"):
             gamepad_dict["ch4"] = event[0].state
+
+
+def bluetooth_thread():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    server_address = ('localhost', 10000)
+    print ('starting up on %s port %s' % server_address)
+    sock.bind(server_address)
+
+    sock.listen(1)
+
+    while True:
+        # Wait for a connection
+        print ('waiting for a connection')
+        connection, client_address = sock.accept()
+        try:
+            print ('connection from + ' + str(client_address))
+            data = connection.recv(16)
+            print ('received ' + bytes(data).hex())
+            data_int = int.from_bytes(data, "big")  
+            send_ble_command(data_int)  
+            
+        finally:
+            # Clean up the connection
+            connection.close()
