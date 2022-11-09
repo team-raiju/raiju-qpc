@@ -154,9 +154,9 @@ def custom_qview_init(qview):
     led_stripe_init(qview_base)
 
     if (USE_PS3_CONTROLLER):
-        x = threading.Thread(target=gamepad_thread)
-        x.daemon = True
-        x.start()
+        thread1 = threading.Thread(target=gamepad_thread)
+        thread1.daemon = True
+        thread1.start()
 
     thread2 = threading.Thread(target=bluetooth_thread)
     thread2.daemon = True

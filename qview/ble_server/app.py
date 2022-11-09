@@ -7,6 +7,8 @@ import dbus.exceptions
 import dbus.mainloop.glib
 import dbus.service
 import socket
+import threading
+
 
 from ble import (
     Advertisement,
@@ -55,6 +57,7 @@ GATT_MANAGER_IFACE = "org.bluez.GattManager1"
 LE_ADVERTISEMENT_IFACE = "org.bluez.LEAdvertisement1"
 LE_ADVERTISING_MANAGER_IFACE = "org.bluez.LEAdvertisingManager1"
 
+global ble_data_from_server
 
 class InvalidArgsException(dbus.exceptions.DBusException):
     _dbus_error_name = "org.freedesktop.DBus.Error.InvalidArgs"
@@ -113,14 +116,15 @@ class BoilerControlCharacteristic(Characteristic):
         self.add_descriptor(CharacteristicUserDescriptionDescriptor(bus, 1, self))
 
     def ReadValue(self, options):
+        global ble_data_from_server
         logger.info("boiler read: " + repr(self.value))
-        prime_numbers = [2, 3, 5, 7]
-        self.value = bytearray(prime_numbers)
+        self.value = ble_data_from_server
         
         return self.value
 
     def WriteValue(self, value, options):
         # logger.info("boiler state Write: " + repr(value))
+
         print(value)
         print("value:%s" % [bytes([v]) for v in value])
         cmd = bytes(value)
@@ -188,8 +192,39 @@ def register_ad_error_cb(error):
 AGENT_PATH = "/com/punchthrough/agent"
 
 
+def server_thread():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    server_address = ('localhost', 10001)
+    print ('starting up on %s port %s' % server_address)
+    sock.bind(server_address)
+
+    sock.listen(1)
+
+    global ble_data_from_server
+    ble_data_from_server = bytearray([0])
+
+    while True:
+        # Wait for a connection
+        print ('waiting for a connection')
+        connection, client_address = sock.accept()
+        try:
+            print ('connection from + ' + str(client_address))
+            data = connection.recv(16)
+            print ('received ' + bytes(data).hex())
+            data_int = int.from_bytes(data, "big")   
+            ble_data_from_server = bytearray(data)
+            
+        finally:
+            # Clean up the connection
+            connection.close()
+
 def main():
     global mainloop
+
+    thread2 = threading.Thread(target=server_thread)
+    thread2.daemon = True
+    thread2.start()
 
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
@@ -251,3 +286,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
