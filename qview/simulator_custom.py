@@ -37,6 +37,7 @@ QS_USER_DATA_ID = {
     "QS_BUZZER_ID": 1,
     "QS_MOTOR_ID":  2,
     "QS_LED_STRIPE_ID":  3,
+    "QS_BLE_ID":  4,
 }
 
 def custom_menu_command():
@@ -175,6 +176,8 @@ def custom_user_00_packet(packet):
         process_buzzer_id_packet(packet)
     elif (data_id == QS_USER_DATA_ID["QS_LED_STRIPE_ID"]):
         process_led_stripe_id_packet(packet)
+    elif (data_id == QS_USER_DATA_ID["QS_BLE_ID"]):
+        process_ble_packet(packet)
     else:
         qview_base.print_text("Timestamp = %d; ID = %d"%(data[0], data[1]))  
 
@@ -224,6 +227,12 @@ def process_led_stripe_id_packet(packet):
     else:
         led_stripe_set(qview_base, led_idx, r, g, b)
 
+
+def process_ble_packet(packet):
+    data = qview_base.qunpack("xxTxBxBBBBBBBBBBBBBBBBBBBBB", packet)    
+    qview_base.print_text("Timestamp = %d - BLE RAW DATA:"%(data[0]))  
+    qview_base.print_text(data[3:])  
+    
 
 
 def custom_user_01_packet(packet):

@@ -1,16 +1,16 @@
 /***************************************************************************************************
  * INCLUDES
  **************************************************************************************************/
-#include <stdbool.h>
+#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-
-#include "ble_service.h"
+#include "bsp_uart.h"
 #include "bsp_ble.h"
+#include "utils.h"
+
+#ifdef Q_SPY
+#include "qs_defines.h"
 #include "bsp.h"
-#include "qpc.h"    
-
-
+#endif
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
@@ -19,15 +19,17 @@
  * LOCAL TYPEDEFS
  **************************************************************************************************/
 
+
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
-static void ble_callback(uint8_t * ble_data);
-static volatile uint8_t * ble_last_data[BLE_PACKET_SIZE];
 
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
+static void uart_callback(void *arg);
+static void uart_error_callback(void *arg);
+static bsp_uart_ble_callback_t external_callback;
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -36,35 +38,53 @@ static volatile uint8_t * ble_last_data[BLE_PACKET_SIZE];
 /***************************************************************************************************
  * LOCAL FUNCTIONS
  **************************************************************************************************/
+static void uart_callback(void *arg) {
 
-static void ble_callback(uint8_t * ble_data) {
+    (void)arg;
+    printf("BLE Callback\r\n");
 
-    (void)ble_data;
-    QEvt evt = {.sig = BLE_DATA_SIG};
-    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-
+    static uint8_t ble_dma_data[BLE_PACKET_SIZE];
+    if (external_callback != NULL){
+        external_callback(ble_dma_data);
+    }
+    
 }
 
+
+void uart_error_callback(void *arg){
+    (void)arg;
+}
 
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void ble_service_init(void){
-    bsp_ble_init();
-    bsp_ble_register_callback(ble_callback);
+
+void bsp_ble_init(){
+    printf("BLE Service Init\r\n");
+    BSP_UART_Register_Callback(UART_NUM_3, uart_callback);
+    BSP_UART_Register_Error_Callback(UART_NUM_3, uart_error_callback);
 }
 
+void bsp_ble_transmit(uint8_t * data, uint8_t size) {
 
-void ble_service_send_data(uint8_t * data, uint8_t size){
+    uint8_t size_to_send = min(size, BLE_MAX_PACKET_SIZE);
 
-    bsp_ble_transmit(data, size);
+    printf("BLE Transmit Size = %d; Data:", size_to_send);
+    for (int i = 0; i < size_to_send; i++)
+    {
+        printf("%d, ", data[i]);
+    }
+    printf("\r\n");
+    
+
+    QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
+       QS_U8(1, QS_BLE_ID); 
+       QS_MEM(data, size_to_send);
+    QS_END()
 
 }
 
-void ble_service_last_packet(uint8_t * data){
-
-    memcpy(data, ble_last_data, BLE_PACKET_SIZE);
-
+void bsp_ble_register_callback(bsp_uart_ble_callback_t callback_function){
+    external_callback = callback_function;
 }
-
