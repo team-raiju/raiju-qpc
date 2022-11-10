@@ -8,7 +8,7 @@ import socket
 import threading
 
 # constants
-UART_SERVICE = '0000FFE0-0000-1000-8000-00805F9B34FB'
+BLE_SERVICE = '0000FFE0-0000-1000-8000-00805F9B34FB'
 BLE_CHARACTERISTIC = '0000FFE1-0000-1000-8000-00805F9B34FB'
 
 
@@ -90,7 +90,7 @@ def main(adapter_address):
 
 
     ble_uart = peripheral.Peripheral(adapter_address, local_name='JDY-10-V2.5')
-    ble_uart.add_service(srv_id=1, uuid=UART_SERVICE, primary=True)
+    ble_uart.add_service(srv_id=1, uuid=BLE_SERVICE, primary=True)
     
     ble_uart.add_characteristic(srv_id=1, chr_id=1, uuid=BLE_CHARACTERISTIC,
                                 value=[], notifying=False,

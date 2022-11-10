@@ -48,7 +48,12 @@ me-&gt;buzzerCount = 0U;</action>
      <entry>board_led_off();
 drive(0,0);
 me-&gt;strategy = 0;
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
+
+// Send Ble Data
+char buffer[20];
+snprintf(buffer, 20, &quot;turn:%hu:%hu&quot;,  me-&gt;turn_180_time_ms,  me-&gt;turn_180_time_ms);
+ble_service_send_data((uint8_t *)buffer, 20);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
@@ -877,6 +882,7 @@ if (BSP_eeprom_read(STAR_VELOCITY_ADDR, &amp;eeprom_data) ==  EEPROM_OK){
    <!--${.::src::sumo_hsm.c}-->
    <file name="sumo_hsm.c">
     <text>#include &lt;math.h&gt;
+#include &lt;stdio.h&gt;
 #include &quot;qf_custom_defines.h&quot;
 #include &quot;qpc.h&quot;    /* QP/C framework API */
 #include &quot;bsp.h&quot;    /* Board Support Package interface */
@@ -887,6 +893,7 @@ if (BSP_eeprom_read(STAR_VELOCITY_ADDR, &amp;eeprom_data) ==  EEPROM_OK){
 #include &quot;distance_service.h&quot;
 #include &quot;line_service.h&quot;
 #include &quot;bsp_eeprom.h&quot;
+#include &quot;ble_service.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5
 #ifndef M_PI
@@ -947,6 +954,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(BLE_DATA_SIG,  (void *)0);
 
 
 }
@@ -997,6 +1005,8 @@ int main() {
     <text>#ifndef BSP_H
 #define BSP_H
 
+#include &quot;qpc.h&quot;
+
 /* a very simple Board Support Package (BSP) -------------------------------*/
 enum { 
     BSP_TICKS_PER_SEC = 100
@@ -1030,6 +1040,7 @@ enum SumoHSMSignals {
     RADIO_DATA_SIG,
     BUTTON_SIG,
     START_MODULE_CHECK_SIG,
+    BLE_DATA_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 

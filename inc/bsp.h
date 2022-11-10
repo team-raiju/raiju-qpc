@@ -38,6 +38,8 @@
 #ifndef BSP_H
 #define BSP_H
 
+#include "qpc.h"
+
 /* a very simple Board Support Package (BSP) -------------------------------*/
 enum {
     BSP_TICKS_PER_SEC = 100
@@ -71,6 +73,7 @@ enum SumoHSMSignals {
     RADIO_DATA_SIG,
     BUTTON_SIG,
     START_MODULE_CHECK_SIG,
+    BLE_DATA_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 

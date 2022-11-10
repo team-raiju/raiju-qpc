@@ -36,6 +36,7 @@
 */
 /*$endhead${.::src::sumo_hsm.c} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 #include <math.h>
+#include <stdio.h>
 #include "qf_custom_defines.h"
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
@@ -46,6 +47,7 @@
 #include "distance_service.h"
 #include "line_service.h"
 #include "bsp_eeprom.h"
+#include "ble_service.h"
 
 #define CALIB_ANGLE_MULT    2.5
 #ifndef M_PI
@@ -505,6 +507,11 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
     drive(0,0);
     me->strategy = 0;
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
+
+    // Send Ble Data
+    char buffer[20];
+    snprintf(buffer, 20, "turn:%hu:%hu",  me->turn_180_time_ms,  me->turn_180_time_ms);
+    ble_service_send_data((uint8_t *)buffer, 20);
     return QM_ENTRY(&SumoHSM_Idle_s);
 }
 /*${AOs::SumoHSM::SM::Idle} */
@@ -2079,6 +2086,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(BLE_DATA_SIG,  (void *)0);
 
 
 }
