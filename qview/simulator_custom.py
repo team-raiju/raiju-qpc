@@ -232,6 +232,20 @@ def process_ble_packet(packet):
     data = qview_base.qunpack("xxTxBxBBBBBBBBBBBBBBBBBBBBB", packet)    
     qview_base.print_text("Timestamp = %d - BLE RAW DATA:"%(data[0]))  
     qview_base.print_text(data[3:])  
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = ('localhost', 10001)
+    print ('connecting to port' + str(server_address))
+    sock.connect(server_address)
+    try:
+        message = bytearray(data[3:])
+        hex_string = "".join("0x%02x, " % b for b in message)
+        print ('BLE sending ' + hex_string)
+        sock.sendall(message)
+
+    finally:
+        print('closing socket')
+        sock.close()
     
 
 
@@ -538,8 +552,10 @@ def bluetooth_thread():
         connection, client_address = sock.accept()
         try:
             print ('connection from + ' + str(client_address))
-            data = connection.recv(16)
-            print ('received ' + bytes(data).hex())
+            data = connection.recv(20)
+            ble_data_from_server = bytearray(data)
+            hex_string = "".join("0x%02x, " % b for b in ble_data_from_server)
+            print ('received ' + hex_string)
             data_int = int.from_bytes(data, "big")  
             send_ble_command(data_int)  
             

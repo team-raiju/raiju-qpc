@@ -216,7 +216,13 @@ void QS_onCommand(uint8_t cmdId,
 
         case 9: {
 
-            printf("BLE RECEIVED = %d\r\n", param1);
+            uint8_t ble_data[12];
+            
+            ble_data[0] = (param1 >> 8);
+            ble_data[1] = (param1 & 0xff);
+
+            printf("BLE RECEIVED = 0x%02x, 0x%02x\r\n", ble_data[0], ble_data[1]);
+
             int16_t data[3] = {1, 2, 3};
             HAL_UART_Fake_UartData(UART_NUM_3, data);
         }

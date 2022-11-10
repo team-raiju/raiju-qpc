@@ -73,7 +73,7 @@ void bsp_ble_transmit(uint8_t * data, uint8_t size) {
     printf("BLE Transmit Size = %d; Data:", size_to_send);
     for (int i = 0; i < size_to_send; i++)
     {
-        printf("%d, ", data[i]);
+        printf("%02x, ", data[i]);
     }
     printf("\r\n");
     

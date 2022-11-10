@@ -10,7 +10,7 @@ import threading
 # constants
 BLE_SERVICE = '0000FFE0-0000-1000-8000-00805F9B34FB'
 BLE_CHARACTERISTIC = '0000FFE1-0000-1000-8000-00805F9B34FB'
-
+BLE_RECEIVE_SIZE = 20
 
 class UARTDevice:
     tx_obj = None
@@ -43,13 +43,15 @@ class UARTDevice:
         # print('Text value:', bytes(value).decode('utf-8'))
         cls.update_tx(value)
 
+        # Send ble data to tcp server
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_address = ('localhost', 10000)
         print ('connecting to port' + str(server_address))
         sock.connect(server_address)
         try:
-            message = bytearray(bytes(value))
-            print ('BLE sending ' + str(message))
+            message = bytearray(value)
+            hex_string = "".join("0x%02x, " % b for b in message)
+            print ('BLE sending ' + hex_string)
             sock.sendall(message)
 
         finally:
@@ -73,10 +75,10 @@ def server_thread():
         connection, client_address = sock.accept()
         try:
             print ('connection from + ' + str(client_address))
-            data = connection.recv(16)
-            print ('received ' + bytes(data).hex())
-            data_int = int.from_bytes(data, "big")   
+            data = connection.recv(BLE_RECEIVE_SIZE)
             ble_data_from_server = bytearray(data)
+            hex_string = "".join("0x%02x, " % b for b in ble_data_from_server)
+            print ('received ' + hex_string)
             UARTDevice.update_tx(ble_data_from_server)
             
         finally:
