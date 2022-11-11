@@ -330,8 +330,34 @@ def send_radio_command_ch1_ch2(ch1, ch2):
 def send_radio_command_ch3_ch4(ch3, ch4):
     qview_base.command(8, ch3, ch4)
 
-def send_ble_command(val):
-    qview_base.command(9, val)
+
+
+
+def send_ble_command(ble_bytearray):
+
+    if (len(ble_bytearray) != 20):
+        print("ble wrong size")
+        return
+
+    # Each value is a 32bit value containig 4 ble bytes
+    data_4_bytes_chunks = [0] * 5
+
+    data_4_bytes_chunks[0] = int.from_bytes(ble_bytearray[0:4],   "big")  
+    data_4_bytes_chunks[1] = int.from_bytes(ble_bytearray[4:8],   "big")  
+    data_4_bytes_chunks[2] = int.from_bytes(ble_bytearray[8:12],  "big")  
+    data_4_bytes_chunks[3] = int.from_bytes(ble_bytearray[12:16], "big")  
+    data_4_bytes_chunks[4] = int.from_bytes(ble_bytearray[16:20], "big")  
+
+
+    # Update first 12 bytes
+    qview_base.command(9, data_4_bytes_chunks[0], data_4_bytes_chunks[1], data_4_bytes_chunks[2])
+
+    # Update last 8 bytes
+    qview_base.command(10, data_4_bytes_chunks[3], data_4_bytes_chunks[4])
+
+    # Send callback
+    qview_base.command(11, 0)
+
 
 
 def send_game_pad():
@@ -556,8 +582,7 @@ def bluetooth_thread():
             ble_data_from_server = bytearray(data)
             hex_string = "".join("0x%02x, " % b for b in ble_data_from_server)
             print ('received ' + hex_string)
-            data_int = int.from_bytes(data, "big")  
-            send_ble_command(data_int)  
+            send_ble_command(ble_data_from_server)
             
         finally:
             # Clean up the connection

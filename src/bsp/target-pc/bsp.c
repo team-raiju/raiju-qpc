@@ -59,6 +59,10 @@ static QSpyId const l_clock_tick = { QS_AP_ID };
 
 #endif
 
+
+uint8_t ble_data[20];
+
+
 void BSP_init(void)   {
     printf("SumoHSM;  QP/C version: %s\r\n",  QP_VERSION_STR);
 
@@ -214,17 +218,51 @@ void QS_onCommand(uint8_t cmdId,
             break;
         }
 
+        /* Update First 12 bytes of BLE */
         case 9: {
 
-            uint8_t ble_data[12];
+            for (int i = 0; i < 4; i++) {
+                ble_data[i + 0] = (param1 >> (8 * (3 - i)) & 0xff);
+            }
+
+            for (int i = 0; i < 4; i++) {
+                ble_data[i + 4] = (param2 >> (8 * (3 - i)) & 0xff);
+            }
+
+            for (int i = 0; i < 4; i++) {
+                ble_data[i + 8] = (param3 >> (8 * (3 - i)) & 0xff);
+            }
+
+            break;
             
-            ble_data[0] = (param1 >> 8);
-            ble_data[1] = (param1 & 0xff);
+        }
 
-            printf("BLE RECEIVED = 0x%02x, 0x%02x\r\n", ble_data[0], ble_data[1]);
+        /* Update Last 8 bytes of BLE */
+        case 10: {
 
-            int16_t data[3] = {1, 2, 3};
-            HAL_UART_Fake_UartData(UART_NUM_3, data);
+            for (int i = 0; i < 4; i++) {
+                ble_data[i + 12] = (param1 >> (8 * (3 - i)) & 0xff);
+            }
+
+            for (int i = 0; i < 4; i++) {
+                ble_data[i + 16] = (param2 >> (8 * (3 - i)) & 0xff);
+            }
+
+            break;
+            
+        }
+
+        /* Generate BLE interrupt */
+        case 11: {
+            printf("BLE RECEIVED = ");
+            for (size_t i = 0; i < sizeof(ble_data); i++) {
+                printf("0x%02x, ", ble_data[i]);
+            }
+            printf("\r\n");
+            
+            HAL_UART_Fake_UartData(UART_NUM_3, (int16_t *) ble_data);
+
+            break;
         }
 
        default:
