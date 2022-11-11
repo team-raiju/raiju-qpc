@@ -60,17 +60,17 @@ static void radio_dispatch_events(){
 
 
     if (radio_data[RADIO_CH3] > 75 && last_radio_data[RADIO_CH3] < 75){
-        QEvt evt = {.sig = RADIO_EVT_1_SIG};
+        QEvt evt = {.sig = CHANGE_STATE_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
     if (radio_data[RADIO_CH4] > 75 && last_radio_data[RADIO_CH4] < 75){
-        QEvt evt = {.sig = RADIO_EVT_2_SIG};
+        QEvt evt = {.sig = CHANGE_STRATEGY_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
     if (radio_data[RADIO_CH2] > 75 && last_radio_data[RADIO_CH2] < 75){
-        QEvt evt = {.sig = RADIO_EVT_3_SIG};
+        QEvt evt = {.sig = CHANGE_PRE_STRATEGY_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 

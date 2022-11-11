@@ -530,8 +530,8 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::Idle::RADIO_EVT_1} */
-        case RADIO_EVT_1_SIG: {
+        /*${AOs::SumoHSM::SM::Idle::CHANGE_STATE_EVT} */
+        case CHANGE_STATE_EVT_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[3];
@@ -607,8 +607,8 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_TRAN(&tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::RCWait::RADIO_EVT_1} */
-        case RADIO_EVT_1_SIG: {
+        /*${AOs::SumoHSM::SM::RCWait::CHANGE_STATE_EVT} */
+        case CHANGE_STATE_EVT_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[3];
@@ -629,8 +629,8 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::RCWait::RADIO_EVT_2} */
-        case RADIO_EVT_2_SIG: {
+        /*${AOs::SumoHSM::SM::RCWait::CHANGE_STRATEGY_EVT} */
+        case CHANGE_STRATEGY_EVT_SIG: {
             SumoHSM_change_strategy(me);
             led_stripe_set_strategy_color(me->strategy);
             status_ = QM_HANDLED();
@@ -793,8 +793,8 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             }
             break;
         }
-        /*${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_1} */
-        case RADIO_EVT_1_SIG: {
+        /*${AOs::SumoHSM::SM::AutoWait::CHANGE_STATE_EVT} */
+        case CHANGE_STATE_EVT_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];
@@ -808,15 +808,15 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_TRAN(&tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_2} */
-        case RADIO_EVT_2_SIG: {
+        /*${AOs::SumoHSM::SM::AutoWait::CHANGE_STRATEGY_EVT} */
+        case CHANGE_STRATEGY_EVT_SIG: {
             SumoHSM_change_strategy(me);
             led_stripe_set_strategy_color(me->strategy);
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_3} */
-        case RADIO_EVT_3_SIG: {
+        /*${AOs::SumoHSM::SM::AutoWait::CHANGE_PRE_STRATEGY_EVT} */
+        case CHANGE_PRE_STRATEGY_EVT_SIG: {
             SumoHSM_change_pre_strategy(me);
             led_stripe_set_pre_strategy_color(me->pre_strategy);
             status_ = QM_HANDLED();
@@ -1034,8 +1034,8 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
             }
             break;
         }
-        /*${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_1} */
-        case RADIO_EVT_1_SIG: {
+        /*${AOs::SumoHSM::SM::CalibWait::CHANGE_STATE_EVT} */
+        case CHANGE_STATE_EVT_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[3];
@@ -1068,8 +1068,8 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_2} */
-        case RADIO_EVT_2_SIG: {
+        /*${AOs::SumoHSM::SM::CalibWait::CHANGE_STRATEGY_EVT} */
+        case CHANGE_STRATEGY_EVT_SIG: {
             SumoHSM_change_strategy(me);
             led_stripe_set_strategy_color(me->strategy);
             status_ = QM_HANDLED();
@@ -2075,9 +2075,9 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
     QS_SIG_DICTIONARY(PLAY_BUZZER_SIG,    (void *)0);
     QS_SIG_DICTIONARY(START_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(RADIO_EVT_1_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(RADIO_EVT_2_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(RADIO_EVT_3_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(CHANGE_STATE_EVT_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(CHANGE_STRATEGY_EVT_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(CHANGE_PRE_STRATEGY_EVT_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STOP_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LINE_CHANGED_FL_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LINE_CHANGED_FR_SIG,  (void *)0);

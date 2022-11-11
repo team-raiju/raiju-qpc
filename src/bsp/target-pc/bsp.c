@@ -174,13 +174,13 @@ void QS_onCommand(uint8_t cmdId,
         }
 
         case 5: { 
-            QEvt evt = {.sig = RADIO_EVT_1_SIG};
+            QEvt evt = {.sig = CHANGE_STATE_EVT_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }
 
         case 6: { 
-            QEvt evt = {.sig = RADIO_EVT_2_SIG};
+            QEvt evt = {.sig = CHANGE_STRATEGY_EVT_SIG};
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             break;
         }

@@ -63,8 +63,8 @@ QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
        <action box="0,-2,14,4"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::Idle::RADIO_EVT_1}-->
-     <tran trig="RADIO_EVT_1" target="../../4">
+     <!--${AOs::SumoHSM::SM::Idle::CHANGE_STATE_EVT}-->
+     <tran trig="CHANGE_STATE_EVT" target="../../4">
       <tran_glyph conn="42,41,3,3,-19,17,12">
        <action box="-16,-3,18,2"/>
       </tran_glyph>
@@ -107,8 +107,8 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);<
        <action box="-7,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::RCWait::RADIO_EVT_1}-->
-     <tran trig="RADIO_EVT_1" target="../../7">
+     <!--${AOs::SumoHSM::SM::RCWait::CHANGE_STATE_EVT}-->
+     <tran trig="CHANGE_STATE_EVT" target="../../7">
       <tran_glyph conn="138,55,1,3,63">
        <action box="0,-2,18,3"/>
       </tran_glyph>
@@ -120,8 +120,8 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);<
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::RCWait::RADIO_EVT_2}-->
-     <tran trig="RADIO_EVT_2">
+     <!--${AOs::SumoHSM::SM::RCWait::CHANGE_STRATEGY_EVT}-->
+     <tran trig="CHANGE_STRATEGY_EVT">
       <action brief="Update Strategy">SumoHSM_change_strategy(me);
 led_stripe_set_strategy_color(me-&gt;strategy);</action>
       <tran_glyph conn="118,66,3,-1,12">
@@ -211,22 +211,22 @@ led_stripe_set_pre_strategy_color(me-&gt;pre_strategy);</entry>
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_1}-->
-     <tran trig="RADIO_EVT_1" target="../../2">
+     <!--${AOs::SumoHSM::SM::AutoWait::CHANGE_STATE_EVT}-->
+     <tran trig="CHANGE_STATE_EVT" target="../../2">
       <tran_glyph conn="71,56,1,3,47">
        <action box="1,-3,19,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_2}-->
-     <tran trig="RADIO_EVT_2">
+     <!--${AOs::SumoHSM::SM::AutoWait::CHANGE_STRATEGY_EVT}-->
+     <tran trig="CHANGE_STRATEGY_EVT">
       <action brief="change_strategy">SumoHSM_change_strategy(me);
 led_stripe_set_strategy_color(me-&gt;strategy);</action>
       <tran_glyph conn="35,63,3,-1,11">
        <action box="0,-3,29,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::AutoWait::RADIO_EVT_3}-->
-     <tran trig="RADIO_EVT_3">
+     <!--${AOs::SumoHSM::SM::AutoWait::CHANGE_PRE_STRATEGY_EVT}-->
+     <tran trig="CHANGE_PRE_STRATEGY_EVT">
       <action brief="change_pre_strategy">SumoHSM_change_pre_strategy(me);
 led_stripe_set_pre_strategy_color(me-&gt;pre_strategy);</action>
       <tran_glyph conn="35,66,3,-1,12">
@@ -350,8 +350,8 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
        <action box="0,-2,15,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_1}-->
-     <tran trig="RADIO_EVT_1" target="../../1">
+     <!--${AOs::SumoHSM::SM::CalibWait::CHANGE_STATE_EVT}-->
+     <tran trig="CHANGE_STATE_EVT" target="../../1">
       <action>led_stripe_set_all(color_purple);</action>
       <tran_glyph conn="203,46,0,1,-17,-118">
        <action box="-115,-20,17,2"/>
@@ -375,12 +375,12 @@ time_long = !time_long;
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::CalibWait::RADIO_EVT_2}-->
-     <tran trig="RADIO_EVT_2">
+     <!--${AOs::SumoHSM::SM::CalibWait::CHANGE_STRATEGY_EVT}-->
+     <tran trig="CHANGE_STRATEGY_EVT">
       <action>SumoHSM_change_strategy(me);
 led_stripe_set_strategy_color(me-&gt;strategy);</action>
       <tran_glyph conn="201,57,3,-1,12">
-       <action box="0,-2,12,2"/>
+       <action box="0,-2,23,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="201,46,26,15">
@@ -943,9 +943,9 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
     QS_SIG_DICTIONARY(PLAY_BUZZER_SIG,    (void *)0);
     QS_SIG_DICTIONARY(START_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(RADIO_EVT_1_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(RADIO_EVT_2_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(RADIO_EVT_3_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(CHANGE_STATE_EVT_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(CHANGE_STRATEGY_EVT_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(CHANGE_PRE_STRATEGY_EVT_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STOP_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LINE_CHANGED_FL_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LINE_CHANGED_FR_SIG,  (void *)0);
@@ -1029,9 +1029,9 @@ enum SumoHSMSignals {
     PLAY_BUZZER_SIG,
     START_SIG,
     STOP_SIG,
-    RADIO_EVT_1_SIG,
-    RADIO_EVT_2_SIG,
-    RADIO_EVT_3_SIG,
+    CHANGE_STATE_EVT_SIG,
+    CHANGE_STRATEGY_EVT_SIG,
+    CHANGE_PRE_STRATEGY_EVT_SIG,
     LINE_CHANGED_FL_SIG,
     LINE_CHANGED_FR_SIG,
     LINE_CHANGED_BL_SIG,
