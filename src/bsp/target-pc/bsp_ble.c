@@ -41,11 +41,21 @@ static bsp_uart_ble_callback_t external_callback;
 static void uart_callback(void *arg) {
 
     (void)arg;
-    printf("BLE Callback\r\n");
+    uint8_t ble_dma_data[BLE_RECEIVE_PACKET_SIZE];
 
-    static uint8_t ble_dma_data[BLE_PACKET_SIZE];
+
+    printf("BLE Callback = ");
+
+    for (size_t i = 0; i < sizeof(ble_dma_data); i++) {
+        ble_dma_data[i] = *(((uint8_t*) (arg)) + i); 
+        printf("0x%02x, ", ble_dma_data[i]);
+    }
+
+    printf("\r\n");
+            
+
     if (external_callback != NULL){
-        external_callback(ble_dma_data);
+        external_callback(ble_dma_data, BLE_RECEIVE_PACKET_SIZE);
     }
     
 }
@@ -73,7 +83,7 @@ void bsp_ble_transmit(uint8_t * data, uint8_t size) {
     printf("BLE Transmit Size = %d; Data:", size_to_send);
     for (int i = 0; i < size_to_send; i++)
     {
-        printf("%02x, ", data[i]);
+        printf("0x%02x, ", data[i]);
     }
     printf("\r\n");
     

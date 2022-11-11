@@ -254,11 +254,6 @@ void QS_onCommand(uint8_t cmdId,
 
         /* Generate BLE interrupt */
         case 11: {
-            printf("BLE RECEIVED = ");
-            for (size_t i = 0; i < sizeof(ble_data); i++) {
-                printf("0x%02x, ", ble_data[i]);
-            }
-            printf("\r\n");
             
             HAL_UART_Fake_UartData(UART_NUM_3, (int16_t *) ble_data);
 
