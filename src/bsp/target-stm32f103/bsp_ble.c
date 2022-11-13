@@ -55,7 +55,7 @@ void uart_error_callback(void *arg){
 
 void bsp_ble_init(){
 
-    MX_UART4_Init();
+    MX_USART3_UART_Init();
     BSP_UART_Register_Callback(UART_NUM_3, uart_callback);
     BSP_UART_Register_Error_Callback(UART_NUM_3, uart_error_callback);
 
