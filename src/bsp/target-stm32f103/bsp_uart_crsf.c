@@ -50,7 +50,7 @@ static void uart_callback(void *arg) {
         external_callback(rc_channels, RADIO_CRSF_CHANNELS);
     }
     
-	// HAL_UART_Receive_DMA(&huart4, rx_data, 1);
+	HAL_UART_Receive_DMA(&huart4, rx_data, 1);
 
 
 }

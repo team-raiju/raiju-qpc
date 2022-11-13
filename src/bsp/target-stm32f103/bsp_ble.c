@@ -25,7 +25,7 @@
 static void uart_callback(void *arg);
 static void uart_error_callback(void *arg);
 
-static uint8_t ble_dma_data[BLE_PACKET_SIZE];
+static uint8_t ble_dma_data[BLE_RECEIVE_PACKET_SIZE];
 static bsp_uart_ble_callback_t external_callback;
 
 /***************************************************************************************************
@@ -38,7 +38,7 @@ static bsp_uart_ble_callback_t external_callback;
 static void uart_callback(void *arg) {
     UNUSED(arg);
     if (external_callback != NULL){
-        external_callback(ble_dma_data);
+        external_callback(ble_dma_data, BLE_RECEIVE_PACKET_SIZE);
     }
     
 }

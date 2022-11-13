@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define NUM_OF_RADIO_CHANNELS 4
+#define NUM_OF_RADIO_CHANNELS 8
 
 typedef enum radio_channel 
 {
@@ -11,6 +11,10 @@ typedef enum radio_channel
     RADIO_CH2,
     RADIO_CH3,
     RADIO_CH4,
+    RADIO_CH5,
+    RADIO_CH6,
+    RADIO_CH7,
+    RADIO_CH8,
 } radio_channel_t;
 
 
