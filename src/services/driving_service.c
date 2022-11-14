@@ -9,11 +9,11 @@ void driving_init(){
 }
 
 void driving_enable(){
-    BSP_GPIO_Write_Pin(GPIO_MOT_EN_PORT, GPIO_BUTTON_PIN, IO_LOW);
+    BSP_GPIO_Write_Pin(GPIO_MOT_EN_PORT, GPIO_MOT_EN_PIN, IO_LOW);
 }
 
 void driving_disable(){
-    BSP_GPIO_Write_Pin(GPIO_MOT_EN_PORT, GPIO_BUTTON_PIN, IO_HIGH);
+    BSP_GPIO_Write_Pin(GPIO_MOT_EN_PORT, GPIO_MOT_EN_PIN, IO_HIGH);
 }
 
 void drive(int16_t left, int16_t right){
