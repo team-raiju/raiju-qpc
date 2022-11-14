@@ -504,6 +504,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
 /*${AOs::SumoHSM::SM::Idle} */
 static QState SumoHSM_Idle_e(SumoHSM * const me) {
     board_led_off();
+    driving_disable();
     drive(0,0);
     me->strategy = 0;
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
@@ -590,6 +591,7 @@ static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     board_led_off();
     led_stripe_set_strategy_color(me->strategy);
     drive(0,0);
+    driving_disable();
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
     return QM_ENTRY(&SumoHSM_RCWait_s);
 }
@@ -615,6 +617,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
+            driving_enable();
             status_ = QM_TRAN(&tatbl_);
             break;
         }
@@ -728,6 +731,7 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::AutoWait} */
 static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     drive(0,0);
+    driving_disable();
     board_led_on();
     led_stripe_set_strategy_color(me->strategy);
     led_stripe_set_pre_strategy_color(me->pre_strategy);
@@ -739,6 +743,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::AutoWait::START} */
         case START_SIG: {
+            driving_enable();
             /*${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_0]} */
             if (me->pre_strategy == 0) {
                 static struct {
@@ -992,6 +997,7 @@ static QState SumoHSM_CalibTurn(SumoHSM * const me, QEvt const * const e) {
 static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     board_led_on();
     drive(0,0);
+    driving_disable();
     led_stripe_set_strategy_color(me->strategy);
     me->calib_status = 0;
     QTimeEvt_disarm(&me->timeEvt_2);
@@ -1010,6 +1016,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::CalibWait::START} */
         case START_SIG: {
+            driving_enable();
             /*${AOs::SumoHSM::SM::CalibWait::START::[strategy_0||strategy_1]} */
             if (me->strategy == 0 || me->strategy == 1) {
                 static struct {

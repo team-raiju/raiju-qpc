@@ -46,6 +46,7 @@ me-&gt;buzzerCount = 0U;</action>
     <!--${AOs::SumoHSM::SM::Idle}-->
     <state name="Idle">
      <entry>board_led_off();
+driving_disable();
 drive(0,0);
 me-&gt;strategy = 0;
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
@@ -110,10 +111,12 @@ me-&gt;buzzerCount += 1;</action>
      <entry>board_led_off();
 led_stripe_set_strategy_color(me-&gt;strategy);
 drive(0,0);
+driving_disable();
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::RCWait::START}-->
      <tran trig="START" target="../../9">
+      <action>driving_enable();</action>
       <tran_glyph conn="118,65,3,3,-7,16,6">
        <action box="-7,-2,10,2"/>
       </tran_glyph>
@@ -185,11 +188,13 @@ led_stripe_set_strategy_color(me-&gt;strategy);</action>
     <!--${AOs::SumoHSM::SM::AutoWait}-->
     <state name="AutoWait">
      <entry>drive(0,0);
+driving_disable();
 board_led_on();
 led_stripe_set_strategy_color(me-&gt;strategy);
 led_stripe_set_pre_strategy_color(me-&gt;pre_strategy);</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
+      <action>driving_enable();</action>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[pre_strategy_0]}-->
       <choice target="../../../12" cpref="../../../19/0">
        <guard brief="pre_strategy_0">me-&gt;pre_strategy == 0</guard>
@@ -335,6 +340,7 @@ drive(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
     <state name="CalibWait">
      <entry>board_led_on();
 drive(0,0);
+driving_disable();
 led_stripe_set_strategy_color(me-&gt;strategy);
 me-&gt;calib_status = 0;
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
@@ -343,6 +349,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::CalibWait::START}-->
      <tran trig="START">
+      <action>driving_enable();</action>
       <!--${AOs::SumoHSM::SM::CalibWait::START::[strategy_0||strategy_1]}-->
       <choice target="../../../6">
        <guard brief="strategy_0 || strategy_1">me-&gt;strategy == 0 || me-&gt;strategy == 1</guard>
