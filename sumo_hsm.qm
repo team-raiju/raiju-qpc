@@ -39,7 +39,7 @@
 QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
 
 me-&gt;buzzerCount = 0U;</action>
-     <initial_glyph conn="72,7,5,1,21,6,-8">
+     <initial_glyph conn="73,4,5,1,20,9,-8">
       <action box="0,-2,7,2"/>
      </initial_glyph>
     </initial>
@@ -53,13 +53,17 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 // Send Ble Data
 char buffer[20];
 snprintf(buffer, 20, &quot;turn:%hu:%hu&quot;,  me-&gt;turn_180_time_ms,  me-&gt;turn_180_time_ms);
-ble_service_send_data((uint8_t *)buffer, 20);</entry>
+ble_service_send_data((uint8_t *)buffer, 20);
+
+if (adc_get_low_battery()){
+    led_stripe_set_all(color_red);
+}</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
      <tran trig="TIMEOUT">
       <action>board_led_toggle();</action>
-      <tran_glyph conn="42,30,3,-1,14">
+      <tran_glyph conn="42,24,3,-1,15">
        <action box="0,-2,14,4"/>
       </tran_glyph>
      </tran>
@@ -89,7 +93,14 @@ me-&gt;buzzerCount += 1;</action>
        <action box="0,-2,12,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="42,11,43,33">
+     <!--${AOs::SumoHSM::SM::Idle::LOW_BATTERY}-->
+     <tran trig="LOW_BATTERY">
+      <action>led_stripe_set_all(color_red);</action>
+      <tran_glyph conn="42,29,3,-1,20">
+       <action box="0,-2,24,4"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="42,7,43,37">
       <entry box="1,2,24,6"/>
       <exit box="1,8,38,7"/>
      </state_glyph>
@@ -660,7 +671,7 @@ BSP_eeprom_write(TURN_180_TIME_ADDR, me-&gt;turn_180_time_ms);
      <state name="LineGoBack">
       <entry brief="go_back">drive(-100,-100);
 
-if (line_is_white(LINE_FL)){
+if (adc_line_is_white(LINE_FL)){
     QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
 } else {
     QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 250, 0);
@@ -891,7 +902,7 @@ if (BSP_eeprom_read(STAR_VELOCITY_ADDR, &amp;eeprom_data) ==  EEPROM_OK){
 #include &quot;buzzer_service.h&quot;
 #include &quot;radio_service.h&quot;
 #include &quot;distance_service.h&quot;
-#include &quot;line_service.h&quot;
+#include &quot;adc_service.h&quot;
 #include &quot;bsp_eeprom.h&quot;
 #include &quot;ble_service.h&quot;
 
@@ -955,6 +966,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
 
 
 }
@@ -1041,6 +1053,7 @@ enum SumoHSMSignals {
     BUTTON_SIG,
     START_MODULE_CHECK_SIG,
     BLE_DATA_SIG,
+    LOW_BATTERY_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 

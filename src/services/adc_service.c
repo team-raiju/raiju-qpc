@@ -5,15 +5,25 @@
 #include "qpc.h"    
 #include "bsp.h"
 
-#include "line_service.h"
+#include "adc_service.h"
 #include "bsp_adc_dma.h"
 
 
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
+#define ADC_MAX_VALUE             4095.0
+#define ADC_MAX_VOLTAGE           3.3  
 
-#define WHITE_THRESHOLD 1000
+#define WHITE_THRESHOLD           1000
+
+#define BATTERY_THRESHOLD_MV      1480.0
+#define BAT_VOLTAGE_DIV_R1        47.0
+#define BAT_VOLTAGE_DIV_R2        10.0
+#define BAT_VOLTAGE_MULTIPLIER   ((BAT_VOLTAGE_DIV_R1 + BAT_VOLTAGE_DIV_R2)/BAT_VOLTAGE_DIV_R2)
+
+
+#define  BAT_POSITION_IN_ADC  0
 
 /***************************************************************************************************
  * LOCAL TYPEDEFS
@@ -27,12 +37,14 @@ typedef enum line_position_in_adc
     LINE_POS_BL = 1,
 } line_position_in_adc_t;
 
+
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
-
-static void gen_line_events();
-static void line_data_interrupt(uint32_t* out_data);
+static void battery_value_update(uint16_t bat_raw_adc);
+static void adc_data_interrupt(uint32_t* out_data);
+static void gen_line_events(void);
+static void gen_battery_events(void);
 
 /***************************************************************************************************
  * LOCAL VARIABLES
@@ -40,6 +52,8 @@ static void line_data_interrupt(uint32_t* out_data);
 
 static volatile bool line_sensor_is_white[NUM_OF_LINE_SENSORS];
 static volatile bool line_sensor_is_white_last[NUM_OF_LINE_SENSORS];
+static volatile double battery_voltage_mv;
+static volatile double battery_voltage_mv_last;
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -49,7 +63,27 @@ static volatile bool line_sensor_is_white_last[NUM_OF_LINE_SENSORS];
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void gen_line_events(){
+static void battery_value_update(uint16_t bat_raw_adc){
+
+    double measured_voltage = (bat_raw_adc / ADC_MAX_VALUE) * ADC_MAX_VOLTAGE;
+    
+    battery_voltage_mv = (measured_voltage * BAT_VOLTAGE_MULTIPLIER);
+
+    gen_battery_events();
+
+    battery_voltage_mv_last = battery_voltage_mv;
+}
+
+static void gen_battery_events() {
+
+    if (battery_voltage_mv_last > BATTERY_THRESHOLD_MV && battery_voltage_mv <= BATTERY_THRESHOLD_MV){
+        QEvt evt = {.sig = LOW_BATTERY_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+}
+
+static void gen_line_events(void){
 
     bool line_changed[NUM_OF_LINE_SENSORS] = {0};
     for (int i = 0; i < NUM_OF_LINE_SENSORS; i++) {
@@ -98,7 +132,7 @@ static void line_sensor_update(uint32_t* adc_raw_data) {
 
 }
 
-static void line_data_interrupt(uint32_t* out_data){
+static void adc_data_interrupt(uint32_t* out_data){
 
     uint32_t aux_readings[ADC_DMA_CHANNELS];
 
@@ -114,21 +148,24 @@ static void line_data_interrupt(uint32_t* out_data){
 
     line_sensor_update(aux_readings);
 
+    battery_value_update(aux_readings[BAT_POSITION_IN_ADC]);
+
+
 }
 
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void line_service_init() {
+void adc_service_init() {
     BSP_ADC_DMA_Init();
     BSP_ADC_DMA_Start();
-    BSP_ADC_DMA_Register_Callback(line_data_interrupt);
+    BSP_ADC_DMA_Register_Callback(adc_data_interrupt);
 }
 
 
 
-bool line_is_white(line_sensor_t position){
+bool adc_line_is_white(line_sensor_t position){
 
     if (position > NUM_OF_LINE_SENSORS){
         return 0;
@@ -136,4 +173,12 @@ bool line_is_white(line_sensor_t position){
 
     return line_sensor_is_white[position];
 
+}
+
+bool adc_get_low_battery() {
+    return (battery_voltage_mv <= BATTERY_THRESHOLD_MV);
+}
+
+double adc_get_battery_mv(){
+    return battery_voltage_mv;
 }

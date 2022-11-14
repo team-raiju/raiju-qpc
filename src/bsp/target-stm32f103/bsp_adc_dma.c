@@ -35,7 +35,9 @@ void BSP_ADC_DMA_Init(void) {
 } 
 
 void BSP_ADC_DMA_Start(void) {
+
     HAL_ADC_Start_DMA(&hadc1, dma_buffer, ADC_DMA_BUFFER_SIZE);
+    
 }
 
 void BSP_ADC_DMA_Stop(void) {

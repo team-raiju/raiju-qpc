@@ -1,5 +1,5 @@
-#ifndef LINE_SERVICE_H
-#define LINE_SERVICE_H
+#ifndef ADC_SERVICE_H
+#define ADC_SERVICE_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -16,7 +16,9 @@ typedef enum line_sensor
 } line_sensor_t;
 
 
-void line_service_init(void);
-bool line_is_white(line_sensor_t position);
+void adc_service_init(void);
+bool adc_line_is_white(line_sensor_t position);
+bool adc_get_low_battery(void);
+double adc_get_battery_mv(void);
 
-#endif /* LINE_SERVICE_H */
+#endif /* ADC_SERVICE_H */

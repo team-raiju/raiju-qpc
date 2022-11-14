@@ -10,6 +10,7 @@ typedef struct color {
 } color_t;
 
 extern color_t color_purple;
+extern color_t color_red;
 
 void board_led_toggle();
 void board_led_on();

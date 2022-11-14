@@ -45,7 +45,7 @@
 #include "buzzer_service.h"
 #include "radio_service.h"
 #include "distance_service.h"
-#include "line_service.h"
+#include "adc_service.h"
 #include "bsp_eeprom.h"
 #include "ble_service.h"
 
@@ -512,6 +512,10 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
     char buffer[20];
     snprintf(buffer, 20, "turn:%hu:%hu",  me->turn_180_time_ms,  me->turn_180_time_ms);
     ble_service_send_data((uint8_t *)buffer, 20);
+
+    if (adc_get_low_battery()){
+        led_stripe_set_all(color_red);
+    }
     return QM_ENTRY(&SumoHSM_Idle_s);
 }
 /*${AOs::SumoHSM::SM::Idle} */
@@ -565,11 +569,18 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
+        /*${AOs::SumoHSM::SM::Idle::LOW_BATTERY} */
+        case LOW_BATTERY_SIG: {
+            led_stripe_set_all(color_red);
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -1660,7 +1671,7 @@ static QState SumoHSM_LineSubmachine(SumoHSM * const me, QEvt const * const e) {
 static QState SumoHSM_LineSubmachine_LineGoBack_e(SumoHSM * const me) {
     drive(-100,-100);
 
-    if (line_is_white(LINE_FL)){
+    if (adc_line_is_white(LINE_FL)){
         QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
     } else {
         QTimeEvt_armX(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 250, 0);
@@ -2087,6 +2098,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
 
 
 }

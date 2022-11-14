@@ -74,6 +74,7 @@ enum SumoHSMSignals {
     BUTTON_SIG,
     START_MODULE_CHECK_SIG,
     BLE_DATA_SIG,
+    LOW_BATTERY_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 
