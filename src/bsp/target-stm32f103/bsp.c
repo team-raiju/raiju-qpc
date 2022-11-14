@@ -72,8 +72,6 @@ void BSP_init(void)   {
     MX_GPIO_Init();
     MX_DMA_Init();
 
-    MX_ADC1_Init();
-
 }
 
 

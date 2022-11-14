@@ -24,6 +24,7 @@ typedef enum line_position_in_adc_fake
 
 
 bsp_adc_dma_callback_t adc_dma_callback_function;
+static bool enabled;
 
 
 static void default_adc_dma_callback(uint32_t * out_data) {
@@ -32,6 +33,10 @@ static void default_adc_dma_callback(uint32_t * out_data) {
 
 
 void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br) {
+
+    if (!enabled){
+        return;
+    }
 
     uint32_t dma_buffer[ADC_DMA_HALF_BUFFER_SIZE];
 
@@ -61,17 +66,22 @@ void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br) {
 }
 
 
+void BSP_ADC_DMA_Init(void) {
+    printf("ADC DMA Init \r\n"); 
+    BSP_ADC_DMA_Register_Callback(default_adc_dma_callback);
+}
 
 void BSP_ADC_DMA_Start(void) {
 
-    printf("ADC DMA Init \r\n"); 
-    BSP_ADC_DMA_Register_Callback(default_adc_dma_callback);
+    printf("ADC DMA Start \r\n"); 
+    enabled = true;
 
 }
 
 void BSP_ADC_DMA_Stop(void) {
 
     printf("ADC DMA Stop \r\n"); 
+    enabled = false;
 
 
 }

@@ -38,8 +38,8 @@ static void line_data_interrupt(uint32_t* out_data);
  * LOCAL VARIABLES
  **************************************************************************************************/
 
-volatile bool line_sensor_is_white[NUM_OF_LINE_SENSORS];
-volatile bool line_sensor_is_white_last[NUM_OF_LINE_SENSORS];
+static volatile bool line_sensor_is_white[NUM_OF_LINE_SENSORS];
+static volatile bool line_sensor_is_white_last[NUM_OF_LINE_SENSORS];
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -121,6 +121,7 @@ static void line_data_interrupt(uint32_t* out_data){
  **************************************************************************************************/
 
 void line_service_init() {
+    BSP_ADC_DMA_Init();
     BSP_ADC_DMA_Start();
     BSP_ADC_DMA_Register_Callback(line_data_interrupt);
 }

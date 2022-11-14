@@ -11,6 +11,7 @@
 
 typedef void( * bsp_adc_dma_callback_t) (uint32_t * out_data);
 
+void BSP_ADC_DMA_Init();
 void BSP_ADC_DMA_Start();
 void BSP_ADC_DMA_Stop();
 void BSP_ADC_DMA_Register_Callback(bsp_adc_dma_callback_t callback_function);
