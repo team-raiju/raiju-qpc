@@ -24,6 +24,10 @@
    <attribute name="calib_status" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::pre_strategy}-->
    <attribute name="pre_strategy" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::timeEvtBle}-->
+   <attribute name="timeEvtBle" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::ble_counter}-->
+   <attribute name="ble_counter" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::SM}-->
    <statechart properties="0x03">
     <!--${AOs::SumoHSM::SM::initial}-->
@@ -35,7 +39,7 @@
 QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
 
 me-&gt;buzzerCount = 0U;</action>
-     <initial_glyph conn="73,4,5,1,20,9,-8">
+     <initial_glyph conn="95,2,5,1,-2,11,-8">
       <action box="0,-2,7,2"/>
      </initial_glyph>
     </initial>
@@ -57,13 +61,13 @@ bsp_ble_start();</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
      <tran trig="TIMEOUT">
       <action>board_led_toggle();</action>
-      <tran_glyph conn="42,24,3,-1,15">
+      <tran_glyph conn="42,17,3,-1,17">
        <action box="0,-2,14,4"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../4">
-      <tran_glyph conn="42,41,3,3,-19,17,12">
+      <tran_glyph conn="42,43,3,3,-19,15,12">
        <action box="-16,-3,18,2"/>
       </tran_glyph>
      </tran>
@@ -84,14 +88,14 @@ if (me-&gt;buzzerCount == 15) {
 
 
 me-&gt;buzzerCount += 1;</action>
-      <tran_glyph conn="42,34,3,-1,14">
+      <tran_glyph conn="42,25,3,-1,17">
        <action box="0,-2,12,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::LOW_BATTERY}-->
      <tran trig="LOW_BATTERY">
       <action>led_stripe_set_all(color_red);</action>
-      <tran_glyph conn="42,29,3,-1,20">
+      <tran_glyph conn="42,21,3,-1,17">
        <action box="0,-2,24,4"/>
       </tran_glyph>
      </tran>
@@ -100,19 +104,32 @@ me-&gt;buzzerCount += 1;</action>
       <action>ble_data_header_t last_header = ble_service_last_packet_type();
 
 if (last_header == BLE_REQUEST_DATA){
-    parameters_report(parameters);
+    me-&gt;ble_counter = 0;
+    QTimeEvt_armX(&amp;me-&gt;timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);
 } else if (last_header == BLE_UPDATE_PARAMETERS) {
     ble_rcv_packet_t last_data;
     ble_service_last_packet(&amp;last_data);
     parameters_update_from_ble(&amp;parameters, last_data._raw);
 }</action>
-      <tran_glyph conn="42,36,3,-1,14">
+      <tran_glyph conn="42,29,3,-1,17">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="42,7,43,37">
+     <!--${AOs::SumoHSM::SM::Idle::TIMEOUT_SEND_BLE}-->
+     <tran trig="TIMEOUT_SEND_BLE">
+      <action>if (me-&gt;ble_counter &lt; 8){
+    parameters_report(parameters, me-&gt;ble_counter);
+    QTimeEvt_armX(&amp;me-&gt;timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);
+}
+
+me-&gt;ble_counter++;</action>
+      <tran_glyph conn="42,32,3,-1,17">
+       <action box="0,-2,19,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="42,1,43,43">
       <entry box="1,2,24,6"/>
-      <exit box="1,8,38,7"/>
+      <exit box="1,8,38,4"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::RCWait}-->
@@ -876,11 +893,12 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
 QMActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super.super, TIMEOUT_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt_2, &amp;me-&gt;super.super, TIMEOUT_2_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;timeEvtBle, &amp;me-&gt;super.super, TIMEOUT_SEND_BLE_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super.super, PLAY_BUZZER_SIG, 0U);
 me-&gt;calib_time_1 = 0;
 me-&gt;calib_time_2 = 0;
 me-&gt;calib_status = 0;
-
+me-&gt;ble_counter = 0;
 parameters_init(&amp;parameters);
 </code>
   </operation>
@@ -970,6 +988,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(TIMEOUT_SEND_BLE_SIG,  (void *)0);
 
 
 }
@@ -1057,6 +1076,7 @@ enum SumoHSMSignals {
     START_MODULE_CHECK_SIG,
     BLE_DATA_SIG,
     LOW_BATTERY_SIG,
+    TIMEOUT_SEND_BLE_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 

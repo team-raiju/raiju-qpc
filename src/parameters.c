@@ -6,8 +6,8 @@
 #include "bsp_eeprom.h"
 
 const char * strategy_names[] = {
-    "STAR",
-    "SMALL_STEPS"
+    "star",
+    "small steps"
 };
 
 
@@ -59,39 +59,38 @@ void parameters_init(sumo_parameters_t *params){
 }
 
 
-void parameters_report(sumo_parameters_t params){
+void parameters_report(sumo_parameters_t params, uint8_t config_num){
 
-    char buffer[20];
-
-    for (long unsigned int i = 0; i < len(strategy_names); i++) {
-        snprintf(buffer, 20, "ss:%ld:%s", i, strategy_names[i]);
-        ble_service_send_data((uint8_t *)buffer, 20);
-        memset(buffer, '\0', sizeof(buffer));
+    char buffer[20] = {0};
+    switch (config_num)
+    {
+        case 0:
+            snprintf(buffer, 20, "ss:%d:%s", 0, strategy_names[0]);
+            break;
+        case 1:
+            snprintf(buffer, 20, "ss:%d:%s", 1, strategy_names[1]);
+            break;
+        case 2:
+            snprintf(buffer, 20, "sens:%hu:%hu", params.enabled_distance_sensors, params.enabled_line_sensors);
+            break;
+        case 3:
+            snprintf(buffer, 20, "rev:%hu:%hu", params.reverse_speed, params.reverse_time_ms);
+            break;
+        case 4:
+            snprintf(buffer, 20, "turn:%hu:%hu", params.turn_speed, params.turn_180_time_ms);
+            break;
+        case 5:
+            snprintf(buffer, 20, "step:%hu", params.step_wait_time_ms);
+            break;
+        case 6:
+            snprintf(buffer, 20, "str:%hu:%hu", params.current_pre_strategy, params.current_strategy);
+            break;
+        case 7:
+            snprintf(buffer, 20, "mms:%hu", params.max_speed);
+            break;
     }
 
-    snprintf(buffer, 20, "sens:%hu:%hu", params.enabled_distance_sensors, params.enabled_line_sensors);
     ble_service_send_data((uint8_t *)buffer, 20);
-    memset(buffer, '\0', sizeof(buffer));
-
-    snprintf(buffer, 20, "rev:%hu:%hu", params.reverse_speed, params.reverse_time_ms);
-    ble_service_send_data((uint8_t *)buffer, 20);
-    memset(buffer, '\0', sizeof(buffer));
-
-    snprintf(buffer, 20, "turn:%hu:%hu", params.turn_speed, params.turn_180_time_ms);
-    ble_service_send_data((uint8_t *)buffer, 20);
-    memset(buffer, '\0', sizeof(buffer));
-
-    snprintf(buffer, 20, "step:%hu", params.step_wait_time_ms);
-    ble_service_send_data((uint8_t *)buffer, 20);
-    memset(buffer, '\0', sizeof(buffer));
-
-    snprintf(buffer, 20, "str:%hu:%hu", params.current_pre_strategy, params.current_strategy);
-    ble_service_send_data((uint8_t *)buffer, 20);
-    memset(buffer, '\0', sizeof(buffer));
-
-    snprintf(buffer, 20, "mms:%hu", params.max_speed);
-    ble_service_send_data((uint8_t *)buffer, 20);
-    memset(buffer, '\0', sizeof(buffer));
 
 }
 
@@ -110,4 +109,6 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * last_data){
     params->current_pre_strategy = ble_packet.preStrategy;
     params->current_strategy = ble_packet.strategy;
     params->max_speed = ble_packet.maxMotorSpeed;
+
+    // Save in eeprom
 }

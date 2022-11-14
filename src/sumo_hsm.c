@@ -75,6 +75,8 @@ typedef struct {
     uint32_t calib_time_2;
     uint8_t calib_status;
     uint8_t pre_strategy;
+    QTimeEvt timeEvtBle;
+    uint8_t ble_counter;
 
 /* private submachines */
     /* exit points for submachine ${AOs::SumoHSM::SM::LineSubmachine} */
@@ -404,11 +406,12 @@ void SumoHSM_ctor(void) {
     QMActive_ctor(&me->super, Q_STATE_CAST(&SumoHSM_initial));
     QTimeEvt_ctorX(&me->timeEvt, &me->super.super, TIMEOUT_SIG, 0U);
     QTimeEvt_ctorX(&me->timeEvt_2, &me->super.super, TIMEOUT_2_SIG, 0U);
+    QTimeEvt_ctorX(&me->timeEvtBle, &me->super.super, TIMEOUT_SEND_BLE_SIG, 0U);
     QTimeEvt_ctorX(&me->buzzerTimeEvt, &me->super.super, PLAY_BUZZER_SIG, 0U);
     me->calib_time_1 = 0;
     me->calib_time_2 = 0;
     me->calib_status = 0;
-
+    me->ble_counter = 0;
     parameters_init(&parameters);
 
 }
@@ -564,7 +567,8 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             ble_data_header_t last_header = ble_service_last_packet_type();
 
             if (last_header == BLE_REQUEST_DATA){
-                parameters_report(parameters);
+                me->ble_counter = 0;
+                QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);
             } else if (last_header == BLE_UPDATE_PARAMETERS) {
                 ble_rcv_packet_t last_data;
                 ble_service_last_packet(&last_data);
@@ -573,12 +577,22 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
+        /*${AOs::SumoHSM::SM::Idle::TIMEOUT_SEND_BLE} */
+        case TIMEOUT_SEND_BLE_SIG: {
+            if (me->ble_counter < 8){
+                parameters_report(parameters, me->ble_counter);
+                QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);
+            }
+
+            me->ble_counter++;
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
-    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -2104,6 +2118,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(TIMEOUT_SEND_BLE_SIG,  (void *)0);
 
 
 }

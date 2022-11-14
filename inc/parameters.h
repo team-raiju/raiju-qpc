@@ -26,7 +26,7 @@ typedef struct sumo_parameters {
 
 } sumo_parameters_t;
 
-void parameters_report(sumo_parameters_t params);
+void parameters_report(sumo_parameters_t params, uint8_t config_num);
 void parameters_init(sumo_parameters_t *params);
 void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * last_data);
 
