@@ -60,7 +60,8 @@ if (adc_get_low_battery()){
     led_stripe_set_all(color_red);
 }</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);</exit>
+QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);
+buzzer_stop();</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
      <tran trig="TIMEOUT">
       <action>board_led_toggle();</action>

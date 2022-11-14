@@ -59,17 +59,17 @@ static void radio_dispatch_events(){
     QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
 
 
-    if (radio_data[RADIO_CH3] > 75 && last_radio_data[RADIO_CH3] < 75){
+    if (radio_data[RADIO_CH3] > 75 && last_radio_data[RADIO_CH3] <= 75){
         QEvt evt = {.sig = CHANGE_STATE_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
-    if (radio_data[RADIO_CH4] > 75 && last_radio_data[RADIO_CH4] < 75){
+    if (radio_data[RADIO_CH4] > 75 && last_radio_data[RADIO_CH4] <= 75){
         QEvt evt = {.sig = CHANGE_STRATEGY_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
-    if (radio_data[RADIO_CH2] > 75 && last_radio_data[RADIO_CH2] < 75){
+    if (radio_data[RADIO_CH2] > 75 && last_radio_data[RADIO_CH2] <= 75){
         QEvt evt = {.sig = CHANGE_PRE_STRATEGY_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
@@ -86,7 +86,9 @@ static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
 
     ppm_val = constrain(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS);
 
-    radio_data[ppm_num] = map(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS, CHANNEL_MIN_VAL, CHANNEL_MAX_VAL);
+    int8_t current_data = map(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS, CHANNEL_MIN_VAL, CHANNEL_MAX_VAL);
+
+    radio_data[ppm_num] = (current_data + last_radio_data[ppm_num] * 10) / 11.0;
 
     radio_dispatch_events();
 

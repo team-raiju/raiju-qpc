@@ -523,6 +523,7 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
 static QState SumoHSM_Idle_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->buzzerTimeEvt);
+    buzzer_stop();
     return QM_EXIT(&SumoHSM_Idle_s);
 }
 /*${AOs::SumoHSM::SM::Idle} */
