@@ -14,6 +14,8 @@
 #include "qs_defines.h"
 #endif
 
+#define FAKE_ADC_BATTERY_POSITION 0
+
 typedef enum line_position_in_adc_fake 
 {
     FAKE_LINE_POS_FR = 3, 
@@ -55,6 +57,8 @@ void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br) {
                 case FAKE_LINE_POS_BL:
                     dma_buffer[i + j] = 2000 * br;
                     break;
+                case FAKE_ADC_BATTERY_POSITION:
+                    dma_buffer[i + j] = 4095;
                 default:
                     dma_buffer[i + j] = 0;
                     break;

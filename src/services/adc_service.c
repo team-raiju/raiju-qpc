@@ -13,11 +13,11 @@
  * LOCAL DEFINES
  **************************************************************************************************/
 #define ADC_MAX_VALUE             4095.0
-#define ADC_MAX_VOLTAGE           3.3  
+#define ADC_MAX_VOLTAGE_MV        3300  
 
 #define WHITE_THRESHOLD           1000
 
-#define BATTERY_THRESHOLD_MV      1480.0
+#define BATTERY_THRESHOLD_MV      14800.0
 #define BAT_VOLTAGE_DIV_R1        47.0
 #define BAT_VOLTAGE_DIV_R2        10.0
 #define BAT_VOLTAGE_MULTIPLIER   ((BAT_VOLTAGE_DIV_R1 + BAT_VOLTAGE_DIV_R2)/BAT_VOLTAGE_DIV_R2)
@@ -52,8 +52,8 @@ static void gen_battery_events(void);
 
 static volatile bool line_sensor_is_white[NUM_OF_LINE_SENSORS];
 static volatile bool line_sensor_is_white_last[NUM_OF_LINE_SENSORS];
-static volatile double battery_voltage_mv;
-static volatile double battery_voltage_mv_last;
+static volatile double battery_voltage_mv = 16000;
+static volatile double battery_voltage_mv_last = 0;
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -65,7 +65,7 @@ static volatile double battery_voltage_mv_last;
 
 static void battery_value_update(uint16_t bat_raw_adc){
 
-    double measured_voltage = (bat_raw_adc / ADC_MAX_VALUE) * ADC_MAX_VOLTAGE;
+    double measured_voltage = (bat_raw_adc / ADC_MAX_VALUE) * ADC_MAX_VOLTAGE_MV;
     
     battery_voltage_mv = (measured_voltage * BAT_VOLTAGE_MULTIPLIER);
 
