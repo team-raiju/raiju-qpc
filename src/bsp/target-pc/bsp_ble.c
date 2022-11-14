@@ -3,6 +3,8 @@
  **************************************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
+
 #include "bsp_uart.h"
 #include "bsp_ble.h"
 #include "utils.h"
@@ -30,6 +32,8 @@
 static void uart_callback(void *arg);
 static void uart_error_callback(void *arg);
 static bsp_uart_ble_callback_t external_callback;
+static bool ble_running;
+
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -39,6 +43,10 @@ static bsp_uart_ble_callback_t external_callback;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 static void uart_callback(void *arg) {
+
+    if (!ble_running){
+        return;
+    }
 
     (void)arg;
     uint8_t ble_dma_data[BLE_RECEIVE_PACKET_SIZE];
@@ -74,6 +82,19 @@ void bsp_ble_init(){
     printf("BLE Service Init\r\n");
     BSP_UART_Register_Callback(UART_NUM_3, uart_callback);
     BSP_UART_Register_Error_Callback(UART_NUM_3, uart_error_callback);
+    ble_running = false;
+
+}
+
+void bsp_ble_start(void) {
+    if (!ble_running) {
+        ble_running = true;
+    }
+
+}
+
+void bsp_ble_stop(void){
+    ble_running = false;
 }
 
 void bsp_ble_transmit(uint8_t * data, uint8_t size) {

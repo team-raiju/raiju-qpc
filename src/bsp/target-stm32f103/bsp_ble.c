@@ -1,6 +1,7 @@
 /***************************************************************************************************
  * INCLUDES
  **************************************************************************************************/
+#include <stdbool.h>
 #include "usart.h"
 #include "bsp_uart.h"
 #include "bsp_ble.h"
@@ -27,6 +28,7 @@ static void uart_error_callback(void *arg);
 
 static uint8_t ble_dma_data[BLE_RECEIVE_PACKET_SIZE];
 static bsp_uart_ble_callback_t external_callback;
+static bool ble_running;
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -59,9 +61,23 @@ void bsp_ble_init(){
     BSP_UART_Register_Callback(UART_NUM_3, uart_callback);
     BSP_UART_Register_Error_Callback(UART_NUM_3, uart_error_callback);
 
-    HAL_UART_Receive_DMA(&huart3, ble_dma_data, sizeof(ble_dma_data));
+    ble_running = false;
+}
+
+void bsp_ble_start(void) {
+    if (!ble_running) {
+        ble_running = true;
+        HAL_UART_Receive_DMA(&huart3, ble_dma_data, sizeof(ble_dma_data));
+    }
 
 }
+
+void bsp_ble_stop(void){
+    ble_running = false;
+    HAL_UART_DMAStop(&huart3);
+}
+
+
 
 void bsp_ble_transmit(uint8_t * data, uint8_t size) {
 

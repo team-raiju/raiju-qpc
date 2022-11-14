@@ -524,6 +524,7 @@ static QState SumoHSM_Idle_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->buzzerTimeEvt);
     buzzer_stop();
+    bsp_ble_start();
     return QM_EXIT(&SumoHSM_Idle_s);
 }
 /*${AOs::SumoHSM::SM::Idle} */
@@ -564,6 +565,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
                 led_stripe_set(me->buzzerCount, color_purple);
             } else{
                 buzzer_stop();
+                bsp_ble_start();
             }
 
 

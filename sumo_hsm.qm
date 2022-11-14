@@ -61,7 +61,8 @@ if (adc_get_low_battery()){
 }</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);
-buzzer_stop();</exit>
+buzzer_stop();
+bsp_ble_start();</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
      <tran trig="TIMEOUT">
       <action>board_led_toggle();</action>
@@ -87,6 +88,7 @@ if (me-&gt;buzzerCount == 15) {
     led_stripe_set(me-&gt;buzzerCount, color_purple);
 } else{
     buzzer_stop();
+    bsp_ble_start();
 }
 
 
