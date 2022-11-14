@@ -17,7 +17,7 @@ typedef enum eeprom_result {
 
 typedef enum eeprom_addresses {
 
-    STAR_VELOCITY_ADDR,
+    STAR_SPEED_ADDR,
     TURN_180_TIME_ADDR,
 
 } eeprom_addresses_t;

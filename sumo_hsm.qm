@@ -22,10 +22,6 @@
    <attribute name="calib_time_2" type="uint32_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::calib_status}-->
    <attribute name="calib_status" type="uint8_t" visibility="0x02" properties="0x00"/>
-   <!--${AOs::SumoHSM::turn_180_time_ms}-->
-   <attribute name="turn_180_time_ms" type="uint16_t" visibility="0x02" properties="0x00"/>
-   <!--${AOs::SumoHSM::star_velocity}-->
-   <attribute name="star_velocity" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::pre_strategy}-->
    <attribute name="pre_strategy" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::SM}-->
@@ -50,11 +46,6 @@ driving_disable();
 drive(0,0);
 me-&gt;strategy = 0;
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
-
-// Send Ble Data
-char buffer[20];
-snprintf(buffer, 20, &quot;turn:%hu:%hu&quot;,  me-&gt;turn_180_time_ms,  me-&gt;turn_180_time_ms);
-ble_service_send_data((uint8_t *)buffer, 20);
 
 if (adc_get_low_battery()){
     led_stripe_set_all(color_red);
@@ -102,6 +93,21 @@ me-&gt;buzzerCount += 1;</action>
       <action>led_stripe_set_all(color_red);</action>
       <tran_glyph conn="42,29,3,-1,20">
        <action box="0,-2,24,4"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::Idle::BLE_DATA}-->
+     <tran trig="BLE_DATA">
+      <action>ble_data_header_t last_header = ble_service_last_packet_type();
+
+if (last_header == BLE_REQUEST_DATA){
+    parameters_report(parameters);
+} else if (last_header == BLE_UPDATE_PARAMETERS) {
+    ble_rcv_packet_t last_data;
+    ble_service_last_packet(&amp;last_data);
+    parameters_update_from_ble(&amp;parameters, last_data._raw);
+}</action>
+      <tran_glyph conn="42,36,3,-1,14">
+       <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="42,7,43,37">
@@ -152,7 +158,7 @@ led_stripe_set_strategy_color(me-&gt;strategy);</action>
     </state>
     <!--${AOs::SumoHSM::SM::StarStrategy}-->
     <state name="StarStrategy">
-     <entry>drive(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
+     <entry>drive(parameters.star_speed, parameters.star_speed);</entry>
      <!--${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../10">
       <tran_glyph conn="24,115,3,3,-8,28,8">
@@ -322,7 +328,7 @@ if (distance_is_active(DIST_SENSOR_R)) {
     <!--${AOs::SumoHSM::SM::CalibTurn}-->
     <state name="CalibTurn">
      <entry>QTimeEvt_armX(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF, 0);
-drive(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
+drive(parameters.star_speed, parameters.star_speed);</entry>
      <!--${AOs::SumoHSM::SM::CalibTurn::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../16">
       <tran_glyph conn="175,79,3,1,43,9,-4">
@@ -412,7 +418,7 @@ led_stripe_set_strategy_color(me-&gt;strategy);</action>
     <!--${AOs::SumoHSM::SM::CalibFront}-->
     <state name="CalibFront">
      <entry>QTimeEvt_armX(&amp;me-&gt;timeEvt_2, 0xFFFFFFFF, 0);
-drive(me-&gt;star_velocity, me-&gt;star_velocity);</entry>
+drive(parameters.star_speed, parameters.star_speed);</entry>
      <!--${AOs::SumoHSM::SM::CalibFront::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../14">
       <tran_glyph conn="225,79,3,3,-2,9,2">
@@ -546,8 +552,8 @@ drive(mot1, mot2);</action>
 
 uint32_t time_until_line = 0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2);
 int16_t diff_to_reference = time_until_line - reference;
-me-&gt;star_velocity += (diff_to_reference / 5);
-BSP_eeprom_write(STAR_VELOCITY_ADDR, me-&gt;star_velocity);
+parameters.star_speed += (diff_to_reference / 5);
+BSP_eeprom_write(STAR_SPEED_ADDR, parameters.star_speed);
 
 drive(-100,-100);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
@@ -571,7 +577,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
     <!--${AOs::SumoHSM::SM::CalibeFrontTurn}-->
     <state name="CalibeFrontTurn">
      <entry brief="turn">drive(-100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms, 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms, 0);</entry>
      <!--${AOs::SumoHSM::SM::CalibeFrontTurn::TIMEOUT, STOP}-->
      <tran trig="TIMEOUT, STOP" target="../../7">
       <action>QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</action>
@@ -609,7 +615,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
     <state name="CalibeLineTurn">
      <entry brief="turn">drive(-100,100);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms, 0);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms, 0);
 </entry>
      <!--${AOs::SumoHSM::SM::CalibeLineTurn::TIMEOUT}-->
      <tran trig="TIMEOUT">
@@ -637,12 +643,12 @@ if (me-&gt;calib_time_2 &gt; me-&gt;calib_time_1){
 }
 
 if (me-&gt;strategy == 0) {
-    me-&gt;turn_180_time_ms += angle_diff * CALIB_ANGLE_MULT;
+    parameters.turn_180_time_ms += angle_diff * CALIB_ANGLE_MULT;
 } else {
-    me-&gt;turn_180_time_ms -= angle_diff * CALIB_ANGLE_MULT;
+    parameters.turn_180_time_ms -= angle_diff * CALIB_ANGLE_MULT;
 }
 
-BSP_eeprom_write(TURN_180_TIME_ADDR, me-&gt;turn_180_time_ms);
+BSP_eeprom_write(TURN_180_TIME_ADDR, parameters.turn_180_time_ms);
 
 </action>
        <choice_glyph conn="166,103,5,3,-10,-45,45">
@@ -707,7 +713,7 @@ if (adc_line_is_white(LINE_FL)){
       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight}-->
       <state name="LineTurnRight">
        <entry brief="turn right">drive(100,-100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms * (0.6), 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.6), 0);</entry>
        <exit>drive(0,0);</exit>
        <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight::TIMEOUT}-->
        <tran trig="TIMEOUT" target="../../.." cpref="../../../0">
@@ -729,7 +735,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time
       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft}-->
       <state name="LineTurnLeft">
        <entry brief="turn left">drive(-100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms * (0.6), 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.6), 0);</entry>
        <exit>drive(0,0);</exit>
        <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft::TIMEOUT}-->
        <tran trig="TIMEOUT" target="../../.." cpref="../../../0">
@@ -817,7 +823,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 10, 0);</entry>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1}-->
      <state name="PreStrategy_1">
       <entry brief="turn_left">drive(-60,60);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms * (0.2), 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.2), 0);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../2">
        <tran_glyph conn="40,19,3,0,13,2">
@@ -827,7 +833,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_sub2}-->
       <state name="pre_strategy_0_sub2">
        <entry brief="turn_right">drive(100,-100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * me-&gt;turn_180_time_ms * (0.4), 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4), 0);</entry>
        <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::pre_strategy_0_s~::TIMEOUT}-->
        <tran trig="TIMEOUT" target="../../.." cpref="../../../4">
         <tran_glyph conn="43,43,3,2,9,17,17,5">
@@ -871,28 +877,11 @@ QMActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super.super, TIMEOUT_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt_2, &amp;me-&gt;super.super, TIMEOUT_2_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super.super, PLAY_BUZZER_SIG, 0U);
-me-&gt;strategy = 0;
-me-&gt;pre_strategy = 0;
 me-&gt;calib_time_1 = 0;
 me-&gt;calib_time_2 = 0;
 me-&gt;calib_status = 0;
 
-// EEPROM VAriables
-uint16_t eeprom_data;
-
-if (BSP_eeprom_read(TURN_180_TIME_ADDR, &amp;eeprom_data) ==  EEPROM_OK){
-    me-&gt;turn_180_time_ms = eeprom_data;
-} else {
-    me-&gt;turn_180_time_ms = 800;
-    BSP_eeprom_write(TURN_180_TIME_ADDR, me-&gt;turn_180_time_ms);
-}
-
-if (BSP_eeprom_read(STAR_VELOCITY_ADDR, &amp;eeprom_data) ==  EEPROM_OK){
-    me-&gt;star_velocity = eeprom_data;
-} else {
-    me-&gt;star_velocity = 60;
-    BSP_eeprom_write(STAR_VELOCITY_ADDR, me-&gt;star_velocity);
-}
+parameters_init(&amp;parameters);
 </code>
   </operation>
  </package>
@@ -915,11 +904,15 @@ if (BSP_eeprom_read(STAR_VELOCITY_ADDR, &amp;eeprom_data) ==  EEPROM_OK){
 #include &quot;adc_service.h&quot;
 #include &quot;bsp_eeprom.h&quot;
 #include &quot;ble_service.h&quot;
+#include &quot;parameters.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5
 #ifndef M_PI
 #define M_PI                3.14159265
 #endif
+
+static sumo_parameters_t parameters;
+
 /* ask QM to declare the Blinky class --------------------------------------*/
 $declare${AOs::SumoHSM}
 

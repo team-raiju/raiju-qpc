@@ -5,6 +5,12 @@
 #include "bsp_ble.h"
 
 
+typedef enum  {
+    BLE_REQUEST_DATA,
+    BLE_UPDATE_PARAMETERS,
+    BLE_CHANGE_STATE,
+} ble_data_header_t;
+
 typedef union{
     uint8_t _raw[BLE_RECEIVE_PACKET_SIZE];
 
@@ -29,5 +35,6 @@ void ble_service_init(void);
 
 void ble_service_send_data(uint8_t * data, uint8_t size);
 void ble_service_last_packet(ble_rcv_packet_t * data);
+ble_data_header_t ble_service_last_packet_type(void);
 
 #endif /* BLE_SERVICE_H */
