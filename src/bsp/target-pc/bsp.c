@@ -150,7 +150,9 @@ void QS_onCommand(uint8_t cmdId,
             bool sensor_line_bl = !((param1 & 2) >> 1);
             bool sensor_line_br = !((param1 & 1));
 
-            ADC_Fake_ConvCpltCallback(sensor_line_fl, sensor_line_fr, sensor_line_bl, sensor_line_br);
+            bool battery_full = param2;
+
+            ADC_Fake_ConvCpltCallback(sensor_line_fl, sensor_line_fr, sensor_line_bl, sensor_line_br, battery_full);
 
             break;
         }

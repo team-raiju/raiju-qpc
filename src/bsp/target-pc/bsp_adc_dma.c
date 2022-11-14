@@ -34,7 +34,7 @@ static void default_adc_dma_callback(uint32_t * out_data) {
 }
 
 
-void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br) {
+void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool battery_full) {
 
     if (!enabled){
         return;
@@ -58,7 +58,7 @@ void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br) {
                     dma_buffer[i + j] = 2000 * br;
                     break;
                 case FAKE_ADC_BATTERY_POSITION:
-                    dma_buffer[i + j] = 4095;
+                    dma_buffer[i + j] = 4095 * battery_full;
                 default:
                     dma_buffer[i + j] = 0;
                     break;

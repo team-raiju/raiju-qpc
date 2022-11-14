@@ -25,12 +25,14 @@ ROBOT_SIZE_PIXELS = 60
 ARENA_RADIUS_PIXELS = 225
 
 
+
 global qview_base
 global image_dict
 global canvas_dict
 global sumo_robot
 global key_pressed_dict
 global line_sensors
+global battery_full
 
 QS_USER_DATA_ID = {
     "QS_LED_ID":    0,
@@ -41,8 +43,8 @@ QS_USER_DATA_ID = {
 }
 
 def custom_menu_command():
-    command_names = ["RESET POSITION 1", "RESET POSITION 2"]
-    command_functions = [reset_position, reset_position_2]
+    command_names = ["RESET POSITION 1", "RESET POSITION 2", "SET_LOW_BATTERY"]
+    command_functions = [reset_position, reset_position_2, set_low_battery]
 
     return (command_names, command_functions)
 
@@ -66,10 +68,12 @@ def custom_qview_init(qview):
     global key_pressed_dict, gamepad_dict
     global last_gamepad
     global last_line_sensor_state
+    global battery_full
+
 
     last_gamepad = (0,0,0,0)
     last_line_sensor_state = (False, False, False, False)
-
+    battery_full = True
 
 
     HOME_DIR = os.path.dirname(__file__)
@@ -284,7 +288,7 @@ def custom_on_poll():
         # Line Sensor simulator
         update_line_sensor(robot_pos_x, robot_pos_y,angle)
         if (line_sensor_changed()):
-            line_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], line_sensors["BL"]["active"], line_sensors["BR"]["active"])
+            adc_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], line_sensors["BL"]["active"], line_sensors["BR"]["active"], battery_full)
 
         # Distance Sensor simulator:
         sensor_active = is_mouse_direction(robot_pos_x, robot_pos_y, angle)
@@ -310,10 +314,10 @@ def stop_command(*args):
 def change_strategy(strategy):
     qview_base.command(2, strategy)
 
-def line_command(line_fl, line_fr, line_bl, line_br):
+def adc_command(line_fl, line_fr, line_bl, line_br, battery_full):
 
     set_line_code = (line_fl << 3) | (line_fr << 2) | (line_bl << 1) | (line_br) 
-    qview_base.command(3, set_line_code)
+    qview_base.command(3, set_line_code, battery_full)
 
 def sensor_command(sensor):
     qview_base.command(4, sensor)
@@ -329,6 +333,9 @@ def send_radio_command_ch1_ch2(ch1, ch2):
 
 def send_radio_command_ch3_ch4(ch3, ch4):
     qview_base.command(8, ch3, ch4)
+
+def low_battery_command():
+    qview_base.command(10, 0)
 
 
 
@@ -417,6 +424,13 @@ def send_keyboard():
     
     send_radio_command_ch1_ch2(x_keyboard, y_keyboard)  
     send_radio_command_ch3_ch4(ch3, ch4)
+
+
+def set_low_battery():
+    global battery_full
+    battery_full = False
+    adc_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], line_sensors["BL"]["active"], line_sensors["BR"]["active"], battery_full)
+
 
 
 
