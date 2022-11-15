@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "bsp_eeprom.h"
 #include "distance_service.h"
+#include "adc_service.h"
 
 const char * strategy_names[] = {
     "star",
@@ -72,6 +73,7 @@ void parameters_init(sumo_parameters_t *params){
     *params = temp_params;
 
     distance_service_set_mask(params->enabled_distance_sensors);
+    adc_line_set_mask(params->enabled_line_sensors);
 
 }
 

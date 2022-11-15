@@ -59,8 +59,12 @@ static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state){
     dist_sensor_t sensor_position = sensor_num_to_position[sensor_num];
     dist_sensor_is_active[sensor_position] = state;
 
-    QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
-    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    bool dist_sensor_enable = distance_sensor_mask & (1 << sensor_position);
+    if (dist_sensor_enable){
+        QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
     
 
 }

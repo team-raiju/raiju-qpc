@@ -54,6 +54,8 @@ static volatile bool line_sensor_is_white[NUM_OF_LINE_SENSORS];
 static volatile bool line_sensor_is_white_last[NUM_OF_LINE_SENSORS];
 static volatile double battery_voltage_mv = 16000;
 static volatile double battery_voltage_mv_last = 0;
+static uint8_t line_sensor_mask = 0xff;
+
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -92,24 +94,28 @@ static void gen_line_events(void){
         }
     }
 
-    if (line_changed[LINE_FR]){
+    bool sensor_enable = line_sensor_mask & (1 << LINE_FR);
+    if (line_changed[LINE_FR] && sensor_enable){
         QEvt evt = {.sig = LINE_CHANGED_FR_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
-    if (line_changed[LINE_FL]){
+    sensor_enable = line_sensor_mask & (1 << LINE_FL);
+    if (line_changed[LINE_FL] && sensor_enable){
         QEvt evt = {.sig = LINE_CHANGED_FL_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
 
-    if (line_changed[LINE_BR]){
+    sensor_enable = line_sensor_mask & (1 << LINE_BR);
+    if (line_changed[LINE_BR] && sensor_enable){
         QEvt evt = {.sig = LINE_CHANGED_BR_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
 
-    if (line_changed[LINE_BL]){
+    sensor_enable = line_sensor_mask & (1 << LINE_BL);
+    if (line_changed[LINE_BL] && sensor_enable){
         QEvt evt = {.sig = LINE_CHANGED_BL_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
@@ -171,7 +177,10 @@ bool adc_line_is_white(line_sensor_t position){
         return 0;
     }
 
-    return line_sensor_is_white[position];
+
+    bool line_sensor_enable = line_sensor_mask & (1 << position);
+
+    return (line_sensor_is_white[position] & line_sensor_enable);
 
 }
 
@@ -181,4 +190,8 @@ bool adc_get_low_battery() {
 
 double adc_get_battery_mv(){
     return battery_voltage_mv;
+}
+
+void adc_line_set_mask(uint8_t mask) {
+    line_sensor_mask = mask;
 }

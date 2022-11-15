@@ -20,5 +20,6 @@ void adc_service_init(void);
 bool adc_line_is_white(line_sensor_t position);
 bool adc_get_low_battery(void);
 double adc_get_battery_mv(void);
+void adc_line_set_mask(uint8_t mask);
 
 #endif /* ADC_SERVICE_H */
