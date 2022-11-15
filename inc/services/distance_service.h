@@ -21,5 +21,6 @@ typedef enum dist_sensor
 
 void distance_service_init(void);
 bool distance_is_active(dist_sensor_t position);
+void distance_service_set_mask(uint16_t mask);
 
 #endif /* DISTANCE_SERVICE_H */

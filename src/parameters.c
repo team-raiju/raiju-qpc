@@ -4,6 +4,7 @@
 #include "ble_service.h"
 #include "utils.h"
 #include "bsp_eeprom.h"
+#include "distance_service.h"
 
 const char * strategy_names[] = {
     "star",
@@ -14,16 +15,16 @@ const char * strategy_names[] = {
 static sumo_parameters_t init_parameters_default = {
     .current_strategy = 0,
     .current_pre_strategy = 0,
-    .enabled_distance_sensors = 0xff,
-    .enabled_line_sensors = 0xff,
+    .enabled_distance_sensors = 0b111111111,
+    .enabled_line_sensors = 0b001111,
+    .star_speed = 60,
     .max_speed = 100,
     .reverse_speed = 100,
     .reverse_time_ms = 250,
     .turn_speed = 100,
-    .star_speed = 60,
-    .step_wait_time_ms = 3000,
-    .step_advance_time_ms = 150,
     .turn_180_time_ms = 800,
+    .step_wait_time_ms = 1500,
+    .step_advance_time_ms = 150,
 };
 
 static void read_and_update_parameter_16_bit(uint16_t eeprom_addr, uint16_t * updated_data){
@@ -51,10 +52,26 @@ static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t * upda
 
 void parameters_init(sumo_parameters_t *params){
 
-    read_and_update_parameter_16_bit(TURN_180_TIME_ADDR, &init_parameters_default.turn_180_time_ms);
-    read_and_update_parameter_8_bit(STAR_SPEED_ADDR, &init_parameters_default.star_speed);
+    sumo_parameters_t temp_params = init_parameters_default;
 
-    *params = init_parameters_default;
+    read_and_update_parameter_16_bit(EN_DIST_SENSOR_ADDR, &temp_params.enabled_distance_sensors);
+    read_and_update_parameter_8_bit(EN_LINE_SENSOR_ADDR, &temp_params.enabled_line_sensors);
+
+    read_and_update_parameter_8_bit(STAR_SPEED_ADDR, &temp_params.star_speed);
+    read_and_update_parameter_8_bit(MAX_SPEED_ADDR, &temp_params.max_speed);
+
+    read_and_update_parameter_8_bit(REVERSE_SPEED_ADDR, &temp_params.reverse_speed);
+    read_and_update_parameter_16_bit(REVERSE_TIME_MS_ADDR, &temp_params.reverse_time_ms);
+    read_and_update_parameter_8_bit(TURN_SPEED_ADDR, &temp_params.turn_speed);
+
+    read_and_update_parameter_16_bit(TURN_180_TIME_ADDR, &temp_params.turn_180_time_ms);
+
+    read_and_update_parameter_16_bit(STEP_WAIT_TIME_MS_ADDR, &temp_params.step_wait_time_ms);
+    read_and_update_parameter_16_bit(STEP_ADVANCE_TIME_MS_ADDR, &temp_params.step_advance_time_ms);
+
+    *params = temp_params;
+
+    distance_service_set_mask(params->enabled_distance_sensors);
 
 }
 

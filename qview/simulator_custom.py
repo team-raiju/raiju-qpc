@@ -499,15 +499,15 @@ def is_mouse_direction(posx, posy, robot_angle):
 
     if (mouse_robot_distance < 150):
         if (anglediff > -15 and anglediff < 15):
-            return 3
+            return 4 # IO_PIN4 - HARDWARE SILK DIST 6
         elif (anglediff > 15 and anglediff < 40):
-            return 4
+            return 5 # IO_PIN5 - HARDWARE SILK DIST 7
         elif (anglediff > 40 and anglediff < 60):
-            return 5
+            return 6 # IO_PIN6 - HARDWARE SILK DIST 8
         elif (anglediff > -40 and anglediff < -15):
-            return 2
+            return 3 # IO_PIN3 - HARDWARE SILK DIST 3
         elif (anglediff > -60 and anglediff < -40):
-            return 1
+            return 2 # IO_PIN2 - HARDWARE SILK DIST 2
     
     return 0
 

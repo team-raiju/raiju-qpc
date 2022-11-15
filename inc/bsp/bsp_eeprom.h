@@ -17,8 +17,20 @@ typedef enum eeprom_result {
 
 typedef enum eeprom_addresses {
 
+    EN_DIST_SENSOR_ADDR,
+    EN_LINE_SENSOR_ADDR,
+
     STAR_SPEED_ADDR,
+    MAX_SPEED_ADDR,
+
+    REVERSE_SPEED_ADDR,
+    REVERSE_TIME_MS_ADDR,
+
+    TURN_SPEED_ADDR,
     TURN_180_TIME_ADDR,
+
+    STEP_WAIT_TIME_MS_ADDR,
+    STEP_ADVANCE_TIME_MS_ADDR,
 
 } eeprom_addresses_t;
 

@@ -28,7 +28,8 @@ static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state);
  * LOCAL VARIABLES
  **************************************************************************************************/
 
-volatile bool dist_sensor_is_active[NUM_OF_DIST_SENSORS];
+static uint16_t distance_sensor_mask = 0xffff;
+static volatile bool dist_sensor_is_active[NUM_OF_DIST_SENSORS];
 
 /* Adjust looking at  gpio_dist_sensor_pins in bsp_gpio.c*/
 static uint8_t sensor_num_to_position[NUM_OF_DIST_SENSORS] = {
@@ -80,6 +81,12 @@ bool distance_is_active(dist_sensor_t position){
         return 0;
     }
 
-    return dist_sensor_is_active[position];
+    bool dist_sensor_enable = distance_sensor_mask & (1 << position);
 
+    return dist_sensor_is_active[position] & dist_sensor_enable;
+
+}
+
+void distance_service_set_mask(uint16_t mask) {
+    distance_sensor_mask = mask;
 }
