@@ -86,6 +86,11 @@ void BSP_GPIO_Write_Pin(io_port_t port, io_pin_t gpio_pin, io_level_t level){
     gpio_emulation[port][gpio_pin] = level;
 }
 
+void BSP_GPIO_Toggle_Pin(io_port_t port, io_pin_t gpio_pin){
+    gpio_emulation[port][gpio_pin] = !gpio_emulation[port][gpio_pin];
+}
+
+
 
 void BSP_GPIO_Register_Distance_Callback(bsp_gpio_dist_callback_t callback_function){
 
