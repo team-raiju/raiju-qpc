@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 
-#define EEPROM_NB_OF_VAR    ((uint8_t)0x02)
+#define EEPROM_NB_OF_VAR    ((uint8_t)10)
 
 typedef enum eeprom_result {
 
