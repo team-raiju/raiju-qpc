@@ -49,6 +49,7 @@ typedef void( * bsp_button_callback_t) (void);
 
 io_level_t BSP_GPIO_Read_Pin(io_port_t port, io_pin_t gpio_pin);
 void BSP_GPIO_Write_Pin(io_port_t port, io_pin_t gpio_pin, io_level_t level);
+void BSP_GPIO_Toggle_Pin(io_port_t port, io_pin_t gpio_pin);
 
 void BSP_GPIO_Register_Distance_Callback(bsp_gpio_dist_callback_t callback_function);
 void BSP_GPIO_Register_Button_Callback(bsp_button_callback_t callback_function);

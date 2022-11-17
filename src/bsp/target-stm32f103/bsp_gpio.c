@@ -175,6 +175,12 @@ void BSP_GPIO_Write_Pin(io_port_t port, io_pin_t gpio_pin, io_level_t level){
 
 }
 
+void BSP_GPIO_Toggle_Pin(io_port_t port, io_pin_t gpio_pin){
+
+    HAL_GPIO_TogglePin(BSP_GPIO_Port_Mapping(port), BSP_GPIO_Pin_Mapping(gpio_pin));
+
+}
+
 
 
 void BSP_GPIO_Register_Distance_Callback(bsp_gpio_dist_callback_t callback_function){

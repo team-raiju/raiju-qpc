@@ -68,18 +68,18 @@ QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
 # list of all source directories used by this project
 
 C_HEADERS_TARGET  = $(sort $(shell find ./inc/bsp/target-stm32f103 -name "*.h"))	
-C_HEADERS_TARGET  += $(sort $(shell find ./cube -name "*.h"))	
+C_HEADERS_TARGET  += $(sort $(shell find ./$(CUBE_LOCATION) -name "*.h"))	
 
 INCLUDES  += $(addprefix -I, $(sort $(dir $(C_HEADERS_TARGET))))
 INCLUDES  += -I$(QP_PORT_DIR) 
 
 # assembler source files
-ASM_SRCS := $(shell find ./cube/ -name "*.s")
+ASM_SRCS := $(shell find ./$(CUBE_LOCATION)/ -name "*.s")
 
 C_SRCS += $(sort $(shell find ./src/bsp/target-stm32f103 -name "*.c"))
-C_SRCS += $(sort $(shell find ./cube -name "*.c"))
+C_SRCS += $(sort $(shell find ./$(CUBE_LOCATION) -name "*.c"))
 
-LD_SCRIPT := cube/STM32F103RFTx_FLASH.ld
+LD_SCRIPT := $(LINKER_FILE)
 
 QP_SRCS += \
 	$(QPC)/src/qk/qk.c \
@@ -92,11 +92,6 @@ QP_ASMS :=
 
 LIB_DIRS  :=
 LIBS      :=
-
-DEVICE_FAMILY  := STM32F1xx
-DEVICE_TYPE    := STM32F103xx
-DEVICE_DEF     := STM32F103xG
-DEVICE         := STM32F103RF
 
 # defines
 DEFINES   := \
@@ -115,16 +110,6 @@ HEX     := $(BIN) -O ihex
 
 else # uC configuration ..................................
 
-# ARM CPU, ARCH, FPU, and Float-ABI types...
-# ARM_CPU:   [cortex-m0 | cortex-m0plus | cortex-m1 | cortex-m3 | cortex-m4]
-# ARM_FPU:   [ | vfp]
-# FLOAT_ABI: [ | soft | softfp | hard]
-#
-ARM_CPU   := -mcpu=cortex-m3
-ARM_FPU   :=
-FLOAT_ABI :=
-
-
 CC    := $(ARM_GCC_PATH)/arm-none-eabi-gcc
 CPP   := $(ARM_GCC_PATH)/arm-none-eabi-g++
 AS    := $(ARM_GCC_PATH)/arm-none-eabi-as
@@ -142,7 +127,7 @@ STM_PROG := $(CUBE_PROGRAMMER_PATH)/STM32_Programmer_CLI
 ##############################################################################
 
 MKDIR := mkdir
-RM    := rm
+RM    := rm -rf
 
 #-----------------------------------------------------------------------------
 # build options for various configurations for ARM Cortex-M
@@ -296,13 +281,7 @@ flash load:
 
 .PHONY : clean
 clean:
-	-$(RM) $(BIN_DIR)/*.o \
-	$(BIN_DIR)/*.d \
-	$(BIN_DIR)/*.bin \
-	$(BIN_DIR)/*.elf \
-	$(BIN_DIR)/*.map \
-	$(BIN_DIR)/*.hex \
-	$(TARGET_EXE)
+	$(AT) $(RM) $(BIN_DIR)
 
 
 show:
@@ -337,8 +316,8 @@ show:
 
 prepare:
 	@echo "Preparing cube files"
-	$(AT)-mv -f cube/Src/main.c cube/Src/cube_main.c
-	$(AT)-rm -f cube/Makefile
+	$(AT)-mv -f $(CUBE_LOCATION)/Src/main.c $(CUBE_LOCATION)/Src/cube_main.c
+	$(AT)-rm -f $(CUBE_LOCATION)/Makefile
 
 ###############################################################################
 ## VS Code files
@@ -401,6 +380,12 @@ define VS_CPP_PROPERTIES
 	        "includePath": [
 	            $(subst -I,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach inc,$(INCLUDES),"$(inc)"))))
 	        ],
+
+			"browse": {
+                "path": [$(subst -I,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach inc,$(INCLUDES),"$(inc)"))))],
+                "limitSymbolsToIncludedHeaders": true
+            },
+
 
 	        "defines": [
 	            $(subst -D,$(NULL),$(subst $(SPACE),$(COMMA),$(strip $(foreach def,$(DEFINES),"$(def)"))))
