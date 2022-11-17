@@ -6,7 +6,10 @@ from tkinter.simpledialog import *
 from struct import pack
 from pynput import keyboard
 from inputs import get_gamepad
+import socket
 
+
+# from playsound import playsound
 import threading
 
 
@@ -22,26 +25,28 @@ ROBOT_SIZE_PIXELS = 60
 ARENA_RADIUS_PIXELS = 225
 
 
+
 global qview_base
 global image_dict
 global canvas_dict
 global sumo_robot
 global key_pressed_dict
 global line_sensors
-
+global battery_full
 
 QS_USER_DATA_ID = {
     "QS_LED_ID":    0,
     "QS_BUZZER_ID": 1,
     "QS_MOTOR_ID":  2,
     "QS_LED_STRIPE_ID":  3,
+    "QS_BLE_ID":  4,
 }
 
 def custom_menu_command():
-    command_name = "RESET POSITION"
-    command_function =  reset_position
+    command_names = ["RESET POSITION 1", "RESET POSITION 2", "SET_LOW_BATTERY"]
+    command_functions = [reset_position, reset_position_2, set_low_battery]
 
-    return (command_name, command_function)
+    return (command_names, command_functions)
 
 def custom_on_dettach():
     # print("Custom action on dettach")
@@ -63,10 +68,12 @@ def custom_qview_init(qview):
     global key_pressed_dict, gamepad_dict
     global last_gamepad
     global last_line_sensor_state
+    global battery_full
+
 
     last_gamepad = (0,0,0,0)
     last_line_sensor_state = (False, False, False, False)
-
+    battery_full = True
 
 
     HOME_DIR = os.path.dirname(__file__)
@@ -152,10 +159,13 @@ def custom_qview_init(qview):
     led_stripe_init(qview_base)
 
     if (USE_PS3_CONTROLLER):
-        x = threading.Thread(target=gamepad_thread)
-        x.daemon = True
-        x.start()
+        thread1 = threading.Thread(target=gamepad_thread)
+        thread1.daemon = True
+        thread1.start()
 
+    thread2 = threading.Thread(target=bluetooth_thread)
+    thread2.daemon = True
+    thread2.start()
 
 
 def custom_user_00_packet(packet):
@@ -170,6 +180,8 @@ def custom_user_00_packet(packet):
         process_buzzer_id_packet(packet)
     elif (data_id == QS_USER_DATA_ID["QS_LED_STRIPE_ID"]):
         process_led_stripe_id_packet(packet)
+    elif (data_id == QS_USER_DATA_ID["QS_BLE_ID"]):
+        process_ble_packet(packet)
     else:
         qview_base.print_text("Timestamp = %d; ID = %d"%(data[0], data[1]))  
 
@@ -190,8 +202,18 @@ def process_motor_id_packet(packet):
     qview_base.print_text("Timestamp = %d; MOT_ESQ = %d; MOT_DIR = %d"%(data[0], mot_esq, mot_dir))  
 
 def process_buzzer_id_packet(packet):
-    data = qview_base.qunpack("xxTxbxb", packet)    
-    qview_base.print_text("Timestamp = %d; Buzzer = %d"%(data[0], data[2]))  
+    data = qview_base.qunpack("xxTxBxBxBxB", packet)  
+    subcommand = data[2]
+    if(subcommand == 0):
+        # if (data[3] == 1):
+        #     playsound(HOME_DIR + '/sound/beep.mp3')
+        qview_base.print_text("Timestamp = %d; Buzzer Enabled = %d"%(data[0],data[3]))  
+    elif(subcommand == 1):
+        qview_base.print_text("Timestamp = %d; Buzzer Duty Cycle = %d"%(data[0], data[3]))  
+    elif(subcommand == 2):
+        qview_base.print_text("Timestamp = %d; Buzzer Frequency = %d"%(data[0], ((data[3] << 8) + data[4])))  
+
+
 
 def process_led_stripe_id_packet(packet):
     data = qview_base.qunpack("xxTxBxBxBxBxB", packet)    
@@ -209,6 +231,26 @@ def process_led_stripe_id_packet(packet):
     else:
         led_stripe_set(qview_base, led_idx, r, g, b)
 
+
+def process_ble_packet(packet):
+    data = qview_base.qunpack("xxTxBxBBBBBBBBBBBBBBBBBBBBB", packet)    
+    qview_base.print_text("Timestamp = %d - BLE RAW DATA:"%(data[0]))  
+    qview_base.print_text(data[3:])  
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = ('localhost', 10001)
+    print ('connecting to port' + str(server_address))
+    sock.connect(server_address)
+    try:
+        message = bytearray(data[3:])
+        hex_string = "".join("0x%02x, " % b for b in message)
+        print ('BLE sending ' + hex_string)
+        sock.sendall(message)
+
+    finally:
+        print('closing socket')
+        sock.close()
+    
 
 
 def custom_user_01_packet(packet):
@@ -246,7 +288,7 @@ def custom_on_poll():
         # Line Sensor simulator
         update_line_sensor(robot_pos_x, robot_pos_y,angle)
         if (line_sensor_changed()):
-            line_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], line_sensors["BL"]["active"], line_sensors["BR"]["active"])
+            adc_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], line_sensors["BL"]["active"], line_sensors["BR"]["active"], battery_full)
 
         # Distance Sensor simulator:
         sensor_active = is_mouse_direction(robot_pos_x, robot_pos_y, angle)
@@ -272,10 +314,10 @@ def stop_command(*args):
 def change_strategy(strategy):
     qview_base.command(2, strategy)
 
-def line_command(line_fl, line_fr, line_bl, line_br):
+def adc_command(line_fl, line_fr, line_bl, line_br, battery_full):
 
     set_line_code = (line_fl << 3) | (line_fr << 2) | (line_bl << 1) | (line_br) 
-    qview_base.command(3, set_line_code)
+    qview_base.command(3, set_line_code, battery_full)
 
 def sensor_command(sensor):
     qview_base.command(4, sensor)
@@ -291,6 +333,40 @@ def send_radio_command_ch1_ch2(ch1, ch2):
 
 def send_radio_command_ch3_ch4(ch3, ch4):
     qview_base.command(8, ch3, ch4)
+
+def low_battery_command():
+    qview_base.command(10, 0)
+
+
+
+
+def send_ble_command(ble_bytearray):
+
+    if (len(ble_bytearray) != 12):
+        print("ble wrong size")
+        print(len(ble_bytearray))
+        return
+
+    # Each value is a 32bit value containig 4 ble bytes
+    data_4_bytes_chunks = [0] * 3
+
+    data_4_bytes_chunks[0] = int.from_bytes(ble_bytearray[0:4],   "big")  
+    data_4_bytes_chunks[1] = int.from_bytes(ble_bytearray[4:8],   "big")  
+    data_4_bytes_chunks[2] = int.from_bytes(ble_bytearray[8:12],  "big")  
+    # data_4_bytes_chunks[3] = int.from_bytes(ble_bytearray[12:16], "big")  
+    # data_4_bytes_chunks[4] = int.from_bytes(ble_bytearray[16:20], "big")  
+
+
+    # Update first 12 bytes
+    qview_base.command(9, data_4_bytes_chunks[0], data_4_bytes_chunks[1], data_4_bytes_chunks[2])
+
+    # Update last 8 bytes
+    # qview_base.command(10, data_4_bytes_chunks[3], data_4_bytes_chunks[4])
+
+    # Send callback
+    qview_base.command(11, 0)
+
+
 
 def send_game_pad():
 
@@ -333,13 +409,38 @@ def send_keyboard():
     else:
         y_keyboard = 127
 
+    # ch 3
+    if (key_pressed_dict["three"]):
+        ch3 = 255
+    else:
+        ch3 = 127
+
+    # ch 4
+    if (key_pressed_dict["four"]):
+        ch4 = 255
+    else:
+        ch4 = 127
+
     
     send_radio_command_ch1_ch2(x_keyboard, y_keyboard)  
-    send_radio_command_ch3_ch4(key_pressed_dict["three"], key_pressed_dict["four"])
+    send_radio_command_ch3_ch4(ch3, ch4)
+
+
+def set_low_battery():
+    global battery_full
+    battery_full = False
+    adc_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], line_sensors["BL"]["active"], line_sensors["BR"]["active"], battery_full)
+
 
 
 
 def reset_position():
+    global image_dict, canvas_dict
+    sumo_robot.set_angle(0)
+    sumo_robot.set_position(300, 120)
+    canvas_dict["sumo"] = qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"])
+
+def reset_position_2():
     global image_dict, canvas_dict
     sumo_robot.set_angle(0)
     sumo_robot.set_position(300, 100)
@@ -398,15 +499,15 @@ def is_mouse_direction(posx, posy, robot_angle):
 
     if (mouse_robot_distance < 150):
         if (anglediff > -15 and anglediff < 15):
-            return 3
+            return 4 # IO_PIN4 - HARDWARE SILK DIST 6
         elif (anglediff > 15 and anglediff < 40):
-            return 4
+            return 5 # IO_PIN5 - HARDWARE SILK DIST 7
         elif (anglediff > 40 and anglediff < 60):
-            return 5
+            return 6 # IO_PIN6 - HARDWARE SILK DIST 8
         elif (anglediff > -40 and anglediff < -15):
-            return 2
+            return 3 # IO_PIN3 - HARDWARE SILK DIST 3
         elif (anglediff > -60 and anglediff < -40):
-            return 1
+            return 2 # IO_PIN2 - HARDWARE SILK DIST 2
     
     return 0
 
@@ -475,3 +576,29 @@ def gamepad_thread():
             gamepad_dict["ch3"] = event[0].state
         elif (event[0].code == "BTN_DPAD_UP"):
             gamepad_dict["ch4"] = event[0].state
+
+
+def bluetooth_thread():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    server_address = ('localhost', 10000)
+    print ('starting up on %s port %s' % server_address)
+    sock.bind(server_address)
+
+    sock.listen(1)
+
+    while True:
+        # Wait for a connection
+        print ('waiting for a connection')
+        connection, client_address = sock.accept()
+        try:
+            print ('connection from + ' + str(client_address))
+            data = connection.recv(20)
+            ble_data_from_server = bytearray(data)
+            hex_string = "".join("0x%02x, " % b for b in ble_data_from_server)
+            print ('received ' + hex_string)
+            send_ble_command(ble_data_from_server)
+            
+        finally:
+            # Clean up the connection
+            connection.close()

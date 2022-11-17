@@ -1,65 +1,14 @@
-##############################################################################
-# Product: Makefile for QP/C on NUCLEO-L053R8, QK kernel, GNU-ARM
-# Last Updated for Version: 7.0.1
-# Date of the Last Update:  2022-05-23
-#
-#                    Q u a n t u m  L e a P s
-#                    ------------------------
-#                    Modern Embedded Software
-#
-# Copyright (C) 2005-2021 Quantum Leaps, LLC. All rights reserved.
-#
-# This program is open source software: you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Alternatively, this program may be distributed and modified under the
-# terms of Quantum Leaps commercial licenses, which expressly supersede
-# the GNU General Public License and are specifically designed for
-# licensees interested in retaining the proprietary status of their code.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses>.
-#
-# Contact information:
-# <www.state-machine.com/licensing>
-# <info@state-machine.com>
-##############################################################################
-# examples of invoking this Makefile:
-# building configurations: Debug (default), Release, and Spy
-# make
-# make CONF=rel
-# make CONF=spy
-#
-# cleaning configurations: Debug (default), Release, and Spy
-# make clean
-# make CONF=rel clean
-# make CONF=spy clean
-#
-# NOTE:
-# To use this Makefile on Windows, you will need the GNU make utility, which
-# is included in the Qtools collection for Windows, see:
-#    https://sourceforge.net/projects/qpc/files/QTools/
-#
+include config.mk
 
-#-----------------------------------------------------------------------------
-# project name
-#
 PROJECT     := sumo_hsm
 
 OUTPUT    := $(PROJECT)
 
 # C source files plataform-independent
-C_SRCS := $(sort $(shell find ./src -name "*.c" -not -path "./src/target*"))
+C_SRCS := $(sort $(shell find ./src -name "*.c" -not -path "./src/bsp/target*"))
 
 # List of all include directories needed by this project plataform-independent
-C_HEADERS  = $(sort $(shell find ./inc -name "*.h" -not -path "./inc/target*"))
+C_HEADERS  = $(sort $(shell find ./inc -name "*.h" -not -path "./inc/bsp/target*"))
 
 INCLUDES  := $(addprefix -I, $(sort $(dir $(C_HEADERS))))
 INCLUDES += -I$(QPC)/include
@@ -92,7 +41,7 @@ QP_PORT_DIR := $(QPC)/ports/posix-qv
 #QP_PORT_DIR := $(QPC)/ports/posix
 
 
-C_HEADERS_TARGET  = $(sort $(shell find ./inc/target-pc -name "*.h"))
+C_HEADERS_TARGET  = $(sort $(shell find ./inc/bsp/target-pc -name "*.h"))
 
 INCLUDES  += $(addprefix -I, $(sort $(dir $(C_HEADERS_TARGET))))
 INCLUDES  += -I$(QP_PORT_DIR) 
@@ -104,7 +53,7 @@ QS_SRCS := \
 	$(QPC)/src/qs/qs_64bit.c \
 	$(QP_PORT_DIR)/qs_port.c
 
-C_SRCS += $(sort $(shell find ./src/target-pc -name "*.c"))
+C_SRCS += $(sort $(shell find ./src/bsp/target-pc -name "*.c"))
 C_SRCS += $(QS_SRCS)
 
 LD_SCRIPT :=
@@ -118,7 +67,7 @@ QP_PORT_DIR := $(QPC)/ports/arm-cm/qk/gnu
 
 # list of all source directories used by this project
 
-C_HEADERS_TARGET  = $(sort $(shell find ./inc/target-stm32f103 -name "*.h"))	
+C_HEADERS_TARGET  = $(sort $(shell find ./inc/bsp/target-stm32f103 -name "*.h"))	
 C_HEADERS_TARGET  += $(sort $(shell find ./cube -name "*.h"))	
 
 INCLUDES  += $(addprefix -I, $(sort $(dir $(C_HEADERS_TARGET))))
@@ -127,7 +76,7 @@ INCLUDES  += -I$(QP_PORT_DIR)
 # assembler source files
 ASM_SRCS := $(shell find ./cube/ -name "*.s")
 
-C_SRCS += $(sort $(shell find ./src/target-stm32f103 -name "*.c"))
+C_SRCS += $(sort $(shell find ./src/bsp/target-stm32f103 -name "*.c"))
 C_SRCS += $(sort $(shell find ./cube -name "*.c"))
 
 LD_SCRIPT := cube/STM32F103RFTx_FLASH.ld
@@ -225,9 +174,9 @@ else ifeq (spy, $(CONF))  # Spy configuration ................................
 
 BIN_DIR := build_spy
 
-DEFINES += -DQ_SPY
+DEFINES += -DQ_SPY -D$(PROJECT_DEFS)
 
-CFLAGS = -c -g -O -fno-pie -std=c11 -pedantic -Wall -Wextra -W -Wno-unused-result \
+CFLAGS = -c -g -O -fno-pie -std=c11 -Wall -Wextra -W -Wno-unused-result -Wno-type-limits\
 	$(INCLUDES) $(DEFINES) -Wno-unused-result
 
 CPPFLAGS = -c -g -O -fno-pie -std=c++11 -pedantic -Wall -Wextra \
@@ -243,7 +192,7 @@ else # default Debug configuration ..........................................
 BIN_DIR := build
 
 DEFINES += -D$(DEVICE_DEF) \
-	-DUSE_HAL_DRIVER
+	-DUSE_HAL_DRIVER -D$(PROJECT_DEFS)
 
 ASFLAGS = -g $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
 
@@ -421,11 +370,11 @@ define VS_LAUNCH
 	    {
 	        "type": "cortex-debug",
 	        "request": "launch",
-	        "servertype": "stutil",
+	        "servertype": "stlink",
 	        "cwd": "$${workspaceRoot}",
 	        "gdbPath": "${GDB}",
 	        "executable": "$(TARGET_ELF)",
-	        "name": "Cortex Debug (ST-Util)",
+	        "name": "Cortex Debug (ST-Link)",
 	        "device": "$(DEVICE)",
 	        "v1": false
 	    },

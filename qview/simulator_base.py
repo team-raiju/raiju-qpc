@@ -188,10 +188,12 @@ class QView:
         QView._menu_commands = m
 
         #Custom Command Menu
-        cust_name, cust_func = custom_menu_command()
         m = Menu(main_menu, tearoff=0)
-        m.add_command(label=cust_name,  command=cust_func)
         main_menu.add_cascade(label="Custom", menu=m)
+
+        cust_names, cust_funcs = custom_menu_command()
+        for i in range(len(cust_names)):
+            m.add_command(label=cust_names[i],  command=cust_funcs[i])
 
         QView.custom_menu = m
 

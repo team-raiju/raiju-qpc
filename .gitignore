@@ -1,6 +1,8 @@
 build/
 build_spy/*
 
+.vscode/
+
 -g
 .jlink-flash
 .cube
@@ -71,3 +73,8 @@ dkms.conf
 
 qview/__pycache__/**
 # End of https://www.gitignore.io/api/visualstudiocode,c
+simulated_eeprom.txt
+
+# Python Files
+*.pyc
+logs.log
