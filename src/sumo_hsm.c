@@ -604,6 +604,7 @@ static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     drive(0,0);
     driving_disable();
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
+    ble_service_send_string("state:RC");
     return QM_ENTRY(&SumoHSM_RCWait_s);
 }
 /*${AOs::SumoHSM::SM::RCWait} */
@@ -745,6 +746,7 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     drive(0,0);
     driving_disable();
     board_led_on();
+    ble_service_send_string("state:AUTO");
     led_stripe_set_strategy_color(me->strategy);
     led_stripe_set_pre_strategy_color(me->pre_strategy);
     return QM_ENTRY(&SumoHSM_AutoWait_s);
@@ -1017,6 +1019,7 @@ static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt_2);
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
+    ble_service_send_string("state:CALIB");
     return QM_ENTRY(&SumoHSM_CalibWait_s);
 }
 /*${AOs::SumoHSM::SM::CalibWait} */
@@ -1080,6 +1083,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                 }
             };
             led_stripe_set_all(color_purple);
+            ble_service_send_string("state:IDLE");
             status_ = QM_TRAN(&tatbl_);
             break;
         }

@@ -34,6 +34,7 @@ typedef union{
 void ble_service_init(void);
 
 void ble_service_send_data(uint8_t * data, uint8_t size);
+void ble_service_send_string(char * str);
 void ble_service_last_packet(ble_rcv_packet_t * data);
 ble_data_header_t ble_service_last_packet_type(void);
 

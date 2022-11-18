@@ -138,7 +138,8 @@ me-&gt;ble_counter++;</action>
 led_stripe_set_strategy_color(me-&gt;strategy);
 drive(0,0);
 driving_disable();
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
+ble_service_send_string(&quot;state:RC&quot;);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::RCWait::START}-->
      <tran trig="START" target="../../9">
@@ -216,6 +217,7 @@ led_stripe_set_strategy_color(me-&gt;strategy);</action>
      <entry>drive(0,0);
 driving_disable();
 board_led_on();
+ble_service_send_string(&quot;state:AUTO&quot;);
 led_stripe_set_strategy_color(me-&gt;strategy);
 led_stripe_set_pre_strategy_color(me-&gt;pre_strategy);</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
@@ -373,7 +375,8 @@ led_stripe_set_strategy_color(me-&gt;strategy);
 me-&gt;calib_status = 0;
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
+ble_service_send_string(&quot;state:CALIB&quot;);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::CalibWait::START}-->
      <tran trig="START">
@@ -398,7 +401,8 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);</entry>
      </tran>
      <!--${AOs::SumoHSM::SM::CalibWait::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../1">
-      <action>led_stripe_set_all(color_purple);</action>
+      <action>led_stripe_set_all(color_purple);
+ble_service_send_string(&quot;state:IDLE&quot;);</action>
       <tran_glyph conn="203,46,0,1,-17,-118">
        <action box="-115,-20,17,2"/>
       </tran_glyph>

@@ -3,6 +3,7 @@
  **************************************************************************************************/
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "ble_service.h"
 #include "bsp_ble.h"
@@ -77,6 +78,17 @@ void ble_service_init(void){
 void ble_service_send_data(uint8_t * data, uint8_t size){
 
     bsp_ble_transmit(data, size);
+
+}
+
+void ble_service_send_string(char * str) {
+    uint8_t len = strlen(str);
+
+    if (len <= BLE_MAX_PACKET_SIZE){
+        char buffer[20] = {0};
+        snprintf(buffer, 20, "%s", str);
+        ble_service_send_data((uint8_t *)buffer, 20);
+    }
 
 }
 
