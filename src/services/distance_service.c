@@ -91,6 +91,19 @@ bool distance_is_active(dist_sensor_t position){
 
 }
 
+bool distance_none_active() {
+
+    for (int i = 0; i < NUM_OF_DIST_SENSORS; i++)
+    {
+        if (dist_sensor_is_active[i]){
+            return false;
+        }
+    }
+
+    return true;
+
+}
+
 void distance_service_set_mask(uint16_t mask) {
     distance_sensor_mask = mask;
 }

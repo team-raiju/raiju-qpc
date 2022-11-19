@@ -18,6 +18,7 @@ typedef enum line_sensor
 
 void adc_service_init(void);
 bool adc_line_is_white(line_sensor_t position);
+bool adc_line_none_white();
 bool adc_get_low_battery(void);
 double adc_get_battery_mv(void);
 void adc_line_set_mask(uint8_t mask);

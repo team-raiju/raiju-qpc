@@ -184,6 +184,10 @@ bool adc_line_is_white(line_sensor_t position){
 
 }
 
+bool adc_line_none_white(){
+    return !adc_line_is_white(LINE_FL) && !adc_line_is_white(LINE_FR) && !adc_line_is_white(LINE_BL) && !adc_line_is_white(LINE_BR);
+}
+
 bool adc_get_low_battery() {
     return (battery_voltage_mv <= BATTERY_THRESHOLD_MV);
 }
