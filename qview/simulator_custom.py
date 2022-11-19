@@ -237,19 +237,20 @@ def process_ble_packet(packet):
     qview_base.print_text("Timestamp = %d - BLE RAW DATA:"%(data[0]))  
     qview_base.print_text(data[3:])  
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ('localhost', 10001)
-    print ('connecting to port' + str(server_address))
-    sock.connect(server_address)
     try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_address = ('localhost', 10001)
+        print ('connecting to port' + str(server_address))
+        sock.connect(server_address)
         message = bytearray(data[3:])
         hex_string = "".join("0x%02x, " % b for b in message)
         print ('BLE sending ' + hex_string)
         sock.sendall(message)
-
-    finally:
         print('closing socket')
         sock.close()
+
+    except:
+        print("No ble server")
     
 
 
