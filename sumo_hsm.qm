@@ -28,6 +28,26 @@
    <attribute name="timeEvtBle" type="QTimeEvt" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::ble_counter}-->
    <attribute name="ble_counter" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::CheckDistAndMove}-->
+   <operation name="CheckDistAndMove" type="uint8_t" visibility="0x02" properties="0x00">
+    <code>(void)me;
+if (distance_is_active(DIST_SENSOR_F)){
+    drive(100,100);
+} else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
+    drive(100,100);
+} else if (distance_is_active(DIST_SENSOR_R)) {
+   drive(80,-80);
+} else if (distance_is_active(DIST_SENSOR_FR)) {
+   drive(80,0);
+} else if (distance_is_active(DIST_SENSOR_FL)) {
+   drive(0,80);
+} else if (distance_is_active(DIST_SENSOR_L)) {
+   drive(-80,80);
+} else {
+   return false;
+}
+return true;</code>
+   </operation>
    <!--${AOs::SumoHSM::SM}-->
    <statechart properties="0x03">
     <!--${AOs::SumoHSM::SM::initial}-->
@@ -176,7 +196,9 @@ led_stripe_set_strategy_color(me-&gt;strategy);</action>
     </state>
     <!--${AOs::SumoHSM::SM::StarStrategy}-->
     <state name="StarStrategy">
-     <entry>drive(parameters.star_speed, parameters.star_speed);</entry>
+     <entry brief="CheckSensors">if (!SumoHSM_CheckDistAndMove(me)){
+   drive(parameters.star_speed, parameters.star_speed);
+}</entry>
      <!--${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../10">
       <tran_glyph conn="24,115,3,3,-8,28,8">
@@ -191,18 +213,8 @@ led_stripe_set_strategy_color(me-&gt;strategy);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE}-->
      <tran trig="DIST_SENSOR_CHANGE">
-      <action brief="CheckSensors">if (distance_is_active(DIST_SENSOR_R)) {
-   drive(80,-80);
-} else if (distance_is_active(DIST_SENSOR_FR)) {
-   drive(80,0);
-} else if (distance_is_active(DIST_SENSOR_F)) {
-   drive(100,100);
-} else if (distance_is_active(DIST_SENSOR_FL)) {
-   drive(0,80);
-} else if (distance_is_active(DIST_SENSOR_L)) {
-   drive(-80,80);
-} else {
-   drive(60,60);
+      <action brief="CheckSensors">if (!SumoHSM_CheckDistAndMove(me)){
+   drive(parameters.star_speed, parameters.star_speed);
 }</action>
       <tran_glyph conn="24,120,3,-1,20">
        <action box="0,-2,24,4"/>
@@ -283,9 +295,11 @@ led_stripe_set_pre_strategy_color(me-&gt;pre_strategy);</action>
     </state>
     <!--${AOs::SumoHSM::SM::StepsStrategy}-->
     <state name="StepsStrategy">
-     <entry brief="arm_timer">drive(0,0);
-uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-QTimeEvt_armX(&amp;me-&gt;timeEvt, small_step_wait, small_step_wait);</entry>
+     <entry brief="arm_timer">if (!SumoHSM_CheckDistAndMove(me)){
+    drive(0,0);
+    uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+    QTimeEvt_armX(&amp;me-&gt;timeEvt, small_step_wait, small_step_wait);
+}</entry>
      <exit brief="disarm_timer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <!--${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT}-->
@@ -315,21 +329,11 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt_2, small_step_advance_time, 0);</action>
       <action brief="CheckSensors">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 
-if (distance_is_active(DIST_SENSOR_R)) {
-   drive(80,-80);
-} else if (distance_is_active(DIST_SENSOR_FR)) {
-   drive(80,0);
-} else if (distance_is_active(DIST_SENSOR_F)) {
-   drive(100,100);
-} else if (distance_is_active(DIST_SENSOR_FL)) {
-   drive(0,80);
-} else if (distance_is_active(DIST_SENSOR_L)) {
-   drive(-80,80);
-} else {
-   drive(0,0);
-   QTimeEvt_armX(&amp;me-&gt;timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
+if (!SumoHSM_CheckDistAndMove(me)){
+    drive(0,0);
+    uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+    QTimeEvt_armX(&amp;me-&gt;timeEvt, small_step_wait, small_step_wait);
 }
-
 </action>
       <tran_glyph conn="60,124,3,-1,16">
        <action box="0,-2,21,5"/>

@@ -92,6 +92,9 @@ typedef struct {
     } const *sub_PreStrategy;
 } SumoHSM;
 
+/* private: */
+static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me);
+
 /* protected: */
 static QState SumoHSM_initial(SumoHSM * const me, void const * const par);
 static QState SumoHSM_Idle  (SumoHSM * const me, QEvt const * const e);
@@ -473,6 +476,27 @@ static void SumoHSM_change_pre_strategy(SumoHSM * const me) {
 
 /*${AOs::SumoHSM} ..........................................................*/
 
+/*${AOs::SumoHSM::CheckDistAndMove} ........................................*/
+static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me) {
+    (void)me;
+    if (distance_is_active(DIST_SENSOR_F)){
+        drive(100,100);
+    } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
+        drive(100,100);
+    } else if (distance_is_active(DIST_SENSOR_R)) {
+       drive(80,-80);
+    } else if (distance_is_active(DIST_SENSOR_FR)) {
+       drive(80,0);
+    } else if (distance_is_active(DIST_SENSOR_FL)) {
+       drive(0,80);
+    } else if (distance_is_active(DIST_SENSOR_L)) {
+       drive(-80,80);
+    } else {
+       return false;
+    }
+    return true;
+}
+
 /*${AOs::SumoHSM::SM} ......................................................*/
 static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     static struct {
@@ -715,8 +739,9 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::StarStrategy} ........................................*/
 /*${AOs::SumoHSM::SM::StarStrategy} */
 static QState SumoHSM_StarStrategy_e(SumoHSM * const me) {
-    drive(parameters.star_speed, parameters.star_speed);
-    (void)me; /* unused parameter */
+    if (!SumoHSM_CheckDistAndMove(me)){
+       drive(parameters.star_speed, parameters.star_speed);
+    }
     return QM_ENTRY(&SumoHSM_StarStrategy_s);
 }
 /*${AOs::SumoHSM::SM::StarStrategy} */
@@ -757,18 +782,8 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
-            if (distance_is_active(DIST_SENSOR_R)) {
-               drive(80,-80);
-            } else if (distance_is_active(DIST_SENSOR_FR)) {
-               drive(80,0);
-            } else if (distance_is_active(DIST_SENSOR_F)) {
-               drive(100,100);
-            } else if (distance_is_active(DIST_SENSOR_FL)) {
-               drive(0,80);
-            } else if (distance_is_active(DIST_SENSOR_L)) {
-               drive(-80,80);
-            } else {
-               drive(60,60);
+            if (!SumoHSM_CheckDistAndMove(me)){
+               drive(parameters.star_speed, parameters.star_speed);
             }
             status_ = QM_HANDLED();
             break;
@@ -778,7 +793,6 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
             break;
         }
     }
-    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -905,9 +919,11 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::StepsStrategy} .......................................*/
 /*${AOs::SumoHSM::SM::StepsStrategy} */
 static QState SumoHSM_StepsStrategy_e(SumoHSM * const me) {
-    drive(0,0);
-    uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-    QTimeEvt_armX(&me->timeEvt, small_step_wait, small_step_wait);
+    if (!SumoHSM_CheckDistAndMove(me)){
+        drive(0,0);
+        uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+        QTimeEvt_armX(&me->timeEvt, small_step_wait, small_step_wait);
+    }
     return QM_ENTRY(&SumoHSM_StepsStrategy_s);
 }
 /*${AOs::SumoHSM::SM::StepsStrategy} */
@@ -955,21 +971,11 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
             QTimeEvt_disarm(&me->timeEvt);
             QTimeEvt_disarm(&me->timeEvt_2);
 
-            if (distance_is_active(DIST_SENSOR_R)) {
-               drive(80,-80);
-            } else if (distance_is_active(DIST_SENSOR_FR)) {
-               drive(80,0);
-            } else if (distance_is_active(DIST_SENSOR_F)) {
-               drive(100,100);
-            } else if (distance_is_active(DIST_SENSOR_FL)) {
-               drive(0,80);
-            } else if (distance_is_active(DIST_SENSOR_L)) {
-               drive(-80,80);
-            } else {
-               drive(0,0);
-               QTimeEvt_armX(&me->timeEvt, 3 * BSP_TICKS_PER_SEC, 3 * BSP_TICKS_PER_SEC);
+            if (!SumoHSM_CheckDistAndMove(me)){
+                drive(0,0);
+                uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+                QTimeEvt_armX(&me->timeEvt, small_step_wait, small_step_wait);
             }
-
 
             status_ = QM_HANDLED();
             break;
