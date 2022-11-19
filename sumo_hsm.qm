@@ -54,6 +54,8 @@ return true;</code>
 if (distance_is_active(DIST_SENSOR_F)&amp;&amp;
     distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(100,100);
+} else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
+    drive(0,0);
 } else if (distance_is_active(DIST_SENSOR_R)) {
    drive(80,-80);
 } else if (distance_is_active(DIST_SENSOR_FR)) {
@@ -808,6 +810,8 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt_2, small_step_advance_time, 0);</action>
     <submachine name="LineSubmachine">
      <entry>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</entry>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <!--${AOs::SumoHSM::SM::LineSubmachine::XP-XP1}-->
      <xp name="XP1">
       <xp_glyph point="72,2,0">
@@ -907,6 +911,7 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, turn_time, 0);</entry>
      </state>
      <submachine_diagram size="81,61">
       <entry box="1,2,6,2"/>
+      <exit box="1,4,6,2"/>
      </submachine_diagram>
     </submachine>
     <!--${AOs::SumoHSM::SM::PreStrategy}-->
@@ -966,40 +971,12 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 10, 0);</entry>
       <entry brief="turn_right">drive(60,-60);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.2), 0);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../1">
-       <tran_glyph conn="72,19,3,0,14,2">
+      <tran trig="TIMEOUT" target="../../12">
+       <tran_glyph conn="72,18,3,0,10,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2::pre_strategy_2_sub1}-->
-      <state name="pre_strategy_2_sub1">
-       <entry brief="motor_front">drive(100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
-       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2::pre_strategy_2_s~::TIMEOUT}-->
-       <tran trig="TIMEOUT" target="../../2">
-        <tran_glyph conn="75,29,3,0,11,6">
-         <action box="0,-2,10,2"/>
-        </tran_glyph>
-       </tran>
-       <state_glyph node="75,21,20,11">
-        <entry box="1,2,12,3"/>
-       </state_glyph>
-      </state>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2::pre_strategy_2_sub2}-->
-      <state name="pre_strategy_2_sub2">
-       <entry brief="turn_left">drive(-100,100);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4), 0);</entry>
-       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2::pre_strategy_2_s~::TIMEOUT}-->
-       <tran trig="TIMEOUT" target="../../.." cpref="../../../4">
-        <tran_glyph conn="75,43,3,2,10,17,-16,5">
-         <action box="0,-2,10,2"/>
-        </tran_glyph>
-       </tran>
-       <state_glyph node="75,35,20,13">
-        <entry box="1,2,12,3"/>
-       </state_glyph>
-      </state>
-      <state_glyph node="72,10,26,47">
+      <state_glyph node="72,10,26,12">
        <entry box="1,2,13,4"/>
       </state_glyph>
      </state>
@@ -1008,11 +985,11 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_
       <entry brief="motor_back">drive(-60,-60);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
       <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../../9">
-       <tran_glyph conn="104,18,3,0,18,9">
+       <tran_glyph conn="104,18,3,0,18,8">
         <action box="0,-2,19,4"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="104,10,26,14">
+      <state_glyph node="104,10,26,12">
        <entry box="1,2,14,3"/>
       </state_glyph>
      </state>
@@ -1064,11 +1041,11 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 100, 0);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_3_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../10">
-       <tran_glyph conn="104,34,3,0,10,6">
+       <tran_glyph conn="104,34,3,0,10,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="104,27,27,11">
+      <state_glyph node="104,26,26,12">
        <entry box="1,2,13,2"/>
       </state_glyph>
      </state>
@@ -1082,8 +1059,36 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="104,40,28,14">
+      <state_glyph node="104,42,26,12">
        <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_sub2}-->
+     <state name="pre_strategy_2_sub2">
+      <entry brief="turn_left">drive(-100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4), 0);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../4">
+       <tran_glyph conn="72,48,3,2,11,12,-14,5">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="72,42,26,12">
+       <entry box="1,2,12,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_sub1}-->
+     <state name="pre_strategy_2_sub1">
+      <entry brief="motor_front">drive(100,100);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../11">
+       <tran_glyph conn="72,34,3,0,11,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="72,26,26,12">
+       <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <submachine_diagram size="134,64">
