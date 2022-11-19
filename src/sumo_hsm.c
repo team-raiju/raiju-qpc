@@ -94,6 +94,7 @@ typedef struct {
 
 /* private: */
 static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me);
+static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me);
 
 /* protected: */
 static QState SumoHSM_initial(SumoHSM * const me, void const * const par);
@@ -276,15 +277,50 @@ static QMState const SumoHSM_CalibeLineTurn_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
+static QState SumoHSM_AutoEnd  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_AutoEnd_e(SumoHSM * const me);
+static QMState const SumoHSM_AutoEnd_s = {
+    QM_STATE_NULL, /* superstate (top) */
+    Q_STATE_CAST(&SumoHSM_AutoEnd),
+    Q_ACTION_CAST(&SumoHSM_AutoEnd_e),
+    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_NULL  /* no initial tran. */
+};
+static QState SumoHSM_DefensiveStrategy  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_DefensiveStrategy_e(SumoHSM * const me);
+static QState SumoHSM_DefensiveStrategy_x(SumoHSM * const me);
+static QMState const SumoHSM_DefensiveStrategy_s = {
+    QM_STATE_NULL, /* superstate (top) */
+    Q_STATE_CAST(&SumoHSM_DefensiveStrategy),
+    Q_ACTION_CAST(&SumoHSM_DefensiveStrategy_e),
+    Q_ACTION_CAST(&SumoHSM_DefensiveStrategy_x),
+    Q_ACTION_NULL  /* no initial tran. */
+};
+static QState SumoHSM_line3  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_line3_e(SumoHSM * const me);
+static QState SumoHSM_line3_XP1(SumoHSM * const me);
+static QState SumoHSM_line3_STOP(SumoHSM * const me);
+static struct SM_LineSubmachine const SumoHSM_line3_s = {
+    {
+        QM_STATE_NULL, /* superstate (top) */
+        Q_STATE_CAST(&SumoHSM_line3),
+        Q_ACTION_CAST(&SumoHSM_line3_e),
+        Q_ACTION_NULL, /* no exit action */
+        Q_ACTION_NULL  /* no initial tran. */
+    }
+    ,Q_ACTION_CAST(&SumoHSM_line3_XP1)
+    ,Q_ACTION_CAST(&SumoHSM_line3_STOP)
+};
 
 /* submachine ${AOs::SumoHSM::SM::LineSubmachine} */
 static QState SumoHSM_LineSubmachine  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_LineSubmachine_e(SumoHSM * const me);
 static QState SumoHSM_LineSubmachine_x(SumoHSM * const me);
 static QState SumoHSM_LineSubmachine_i(SumoHSM * const me);
 static QMState const SumoHSM_LineSubmachine_s = {
     QM_STATE_NULL, /* superstate unused */
     Q_STATE_CAST(&SumoHSM_LineSubmachine),
-    Q_ACTION_NULL, /* no entry action */
+    Q_ACTION_CAST(&SumoHSM_LineSubmachine_e),
     Q_ACTION_CAST(&SumoHSM_LineSubmachine_x),
     Q_ACTION_CAST(&SumoHSM_LineSubmachine_i)
 };
@@ -301,7 +337,7 @@ static QState SumoHSM_LineSubmachine_LineTurnRight  (SumoHSM * const me, QEvt co
 static QState SumoHSM_LineSubmachine_LineTurnRight_e(SumoHSM * const me);
 static QState SumoHSM_LineSubmachine_LineTurnRight_x(SumoHSM * const me);
 static QMState const SumoHSM_LineSubmachine_LineTurnRight_s = {
-    &SumoHSM_LineSubmachine_LineGoBack_s, /* superstate */
+    &SumoHSM_LineSubmachine_s, /* superstate */
     Q_STATE_CAST(&SumoHSM_LineSubmachine_LineTurnRight),
     Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurnRight_e),
     Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurnRight_x),
@@ -311,7 +347,7 @@ static QState SumoHSM_LineSubmachine_LineTurnLeft  (SumoHSM * const me, QEvt con
 static QState SumoHSM_LineSubmachine_LineTurnLeft_e(SumoHSM * const me);
 static QState SumoHSM_LineSubmachine_LineTurnLeft_x(SumoHSM * const me);
 static QMState const SumoHSM_LineSubmachine_LineTurnLeft_s = {
-    &SumoHSM_LineSubmachine_LineGoBack_s, /* superstate */
+    &SumoHSM_LineSubmachine_s, /* superstate */
     Q_STATE_CAST(&SumoHSM_LineSubmachine_LineTurnLeft),
     Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurnLeft_e),
     Q_ACTION_CAST(&SumoHSM_LineSubmachine_LineTurnLeft_x),
@@ -497,6 +533,26 @@ static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me) {
     return true;
 }
 
+/*${AOs::SumoHSM::CheckDistAndMoveDefense} .................................*/
+static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me) {
+    (void)me;
+    if (distance_is_active(DIST_SENSOR_F)&&
+        distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
+        drive(100,100);
+    } else if (distance_is_active(DIST_SENSOR_R)) {
+       drive(80,-80);
+    } else if (distance_is_active(DIST_SENSOR_FR)) {
+       drive(30,-30);
+    } else if (distance_is_active(DIST_SENSOR_FL)) {
+       drive(-30,30);
+    } else if (distance_is_active(DIST_SENSOR_L)) {
+       drive(-80,80);
+    } else {
+       return false;
+    }
+    return true;
+}
+
 /*${AOs::SumoHSM::SM} ......................................................*/
 static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     static struct {
@@ -535,6 +591,9 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_CalibeFrontTurn);
     QS_FUN_DICTIONARY(&SumoHSM_CalibLineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_CalibeLineTurn);
+    QS_FUN_DICTIONARY(&SumoHSM_AutoEnd);
+    QS_FUN_DICTIONARY(&SumoHSM_DefensiveStrategy);
+    QS_FUN_DICTIONARY(&SumoHSM_line3);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurnLeft);
@@ -771,9 +830,9 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
                 QMState const *target;
                 QActionHandler act[2];
             } const tatbl_ = { /* tran-action table */
-                &SumoHSM_AutoWait_s, /* target state */
+                &SumoHSM_AutoEnd_s, /* target state */
                 {
-                    Q_ACTION_CAST(&SumoHSM_AutoWait_e), /* entry */
+                    Q_ACTION_CAST(&SumoHSM_AutoEnd_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
@@ -950,22 +1009,6 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::StepsStrategy::STOP} */
-        case STOP_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[3];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_AutoWait_s, /* target state */
-                {
-                    Q_ACTION_CAST(&SumoHSM_StepsStrategy_x), /* exit */
-                    Q_ACTION_CAST(&SumoHSM_AutoWait_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN(&tatbl_);
-            break;
-        }
         /*${AOs::SumoHSM::SM::StepsStrategy::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
             QTimeEvt_disarm(&me->timeEvt);
@@ -992,6 +1035,22 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
                     Q_ACTION_CAST(&SumoHSM_StepsStrategy_x), /* exit */
                     Q_ACTION_CAST(&SumoHSM_line2_e), /* entry */
                     Q_ACTION_CAST(&SumoHSM_LineSubmachine_i), /* initial tran. */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StepsStrategy::STOP} */
+        case STOP_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[3];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_AutoEnd_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_StepsStrategy_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_AutoEnd_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
@@ -1290,7 +1349,7 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::line1} */
 static QState SumoHSM_line1_e(SumoHSM * const me) {
     me->sub_LineSubmachine = &SumoHSM_line1_s; /* attach submachine */
-    return QM_ENTRY(&SumoHSM_line1_s.super);
+    return SumoHSM_LineSubmachine_e(me); /* enter submachine */
 }
 /*${AOs::SumoHSM::SM::line1} */
 static QState SumoHSM_line1_XP1(SumoHSM * const me) {
@@ -1314,10 +1373,10 @@ static QState SumoHSM_line1_STOP(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[3];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_AutoWait_s, /* target state */
+        &SumoHSM_AutoEnd_s, /* target state */
         {
             Q_ACTION_CAST(&SumoHSM_LineSubmachine_x), /* submachine exit */
-            Q_ACTION_CAST(&SumoHSM_AutoWait_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_AutoEnd_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -1341,7 +1400,7 @@ static QState SumoHSM_line1(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::line2} */
 static QState SumoHSM_line2_e(SumoHSM * const me) {
     me->sub_LineSubmachine = &SumoHSM_line2_s; /* attach submachine */
-    return QM_ENTRY(&SumoHSM_line2_s.super);
+    return SumoHSM_LineSubmachine_e(me); /* enter submachine */
 }
 /*${AOs::SumoHSM::SM::line2} */
 static QState SumoHSM_line2_XP1(SumoHSM * const me) {
@@ -1365,10 +1424,10 @@ static QState SumoHSM_line2_STOP(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[3];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_AutoWait_s, /* target state */
+        &SumoHSM_AutoEnd_s, /* target state */
         {
             Q_ACTION_CAST(&SumoHSM_LineSubmachine_x), /* submachine exit */
-            Q_ACTION_CAST(&SumoHSM_AutoWait_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_AutoEnd_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -1412,8 +1471,8 @@ static QState SumoHSM_pre_strategy_XP1(SumoHSM * const me) {
         };
         status_ = QM_TRAN(&tatbl_);
     }
-    /*${AOs::SumoHSM::SM::pre_strategy::XP1::[else]} */
-    else {
+    /*${AOs::SumoHSM::SM::pre_strategy::XP1::[strategy_1]} */
+    else if (me->strategy == 1) {
         static struct {
             QMState const *target;
             QActionHandler act[3];
@@ -1422,6 +1481,21 @@ static QState SumoHSM_pre_strategy_XP1(SumoHSM * const me) {
             {
                 Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
                 Q_ACTION_CAST(&SumoHSM_StepsStrategy_e), /* entry */
+                Q_ACTION_NULL /* zero terminator */
+            }
+        };
+        status_ = QM_TRAN(&tatbl_);
+    }
+    /*${AOs::SumoHSM::SM::pre_strategy::XP1::[else]} */
+    else {
+        static struct {
+            QMState const *target;
+            QActionHandler act[3];
+        } const tatbl_ = { /* tran-action table */
+            &SumoHSM_DefensiveStrategy_s, /* target state */
+            {
+                Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
+                Q_ACTION_CAST(&SumoHSM_DefensiveStrategy_e), /* entry */
                 Q_ACTION_NULL /* zero terminator */
             }
         };
@@ -1446,7 +1520,7 @@ static QState SumoHSM_pre_strategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::line_rc} */
 static QState SumoHSM_line_rc_e(SumoHSM * const me) {
     me->sub_LineSubmachine = &SumoHSM_line_rc_s; /* attach submachine */
-    return QM_ENTRY(&SumoHSM_line_rc_s.super);
+    return SumoHSM_LineSubmachine_e(me); /* enter submachine */
 }
 /*${AOs::SumoHSM::SM::line_rc} */
 static QState SumoHSM_line_rc_XP1(SumoHSM * const me) {
@@ -1706,7 +1780,191 @@ static QState SumoHSM_CalibeLineTurn(SumoHSM * const me, QEvt const * const e) {
     return status_;
 }
 
+/*${AOs::SumoHSM::SM::AutoEnd} .............................................*/
+/*${AOs::SumoHSM::SM::AutoEnd} */
+static QState SumoHSM_AutoEnd_e(SumoHSM * const me) {
+    drive(0,0);
+    driving_disable();
+    board_led_off();
+    ble_service_send_string("state:AUTOEND");
+    (void)me; /* unused parameter */
+    return QM_ENTRY(&SumoHSM_AutoEnd_s);
+}
+/*${AOs::SumoHSM::SM::AutoEnd} */
+static QState SumoHSM_AutoEnd(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT} */
+        case CHANGE_STATE_EVT_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_AutoWait_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_AutoWait_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::DefensiveStrategy} ...................................*/
+/*${AOs::SumoHSM::SM::DefensiveStrategy} */
+static QState SumoHSM_DefensiveStrategy_e(SumoHSM * const me) {
+    if (!SumoHSM_CheckDistAndMoveDefense(me)){
+        drive(0,0);
+        uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+        QTimeEvt_armX(&me->timeEvt, small_step_wait, small_step_wait);
+    }
+    return QM_ENTRY(&SumoHSM_DefensiveStrategy_s);
+}
+/*${AOs::SumoHSM::SM::DefensiveStrategy} */
+static QState SumoHSM_DefensiveStrategy_x(SumoHSM * const me) {
+    QTimeEvt_disarm(&me->timeEvt);
+    QTimeEvt_disarm(&me->timeEvt_2);
+    return QM_EXIT(&SumoHSM_DefensiveStrategy_s);
+}
+/*${AOs::SumoHSM::SM::DefensiveStrategy} */
+static QState SumoHSM_DefensiveStrategy(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::DefensiveStrateg~::LINE_CHANGED_FL, LINE_CHANGED_FR} */
+        case LINE_CHANGED_FL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FR_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[4];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_LineSubmachine_s, /* target submachine */
+                {
+                    Q_ACTION_CAST(&SumoHSM_DefensiveStrategy_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_line3_e), /* entry */
+                    Q_ACTION_CAST(&SumoHSM_LineSubmachine_i), /* initial tran. */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::DefensiveStrateg~::STOP} */
+        case STOP_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[3];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_AutoEnd_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_DefensiveStrategy_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_AutoEnd_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::DefensiveStrateg~::DIST_SENSOR_CHANGE} */
+        case DIST_SENSOR_CHANGE_SIG: {
+            QTimeEvt_disarm(&me->timeEvt);
+            QTimeEvt_disarm(&me->timeEvt_2);
+
+            if (!SumoHSM_CheckDistAndMoveDefense(me)){
+                drive(0,0);
+                uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+                QTimeEvt_armX(&me->timeEvt, small_step_wait, small_step_wait);
+            }
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::DefensiveStrateg~::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            drive(100,100);
+            uint32_t small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
+            QTimeEvt_armX(&me->timeEvt_2, small_step_advance_time, 0);
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::DefensiveStrateg~::TIMEOUT_2} */
+        case TIMEOUT_2_SIG: {
+            drive(0,0);
+            status_ = QM_HANDLED();
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    (void)me; /* unused parameter */
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::line3} ...............................................*/
+/*${AOs::SumoHSM::SM::line3} */
+static QState SumoHSM_line3_e(SumoHSM * const me) {
+    me->sub_LineSubmachine = &SumoHSM_line3_s; /* attach submachine */
+    return SumoHSM_LineSubmachine_e(me); /* enter submachine */
+}
+/*${AOs::SumoHSM::SM::line3} */
+static QState SumoHSM_line3_XP1(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_DefensiveStrategy_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_LineSubmachine_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_DefensiveStrategy_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::line3} */
+static QState SumoHSM_line3_STOP(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_AutoEnd_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_LineSubmachine_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_AutoEnd_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::line3} */
+static QState SumoHSM_line3(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    (void)me; /* unused parameter */
+    return status_;
+}
+
 /*${AOs::SumoHSM::SM::LineSubmachine} ......................................*/
+/*${AOs::SumoHSM::SM::LineSubmachine} */
+static QState SumoHSM_LineSubmachine_e(SumoHSM * const me) {
+    QTimeEvt_disarm(&me->timeEvt);
+    QTimeEvt_disarm(&me->timeEvt_2);
+    return QM_ENTRY(&SumoHSM_LineSubmachine_s);
+}
 /*${AOs::SumoHSM::SM::LineSubmachine} */
 static QState SumoHSM_LineSubmachine_x(SumoHSM * const me) {
     return QM_SM_EXIT(&me->sub_LineSubmachine->super);
@@ -1806,25 +2064,25 @@ static QState SumoHSM_LineSubmachine_LineGoBack(SumoHSM * const me, QEvt const *
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} ...........*/
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} .......................*/
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} */
 static QState SumoHSM_LineSubmachine_LineTurnRight_e(SumoHSM * const me) {
     drive(parameters.turn_speed, -parameters.turn_speed);
     uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.6);
     QTimeEvt_armX(&me->timeEvt, turn_time, 0);
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineTurnRight_s);
 }
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} */
 static QState SumoHSM_LineSubmachine_LineTurnRight_x(SumoHSM * const me) {
     drive(0,0);
     (void)me; /* unused parameter */
     return QM_EXIT(&SumoHSM_LineSubmachine_LineTurnRight_s);
 }
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} */
 static QState SumoHSM_LineSubmachine_LineTurnRight(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -1839,7 +2097,7 @@ static QState SumoHSM_LineSubmachine_LineTurnRight(SumoHSM * const me, QEvt cons
             status_ = QM_TRAN_XP(me->sub_LineSubmachine->XP1, &tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnRight::DIST_SENSOR_CHANGE} */
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
             static struct {
                 QMState const *target;
@@ -1862,25 +2120,25 @@ static QState SumoHSM_LineSubmachine_LineTurnRight(SumoHSM * const me, QEvt cons
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} ............*/
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} ........................*/
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} */
 static QState SumoHSM_LineSubmachine_LineTurnLeft_e(SumoHSM * const me) {
     drive(-parameters.turn_speed, parameters.turn_speed);
     uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.6);
     QTimeEvt_armX(&me->timeEvt, turn_time, 0);
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineTurnLeft_s);
 }
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} */
 static QState SumoHSM_LineSubmachine_LineTurnLeft_x(SumoHSM * const me) {
     drive(0,0);
     (void)me; /* unused parameter */
     return QM_EXIT(&SumoHSM_LineSubmachine_LineTurnLeft_s);
 }
-/*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft} */
+/*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} */
 static QState SumoHSM_LineSubmachine_LineTurnLeft(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -1895,7 +2153,7 @@ static QState SumoHSM_LineSubmachine_LineTurnLeft(SumoHSM * const me, QEvt const
             status_ = QM_TRAN_XP(me->sub_LineSubmachine->XP1, &tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LineTurnLeft::DIST_SENSOR_CHANGE} */
+        /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
             static struct {
                 QMState const *target;
