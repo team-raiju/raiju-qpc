@@ -28,6 +28,8 @@
    <attribute name="timeEvtBle" type="QTimeEvt" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::ble_counter}-->
    <attribute name="ble_counter" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::timerFailSafe}-->
+   <attribute name="timerFailSafe" type="QTimeEvt" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::CheckDistAndMove}-->
    <operation name="CheckDistAndMove" type="uint8_t" visibility="0x02" properties="0x00">
     <code>(void)me;
@@ -531,7 +533,8 @@ drive(parameters.star_speed, parameters.star_speed);</entry>
      <entry>board_led_off();</entry>
      <!--${AOs::SumoHSM::SM::RC::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
-      <action>int coord_x = radio_service_get_channel(RADIO_CH1);
+      <action>QTimeEvt_disarm(&amp;me-&gt;timerFailSafe);
+int coord_x = radio_service_get_channel(RADIO_CH1);
 int coord_y = radio_service_get_channel(RADIO_CH2);
 
 int mot1 = coord_y + coord_x;
@@ -552,6 +555,7 @@ if (me-&gt;strategy == 0){
     }
 }
 
+QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
 </action>
       <tran_glyph conn="131,87,3,-1,12">
        <action box="0,-2,10,2"/>
@@ -592,7 +596,14 @@ if (me-&gt;strategy == 0){
         drive(0, 0);
     }
 }</action>
-      <tran_glyph conn="131,92,3,-1,11">
+      <tran_glyph conn="131,94,3,-1,14">
+       <action box="0,-2,21,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::RC::FAILSAFE}-->
+     <tran trig="FAILSAFE">
+      <action>drive(0,0);</action>
+      <tran_glyph conn="131,89,3,-1,11">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -1198,6 +1209,7 @@ QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super.super, TIMEOUT_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt_2, &amp;me-&gt;super.super, TIMEOUT_2_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvtBle, &amp;me-&gt;super.super, TIMEOUT_SEND_BLE_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super.super, PLAY_BUZZER_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;timerFailSafe, &amp;me-&gt;super.super, FAILSAFE_SIG, 0U);
 me-&gt;calib_time_1 = 0;
 me-&gt;calib_time_2 = 0;
 me-&gt;calib_status = 0;
@@ -1292,6 +1304,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(BLE_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_SEND_BLE_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(FAILSAFE_SIG,  (void *)0);
 
 
 }
@@ -1380,6 +1393,7 @@ enum SumoHSMSignals {
     BLE_DATA_SIG,
     LOW_BATTERY_SIG,
     TIMEOUT_SEND_BLE_SIG,
+    FAILSAFE_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 

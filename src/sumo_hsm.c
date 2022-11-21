@@ -77,6 +77,7 @@ typedef struct {
     uint8_t pre_strategy;
     QTimeEvt timeEvtBle;
     uint8_t ble_counter;
+    QTimeEvt timerFailSafe;
 
 /* private submachines */
     /* exit points for submachine ${AOs::SumoHSM::SM::LineSubmachine} */
@@ -498,6 +499,7 @@ void SumoHSM_ctor(void) {
     QTimeEvt_ctorX(&me->timeEvt_2, &me->super.super, TIMEOUT_2_SIG, 0U);
     QTimeEvt_ctorX(&me->timeEvtBle, &me->super.super, TIMEOUT_SEND_BLE_SIG, 0U);
     QTimeEvt_ctorX(&me->buzzerTimeEvt, &me->super.super, PLAY_BUZZER_SIG, 0U);
+    QTimeEvt_ctorX(&me->timerFailSafe, &me->super.super, FAILSAFE_SIG, 0U);
     me->calib_time_1 = 0;
     me->calib_time_2 = 0;
     me->calib_status = 0;
@@ -1373,6 +1375,7 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::RC::RADIO_DATA} */
         case RADIO_DATA_SIG: {
+            QTimeEvt_disarm(&me->timerFailSafe);
             int coord_x = radio_service_get_channel(RADIO_CH1);
             int coord_y = radio_service_get_channel(RADIO_CH2);
 
@@ -1394,6 +1397,7 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
                 }
             }
 
+            QTimeEvt_armX(&me->timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
 
             status_ = QM_HANDLED();
             break;
@@ -1455,11 +1459,18 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
+        /*${AOs::SumoHSM::SM::RC::FAILSAFE} */
+        case FAILSAFE_SIG: {
+            drive(0,0);
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -2769,6 +2780,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(BLE_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_SEND_BLE_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(FAILSAFE_SIG,  (void *)0);
 
 
 }

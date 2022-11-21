@@ -76,6 +76,7 @@ enum SumoHSMSignals {
     BLE_DATA_SIG,
     LOW_BATTERY_SIG,
     TIMEOUT_SEND_BLE_SIG,
+    FAILSAFE_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 
