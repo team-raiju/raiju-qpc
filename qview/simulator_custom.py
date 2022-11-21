@@ -92,6 +92,7 @@ def custom_qview_init(qview):
         "right": False,
         "three": False,
         "four": False,
+        "six": False,
     }
 
     line_sensors = {
@@ -332,8 +333,8 @@ def radio_evt2_command(*args):
 def send_radio_command_ch1_ch2(ch1, ch2):
     qview_base.command(7, ch1, ch2)
 
-def send_radio_command_ch3_ch4(ch3, ch4):
-    qview_base.command(8, ch3, ch4)
+def send_radio_command_ch3_ch4_ch6(ch3, ch4, ch6):
+    qview_base.command(8, ch3, ch4, ch6)
 
 def low_battery_command():
     qview_base.command(10, 0)
@@ -421,10 +422,16 @@ def send_keyboard():
         ch4 = 255
     else:
         ch4 = 127
+    
+    # ch 6
+    if (key_pressed_dict["six"]):
+        ch6 = 255
+    else:
+        ch6 = 127
 
     
     send_radio_command_ch1_ch2(x_keyboard, y_keyboard)  
-    send_radio_command_ch3_ch4(ch3, ch4)
+    send_radio_command_ch3_ch4_ch6(ch3, ch4, ch6)
 
 
 def set_low_battery():
@@ -529,6 +536,8 @@ def on_press(key):
             key_pressed_dict["three"] = True
         elif (key.char == '4'):
             key_pressed_dict["four"] = True
+        elif (key.char == '6'):
+            key_pressed_dict["six"] = True
         
     except AttributeError:
         # print('special key {0} pressed'.format(key))
@@ -552,6 +561,8 @@ def on_release(key):
             key_pressed_dict["three"] = False
         elif (key.char == '4'):
             key_pressed_dict["four"] = False
+        elif (key.char == '6'):
+            key_pressed_dict["six"] = False
     
     except AttributeError:
         return
