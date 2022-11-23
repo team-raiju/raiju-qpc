@@ -106,7 +106,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
             snprintf(buffer, 20, "step:%hu", params.step_wait_time_ms);
             break;
         case 7:
-            snprintf(buffer, 20, "str:%hu:%hu", params.current_pre_strategy, params.current_strategy);
+            snprintf(buffer, 20, "str:%hu:%hu", params.current_strategy, params.current_pre_strategy);
             break;
         case 8:
             snprintf(buffer, 20, "mms:%hu", params.max_speed);
@@ -125,16 +125,19 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * last_data){
     params->enabled_distance_sensors = ble_packet.enabledDistanceSensors;
     params->enabled_line_sensors = ble_packet.enabledLineSensors;
     params->reverse_speed = ble_packet.reverseSpeed;
-    // params->reverse_time_ms = ble_packet.reverseTimeMs;
+    params->reverse_time_ms = ble_packet.reverseTimeMs;
     params->turn_speed = ble_packet.turnSpeed;
-    // params->turn_180_time_ms  = ble_packet.turnTimeMs;
-    // params->step_wait_time_ms = ble_packet.stepWaitTimeMs;
+    params->turn_180_time_ms  = ble_packet.turnTimeMs;
+    params->step_wait_time_ms = ble_packet.stepWaitTimeMs;
     params->current_pre_strategy = ble_packet.preStrategy;
     params->current_strategy = ble_packet.strategy;
     params->max_speed = ble_packet.maxMotorSpeed;
 
     // printf("Strategy: %d\r\n", params->current_strategy);
     // printf("Pre Strategy: %d\r\n", params->current_pre_strategy);
+    // printf("turn_180_time_ms: %d\r\n", params->turn_180_time_ms);
+    // printf("reverse_time_ms: %d\r\n", params->reverse_time_ms);
+    // printf("step_wait_time_ms: %d\r\n", params->step_wait_time_ms);
 
     // Save in eeprom
 }
