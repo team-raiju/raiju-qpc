@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define PARAMETERS_REPORT_SIZE  9
+
 typedef struct sumo_parameters {
 
     uint8_t  current_strategy;

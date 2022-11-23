@@ -23,8 +23,8 @@ typedef union{
         uint8_t turnSpeed;
         uint8_t turnTimeMs;
         uint8_t stepWaitTimeMs;
-        uint8_t preStrategy;
         uint8_t strategy;
+        uint8_t preStrategy;
         uint8_t maxMotorSpeed;
         uint8_t _chk;
     };

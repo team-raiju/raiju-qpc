@@ -9,7 +9,8 @@
 
 const char * strategy_names[] = {
     "star",
-    "small steps"
+    "small steps",
+    "defensive"
 };
 
 
@@ -90,21 +91,24 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
             snprintf(buffer, 20, "ss:%d:%s", 1, strategy_names[1]);
             break;
         case 2:
-            snprintf(buffer, 20, "sens:%hu:%hu", params.enabled_distance_sensors, params.enabled_line_sensors);
+            snprintf(buffer, 20, "ss:%d:%s", 2, strategy_names[2]);
             break;
         case 3:
-            snprintf(buffer, 20, "rev:%hu:%hu", params.reverse_speed, params.reverse_time_ms);
+            snprintf(buffer, 20, "sens:%hu:%hu", params.enabled_distance_sensors, params.enabled_line_sensors);
             break;
         case 4:
-            snprintf(buffer, 20, "turn:%hu:%hu", params.turn_speed, params.turn_180_time_ms);
+            snprintf(buffer, 20, "rev:%hu:%hu", params.reverse_speed, params.reverse_time_ms);
             break;
         case 5:
-            snprintf(buffer, 20, "step:%hu", params.step_wait_time_ms);
+            snprintf(buffer, 20, "turn:%hu:%hu", params.turn_speed, params.turn_180_time_ms);
             break;
         case 6:
-            snprintf(buffer, 20, "str:%hu:%hu", params.current_pre_strategy, params.current_strategy);
+            snprintf(buffer, 20, "step:%hu", params.step_wait_time_ms);
             break;
         case 7:
+            snprintf(buffer, 20, "str:%hu:%hu", params.current_pre_strategy, params.current_strategy);
+            break;
+        case 8:
             snprintf(buffer, 20, "mms:%hu", params.max_speed);
             break;
     }
@@ -128,6 +132,9 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * last_data){
     params->current_pre_strategy = ble_packet.preStrategy;
     params->current_strategy = ble_packet.strategy;
     params->max_speed = ble_packet.maxMotorSpeed;
+
+    // printf("Strategy: %d\r\n", params->current_strategy);
+    // printf("Pre Strategy: %d\r\n", params->current_pre_strategy);
 
     // Save in eeprom
 }
