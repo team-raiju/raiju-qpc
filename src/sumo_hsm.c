@@ -1202,10 +1202,12 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::StepsStrategy} .......................................*/
 /*${AOs::SumoHSM::SM::StepsStrategy} */
 static QState SumoHSM_StepsStrategy_e(SumoHSM * const me) {
+    QTimeEvt_disarm(&me->timeEvt);
+    QTimeEvt_disarm(&me->timeEvt_2);
     if (!SumoHSM_CheckDistAndMove(me)){
         drive(0,0);
         uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-        QTimeEvt_armX(&me->timeEvt, small_step_wait, small_step_wait);
+        QTimeEvt_rearm(&me->timeEvt, small_step_wait);
     }
     return QM_ENTRY(&SumoHSM_StepsStrategy_s);
 }
@@ -1223,25 +1225,24 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
         case TIMEOUT_SIG: {
             drive(100,100);
             uint32_t small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
-            QTimeEvt_armX(&me->timeEvt_2, small_step_advance_time, 0);
+            QTimeEvt_rearm(&me->timeEvt_2, small_step_advance_time);
             status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT_2} */
         case TIMEOUT_2_SIG: {
             drive(0,0);
+            uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+            QTimeEvt_rearm(&me->timeEvt, small_step_wait);
             status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::StepsStrategy::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
-            QTimeEvt_disarm(&me->timeEvt);
-            QTimeEvt_disarm(&me->timeEvt_2);
-
             if (!SumoHSM_CheckDistAndMove(me)){
                 drive(0,0);
                 uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-                QTimeEvt_armX(&me->timeEvt, small_step_wait, small_step_wait);
+                QTimeEvt_rearm(&me->timeEvt, small_step_wait);
             }
 
             status_ = QM_HANDLED();
@@ -2111,10 +2112,12 @@ static QState SumoHSM_AutoEnd(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::DefensiveStrategy} ...................................*/
 /*${AOs::SumoHSM::SM::DefensiveStrategy} */
 static QState SumoHSM_DefensiveStrategy_e(SumoHSM * const me) {
+    QTimeEvt_disarm(&me->timeEvt);
+    QTimeEvt_disarm(&me->timeEvt_2);
     if (!SumoHSM_CheckDistAndMoveDefense(me)){
         drive(0,0);
         uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-        QTimeEvt_armX(&me->timeEvt, small_step_wait, small_step_wait);
+        QTimeEvt_rearm(&me->timeEvt, small_step_wait);
     }
     return QM_ENTRY(&SumoHSM_DefensiveStrategy_s);
 }
@@ -2164,13 +2167,10 @@ static QState SumoHSM_DefensiveStrategy(SumoHSM * const me, QEvt const * const e
         }
         /*${AOs::SumoHSM::SM::DefensiveStrateg~::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
-            QTimeEvt_disarm(&me->timeEvt);
-            QTimeEvt_disarm(&me->timeEvt_2);
-
             if (!SumoHSM_CheckDistAndMoveDefense(me)){
                 drive(0,0);
                 uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-                QTimeEvt_armX(&me->timeEvt, small_step_wait, small_step_wait);
+                QTimeEvt_rearm(&me->timeEvt, small_step_wait);
             }
             status_ = QM_HANDLED();
             break;
@@ -2179,13 +2179,15 @@ static QState SumoHSM_DefensiveStrategy(SumoHSM * const me, QEvt const * const e
         case TIMEOUT_SIG: {
             drive(100,100);
             uint32_t small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
-            QTimeEvt_armX(&me->timeEvt_2, small_step_advance_time, 0);
+            QTimeEvt_rearm(&me->timeEvt_2, small_step_advance_time);
             status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::DefensiveStrateg~::TIMEOUT_2} */
         case TIMEOUT_2_SIG: {
             drive(0,0);
+            uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+            QTimeEvt_rearm(&me->timeEvt, small_step_wait);
             status_ = QM_HANDLED();
             break;
         }
@@ -2194,7 +2196,6 @@ static QState SumoHSM_DefensiveStrategy(SumoHSM * const me, QEvt const * const e
             break;
         }
     }
-    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -2473,9 +2474,9 @@ static QState SumoHSM_LineSubmachine_LineGoBack_e(SumoHSM * const me) {
     uint32_t reverse_time = BSP_TICKS_PER_MILISSEC * parameters.reverse_time_ms;
 
     if (adc_line_is_white(LINE_FL)){
-        QTimeEvt_armX(&me->timeEvt, reverse_time, 0);
+        QTimeEvt_rearm(&me->timeEvt, reverse_time);
     } else {
-        QTimeEvt_armX(&me->timeEvt_2, reverse_time, 0);
+        QTimeEvt_rearm(&me->timeEvt_2, reverse_time);
     }
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineGoBack_s);
 }
@@ -2537,7 +2538,7 @@ static QState SumoHSM_LineSubmachine_LineGoBack(SumoHSM * const me, QEvt const *
 static QState SumoHSM_LineSubmachine_LineTurnRight_e(SumoHSM * const me) {
     drive(parameters.turn_speed, -parameters.turn_speed);
     uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.6);
-    QTimeEvt_armX(&me->timeEvt, turn_time, 0);
+    QTimeEvt_rearm(&me->timeEvt, turn_time);
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineTurnRight_s);
 }
 /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} */
@@ -2593,7 +2594,7 @@ static QState SumoHSM_LineSubmachine_LineTurnRight(SumoHSM * const me, QEvt cons
 static QState SumoHSM_LineSubmachine_LineTurnLeft_e(SumoHSM * const me) {
     drive(-parameters.turn_speed, parameters.turn_speed);
     uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.6);
-    QTimeEvt_armX(&me->timeEvt, turn_time, 0);
+    QTimeEvt_rearm(&me->timeEvt, turn_time);
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineTurnLeft_s);
 }
 /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} */
@@ -2730,7 +2731,7 @@ static QState SumoHSM_PreStrategy_EP3_ep(SumoHSM * const me) {
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0} */
 static QState SumoHSM_PreStrategy_PreStrategy_0_e(SumoHSM * const me) {
     drive(100,100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 10, 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 10);
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_0_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0} */
@@ -2760,7 +2761,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_0(SumoHSM * const me, QEvt const *
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2} */
 static QState SumoHSM_PreStrategy_PreStrategy_2_e(SumoHSM * const me) {
     drive(60,-60);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.2), 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.2));
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_2_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2} */
@@ -2829,7 +2830,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_3(SumoHSM * const me, QEvt const *
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1} */
 static QState SumoHSM_PreStrategy_PreStrategy_1_e(SumoHSM * const me) {
     drive(-60,60);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.2), 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.2));
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_1_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1} */
@@ -2863,7 +2864,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_1(SumoHSM * const me, QEvt const *
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_3_sub1} */
 static QState SumoHSM_PreStrategy_pre_strategy_3_sub1_e(SumoHSM * const me) {
     drive(100,100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100, 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
     return QM_ENTRY(&SumoHSM_PreStrategy_pre_strategy_3_sub1_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_3_sub1} */
@@ -2897,7 +2898,7 @@ static QState SumoHSM_PreStrategy_pre_strategy_3_sub1(SumoHSM * const me, QEvt c
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_3_sub2} */
 static QState SumoHSM_PreStrategy_pre_strategy_3_sub2_e(SumoHSM * const me) {
     drive(-100,100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.1), 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.1));
     return QM_ENTRY(&SumoHSM_PreStrategy_pre_strategy_3_sub2_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_3_sub2} */
@@ -2927,7 +2928,7 @@ static QState SumoHSM_PreStrategy_pre_strategy_3_sub2(SumoHSM * const me, QEvt c
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_sub2} */
 static QState SumoHSM_PreStrategy_pre_strategy_2_sub2_e(SumoHSM * const me) {
     drive(-100,100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4), 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4));
     return QM_ENTRY(&SumoHSM_PreStrategy_pre_strategy_2_sub2_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_sub2} */
@@ -2957,7 +2958,7 @@ static QState SumoHSM_PreStrategy_pre_strategy_2_sub2(SumoHSM * const me, QEvt c
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_sub1} */
 static QState SumoHSM_PreStrategy_pre_strategy_2_sub1_e(SumoHSM * const me) {
     drive(100,100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500);
     return QM_ENTRY(&SumoHSM_PreStrategy_pre_strategy_2_sub1_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_sub1} */
@@ -2991,7 +2992,7 @@ static QState SumoHSM_PreStrategy_pre_strategy_2_sub1(SumoHSM * const me, QEvt c
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_sub2} */
 static QState SumoHSM_PreStrategy_pre_strategy_1_sub2_e(SumoHSM * const me) {
     drive(100,-100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4), 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.turn_180_time_ms * (0.4));
     return QM_ENTRY(&SumoHSM_PreStrategy_pre_strategy_1_sub2_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_sub2} */
@@ -3021,7 +3022,7 @@ static QState SumoHSM_PreStrategy_pre_strategy_1_sub2(SumoHSM * const me, QEvt c
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_sub1} */
 static QState SumoHSM_PreStrategy_pre_strategy_1_sub1_e(SumoHSM * const me) {
     drive(100,100);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500, 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500);
     return QM_ENTRY(&SumoHSM_PreStrategy_pre_strategy_1_sub1_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_sub1} */
