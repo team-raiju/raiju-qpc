@@ -91,6 +91,11 @@ typedef struct {
         QMState super;
         QActionHandler const XP1; /* eXit-Point segment */
     } const *sub_PreStrategy;
+    /* exit points for submachine ${AOs::SumoHSM::SM::BLESubmachine} */
+    struct SM_BLESubmachine {
+        QMState super;
+        QActionHandler const XP1; /* eXit-Point segment */
+    } const *sub_BLESubmachine;
 } SumoHSM;
 
 /* private: */
@@ -325,6 +330,32 @@ static struct SM_PreStrategy const SumoHSM_pre_strategy_rc_s = {
     }
     ,Q_ACTION_CAST(&SumoHSM_pre_strategy_rc_XP1)
 };
+static QState SumoHSM_ble1  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_ble1_e(SumoHSM * const me);
+static QState SumoHSM_ble1_XP1(SumoHSM * const me);
+static struct SM_BLESubmachine const SumoHSM_ble1_s = {
+    {
+        QM_STATE_NULL, /* superstate (top) */
+        Q_STATE_CAST(&SumoHSM_ble1),
+        Q_ACTION_CAST(&SumoHSM_ble1_e),
+        Q_ACTION_NULL, /* no exit action */
+        Q_ACTION_NULL  /* no initial tran. */
+    }
+    ,Q_ACTION_CAST(&SumoHSM_ble1_XP1)
+};
+static QState SumoHSM_ble2  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_ble2_e(SumoHSM * const me);
+static QState SumoHSM_ble2_XP1(SumoHSM * const me);
+static struct SM_BLESubmachine const SumoHSM_ble2_s = {
+    {
+        QM_STATE_NULL, /* superstate (top) */
+        Q_STATE_CAST(&SumoHSM_ble2),
+        Q_ACTION_CAST(&SumoHSM_ble2_e),
+        Q_ACTION_NULL, /* no exit action */
+        Q_ACTION_NULL  /* no initial tran. */
+    }
+    ,Q_ACTION_CAST(&SumoHSM_ble2_XP1)
+};
 
 /* submachine ${AOs::SumoHSM::SM::LineSubmachine} */
 static QState SumoHSM_LineSubmachine  (SumoHSM * const me, QEvt const * const e);
@@ -473,6 +504,18 @@ static QMState const SumoHSM_PreStrategy_pre_strategy_1_sub1_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
+
+/* submachine ${AOs::SumoHSM::SM::BLESubmachine} */
+static QState SumoHSM_BLESubmachine  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_BLESubmachine_e(SumoHSM * const me);
+static QState SumoHSM_BLESubmachine_x(SumoHSM * const me);
+static QMState const SumoHSM_BLESubmachine_s = {
+    QM_STATE_NULL, /* superstate unused */
+    Q_STATE_CAST(&SumoHSM_BLESubmachine),
+    Q_ACTION_CAST(&SumoHSM_BLESubmachine_e),
+    Q_ACTION_CAST(&SumoHSM_BLESubmachine_x),
+    Q_ACTION_NULL  /* no initial tran. */
+};
 /*$enddecl${AOs::SumoHSM} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 static void SumoHSM_change_strategy(SumoHSM * const me);
@@ -612,6 +655,8 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_DefensiveStrategy);
     QS_FUN_DICTIONARY(&SumoHSM_line3);
     QS_FUN_DICTIONARY(&SumoHSM_pre_strategy_rc);
+    QS_FUN_DICTIONARY(&SumoHSM_ble1);
+    QS_FUN_DICTIONARY(&SumoHSM_ble2);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurnLeft);
@@ -627,6 +672,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_pre_strategy_1_sub1);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy);
+    QS_FUN_DICTIONARY(&SumoHSM_BLESubmachine);
 
     return QM_TRAN_INIT(&tatbl_);
 }
@@ -705,30 +751,28 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::Idle::BLE_DATA} */
-        case BLE_DATA_SIG: {
-            ble_data_header_t last_header = ble_service_last_packet_type();
-
-            if (last_header == BLE_REQUEST_DATA){
-                me->ble_counter = 0;
-                QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);
-            } else if (last_header == BLE_UPDATE_PARAMETERS) {
-                ble_rcv_packet_t last_data;
-                ble_service_last_packet(&last_data);
-                parameters_update_from_ble(&parameters, last_data._raw);
-            }
+        /*${AOs::SumoHSM::SM::Idle::BLE_DATA_UPDATE} */
+        case BLE_DATA_UPDATE_SIG: {
+            ble_rcv_packet_t last_data;
+            ble_service_last_packet(&last_data);
+            parameters_update_from_ble(&parameters, last_data._raw);
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::Idle::TIMEOUT_SEND_BLE} */
-        case TIMEOUT_SEND_BLE_SIG: {
-            if (me->ble_counter < 8){
-                parameters_report(parameters, me->ble_counter);
-                QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);
-            }
-
-            me->ble_counter++;
-            status_ = QM_HANDLED();
+        /*${AOs::SumoHSM::SM::Idle::BLE_DATA_REQUEST} */
+        case BLE_DATA_REQUEST_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[3];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_BLESubmachine_s, /* target submachine */
+                {
+                    Q_ACTION_CAST(&SumoHSM_Idle_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_ble1_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
             break;
         }
         default: {
@@ -1053,11 +1097,35 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
+        /*${AOs::SumoHSM::SM::AutoWait::BLE_DATA_REQUEST} */
+        case BLE_DATA_REQUEST_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_BLESubmachine_s, /* target submachine */
+                {
+                    Q_ACTION_CAST(&SumoHSM_ble2_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::BLE_DATA_UPDATE} */
+        case BLE_DATA_UPDATE_SIG: {
+            ble_rcv_packet_t last_data;
+            ble_service_last_packet(&last_data);
+            parameters_update_from_ble(&parameters, last_data._raw);
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -2122,6 +2190,76 @@ static QState SumoHSM_pre_strategy_rc(SumoHSM * const me, QEvt const * const e) 
     return status_;
 }
 
+/*${AOs::SumoHSM::SM::ble1} ................................................*/
+/*${AOs::SumoHSM::SM::ble1} */
+static QState SumoHSM_ble1_e(SumoHSM * const me) {
+    me->sub_BLESubmachine = &SumoHSM_ble1_s; /* attach submachine */
+    return SumoHSM_BLESubmachine_e(me); /* enter submachine */
+}
+/*${AOs::SumoHSM::SM::ble1} */
+static QState SumoHSM_ble1_XP1(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_Idle_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_BLESubmachine_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_Idle_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::ble1} */
+static QState SumoHSM_ble1(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    (void)me; /* unused parameter */
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::ble2} ................................................*/
+/*${AOs::SumoHSM::SM::ble2} */
+static QState SumoHSM_ble2_e(SumoHSM * const me) {
+    me->sub_BLESubmachine = &SumoHSM_ble2_s; /* attach submachine */
+    return SumoHSM_BLESubmachine_e(me); /* enter submachine */
+}
+/*${AOs::SumoHSM::SM::ble2} */
+static QState SumoHSM_ble2_XP1(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_AutoWait_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_BLESubmachine_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_AutoWait_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::ble2} */
+static QState SumoHSM_ble2(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    (void)me; /* unused parameter */
+    return status_;
+}
+
 /*${AOs::SumoHSM::SM::LineSubmachine} ......................................*/
 /*${AOs::SumoHSM::SM::LineSubmachine} */
 static QState SumoHSM_LineSubmachine_e(SumoHSM * const me) {
@@ -2748,6 +2886,58 @@ static QState SumoHSM_PreStrategy_pre_strategy_1_sub1(SumoHSM * const me, QEvt c
     }
     return status_;
 }
+
+/*${AOs::SumoHSM::SM::BLESubmachine} .......................................*/
+/*${AOs::SumoHSM::SM::BLESubmachine} */
+static QState SumoHSM_BLESubmachine_e(SumoHSM * const me) {
+    QTimeEvt_disarm(&me->timeEvt_2);
+    QTimeEvt_disarm(&me->timeEvtBle);
+
+    me->ble_counter = 0;
+    QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);
+    return QM_ENTRY(&SumoHSM_BLESubmachine_s);
+}
+/*${AOs::SumoHSM::SM::BLESubmachine} */
+static QState SumoHSM_BLESubmachine_x(SumoHSM * const me) {
+    return QM_SM_EXIT(&me->sub_BLESubmachine->super);
+}
+/*${AOs::SumoHSM::SM::BLESubmachine} */
+static QState SumoHSM_BLESubmachine(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::BLESubmachine::TIMEOUT_SEND_BLE} */
+        case TIMEOUT_SEND_BLE_SIG: {
+            if (me->ble_counter < 7){
+                parameters_report(parameters, me->ble_counter);
+                QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);
+                me->ble_counter++;
+            } else {
+                parameters_report(parameters, 7);
+                QTimeEvt_armX(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 10, 0);
+            }
+
+
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::BLESubmachine::TIMEOUT_2} */
+        case TIMEOUT_2_SIG: {
+            static QMTranActTable const tatbl_ = { /* tran-action table */
+                &SumoHSM_BLESubmachine_s, /* target submachine */
+                {
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN_XP(me->sub_BLESubmachine->XP1, &tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER_SUB(&me->sub_BLESubmachine->super);
+            break;
+        }
+    }
+    return status_;
+}
 /*$enddef${AOs::SumoHSM} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 #ifdef Q_SPY
@@ -2777,7 +2967,8 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(BLE_DATA_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(BLE_DATA_UPDATE_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(BLE_DATA_REQUEST_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_SEND_BLE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(FAILSAFE_SIG,  (void *)0);

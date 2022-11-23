@@ -45,8 +45,11 @@ static void ble_process_events(ble_rcv_packet_t rcv_packet){
     if (rcv_packet._raw[0] == 0xFE && rcv_packet._raw[1] == 0xEF){
         QEvt evt = {.sig = CHANGE_STATE_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    } else if (rcv_packet._raw[0] == 0xFE && rcv_packet._raw[1] == 0xFE) {
+        QEvt evt = {.sig = BLE_DATA_REQUEST_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     } else {
-        QEvt evt = {.sig = BLE_DATA_SIG};
+        QEvt evt = {.sig = BLE_DATA_UPDATE_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
