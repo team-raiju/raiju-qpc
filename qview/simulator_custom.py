@@ -126,8 +126,6 @@ def custom_qview_init(qview):
         "sumo": PhotoImage(file=HOME_DIR + "/img/raiju.png"),
         "button" : PhotoImage(file=HOME_DIR + "/img/button.png"),
         "start" : PhotoImage(file=HOME_DIR + "/img/button_start.png"),
-        "radio_ev_1_button" : PhotoImage(file=HOME_DIR + "/img/button_r-ev1.png"),
-        "radio_ev_2_button" : PhotoImage(file=HOME_DIR + "/img/button_r-ev2.png"),
         "idle_button" : PhotoImage(file=HOME_DIR + "/img/button_idle.png"),
         "stop_button" : PhotoImage(file=HOME_DIR + "/img/button_stop.png"),
         "buzzer_off" : PhotoImage(file=HOME_DIR + "/img/buzzer_off.png"),
@@ -140,17 +138,13 @@ def custom_qview_init(qview):
         "buzzer" : qview_base.canvas.create_image(120, 570, image=image_dict["buzzer_off"]), 
         "sumo" : qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"]), 
         "button" : qview_base.canvas.create_image(50, 570, image=image_dict["button"]), 
-        "start" : qview_base.canvas.create_image(350, 570, image=image_dict["start"]), 
-        "radio_ev_1_button" : qview_base.canvas.create_image(450, 570, image=image_dict["radio_ev_1_button"]), 
-        "radio_ev_2_button" : qview_base.canvas.create_image(550, 570, image=image_dict["radio_ev_2_button"]), 
-        "stop_button" : qview_base.canvas.create_image(550, 30, image=image_dict["stop_button"]), 
+        "start" : qview_base.canvas.create_image(450, 570, image=image_dict["start"]), 
+        "stop_button" : qview_base.canvas.create_image(550, 570, image=image_dict["stop_button"]), 
     }
 
     # Buttons
     qview_base.canvas.tag_bind(canvas_dict["button"], "<ButtonPress>",  button_command)
     qview_base.canvas.tag_bind(canvas_dict["start"], "<ButtonPress>", start_command)
-    qview_base.canvas.tag_bind(canvas_dict["radio_ev_1_button"], "<ButtonPress>", radio_evt1_command)
-    qview_base.canvas.tag_bind(canvas_dict["radio_ev_2_button"], "<ButtonPress>", radio_evt2_command)
     qview_base.canvas.tag_bind(canvas_dict["stop_button"], "<ButtonPress>", stop_command)
 
     led_stripe_init(qview_base)
@@ -322,12 +316,6 @@ def adc_command(line_fl, line_fr, line_bl, line_br, battery_full):
 
 def sensor_command(sensor):
     qview_base.command(4, sensor)
-
-def radio_evt1_command(*args):
-    qview_base.command(5, 0)
-
-def radio_evt2_command(*args):
-    qview_base.command(6, 0)
 
 def send_radio_command_ch1_ch2(ch1, ch2):
     qview_base.command(7, ch1, ch2)
