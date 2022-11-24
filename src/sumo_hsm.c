@@ -67,7 +67,7 @@ typedef struct {
 
 /* private: */
     QTimeEvt timeEvt;
-    QTimeEvt buzzerTimeEvt;
+    QTimeEvt buzzerStopTimer;
     uint8_t buzzerCount;
     QTimeEvt timeEvt_2;
     uint32_t calib_time_1;
@@ -564,7 +564,7 @@ void SumoHSM_ctor(void) {
     QTimeEvt_ctorX(&me->timeEvt, &me->super.super, TIMEOUT_SIG, 0U);
     QTimeEvt_ctorX(&me->timeEvt_2, &me->super.super, TIMEOUT_2_SIG, 0U);
     QTimeEvt_ctorX(&me->timeEvtBle, &me->super.super, TIMEOUT_SEND_BLE_SIG, 0U);
-    QTimeEvt_ctorX(&me->buzzerTimeEvt, &me->super.super, STOP_BUZZER_SIG, 0U);
+    QTimeEvt_ctorX(&me->buzzerStopTimer, &me->super.super, STOP_BUZZER_SIG, 0U);
     QTimeEvt_ctorX(&me->timerFailSafe, &me->super.super, FAILSAFE_SIG, 0U);
     me->calib_time_1 = 0;
     me->calib_time_2 = 0;
@@ -706,7 +706,7 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
 /*${AOs::SumoHSM::SM::Idle} */
 static QState SumoHSM_Idle_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
-    QTimeEvt_disarm(&me->buzzerTimeEvt);
+    QTimeEvt_disarm(&me->buzzerStopTimer);
     buzzer_stop();
     bsp_ble_start();
     return QM_EXIT(&SumoHSM_Idle_s);
@@ -779,16 +779,16 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
 
             if (me->buzzerCount < 15){
                 led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
-                QTimeEvt_rearm(&me->buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 42);
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
                 QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 84);
                 me->buzzerCount += 1;
             } else if (me->buzzerCount == 15) {
                 led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
-                QTimeEvt_rearm(&me->buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 42);
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
                 QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 200);
                 me->buzzerCount += 1;
             } else {
-                QTimeEvt_rearm(&me->buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 600);
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
                 bsp_ble_start();
             }
 
@@ -3095,7 +3095,7 @@ void sumoHSM_update_qs_dict(){
 
     QS_OBJ_DICTIONARY(&l_sumo_hsm);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvt);
-    QS_OBJ_DICTIONARY(&l_sumo_hsm.buzzerTimeEvt);
+    QS_OBJ_DICTIONARY(&l_sumo_hsm.buzzerStopTimer);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.buzzerCount);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvt_2);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.calib_time_1);

@@ -8,8 +8,8 @@
   <class name="SumoHSM" superclass="qpc::QMActive">
    <!--${AOs::SumoHSM::timeEvt}-->
    <attribute name="timeEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
-   <!--${AOs::SumoHSM::buzzerTimeEvt}-->
-   <attribute name="buzzerTimeEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::buzzerStopTimer}-->
+   <attribute name="buzzerStopTimer" type="QTimeEvt" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::buzzerCount}-->
    <attribute name="buzzerCount" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::timeEvt_2}-->
@@ -93,7 +93,7 @@ if (adc_get_low_battery()){
     led_stripe_set_all_color(COLOR_RED);
 }</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_disarm(&amp;me-&gt;buzzerTimeEvt);
+QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
 buzzer_stop();
 bsp_ble_start();</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
@@ -144,16 +144,16 @@ parameters_update_from_ble(&amp;parameters, last_data._raw);</action>
 
 if (me-&gt;buzzerCount &lt; 15){
     led_stripe_set_color(me-&gt;buzzerCount, COLOR_PURPLE);
-    QTimeEvt_rearm(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 42);
+    QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
     QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 84);
     me-&gt;buzzerCount += 1;
 } else if (me-&gt;buzzerCount == 15) {
     led_stripe_set_color(me-&gt;buzzerCount, COLOR_PURPLE);
-    QTimeEvt_rearm(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 42);
+    QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
     QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 200);
     me-&gt;buzzerCount += 1;
 } else {
-    QTimeEvt_rearm(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 600);
+    QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
     bsp_ble_start();
 }
 
@@ -1333,7 +1333,7 @@ QMActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super.super, TIMEOUT_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt_2, &amp;me-&gt;super.super, TIMEOUT_2_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvtBle, &amp;me-&gt;super.super, TIMEOUT_SEND_BLE_SIG, 0U);
-QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super.super, STOP_BUZZER_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;buzzerStopTimer, &amp;me-&gt;super.super, STOP_BUZZER_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timerFailSafe, &amp;me-&gt;super.super, FAILSAFE_SIG, 0U);
 me-&gt;calib_time_1 = 0;
 me-&gt;calib_time_2 = 0;
@@ -1392,7 +1392,7 @@ void sumoHSM_update_qs_dict(){
 
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvt);
-    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.buzzerTimeEvt);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.buzzerStopTimer);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.buzzerCount);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvt_2);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.calib_time_1);
