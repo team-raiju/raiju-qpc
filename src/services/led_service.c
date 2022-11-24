@@ -10,7 +10,7 @@
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-#define LED_STRIPE_NUM  16
+
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -18,31 +18,71 @@
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
-static void led_stripe_prepare(uint8_t idx, color_t color);
+static void led_stripe_prepare (uint8_t idx, color_rgb_t color);
+static void convert_color_name_to_rgb (color_name_t name, color_rgb_t* rgb);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
+static color_rgb_t red        = {0xFF, 0x00, 0x00};
+static color_rgb_t green      = {0x00, 0xFF, 0x00};
+static color_rgb_t blue       = {0x00, 0x00, 0xFF};
+static color_rgb_t purple     = {0x94, 0x00, 0xD3};
+static color_rgb_t yellow     = {0xFF, 0xFF, 0x00};
+static color_rgb_t orange     = {0xFF, 0x7F, 0x00};
+static color_rgb_t light_blue = {0x00, 0xFF, 0xFF};
+static color_rgb_t white      = {0xFF, 0xFF, 0xFF};
+static color_rgb_t black      = {0x00, 0x00, 0x00};
+
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
-color_t color_purple = {
-    .R = 0x94,
-    .G = 0x00,
-    .B = 0xD3,
-};
 
-color_t color_red = {
-    .R = 0xff,
-    .G = 0x00,
-    .B = 0x00,
-};
 /***************************************************************************************************
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void led_stripe_prepare(uint8_t idx, color_t color){
+static void led_stripe_prepare (uint8_t idx, color_rgb_t color){
     BSP_ws2812_set(idx, color.R, color.G, color.B);
+}
+
+static void convert_color_name_to_rgb (color_name_t name, color_rgb_t* rgb) {
+
+    switch (name) {
+    
+        case COLOR_RED:
+            *rgb = red;
+            break;
+        case COLOR_GREEN:
+            *rgb = green;
+            break;
+        case COLOR_BLUE:
+            *rgb = blue;
+            break;
+        case COLOR_PURPLE:
+            *rgb = purple;
+            break;
+        case COLOR_YELLOW:
+            *rgb = yellow;
+            break;
+        case COLOR_ORANGE:
+            *rgb = orange;
+            break;
+        case COLOR_LIGHT_BLUE:
+            *rgb = light_blue;
+            break;
+        case COLOR_WHITE:
+            *rgb = white;
+            break;
+        case COLOR_BLACK:
+            *rgb = black;
+            break;
+        default:
+            *rgb = black;
+            break;
+
+    }
+
 }
 
 /***************************************************************************************************
@@ -60,8 +100,8 @@ void board_led_off(){
     BSP_ledOff();
 }
 
-// Led Stripe
 
+/* Led Stripe */
 void led_stripe_init(){
     BSP_ws2812_init();
     led_stripe_reset();
@@ -72,13 +112,13 @@ void led_stripe_send(){
 }
 
 
-void led_stripe_set(uint8_t idx, color_t color){
+void led_stripe_set(uint8_t idx, color_rgb_t color){
     led_stripe_prepare(idx, color);
     led_stripe_send();
 }
 
 
-void led_stripe_set_range(uint8_t from, uint8_t to, color_t color){
+void led_stripe_set_range(uint8_t from, uint8_t to, color_rgb_t color){
 
     to = min(to, LED_STRIPE_NUM);
 
@@ -90,88 +130,31 @@ void led_stripe_set_range(uint8_t from, uint8_t to, color_t color){
 }
 
 
-void led_stripe_set_all(color_t color){
+void led_stripe_set_all(color_rgb_t color){
     led_stripe_set_range(0, LED_STRIPE_NUM, color);
 }
 
 void led_stripe_reset(){
-    color_t color_black = {
-        .R = 0x00,
-        .G = 0x00,
-        .B = 0x00,
-    };
-
-    led_stripe_set_all(color_black);
+    led_stripe_set_all(black);
 }
 
 
-void led_stripe_set_strategy_color(uint8_t strategy_num){
+void led_stripe_set_color(uint8_t idx, color_name_t color_name){
 
-    color_t color;
-
-    switch (strategy_num) {
-        case 0:
-            color.R = 0xff;
-            color.G = 0x00;
-            color.B = 0x00;
-            break;
-        case 1:
-            color.R = 0x00;
-            color.G = 0xff;
-            color.B = 0x00;
-            break;
-        case 2:
-            color.R = 0x00;
-            color.G = 0x00;
-            color.B = 0xff;
-            break;
-        
-        default:
-            color.R = 0x00;
-            color.G = 0x00;
-            color.B = 0x00;
-            break;
-    }
-
-    led_stripe_set_range(0, (LED_STRIPE_NUM / 2), color);
+    color_rgb_t color_rgb;
+    convert_color_name_to_rgb(color_name, &color_rgb);
+    led_stripe_set(idx, color_rgb);
 
 }
 
-void led_stripe_set_pre_strategy_color(uint8_t pre_strategy_num){
+void led_stripe_set_range_color(uint8_t from, uint8_t to, color_name_t color_name){
+    color_rgb_t color_rgb;
+    convert_color_name_to_rgb(color_name, &color_rgb);
+    led_stripe_set_range(from, to, color_rgb);
+}
 
-    color_t color;
-
-
-    switch (pre_strategy_num) {
-        case 0:
-            color.R = 0xff;
-            color.G = 0x00;
-            color.B = 0x00;
-            break;
-        case 1:
-            color.R = 0x00;
-            color.G = 0xff;
-            color.B = 0x00;
-            break;
-        case 2:
-            color.R = 0x00;
-            color.G = 0x00;
-            color.B = 0xff;
-            break;
-        
-        case 3:
-            color.R = 0x00;
-            color.G = 0xff;
-            color.B = 0xff;
-            break;
-
-        default:
-            color.R = 0x00;
-            color.G = 0x00;
-            color.B = 0x00;
-            break;
-    }
-
-    led_stripe_set_range(8, LED_STRIPE_NUM, color);
-
+void led_stripe_set_all_color(color_name_t color_name){
+    color_rgb_t color_rgb;
+    convert_color_name_to_rgb(color_name, &color_rgb);
+    led_stripe_set_all(color_rgb);
 }

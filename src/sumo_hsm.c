@@ -55,9 +55,6 @@
 #define M_PI                3.14159265
 #endif
 
-#define NUM_OF_STRATEGIES        3
-#define NUM_OF_PRE_STRATEGIES    4
-
 static sumo_parameters_t parameters;
 
 /* ask QM to declare the Blinky class --------------------------------------*/
@@ -72,12 +69,10 @@ typedef struct {
     QTimeEvt timeEvt;
     QTimeEvt buzzerTimeEvt;
     uint8_t buzzerCount;
-    uint8_t strategy;
     QTimeEvt timeEvt_2;
     uint32_t calib_time_1;
     uint32_t calib_time_2;
     uint8_t calib_status;
-    uint8_t pre_strategy;
     QTimeEvt timeEvtBle;
     uint8_t ble_counter;
     QTimeEvt timerFailSafe;
@@ -104,12 +99,6 @@ typedef struct {
 /* private: */
 static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me);
 static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me);
-static void SumoHSM_change_strategy(SumoHSM * const me,
-    uint8_t strategy);
-
-/* public: */
-static void SumoHSM_change_pre_strategy(SumoHSM * const me,
-    uint8_t pre_strategy);
 
 /* protected: */
 static QState SumoHSM_initial(SumoHSM * const me, void const * const par);
@@ -635,30 +624,6 @@ static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me) {
     return true;
 }
 
-/*${AOs::SumoHSM::change_strategy} .........................................*/
-static void SumoHSM_change_strategy(SumoHSM * const me,
-    uint8_t strategy)
-{
-    me->strategy = strategy;
-    if (me->strategy >= NUM_OF_STRATEGIES){
-        me->strategy = 0;
-    }
-
-    led_stripe_set_strategy_color(me->strategy);
-}
-
-/*${AOs::SumoHSM::change_pre_strategy} .....................................*/
-static void SumoHSM_change_pre_strategy(SumoHSM * const me,
-    uint8_t pre_strategy)
-{
-    me->pre_strategy = pre_strategy;
-    if (me->pre_strategy >= NUM_OF_PRE_STRATEGIES){
-        me->pre_strategy = 0;
-    }
-
-    led_stripe_set_pre_strategy_color(me->pre_strategy);
-}
-
 /*${AOs::SumoHSM::SM} ......................................................*/
 static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     static struct {
@@ -731,11 +696,12 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
     board_led_off();
     driving_disable();
     drive(0,0);
-    me->strategy = 0;
+    parameters.strategy = 0;
+    parameters.pre_strategy = 0;
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 
     if (adc_get_low_battery()){
-        led_stripe_set_all(color_red);
+        led_stripe_set_all_color(COLOR_RED);
     }
     return QM_ENTRY(&SumoHSM_Idle_s);
 }
@@ -779,10 +745,10 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
 
             if (me->buzzerCount == 15) {
                 QTimeEvt_armX(&me->buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
-                led_stripe_set(me->buzzerCount, color_purple);
+                led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
             } else if (me->buzzerCount < 15){
                 QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
-                led_stripe_set(me->buzzerCount, color_purple);
+                led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
             } else{
                 buzzer_stop();
                 bsp_ble_start();
@@ -795,7 +761,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::Idle::LOW_BATTERY} */
         case LOW_BATTERY_SIG: {
-            led_stripe_set_all(color_red);
+            led_stripe_set_all_color(COLOR_RED);
             status_ = QM_HANDLED();
             break;
         }
@@ -835,7 +801,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::RCWait} */
 static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     board_led_off();
-    led_stripe_set_strategy_color(me->strategy);
+    parameters_set_strategy_led(&parameters);
     drive(0,0);
     driving_disable();
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
@@ -857,7 +823,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
             /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70]} */
             if ((abs(radio_service_get_channel(RADIO_CH1)) > 70) || (abs(radio_service_get_channel(RADIO_CH2)) > 70)) {
                 /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[pre_0]} */
-                if (me->pre_strategy == 0) {
+                if (parameters.pre_strategy == 0) {
                     static struct {
                         QMState const *target;
                         QActionHandler act[4];
@@ -873,7 +839,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
                 /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[pre_1]} */
-                else if (me->pre_strategy == 1) {
+                else if (parameters.pre_strategy == 1) {
                     static struct {
                         QMState const *target;
                         QActionHandler act[4];
@@ -889,7 +855,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
                 /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[pre_2]} */
-                else if (me->pre_strategy == 2) {
+                else if (parameters.pre_strategy == 2) {
                     static struct {
                         QMState const *target;
                         QActionHandler act[4];
@@ -905,7 +871,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
                 /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[pre_3]} */
-                else if (me->pre_strategy == 0) {
+                else if (parameters.pre_strategy == 0) {
                     static struct {
                         QMState const *target;
                         QActionHandler act[4];
@@ -953,13 +919,15 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::RCWait::CHANGE_STRATEGY_EVT} */
         case CHANGE_STRATEGY_EVT_SIG: {
-            SumoHSM_change_strategy(me, (me->strategy + 1));
+            parameters_set_strategy(&parameters, (parameters.strategy + 1));
+            parameters_set_strategy_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::RCWait::CHANGE_PRE_STRATEGY_EVT} */
         case CHANGE_PRE_STRATEGY_EVT_SIG: {
-            SumoHSM_change_pre_strategy(me, (me->pre_strategy + 1));
+            parameters_update_pre_strategy(&parameters, (parameters.pre_strategy + 1));
+            parameters_set_strategy_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
@@ -984,6 +952,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
             parameters_update_from_ble(&parameters, last_data._raw);
+            parameters_set_strategy_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
@@ -1063,8 +1032,8 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     driving_disable();
     board_led_on();
     ble_service_send_string("state:AUTO");
-    led_stripe_set_strategy_color(me->strategy);
-    led_stripe_set_pre_strategy_color(me->pre_strategy);
+    parameters_set_strategy_led(&parameters);
+    (void)me; /* unused parameter */
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
 /*${AOs::SumoHSM::SM::AutoWait} */
@@ -1075,7 +1044,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         case START_SIG: {
             driving_enable();
             /*${AOs::SumoHSM::SM::AutoWait::START::[pre_0]} */
-            if (me->pre_strategy == 0) {
+            if (parameters.pre_strategy == 0) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
@@ -1090,7 +1059,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
                 status_ = QM_TRAN_EP(&tatbl_);
             }
             /*${AOs::SumoHSM::SM::AutoWait::START::[pre_1]} */
-            else if (me->pre_strategy == 1) {
+            else if (parameters.pre_strategy == 1) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
@@ -1105,7 +1074,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
                 status_ = QM_TRAN_EP(&tatbl_);
             }
             /*${AOs::SumoHSM::SM::AutoWait::START::[pre_2]} */
-            else if (me->pre_strategy == 2) {
+            else if (parameters.pre_strategy == 2) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
@@ -1120,7 +1089,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
                 status_ = QM_TRAN_EP(&tatbl_);
             }
             /*${AOs::SumoHSM::SM::AutoWait::START::[pre_3]} */
-            else if (me->pre_strategy == 3) {
+            else if (parameters.pre_strategy == 3) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
@@ -1156,13 +1125,15 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::AutoWait::CHANGE_STRATEGY_EVT} */
         case CHANGE_STRATEGY_EVT_SIG: {
-            SumoHSM_change_strategy(me, (me->strategy + 1));
+            parameters_set_strategy(&parameters, (parameters.strategy + 1));
+            parameters_set_strategy_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::AutoWait::CHANGE_PRE_STRATEGY_EVT} */
         case CHANGE_PRE_STRATEGY_EVT_SIG: {
-            SumoHSM_change_pre_strategy(me, (me->pre_strategy + 1));
+            parameters_update_pre_strategy(&parameters, (parameters.pre_strategy + 1));
+            parameters_set_strategy_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
@@ -1186,8 +1157,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
             parameters_update_from_ble(&parameters, last_data._raw);
-            SumoHSM_change_strategy(me, parameters.current_pre_strategy);
-            SumoHSM_change_pre_strategy(me, parameters.current_strategy);
+            parameters_set_strategy_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
@@ -1196,6 +1166,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -1346,7 +1317,7 @@ static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     board_led_on();
     drive(0,0);
     driving_disable();
-    led_stripe_set_strategy_color(me->strategy);
+    parameters_set_strategy_led(&parameters);
     me->calib_status = 0;
     QTimeEvt_disarm(&me->timeEvt_2);
     QTimeEvt_disarm(&me->timeEvt);
@@ -1367,7 +1338,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
         case START_SIG: {
             driving_enable();
             /*${AOs::SumoHSM::SM::CalibWait::START::[strategy_0||strategy_1]} */
-            if (me->strategy == 0 || me->strategy == 1) {
+            if (parameters.strategy == 0 || parameters.strategy == 1) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
@@ -1382,7 +1353,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                 status_ = QM_TRAN(&tatbl_);
             }
             /*${AOs::SumoHSM::SM::CalibWait::START::[strategy_2]} */
-            else if (me->strategy == 2) {
+            else if (parameters.strategy == 2) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
@@ -1414,7 +1385,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
-            led_stripe_set_all(color_purple);
+            led_stripe_set_all_color(COLOR_PURPLE);
             ble_service_send_string("state:IDLE");
             status_ = QM_TRAN(&tatbl_);
             break;
@@ -1438,7 +1409,8 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::CalibWait::CHANGE_STRATEGY_EVT} */
         case CHANGE_STRATEGY_EVT_SIG: {
-            SumoHSM_change_strategy(me, (me->strategy + 1));
+            parameters_set_strategy(&parameters, (parameters.strategy + 1));
+            parameters_set_strategy_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
@@ -1545,9 +1517,9 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
             int mot1 = coord_y + coord_x;
             int mot2 = coord_y - coord_x;
 
-            if (me->strategy == 0){
+            if (parameters.strategy == 0){
                 drive(mot1, mot2);
-            } else if (me->strategy == 1) {
+            } else if (parameters.strategy == 1) {
 
                 if (adc_line_none_white()){
                     drive(mot1, mot2);
@@ -1584,7 +1556,7 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
         case LINE_CHANGED_FL_SIG: /* intentionally fall through */
         case LINE_CHANGED_FR_SIG: {
             /*${AOs::SumoHSM::SM::RC::LINE_CHANGED_FL,~::[strategy>0]} */
-            if (me->strategy > 0) {
+            if (parameters.strategy > 0) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
@@ -1606,7 +1578,7 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::RC::LINE_CHANGED_BL, LINE_CHANGED_BR} */
         case LINE_CHANGED_BL_SIG: /* intentionally fall through */
         case LINE_CHANGED_BR_SIG: {
-            if (me->strategy > 0){
+            if (parameters.strategy > 0){
                 drive(100, 100);
             }
             status_ = QM_HANDLED();
@@ -1614,7 +1586,7 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::RC::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
-            if (me->strategy > 1){
+            if (parameters.strategy > 1){
                 if (!SumoHSM_CheckDistAndMove(me)){
                     drive(0, 0);
                 }
@@ -1749,7 +1721,7 @@ static QState SumoHSM_pre_strategy_e(SumoHSM * const me) {
 static QState SumoHSM_pre_strategy_XP1(SumoHSM * const me) {
     QState status_;
     /*${AOs::SumoHSM::SM::pre_strategy::XP1::[strategy_0]} */
-    if (me->strategy == 0) {
+    if (parameters.strategy == 0) {
         static struct {
             QMState const *target;
             QActionHandler act[3];
@@ -1764,7 +1736,7 @@ static QState SumoHSM_pre_strategy_XP1(SumoHSM * const me) {
         status_ = QM_TRAN(&tatbl_);
     }
     /*${AOs::SumoHSM::SM::pre_strategy::XP1::[strategy_1]} */
-    else if (me->strategy == 1) {
+    else if (parameters.strategy == 1) {
         static struct {
             QMState const *target;
             QActionHandler act[3];
@@ -2048,7 +2020,7 @@ static QState SumoHSM_CalibeLineTurn(SumoHSM * const me, QEvt const * const e) {
                     angle_diff = ((180 / M_PI) * acos((me->calib_time_2) / (double) me->calib_time_1));
                 }
 
-                if (me->strategy == 0) {
+                if (parameters.strategy == 0) {
                     parameters.turn_180_time_ms += angle_diff * CALIB_ANGLE_MULT;
                 } else {
                     parameters.turn_180_time_ms -= angle_diff * CALIB_ANGLE_MULT;
@@ -2078,6 +2050,7 @@ static QState SumoHSM_AutoEnd_e(SumoHSM * const me) {
     drive(0,0);
     driving_disable();
     board_led_off();
+    led_stripe_set_all_color(COLOR_BLACK);
     ble_service_send_string("state:AUTOEND");
     (void)me; /* unused parameter */
     return QM_ENTRY(&SumoHSM_AutoEnd_s);
@@ -2650,6 +2623,7 @@ static QState SumoHSM_LineSubmachine_LineTurnLeft(SumoHSM * const me, QEvt const
 static QState SumoHSM_PreStrategy_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->timeEvt_2);
+    led_stripe_set_all_color(COLOR_RED);
     return QM_ENTRY(&SumoHSM_PreStrategy_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy} */
@@ -3113,11 +3087,14 @@ void sumoHSM_update_qs_dict(){
 
     QS_OBJ_DICTIONARY(&l_sumo_hsm);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvt);
-    QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvt_2);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.buzzerTimeEvt);
-    QS_OBJ_DICTIONARY(&l_sumo_hsm.strategy);
+    QS_OBJ_DICTIONARY(&l_sumo_hsm.buzzerCount);
+    QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvt_2);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.calib_time_1);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.calib_time_2);
+    QS_OBJ_DICTIONARY(&l_sumo_hsm.calib_status);
+    QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvtBle);
+    QS_OBJ_DICTIONARY(&l_sumo_hsm.timerFailSafe);
 
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);

@@ -3,14 +3,26 @@
 
 #include <stdint.h>
 
+#define LED_STRIPE_NUM  16
+
 typedef struct color {
     uint8_t R;
-    uint8_t B;
     uint8_t G;
-} color_t;
+    uint8_t B;
+} color_rgb_t;
 
-extern color_t color_purple;
-extern color_t color_red;
+typedef enum {
+    COLOR_RED,
+    COLOR_GREEN,
+    COLOR_BLUE,
+    COLOR_PURPLE,
+    COLOR_YELLOW,
+    COLOR_ORANGE,
+    COLOR_LIGHT_BLUE,
+    COLOR_WHITE,
+    COLOR_BLACK,
+} color_name_t;
+
 
 void board_led_toggle();
 void board_led_on();
@@ -19,15 +31,16 @@ void board_led_off();
 void led_stripe_init();
 void led_stripe_send();
 
-void led_stripe_set(uint8_t idx, color_t color);
-void led_stripe_set_range(uint8_t from, uint8_t to, color_t color);
-void led_stripe_set_all(color_t color);
+void led_stripe_set(uint8_t idx, color_rgb_t color);
+void led_stripe_set_range(uint8_t from, uint8_t to, color_rgb_t color);
+void led_stripe_set_all(color_rgb_t color);
+
+void led_stripe_set_color(uint8_t idx, color_name_t color_name);
+void led_stripe_set_range_color(uint8_t from, uint8_t to, color_name_t color_name);
+void led_stripe_set_all_color(color_name_t color_name);
 
 void led_stripe_reset();
 void led_stripe_send();
-
-void led_stripe_set_strategy_color(uint8_t strategy_num);
-void led_stripe_set_pre_strategy_color(uint8_t pre_strategy_num);
 
 
 #endif /* LED_SERVICE_H */

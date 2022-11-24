@@ -1,3 +1,7 @@
+/***************************************************************************************************
+ * INCLUDES
+ **************************************************************************************************/
+
 #include <stdio.h>
 #include <string.h>
 #include "parameters.h"
@@ -6,8 +10,29 @@
 #include "bsp_eeprom.h"
 #include "distance_service.h"
 #include "adc_service.h"
+#include "led_service.h"
 
-const char * strategy_names[] = {
+/***************************************************************************************************
+ * LOCAL DEFINES
+ **************************************************************************************************/
+
+#define NUM_OF_STRATEGIES        3
+#define NUM_OF_PRE_STRATEGIES    4
+
+/***************************************************************************************************
+ * LOCAL TYPEDEFS
+ **************************************************************************************************/
+
+/***************************************************************************************************
+ * LOCAL FUNCTION PROTOTYPES
+ **************************************************************************************************/
+static void read_and_update_parameter_16_bit(uint16_t eeprom_addr, uint16_t * updated_data);
+static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t * updated_data);
+/***************************************************************************************************
+ * LOCAL VARIABLES
+ **************************************************************************************************/
+
+static const char * strategy_names[] = {
     "star",
     "small steps",
     "defensive"
@@ -15,8 +40,8 @@ const char * strategy_names[] = {
 
 
 static sumo_parameters_t init_parameters_default = {
-    .current_strategy = 0,
-    .current_pre_strategy = 0,
+    .strategy = 0,
+    .pre_strategy = 0,
     .enabled_distance_sensors = 0b111111111,
     .enabled_line_sensors = 0b001111,
     .star_speed = 60,
@@ -28,6 +53,14 @@ static sumo_parameters_t init_parameters_default = {
     .step_wait_time_ms = 1500,
     .step_advance_time_ms = 150,
 };
+
+/***************************************************************************************************
+ * GLOBAL VARIABLES
+ **************************************************************************************************/
+
+/***************************************************************************************************
+ * LOCAL FUNCTIONS
+ **************************************************************************************************/
 
 static void read_and_update_parameter_16_bit(uint16_t eeprom_addr, uint16_t * updated_data){
     uint16_t eeprom_data;
@@ -51,6 +84,9 @@ static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t * upda
 
 }
 
+/***************************************************************************************************
+ * GLOBAL FUNCTIONS
+ **************************************************************************************************/
 
 void parameters_init(sumo_parameters_t *params){
 
@@ -106,7 +142,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
             snprintf(buffer, 20, "step:%hu", params.step_wait_time_ms);
             break;
         case 7:
-            snprintf(buffer, 20, "str:%hu:%hu", params.current_strategy, params.current_pre_strategy);
+            snprintf(buffer, 20, "str:%hu:%hu", params.strategy, params.pre_strategy);
             break;
         case 8:
             snprintf(buffer, 20, "mms:%hu", params.max_speed);
@@ -129,15 +165,64 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * last_data){
     params->turn_speed = ble_packet.turnSpeed;
     params->turn_180_time_ms  = ble_packet.turnTimeMs;
     params->step_wait_time_ms = ble_packet.stepWaitTimeMs;
-    params->current_pre_strategy = ble_packet.preStrategy;
-    params->current_strategy = ble_packet.strategy;
+    params->pre_strategy = ble_packet.preStrategy;
+    params->strategy = ble_packet.strategy;
     params->max_speed = ble_packet.maxMotorSpeed;
 
-    // printf("Strategy: %d\r\n", params->current_strategy);
-    // printf("Pre Strategy: %d\r\n", params->current_pre_strategy);
+    // printf("Strategy: %d\r\n", params->strategy);
+    // printf("Pre Strategy: %d\r\n", params->pre_strategy);
     // printf("turn_180_time_ms: %d\r\n", params->turn_180_time_ms);
     // printf("reverse_time_ms: %d\r\n", params->reverse_time_ms);
     // printf("step_wait_time_ms: %d\r\n", params->step_wait_time_ms);
 
     // Save in eeprom
+}
+
+void parameters_set_strategy(sumo_parameters_t *params, uint8_t strategy){
+
+    if (strategy >= NUM_OF_STRATEGIES){
+        strategy = 0;
+    }
+
+    params->strategy = strategy;
+
+}
+
+void parameters_update_pre_strategy(sumo_parameters_t *params, uint8_t pre_strategy){
+
+    if (pre_strategy >= NUM_OF_PRE_STRATEGIES){
+        pre_strategy = 0;
+    }
+
+    params->pre_strategy = pre_strategy;
+
+}
+
+void parameters_set_strategy_led(sumo_parameters_t *params){
+
+    color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
+        COLOR_GREEN,
+        COLOR_BLUE,
+        COLOR_ORANGE,
+    };
+
+    color_name_t pre_strategy_colors[NUM_OF_PRE_STRATEGIES] = {
+        COLOR_GREEN,
+        COLOR_BLUE,
+        COLOR_ORANGE,
+        COLOR_LIGHT_BLUE,
+    };
+
+    if (params->strategy < NUM_OF_STRATEGIES){
+        led_stripe_set_range_color(0, (LED_STRIPE_NUM / 2), strategy_colors[params->strategy]);
+    } else {
+        led_stripe_set_range_color(0, (LED_STRIPE_NUM / 2), COLOR_BLACK);
+    }
+
+    if (params->pre_strategy < NUM_OF_PRE_STRATEGIES){
+        led_stripe_set_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, pre_strategy_colors[params->pre_strategy]);
+    } else {
+        led_stripe_set_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
+    }
+
 }

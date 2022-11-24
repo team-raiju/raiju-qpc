@@ -4,7 +4,7 @@
 #include "tim.h"
 
 
-#define CPU_FREQUENCY  (72000000UL)
+#define CPU_FREQUENCY  (72000000UL) //SystemCoreClock
 #define COUNTER_PERIOD (100)
 
 
