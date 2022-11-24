@@ -165,15 +165,10 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * last_data){
     params->turn_speed = ble_packet.turnSpeed;
     params->turn_180_time_ms  = ble_packet.turnTimeMs;
     params->step_wait_time_ms = ble_packet.stepWaitTimeMs;
-    params->pre_strategy = ble_packet.preStrategy;
-    params->strategy = ble_packet.strategy;
     params->max_speed = ble_packet.maxMotorSpeed;
 
-    // printf("Strategy: %d\r\n", params->strategy);
-    // printf("Pre Strategy: %d\r\n", params->pre_strategy);
-    // printf("turn_180_time_ms: %d\r\n", params->turn_180_time_ms);
-    // printf("reverse_time_ms: %d\r\n", params->reverse_time_ms);
-    // printf("step_wait_time_ms: %d\r\n", params->step_wait_time_ms);
+    parameters_set_strategy(params, ble_packet.strategy);
+    parameters_update_pre_strategy(params, ble_packet.preStrategy);
 
     // Save in eeprom
 }
