@@ -114,32 +114,19 @@ void Q_onAssert(char const * const module, int loc) {
 void QS_onCommand(uint8_t cmdId,
                   uint32_t param1, uint32_t param2, uint32_t param3)
 {
-    typedef struct {
-    /* protected: */
-        QActive super;
-
-    /* private: */
-        QTimeEvt timeEvt;
-        QTimeEvt buzzerTimeEvt;
-        uint8_t buzzerCount;
-        uint8_t strategy;
-        QTimeEvt timeEvt_2;
-    } SumoHSM;
-
     switch (cmdId) {
        case 0: { 
             BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , true);
             break;
         }
         case 1: { 
-             BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , false);
+            BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , false);
             break;
         }
 
         case 2: { 
-            SumoHSM *me = (SumoHSM *)AO_SumoHSM;
-            me->strategy = param1;
-            printf("Strategy = %d\r\n", param1);
+            // BSP_GPIO_Write_Pin(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN , true);
+            HAL_Fake_GPIO_EXTI_Callback(GPIO_BUTTON_PIN);
             break;
         }
 

@@ -58,8 +58,7 @@ void BSP_init(void);
 enum SumoHSMSignals {
     TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
     TIMEOUT_2_SIG,
-    TIMEOUT_3_SIG,
-    PLAY_BUZZER_SIG,
+    STOP_BUZZER_SIG,
     START_SIG,
     STOP_SIG,
     CHANGE_STATE_EVT_SIG,

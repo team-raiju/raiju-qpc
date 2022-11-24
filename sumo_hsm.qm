@@ -71,12 +71,9 @@ return true;</code>
    <statechart properties="0x03">
     <!--${AOs::SumoHSM::SM::initial}-->
     <initial target="../1">
-     <action>(void)par; /* unused parameter */
-/* arm the private time event to expire in 1/2s
-* and periodically every 1/2 second
-*/
-QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+     <action>(void)par;
 
+QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 10, 0);
 me-&gt;buzzerCount = 0U;</action>
      <initial_glyph conn="95,2,5,1,-2,11,-8">
       <action box="0,-2,7,2"/>
@@ -89,6 +86,7 @@ driving_disable();
 drive(0,0);
 parameters.strategy = 0;
 parameters.pre_strategy = 0;
+QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 
 if (adc_get_low_battery()){
@@ -111,25 +109,11 @@ bsp_ble_start();</exit>
        <action box="-16,-3,18,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::Idle::PLAY_BUZZER}-->
-     <tran trig="PLAY_BUZZER">
-      <action>buzzer_toggle();
-
-if (me-&gt;buzzerCount == 15) {
-    QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
-    led_stripe_set_color(me-&gt;buzzerCount, COLOR_PURPLE);
-} else if (me-&gt;buzzerCount &lt; 15){
-    QTimeEvt_armX(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
-    led_stripe_set_color(me-&gt;buzzerCount, COLOR_PURPLE);
-} else{
-    buzzer_stop();
-    bsp_ble_start();
-}
-
-
-me-&gt;buzzerCount += 1;</action>
+     <!--${AOs::SumoHSM::SM::Idle::STOP_BUZZER}-->
+     <tran trig="STOP_BUZZER">
+      <action brief="buzzer_stop()">buzzer_stop();</action>
       <tran_glyph conn="42,24,3,-1,18">
-       <action box="0,-2,12,2"/>
+       <action box="0,-2,26,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::LOW_BATTERY}-->
@@ -144,14 +128,39 @@ me-&gt;buzzerCount += 1;</action>
       <action>ble_rcv_packet_t last_data;
 ble_service_last_packet(&amp;last_data);
 parameters_update_from_ble(&amp;parameters, last_data._raw);</action>
-      <tran_glyph conn="42,28,3,-1,18">
+      <tran_glyph conn="42,35,3,-1,18">
        <action box="0,-2,21,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::BLE_DATA_REQUEST}-->
      <tran trig="BLE_DATA_REQUEST" target="../../22">
-      <tran_glyph conn="42,32,3,2,-15,-20">
+      <tran_glyph conn="42,38,3,2,-15,-26">
        <action box="0,-2,18,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::Idle::TIMEOUT_2}-->
+     <tran trig="TIMEOUT_2">
+      <action brief="led_stripe_and_beep()">buzzer_start();
+
+if (me-&gt;buzzerCount &lt; 15){
+    led_stripe_set_color(me-&gt;buzzerCount, COLOR_PURPLE);
+    QTimeEvt_rearm(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 42);
+    QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 84);
+    me-&gt;buzzerCount += 1;
+} else if (me-&gt;buzzerCount == 15) {
+    led_stripe_set_color(me-&gt;buzzerCount, COLOR_PURPLE);
+    QTimeEvt_rearm(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 42);
+    QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 200);
+    me-&gt;buzzerCount += 1;
+} else {
+    QTimeEvt_rearm(&amp;me-&gt;buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 600);
+    bsp_ble_start();
+}
+
+
+</action>
+      <tran_glyph conn="42,27,3,-1,18">
+       <action box="0,-2,32,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="42,1,43,43">
@@ -490,7 +499,7 @@ ble_service_send_string(&quot;state:CALIB&quot;);</entry>
       <action>led_stripe_set_all_color(COLOR_PURPLE);
 ble_service_send_string(&quot;state:IDLE&quot;);</action>
       <tran_glyph conn="259,24,0,1,-14,-153,7,-21">
-       <action box="-163,-18,17,2"/>
+       <action box="-152,-17,17,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::CalibWait::TIMEOUT}-->
@@ -1324,7 +1333,7 @@ QMActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super.super, TIMEOUT_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvt_2, &amp;me-&gt;super.super, TIMEOUT_2_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvtBle, &amp;me-&gt;super.super, TIMEOUT_SEND_BLE_SIG, 0U);
-QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super.super, PLAY_BUZZER_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;buzzerTimeEvt, &amp;me-&gt;super.super, STOP_BUZZER_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timerFailSafe, &amp;me-&gt;super.super, FAILSAFE_SIG, 0U);
 me-&gt;calib_time_1 = 0;
 me-&gt;calib_time_2 = 0;
@@ -1394,7 +1403,7 @@ void sumoHSM_update_qs_dict(){
 
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
-    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(STOP_BUZZER_SIG,    (void *)0);
     QS_SIG_DICTIONARY(START_SIG,  (void *)0);
     QS_SIG_DICTIONARY(CHANGE_STATE_EVT_SIG,  (void *)0);
     QS_SIG_DICTIONARY(CHANGE_STRATEGY_EVT_SIG,  (void *)0);
@@ -1482,8 +1491,7 @@ void BSP_init(void);
 enum SumoHSMSignals {
     TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
     TIMEOUT_2_SIG,
-    TIMEOUT_3_SIG,
-    PLAY_BUZZER_SIG,
+    STOP_BUZZER_SIG,
     START_SIG,
     STOP_SIG,
     CHANGE_STATE_EVT_SIG,

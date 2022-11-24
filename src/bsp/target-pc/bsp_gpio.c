@@ -59,6 +59,7 @@ void HAL_Fake_GPIO_EXTI_Callback(uint16_t pin) {
     // Button
     if (pin == BSP_GPIO_Pin_Mapping(GPIO_BUTTON_PIN)){
         if (button_callback_function != NULL){
+            printf("Button Callback\r\n");
             button_callback_function();
         }
         return;

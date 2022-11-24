@@ -564,7 +564,7 @@ void SumoHSM_ctor(void) {
     QTimeEvt_ctorX(&me->timeEvt, &me->super.super, TIMEOUT_SIG, 0U);
     QTimeEvt_ctorX(&me->timeEvt_2, &me->super.super, TIMEOUT_2_SIG, 0U);
     QTimeEvt_ctorX(&me->timeEvtBle, &me->super.super, TIMEOUT_SEND_BLE_SIG, 0U);
-    QTimeEvt_ctorX(&me->buzzerTimeEvt, &me->super.super, PLAY_BUZZER_SIG, 0U);
+    QTimeEvt_ctorX(&me->buzzerTimeEvt, &me->super.super, STOP_BUZZER_SIG, 0U);
     QTimeEvt_ctorX(&me->timerFailSafe, &me->super.super, FAILSAFE_SIG, 0U);
     me->calib_time_1 = 0;
     me->calib_time_2 = 0;
@@ -637,12 +637,9 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
         }
     };
     /*${AOs::SumoHSM::SM::initial} */
-    (void)par; /* unused parameter */
-    /* arm the private time event to expire in 1/2s
-    * and periodically every 1/2 second
-    */
-    QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
+    (void)par;
 
+    QTimeEvt_armX(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 10, 0);
     me->buzzerCount = 0U;
 
     QS_FUN_DICTIONARY(&SumoHSM_Idle);
@@ -698,6 +695,7 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
     drive(0,0);
     parameters.strategy = 0;
     parameters.pre_strategy = 0;
+    QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 
     if (adc_get_low_battery()){
@@ -739,23 +737,9 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_TRAN(&tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::Idle::PLAY_BUZZER} */
-        case PLAY_BUZZER_SIG: {
-            buzzer_toggle();
-
-            if (me->buzzerCount == 15) {
-                QTimeEvt_armX(&me->buzzerTimeEvt, 1.6 * BSP_TICKS_PER_SEC, 0);
-                led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
-            } else if (me->buzzerCount < 15){
-                QTimeEvt_armX(&me->buzzerTimeEvt, BSP_TICKS_PER_SEC/10, 0);
-                led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
-            } else{
-                buzzer_stop();
-                bsp_ble_start();
-            }
-
-
-            me->buzzerCount += 1;
+        /*${AOs::SumoHSM::SM::Idle::STOP_BUZZER} */
+        case STOP_BUZZER_SIG: {
+            buzzer_stop();
             status_ = QM_HANDLED();
             break;
         }
@@ -787,6 +771,30 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
                 }
             };
             status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::Idle::TIMEOUT_2} */
+        case TIMEOUT_2_SIG: {
+            buzzer_start();
+
+            if (me->buzzerCount < 15){
+                led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
+                QTimeEvt_rearm(&me->buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 42);
+                QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 84);
+                me->buzzerCount += 1;
+            } else if (me->buzzerCount == 15) {
+                led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
+                QTimeEvt_rearm(&me->buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 42);
+                QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 200);
+                me->buzzerCount += 1;
+            } else {
+                QTimeEvt_rearm(&me->buzzerTimeEvt, BSP_TICKS_PER_MILISSEC * 600);
+                bsp_ble_start();
+            }
+
+
+
+            status_ = QM_HANDLED();
             break;
         }
         default: {
@@ -3098,7 +3106,7 @@ void sumoHSM_update_qs_dict(){
 
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
-    QS_SIG_DICTIONARY(PLAY_BUZZER_SIG,    (void *)0);
+    QS_SIG_DICTIONARY(STOP_BUZZER_SIG,    (void *)0);
     QS_SIG_DICTIONARY(START_SIG,  (void *)0);
     QS_SIG_DICTIONARY(CHANGE_STATE_EVT_SIG,  (void *)0);
     QS_SIG_DICTIONARY(CHANGE_STRATEGY_EVT_SIG,  (void *)0);

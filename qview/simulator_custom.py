@@ -9,7 +9,6 @@ from inputs import get_gamepad
 import socket
 
 
-# from playsound import playsound
 import threading
 
 
@@ -125,19 +124,22 @@ def custom_qview_init(qview):
     image_dict = {
         "arena": PhotoImage(file=HOME_DIR + "/img/arena.png"),
         "sumo": PhotoImage(file=HOME_DIR + "/img/raiju.png"),
-        "num_0" : PhotoImage(file=HOME_DIR + "/img/num0.png"),
+        "button" : PhotoImage(file=HOME_DIR + "/img/button.png"),
         "start" : PhotoImage(file=HOME_DIR + "/img/button_start.png"),
         "radio_ev_1_button" : PhotoImage(file=HOME_DIR + "/img/button_r-ev1.png"),
         "radio_ev_2_button" : PhotoImage(file=HOME_DIR + "/img/button_r-ev2.png"),
         "idle_button" : PhotoImage(file=HOME_DIR + "/img/button_idle.png"),
         "stop_button" : PhotoImage(file=HOME_DIR + "/img/button_stop.png"),
+        "buzzer_off" : PhotoImage(file=HOME_DIR + "/img/buzzer_off.png"),
+        "buzzer_on" : PhotoImage(file=HOME_DIR + "/img/buzzer_on.png"),
     }
 
     canvas_dict = {
         "arena" : qview_base.canvas.create_image(300,  300, image=image_dict["arena"]), 
-        "led" : qview_base.canvas.create_rectangle(10, 5, 50, 45, outline = "black", fill = '#000000', width = 1), 
+        "led"   : qview_base.canvas.create_rectangle(10, 5, 50, 45, outline = "black", fill = '#000000', width = 1), 
+        "buzzer" : qview_base.canvas.create_image(120, 570, image=image_dict["buzzer_off"]), 
         "sumo" : qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"]), 
-        "num_0" : qview_base.canvas.create_image(50, 570, image=image_dict["num_0"]), 
+        "button" : qview_base.canvas.create_image(50, 570, image=image_dict["button"]), 
         "start" : qview_base.canvas.create_image(350, 570, image=image_dict["start"]), 
         "radio_ev_1_button" : qview_base.canvas.create_image(450, 570, image=image_dict["radio_ev_1_button"]), 
         "radio_ev_2_button" : qview_base.canvas.create_image(550, 570, image=image_dict["radio_ev_2_button"]), 
@@ -145,7 +147,7 @@ def custom_qview_init(qview):
     }
 
     # Buttons
-    qview_base.canvas.tag_bind(canvas_dict["num_0"], "<ButtonPress>",  lambda strategy: button_command)
+    qview_base.canvas.tag_bind(canvas_dict["button"], "<ButtonPress>",  button_command)
     qview_base.canvas.tag_bind(canvas_dict["start"], "<ButtonPress>", start_command)
     qview_base.canvas.tag_bind(canvas_dict["radio_ev_1_button"], "<ButtonPress>", radio_evt1_command)
     qview_base.canvas.tag_bind(canvas_dict["radio_ev_2_button"], "<ButtonPress>", radio_evt2_command)
@@ -200,8 +202,11 @@ def process_buzzer_id_packet(packet):
     data = qview_base.qunpack("xxTxBxBxBxB", packet)  
     subcommand = data[2]
     if(subcommand == 0):
-        # if (data[3] == 1):
-        #     playsound(HOME_DIR + '/sound/beep.mp3')
+        if (data[3] == 1):
+            qview_base.canvas.itemconfig(canvas_dict["buzzer"], image=image_dict["buzzer_on"])
+        else:
+            qview_base.canvas.itemconfig(canvas_dict["buzzer"], image=image_dict["buzzer_off"])
+
         qview_base.print_text("Timestamp = %d; Buzzer Enabled = %d"%(data[0],data[3]))  
     elif(subcommand == 1):
         qview_base.print_text("Timestamp = %d; Buzzer Duty Cycle = %d"%(data[0], data[3]))  
@@ -381,7 +386,7 @@ def send_game_pad():
     # Send only when there is change so that the simulator does not get slow
     if (last_gamepad[0] != ch1 or last_gamepad[1] != ch2 or last_gamepad[2] != ch3 or last_gamepad[3] != ch3):
         send_radio_command_ch1_ch2(ch1, ch2)
-        send_radio_command_ch3_ch4(ch3, ch4)
+        send_radio_command_ch3_ch4_ch6(ch3, ch4, 0)
         
     last_gamepad = (ch1, ch2, ch3, ch4)
 
