@@ -155,6 +155,9 @@ if (me-&gt;buzzerCount &lt; 15){
 } else {
     QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
     bsp_ble_start();
+    if (adc_get_low_battery()){
+        led_stripe_set_all_color(COLOR_RED);
+    }
 }
 
 
@@ -273,7 +276,9 @@ parameters_set_strategy_led(&amp;parameters);</action>
     <state name="StarStrategy">
      <entry brief="CheckSensors">if (!SumoHSM_CheckDistAndMove(me)){
    drive(parameters.star_speed, parameters.star_speed);
-}</entry>
+}
+buzzer_start();
+QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);</entry>
      <!--${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../10">
       <tran_glyph conn="14,192,3,3,-2,21,2">
@@ -293,6 +298,28 @@ parameters_set_strategy_led(&amp;parameters);</action>
 }</action>
       <tran_glyph conn="14,153,3,-1,20">
        <action box="0,-2,24,4"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StarStrategy::STOP_BUZZER}-->
+     <tran trig="STOP_BUZZER">
+      <action brief="buzzer_stop()">buzzer_stop();</action>
+      <tran_glyph conn="14,186,3,-1,16">
+       <action box="0,-2,23,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
+     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR">
+      <action>if (adc_line_is_white(LINE_BL)){
+    drive(100, 100);
+} else if (adc_line_is_white(LINE_BR)){
+    drive(100, 100);
+} else {
+    if (!SumoHSM_CheckDistAndMove(me)){
+        drive(parameters.star_speed, parameters.star_speed);
+    }
+}</action>
+      <tran_glyph conn="14,178,3,-1,14">
+       <action box="0,-2,17,4"/>
       </tran_glyph>
      </tran>
      <state_glyph node="14,142,24,55">
@@ -391,7 +418,9 @@ if (!SumoHSM_CheckDistAndMove(me)){
     drive(0,0);
     uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
     QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);
-}</entry>
+}
+buzzer_start();
+QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);</entry>
      <exit brief="disarm_timer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <!--${AOs::SumoHSM::SM::StepsStrategy::TIMEOUT}-->
@@ -434,6 +463,30 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);</action>
      <tran trig="STOP" target="../../18">
       <tran_glyph conn="48,148,3,0,-4,85">
        <action box="-6,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::STOP_BUZZER}-->
+     <tran trig="STOP_BUZZER">
+      <action brief="buzzer_stop()">buzzer_stop();</action>
+      <tran_glyph conn="48,186,3,-1,13">
+       <action box="0,-2,22,3"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StepsStrategy::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
+     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR">
+      <action>if (adc_line_is_white(LINE_BL)){
+    drive(100, 100);
+} else if (adc_line_is_white(LINE_BR)){
+    drive(100, 100);
+} else {
+    if (!SumoHSM_CheckDistAndMove(me)){
+        drive(0,0);
+        uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+        QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);
+    }
+}</action>
+      <tran_glyph conn="48,178,3,-1,14">
+       <action box="0,-2,16,4"/>
       </tran_glyph>
      </tran>
      <state_glyph node="48,142,24,55">
@@ -623,7 +676,12 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
      <!--${AOs::SumoHSM::SM::RC::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR">
       <action brief="go_front">if (parameters.strategy &gt; 0){
-    drive(100, 100);
+    if (adc_line_is_white(LINE_BL)){
+        drive(100, 100);
+    } else if (adc_line_is_white(LINE_BR)){
+        drive(100, 100);
+    }
+
 }</action>
       <tran_glyph conn="131,98,3,-1,20">
        <action box="0,-2,25,4"/>
@@ -853,14 +911,23 @@ BSP_eeprom_write(TURN_180_TIME_ADDR, parameters.turn_180_time_ms);
 driving_disable();
 board_led_off();
 led_stripe_set_all_color(COLOR_BLACK);
-ble_service_send_string(&quot;state:AUTOEND&quot;);</entry>
+ble_service_send_string(&quot;state:AUTOEND&quot;);
+buzzer_start();
+QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);</entry>
      <!--${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../4">
       <tran_glyph conn="6,241,3,3,-4,-165,33">
-       <action box="1,-1,10,2"/>
+       <action box="1,-1,23,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="6,233,183,11">
+     <!--${AOs::SumoHSM::SM::AutoEnd::STOP_BUZZER}-->
+     <tran trig="STOP_BUZZER">
+      <action brief="buzzer_stop()">buzzer_stop();</action>
+      <tran_glyph conn="6,245,3,-1,24">
+       <action box="0,-2,31,3"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="6,233,183,15">
       <entry box="1,2,12,2"/>
      </state_glyph>
     </state>
@@ -872,7 +939,9 @@ if (!SumoHSM_CheckDistAndMoveDefense(me)){
     drive(0,0);
     uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
     QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);
-}</entry>
+}
+buzzer_start();
+QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);</entry>
      <exit brief="disarm_timer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <!--${AOs::SumoHSM::SM::DefensiveStrateg~::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
@@ -914,6 +983,30 @@ uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);</action>
       <tran_glyph conn="82,162,3,-1,10">
        <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::DefensiveStrateg~::STOP_BUZZER}-->
+     <tran trig="STOP_BUZZER">
+      <action brief="buzzer_stop()">buzzer_stop();</action>
+      <tran_glyph conn="82,186,3,-1,14">
+       <action box="0,-2,23,3"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::DefensiveStrateg~::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
+     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR">
+      <action>if (adc_line_is_white(LINE_BL)){
+    drive(100, 100);
+} else if (adc_line_is_white(LINE_BR)){
+    drive(100, 100);
+} else {
+    if (!SumoHSM_CheckDistAndMoveDefense(me)){
+        drive(0,0);
+        uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+        QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);
+    }
+}</action>
+      <tran_glyph conn="82,178,3,-1,16">
+       <action box="0,-2,17,4"/>
       </tran_glyph>
      </tran>
      <state_glyph node="82,142,24,55">

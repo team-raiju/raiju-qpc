@@ -790,6 +790,9 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             } else {
                 QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
                 bsp_ble_start();
+                if (adc_get_low_battery()){
+                    led_stripe_set_all_color(COLOR_RED);
+                }
             }
 
 
@@ -979,6 +982,8 @@ static QState SumoHSM_StarStrategy_e(SumoHSM * const me) {
     if (!SumoHSM_CheckDistAndMove(me)){
        drive(parameters.star_speed, parameters.star_speed);
     }
+    buzzer_start();
+    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
     return QM_ENTRY(&SumoHSM_StarStrategy_s);
 }
 /*${AOs::SumoHSM::SM::StarStrategy} */
@@ -1021,6 +1026,27 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
         case DIST_SENSOR_CHANGE_SIG: {
             if (!SumoHSM_CheckDistAndMove(me)){
                drive(parameters.star_speed, parameters.star_speed);
+            }
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StarStrategy::STOP_BUZZER} */
+        case STOP_BUZZER_SIG: {
+            buzzer_stop();
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED_BL, LINE_CHANGED_BR} */
+        case LINE_CHANGED_BL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_BR_SIG: {
+            if (adc_line_is_white(LINE_BL)){
+                drive(100, 100);
+            } else if (adc_line_is_white(LINE_BR)){
+                drive(100, 100);
+            } else {
+                if (!SumoHSM_CheckDistAndMove(me)){
+                    drive(parameters.star_speed, parameters.star_speed);
+                }
             }
             status_ = QM_HANDLED();
             break;
@@ -1188,6 +1214,8 @@ static QState SumoHSM_StepsStrategy_e(SumoHSM * const me) {
         uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
         QTimeEvt_rearm(&me->timeEvt, small_step_wait);
     }
+    buzzer_start();
+    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
     return QM_ENTRY(&SumoHSM_StepsStrategy_s);
 }
 /*${AOs::SumoHSM::SM::StepsStrategy} */
@@ -1259,6 +1287,29 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
                 }
             };
             status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StepsStrategy::STOP_BUZZER} */
+        case STOP_BUZZER_SIG: {
+            buzzer_stop();
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StepsStrategy::LINE_CHANGED_BL, LINE_CHANGED_BR} */
+        case LINE_CHANGED_BL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_BR_SIG: {
+            if (adc_line_is_white(LINE_BL)){
+                drive(100, 100);
+            } else if (adc_line_is_white(LINE_BR)){
+                drive(100, 100);
+            } else {
+                if (!SumoHSM_CheckDistAndMove(me)){
+                    drive(0,0);
+                    uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+                    QTimeEvt_rearm(&me->timeEvt, small_step_wait);
+                }
+            }
+            status_ = QM_HANDLED();
             break;
         }
         default: {
@@ -1587,7 +1638,12 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
         case LINE_CHANGED_BL_SIG: /* intentionally fall through */
         case LINE_CHANGED_BR_SIG: {
             if (parameters.strategy > 0){
-                drive(100, 100);
+                if (adc_line_is_white(LINE_BL)){
+                    drive(100, 100);
+                } else if (adc_line_is_white(LINE_BR)){
+                    drive(100, 100);
+                }
+
             }
             status_ = QM_HANDLED();
             break;
@@ -2060,7 +2116,8 @@ static QState SumoHSM_AutoEnd_e(SumoHSM * const me) {
     board_led_off();
     led_stripe_set_all_color(COLOR_BLACK);
     ble_service_send_string("state:AUTOEND");
-    (void)me; /* unused parameter */
+    buzzer_start();
+    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
     return QM_ENTRY(&SumoHSM_AutoEnd_s);
 }
 /*${AOs::SumoHSM::SM::AutoEnd} */
@@ -2082,11 +2139,18 @@ static QState SumoHSM_AutoEnd(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_TRAN(&tatbl_);
             break;
         }
+        /*${AOs::SumoHSM::SM::AutoEnd::STOP_BUZZER} */
+        case STOP_BUZZER_SIG: {
+            buzzer_stop();
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -2100,6 +2164,8 @@ static QState SumoHSM_DefensiveStrategy_e(SumoHSM * const me) {
         uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
         QTimeEvt_rearm(&me->timeEvt, small_step_wait);
     }
+    buzzer_start();
+    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
     return QM_ENTRY(&SumoHSM_DefensiveStrategy_s);
 }
 /*${AOs::SumoHSM::SM::DefensiveStrategy} */
@@ -2169,6 +2235,29 @@ static QState SumoHSM_DefensiveStrategy(SumoHSM * const me, QEvt const * const e
             drive(0,0);
             uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
             QTimeEvt_rearm(&me->timeEvt, small_step_wait);
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::DefensiveStrateg~::STOP_BUZZER} */
+        case STOP_BUZZER_SIG: {
+            buzzer_stop();
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::DefensiveStrateg~::LINE_CHANGED_BL, LINE_CHANGED_BR} */
+        case LINE_CHANGED_BL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_BR_SIG: {
+            if (adc_line_is_white(LINE_BL)){
+                drive(100, 100);
+            } else if (adc_line_is_white(LINE_BR)){
+                drive(100, 100);
+            } else {
+                if (!SumoHSM_CheckDistAndMoveDefense(me)){
+                    drive(0,0);
+                    uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
+                    QTimeEvt_rearm(&me->timeEvt, small_step_wait);
+                }
+            }
             status_ = QM_HANDLED();
             break;
         }

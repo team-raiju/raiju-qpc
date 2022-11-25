@@ -52,10 +52,10 @@ void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool battery_
                     dma_buffer[i + j] = 2000 * fl;
                     break;
                 case FAKE_LINE_POS_BR:
-                    dma_buffer[i + j] = 2000 * bl;
+                    dma_buffer[i + j] = 2000 * br;
                     break;
                 case FAKE_LINE_POS_BL:
-                    dma_buffer[i + j] = 2000 * br;
+                    dma_buffer[i + j] = 2000 * bl;
                     break;
                 case FAKE_ADC_BATTERY_POSITION:
                     dma_buffer[i + j] = 4095 * battery_full;
