@@ -817,6 +817,7 @@ static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     parameters_set_strategy_led(&parameters);
     drive(0,0);
     driving_disable();
+    start_module_disable_event();
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
     ble_service_send_string("state:RC");
     return QM_ENTRY(&SumoHSM_RCWait_s);
@@ -832,9 +833,9 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA} */
         case RADIO_DATA_SIG: {
-            driving_enable();
             /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70]} */
             if ((abs(radio_service_get_channel(RADIO_CH1)) > 70) || (abs(radio_service_get_channel(RADIO_CH2)) > 70)) {
+                driving_enable();
                 /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[pre_0]} */
                 if (parameters.pre_strategy == 0) {
                     static struct {
@@ -1599,19 +1600,25 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::RC::STOP} */
-        case STOP_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[2];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_RCWait_s, /* target state */
-                {
-                    Q_ACTION_CAST(&SumoHSM_RCWait_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN(&tatbl_);
+        /*${AOs::SumoHSM::SM::RC::CHANGE_STATE_EVT} */
+        case CHANGE_STATE_EVT_SIG: {
+            /*${AOs::SumoHSM::SM::RC::CHANGE_STATE_EVT::[|ch1|and|ch2|<10]} */
+            if ((abs(radio_service_get_channel(RADIO_CH1)) < 10) && (abs(radio_service_get_channel(RADIO_CH2)) < 10)) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[2];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_RCWait_s, /* target state */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_RCWait_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            else {
+                status_ = QM_UNHANDLED();
+            }
             break;
         }
         /*${AOs::SumoHSM::SM::RC::LINE_CHANGED_FL, LINE_CHANGED_FR} */
@@ -1875,10 +1882,10 @@ static QState SumoHSM_line_rc_STOP(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[3];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_RCWait_s, /* target state */
+        &SumoHSM_RC_s, /* target state */
         {
             Q_ACTION_CAST(&SumoHSM_LineSubmachine_x), /* submachine exit */
-            Q_ACTION_CAST(&SumoHSM_RCWait_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_RC_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -3212,6 +3219,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
     QS_SIG_DICTIONARY(START_MODULE_CHECK_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(START_MODULE_DISABLE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_UPDATE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_REQUEST_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);

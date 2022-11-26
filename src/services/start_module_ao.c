@@ -118,6 +118,10 @@ static QState StartModule_WaitStart(start_module_t * const me, QEvt const * cons
             
             break;
         }
+        case START_MODULE_DISABLE_SIG: {
+            status_ = Q_TRAN(&StartModule_Idle);
+            break;
+        }
         default: {
             status_ = Q_SUPER(&QHsm_top);
             break;
@@ -146,6 +150,10 @@ static QState StartModule_WaitStop(start_module_t * const me, QEvt const * const
             }
             break;
         }
+        case START_MODULE_DISABLE_SIG: {
+            status_ = Q_TRAN(&StartModule_Idle);
+            break;
+        }
         default: {
             status_ = Q_SUPER(&QHsm_top);
             break;
@@ -163,6 +171,12 @@ void start_module_check_event(){
     QEvt evt = {.sig = START_MODULE_CHECK_SIG};
     QHSM_DISPATCH(&start_module_AO->super, &evt, SIMULATOR);
 }
+
+void start_module_disable_event(){
+    QEvt evt = {.sig = START_MODULE_DISABLE_SIG};
+    QHSM_DISPATCH(&start_module_AO->super, &evt, SIMULATOR);
+}
+
 
 void start_module_ao_init() {
     /* statically allocate event queue buffer for the start_module_t AO */

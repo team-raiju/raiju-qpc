@@ -53,6 +53,51 @@ volatile int8_t last_radio_data[NUM_OF_RADIO_CHANNELS];
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
+#if defined (RADIO_MODE_PPM)
+
+static void radio_dispatch_events(){
+
+    QEvt evt = {.sig = RADIO_DATA_SIG};
+    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+
+
+    if (radio_data[RADIO_CH3] > 75 && last_radio_data[RADIO_CH3] <= 75){
+        QEvt evt = {.sig = CHANGE_STATE_EVT_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+    if (radio_data[RADIO_CH4] > 75 && last_radio_data[RADIO_CH4] <= 75){
+        QEvt evt = {.sig = CHANGE_STRATEGY_EVT_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+    if (radio_data[RADIO_CH3] < -75 && last_radio_data[RADIO_CH3] > -75){
+        QEvt evt = {.sig = CHANGE_PRE_STRATEGY_EVT_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+}
+
+static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
+
+    if (ppm_num >= NUM_OF_RADIO_CHANNELS){
+        return;
+    }
+
+    ppm_val = constrain(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS);
+
+    int8_t current_data = map(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS, CHANNEL_MIN_VAL, CHANNEL_MAX_VAL);
+
+    radio_data[ppm_num] = (current_data + last_radio_data[ppm_num] * 10) / 11.0;
+
+    radio_dispatch_events();
+
+    last_radio_data[ppm_num] = radio_data[ppm_num];
+    
+}
+
+#elif defined (RADIO_MODE_UART) || (RADIO_MODE_UART_CRSF)
+
 static void radio_dispatch_events(){
 
     QEvt evt = {.sig = RADIO_DATA_SIG};
@@ -75,28 +120,6 @@ static void radio_dispatch_events(){
     }
 
 }
-
-#if defined (RADIO_MODE_PPM)
-
-static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
-
-    if (ppm_num >= NUM_OF_RADIO_CHANNELS){
-        return;
-    }
-
-    ppm_val = constrain(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS);
-
-    int8_t current_data = map(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS, CHANNEL_MIN_VAL, CHANNEL_MAX_VAL);
-
-    radio_data[ppm_num] = (current_data + last_radio_data[ppm_num] * 10) / 11.0;
-
-    radio_dispatch_events();
-
-    last_radio_data[ppm_num] = radio_data[ppm_num];
-    
-}
-
-#elif defined (RADIO_MODE_UART) || (RADIO_MODE_UART_CRSF)
 
 static void radio_data_interrupt_uart(uint16_t * ch_data, uint8_t ch_amount){
 
