@@ -2,7 +2,6 @@
  * INCLUDES
  **************************************************************************************************/
 
-#include <stdio.h>
 #include "qpc.h"
 #include "start_module_ao.h"
 #include "bsp.h"
@@ -28,7 +27,9 @@ typedef struct start_module {
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
-
+static void start_module_disable(void);
+static void start_module_enable(void);
+static void start_module_ctor(void);
 static QState StartModule_Initial(start_module_t * const me, void const * const par);
 static QState StartModule_Idle(start_module_t * const me, QEvt const * const e);
 static QState StartModule_WaitStart(start_module_t * const me, QEvt const * const e);
@@ -48,6 +49,14 @@ QActive * const start_module_AO = &start_module_inst.super;
 /***************************************************************************************************
  * LOCAL FUNCTIONS
  **************************************************************************************************/
+
+static void start_module_disable(void) {
+    BSP_GPIO_Write_Pin(GPIO_START_MODULE_EN_PORT, GPIO_START_MODULE_EN_PIN, IO_LOW);
+}
+
+static void start_module_enable(void) {
+    BSP_GPIO_Write_Pin(GPIO_START_MODULE_EN_PORT, GPIO_START_MODULE_EN_PIN, IO_HIGH);
+}
 
 static void start_module_ctor(void) {
     start_module_t *me = &start_module_inst;
@@ -71,16 +80,13 @@ static QState StartModule_Idle(start_module_t * const me, QEvt const * const e) 
     switch (e->sig) {
         case Q_ENTRY_SIG: {
             QTimeEvt_disarm(&me->timeEvt);
+            start_module_disable();
             status_ = Q_HANDLED();
             break;
         }
         case START_MODULE_CHECK_SIG: {
+            start_module_enable();
             status_ = Q_TRAN(&StartModule_WaitStart);
-            break;
-        }
-        case START_MODULE_RESET_SIG: {
-            // Reset module
-            status_ = Q_SUPER(&QHsm_top);
             break;
         }
         default: {

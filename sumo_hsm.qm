@@ -333,7 +333,6 @@ driving_disable();
 board_led_on();
 ble_service_send_string(&quot;state:AUTO&quot;);
 parameters_set_strategy_led(&amp;parameters);
-
 start_module_check_event();</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
@@ -1514,7 +1513,6 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
     QS_SIG_DICTIONARY(START_MODULE_CHECK_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(START_MODULE_RESET_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_UPDATE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_REQUEST_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
@@ -1604,7 +1602,6 @@ enum SumoHSMSignals {
     RADIO_DATA_SIG,
     BUTTON_SIG,
     START_MODULE_CHECK_SIG,
-    START_MODULE_RESET_SIG,
     BLE_DATA_UPDATE_SIG,
     BLE_DATA_REQUEST_SIG,
     LOW_BATTERY_SIG,
