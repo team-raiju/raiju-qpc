@@ -53,7 +53,7 @@ static void gen_battery_events(void);
 static volatile bool line_sensor_is_white[NUM_OF_LINE_SENSORS];
 static volatile bool line_sensor_is_white_last[NUM_OF_LINE_SENSORS];
 static volatile double battery_voltage_mv = 16000;
-static volatile double battery_voltage_mv_last = 0;
+static volatile double battery_voltage_mv_last = 16000;
 static uint8_t line_sensor_mask = 0xff;
 
 
@@ -166,10 +166,11 @@ static void adc_data_interrupt(uint32_t* out_data){
 void adc_service_init() {
     BSP_ADC_DMA_Init();
     BSP_ADC_DMA_Start();
-    BSP_ADC_DMA_Register_Callback(adc_data_interrupt);
 }
 
-
+void adc_service_start_callback() {
+    BSP_ADC_DMA_Register_Callback(adc_data_interrupt);
+}
 
 bool adc_line_is_white(line_sensor_t position){
 

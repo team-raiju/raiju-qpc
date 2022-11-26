@@ -792,6 +792,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             } else {
                 QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
                 bsp_ble_start();
+                adc_service_start_callback();
                 if (adc_get_low_battery()){
                     led_stripe_set_all_color(COLOR_RED);
                 }
