@@ -19,6 +19,16 @@
 #define NUM_OF_STRATEGIES        3
 #define NUM_OF_PRE_STRATEGIES    4
 
+#define ARENA_LENGHT_CM          154.0f
+#define SUMO_LENGHT_CM           20.0f
+#define REFERENCE_DIST_CM        (ARENA_LENGHT_CM - SUMO_LENGHT_CM)
+
+#define REFERENCE_SPEED          60.0f
+
+#define REFERENCE_TURN_SPEED     100.0f
+
+
+
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -224,5 +234,36 @@ void parameters_set_strategy_led(sumo_parameters_t *params){
     } else {
         led_stripe_set_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
     }
+
+}
+
+
+uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, sumo_parameters_t *params) {
+
+    // TODO: Account for non linear effects on multiplicators
+    double angle_multiplicator = degrees / 180.0;
+    double speed_multiplicator = turn_speed / REFERENCE_TURN_SPEED;
+
+    uint16_t turn_time_ms;
+
+    if (side == SIDE_LEFT){
+        turn_time_ms = (angle_multiplicator * params->turn_180_left_time_ms) * speed_multiplicator;
+    } else {
+        turn_time_ms = (angle_multiplicator * params->turn_180_right_time_ms) * speed_multiplicator;
+    }
+
+    return turn_time_ms;
+
+}
+
+uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params) {
+
+    double reference_speed_cm_per_ms = REFERENCE_DIST_CM / (double) params->time_ms_to_cross_at_60_vel;
+    double speed_multiplicator = speed / REFERENCE_SPEED;
+
+    // TODO: Account for non linear effects on speed multiplicator
+    uint16_t move_time_ms = distance_cm / (reference_speed_cm_per_ms * speed_multiplicator);
+
+    return move_time_ms;
 
 }
