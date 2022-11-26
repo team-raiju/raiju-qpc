@@ -23,15 +23,15 @@ static void convert_color_name_to_rgb (color_name_t name, color_rgb_t* rgb);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-static color_rgb_t red        = {0xFF, 0x00, 0x00};
-static color_rgb_t green      = {0x00, 0xFF, 0x00};
-static color_rgb_t blue       = {0x00, 0x00, 0xFF};
-static color_rgb_t purple     = {0x94, 0x00, 0xD3};
-static color_rgb_t yellow     = {0xFF, 0xFF, 0x00};
-static color_rgb_t orange     = {0xFF, 0x7F, 0x00};
-static color_rgb_t light_blue = {0x00, 0xFF, 0xFF};
-static color_rgb_t white      = {0xFF, 0xFF, 0xFF};
+static color_rgb_t red        = {0x7F, 0x00, 0x00};
+static color_rgb_t green      = {0x00, 0x7F, 0x00};
+static color_rgb_t blue       = {0x00, 0x00, 0x7F};
+static color_rgb_t purple     = {0x7F, 0x00, 0x7F};
+static color_rgb_t yellow     = {0x7F, 0x7F, 0x00};
+static color_rgb_t orange     = {0x64, 0xC8, 0x00};
+static color_rgb_t white      = {0x3F, 0x3F, 0x3F};
 static color_rgb_t black      = {0x00, 0x00, 0x00};
+static color_rgb_t pink       = {0x00, 0xC8, 0x64};
 
 
 /***************************************************************************************************
@@ -68,8 +68,8 @@ static void convert_color_name_to_rgb (color_name_t name, color_rgb_t* rgb) {
         case COLOR_ORANGE:
             *rgb = orange;
             break;
-        case COLOR_LIGHT_BLUE:
-            *rgb = light_blue;
+        case COLOR_PINK:
+            *rgb = pink;
             break;
         case COLOR_WHITE:
             *rgb = white;

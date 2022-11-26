@@ -205,7 +205,7 @@ void parameters_set_strategy_led(sumo_parameters_t *params){
         COLOR_GREEN,
         COLOR_BLUE,
         COLOR_ORANGE,
-        COLOR_LIGHT_BLUE,
+        COLOR_PINK,
     };
 
     if (params->strategy < NUM_OF_STRATEGIES){
