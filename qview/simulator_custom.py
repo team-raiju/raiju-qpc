@@ -42,8 +42,18 @@ QS_USER_DATA_ID = {
 }
 
 def custom_menu_command():
-    command_names = ["RESET POSITION 1", "RESET POSITION 2", "SET_LOW_BATTERY"]
-    command_functions = [reset_position, reset_position_2, set_low_battery]
+    command_names = ["RESET POSITION 1", 
+                     "RESET POSITION 2", 
+                     "RESET POSITION 3", 
+                     "RESET POSITION 4", 
+                     "RESET POSITION 5", 
+                     "SET_LOW_BATTERY"]
+    command_functions = [reset_position, 
+                        reset_position_2, 
+                        reset_position_3, 
+                        reset_position_4, 
+                        reset_position_5, 
+                        set_low_battery]
 
     return (command_names, command_functions)
 
@@ -428,18 +438,27 @@ def set_low_battery():
 
 
 
+def set_position(x, y, theta):
+    global image_dict, canvas_dict
+    sumo_robot.set_angle(theta)
+    sumo_robot.set_position(x, y)
+    canvas_dict["sumo"] = qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"])
+
 
 def reset_position():
-    global image_dict, canvas_dict
-    sumo_robot.set_angle(0)
-    sumo_robot.set_position(300, 120)
-    canvas_dict["sumo"] = qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"])
+    set_position(300, 120, 0)
 
 def reset_position_2():
-    global image_dict, canvas_dict
-    sumo_robot.set_angle(0)
-    sumo_robot.set_position(300, 100)
-    canvas_dict["sumo"] = qview_base.canvas.create_image(sumo_robot.get_position()[0],  sumo_robot.get_position()[1], image=image_dict["sumo"])
+    set_position(300, 100, 0)
+
+def reset_position_3():
+    set_position(300, 200, 0)
+
+def reset_position_4():
+    set_position(300, 200, 45)
+
+def reset_position_5():
+    set_position(300, 150, 90)
 
 def line_sensor_changed():
     global last_line_sensor_state

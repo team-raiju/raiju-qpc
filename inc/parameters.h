@@ -20,10 +20,13 @@ typedef struct sumo_parameters {
     uint16_t reverse_time_ms;
     uint8_t  turn_speed;
 
-    uint16_t turn_180_time_ms;
+    uint16_t turn_180_right_time_ms;
+    uint16_t turn_180_left_time_ms;
 
     uint16_t step_wait_time_ms;
     uint16_t step_advance_time_ms;
+
+    uint16_t time_ms_to_cross_at_60_vel;
     
 
 } sumo_parameters_t;

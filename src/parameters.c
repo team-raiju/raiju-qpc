@@ -49,9 +49,11 @@ static sumo_parameters_t init_parameters_default = {
     .reverse_speed = 100,
     .reverse_time_ms = 250,
     .turn_speed = 100,
-    .turn_180_time_ms = 800,
+    .turn_180_right_time_ms = 300,
+    .turn_180_left_time_ms = 300,
     .step_wait_time_ms = 1500,
     .step_advance_time_ms = 150,
+    .time_ms_to_cross_at_60_vel = 600,
 };
 
 /***************************************************************************************************
@@ -102,10 +104,13 @@ void parameters_init(sumo_parameters_t *params){
     read_and_update_parameter_16_bit(REVERSE_TIME_MS_ADDR, &temp_params.reverse_time_ms);
     read_and_update_parameter_8_bit(TURN_SPEED_ADDR, &temp_params.turn_speed);
 
-    read_and_update_parameter_16_bit(TURN_180_TIME_ADDR, &temp_params.turn_180_time_ms);
-
     read_and_update_parameter_16_bit(STEP_WAIT_TIME_MS_ADDR, &temp_params.step_wait_time_ms);
     read_and_update_parameter_16_bit(STEP_ADVANCE_TIME_MS_ADDR, &temp_params.step_advance_time_ms);
+
+    read_and_update_parameter_16_bit(TURN_180_RIGHT_TIME_ADDR, &temp_params.turn_180_right_time_ms);
+    read_and_update_parameter_16_bit(TURN_180_LEFT_TIME_ADDR, &temp_params.turn_180_left_time_ms);
+    read_and_update_parameter_16_bit(TIME_MS_TO_CROSS_AT_60_ADDR, &temp_params.time_ms_to_cross_at_60_vel);
+
 
     *params = temp_params;
 
@@ -136,7 +141,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
             snprintf(buffer, 20, "rev:%hu:%hu", params.reverse_speed, params.reverse_time_ms);
             break;
         case 5:
-            snprintf(buffer, 20, "turn:%hu:%hu", params.turn_speed, params.turn_180_time_ms);
+            snprintf(buffer, 20, "turn:%hu:%hu", params.turn_180_left_time_ms, params.turn_180_right_time_ms);
             break;
         case 6:
             snprintf(buffer, 20, "step:%hu", params.step_wait_time_ms);
@@ -163,7 +168,7 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * last_data){
     params->reverse_speed = ble_packet.reverseSpeed;
     params->reverse_time_ms = ble_packet.reverseTimeMs;
     params->turn_speed = ble_packet.turnSpeed;
-    params->turn_180_time_ms  = ble_packet.turnTimeMs;
+    params->turn_180_right_time_ms  = ble_packet.turnTimeMs;
     params->step_wait_time_ms = ble_packet.stepWaitTimeMs;
     params->max_speed = ble_packet.maxMotorSpeed;
 
