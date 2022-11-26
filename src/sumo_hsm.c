@@ -1001,6 +1001,19 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
+        /*${AOs::SumoHSM::SM::RCWait::LINE_CHANGED_BL, LINE_CHANGED_BR~} */
+        case LINE_CHANGED_BL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_BR_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FR_SIG: {
+            if (adc_line_none_white()){
+                buzzer_stop();
+            } else {
+                buzzer_start();
+            }
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
@@ -1227,6 +1240,19 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             ble_service_last_packet(&last_data);
             parameters_update_from_ble(&parameters, last_data._raw);
             parameters_set_strategy_led(&parameters);
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::LINE_CHANGED_BL, LINE_CHANGED_BR~} */
+        case LINE_CHANGED_BL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_BR_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FR_SIG: {
+            if (adc_line_none_white()){
+                buzzer_stop();
+            } else {
+                buzzer_start();
+            }
             status_ = QM_HANDLED();
             break;
         }

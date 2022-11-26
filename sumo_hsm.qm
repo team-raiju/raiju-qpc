@@ -220,7 +220,7 @@ ble_service_send_string(&quot;state:RC&quot;);</entry>
         <action box="-13,0,16,6"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="133,50,3,-1,-8,4">
+      <tran_glyph conn="133,51,3,-1,-8,3">
        <action box="-11,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -255,8 +255,8 @@ parameters_set_strategy_led(&amp;parameters);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::BLE_DATA_REQUEST}-->
      <tran trig="BLE_DATA_REQUEST" target="../../22">
-      <tran_glyph conn="133,30,3,3,-5,-13,6">
-       <action box="-16,-16,18,2"/>
+      <tran_glyph conn="133,24,3,3,-5,-12,7">
+       <action box="-17,-15,18,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::BLE_DATA_UPDATE}-->
@@ -269,7 +269,18 @@ parameters_set_strategy_led(&amp;parameters);</action>
        <action box="0,-2,18,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="133,23,31,31">
+     <!--${AOs::SumoHSM::SM::RCWait::LINE_CHANGED_BL, LINE_CHANGED_BR~}-->
+     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR, LINE_CHANGED_FL, LINE_CHANGED_FR">
+      <action brief="buzzer_on">if (adc_line_none_white()){
+    buzzer_stop();
+} else {
+    buzzer_start();
+}</action>
+      <tran_glyph conn="133,31,3,-1,16">
+       <action box="0,-2,23,4"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="133,19,31,35">
       <entry box="1,2,14,4"/>
       <exit box="1,6,14,2"/>
      </state_glyph>
@@ -367,13 +378,13 @@ start_module_check_event();</entry>
         <action box="17,-3,6,2"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="35,80,3,-1,17,22">
+      <tran_glyph conn="35,87,3,-1,17,15">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../2">
-      <tran_glyph conn="71,56,1,3,31,-23,31">
+      <tran_glyph conn="71,56,1,3,31,-30,31">
        <action box="1,-3,33,2"/>
       </tran_glyph>
      </tran>
@@ -409,7 +420,18 @@ parameters_set_strategy_led(&amp;parameters);</action>
        <action box="0,-2,20,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="35,48,36,35">
+     <!--${AOs::SumoHSM::SM::AutoWait::LINE_CHANGED_BL, LINE_CHANGED_BR~}-->
+     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR, LINE_CHANGED_FL, LINE_CHANGED_FR">
+      <action brief="buzzer_on">if (adc_line_none_white()){
+    buzzer_stop();
+} else {
+    buzzer_start();
+}</action>
+      <tran_glyph conn="35,80,3,-1,16">
+       <action box="0,-2,34,6"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="35,48,36,41">
       <entry box="1,2,35,8"/>
      </state_glyph>
     </state>
@@ -1062,11 +1084,11 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);</action>
     <smstate name="ble3" submachine="../31">
      <!--${AOs::SumoHSM::SM::ble3::XP1}-->
      <xpseg xpref="../../31/0" target="../../2">
-      <xpseg_glyph conn="160,16,1,1,7,14,-3">
+      <xpseg_glyph conn="161,11,1,1,7,19,-4">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
-     <smstate_glyph node="134,13,26,8"/>
+     <smstate_glyph node="135,8,26,8"/>
     </smstate>
     <!--${AOs::SumoHSM::SM::ble4}-->
     <smstate name="ble4" submachine="../31">
