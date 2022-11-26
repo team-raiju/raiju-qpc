@@ -49,6 +49,8 @@
 #include "bsp_eeprom.h"
 #include "ble_service.h"
 #include "parameters.h"
+#include "start_module_ao.h"
+
 
 #define CALIB_ANGLE_MULT    2.5
 #ifndef M_PI
@@ -1067,6 +1069,8 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     board_led_on();
     ble_service_send_string("state:AUTO");
     parameters_set_strategy_led(&parameters);
+
+    start_module_check_event();
     (void)me; /* unused parameter */
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
@@ -3208,6 +3212,8 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(START_MODULE_CHECK_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(START_MODULE_RESET_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_UPDATE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_REQUEST_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
