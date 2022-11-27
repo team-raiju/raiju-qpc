@@ -849,6 +849,7 @@ static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     drive(0,0);
     driving_disable();
     start_module_disable_event();
+    radio_service_en_radio_data_sig(true);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
     ble_service_send_string("state:RC");
     return QM_ENTRY(&SumoHSM_RCWait_s);
@@ -1115,6 +1116,7 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     ble_service_send_string("state:AUTO");
     parameters_set_strategy_led(&parameters);
     start_module_check_event();
+    radio_service_en_radio_data_sig(false);
     (void)me; /* unused parameter */
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
@@ -1429,6 +1431,7 @@ static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
     ble_service_send_string("state:CALIB");
+    radio_service_en_radio_data_sig(true);
     return QM_ENTRY(&SumoHSM_CalibWait_s);
 }
 /*${AOs::SumoHSM::SM::CalibWait} */

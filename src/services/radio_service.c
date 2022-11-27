@@ -2,6 +2,7 @@
  * INCLUDES
  **************************************************************************************************/
 
+#include <stdbool.h>
 #include "qpc.h"    
 #include "bsp.h"
 #include "radio_service.h"
@@ -42,8 +43,9 @@ static void radio_data_interrupt_uart(uint16_t * ch_data, uint8_t ch_amount);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-volatile int8_t radio_data[NUM_OF_RADIO_CHANNELS];
-volatile int8_t last_radio_data[NUM_OF_RADIO_CHANNELS];
+static volatile int8_t radio_data[NUM_OF_RADIO_CHANNELS];
+static volatile int8_t last_radio_data[NUM_OF_RADIO_CHANNELS];
+static bool radio_data_sig_enable = true;
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -57,8 +59,10 @@ volatile int8_t last_radio_data[NUM_OF_RADIO_CHANNELS];
 
 static void radio_dispatch_events(){
 
-    QEvt evt = {.sig = RADIO_DATA_SIG};
-    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    if (radio_data_sig_enable){
+        QEvt evt = {.sig = RADIO_DATA_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
 
 
     if (radio_data[RADIO_CH3] > 75 && last_radio_data[RADIO_CH3] <= 75){
@@ -100,8 +104,11 @@ static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val){
 
 static void radio_dispatch_events(){
 
-    QEvt evt = {.sig = RADIO_DATA_SIG};
-    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+
+    if (radio_data_sig_enable){
+        QEvt evt = {.sig = RADIO_DATA_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
 
 
     if (radio_data[RADIO_CH3] > 75 && last_radio_data[RADIO_CH3] <= 75){
@@ -205,4 +212,8 @@ int8_t radio_service_get_channel(radio_channel_t ch){
 
     return radio_data[ch];
 
+}
+
+void radio_service_en_radio_data_sig(bool enabled){
+    radio_data_sig_enable = enabled;
 }
