@@ -162,11 +162,12 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
         case 8:
             snprintf(buffer, 20, "mms:%hu", params.max_speed);
             break;
-        case 9:
+        case 9: {
             uint16_t dist_mask = distance_get_all_active();
             uint16_t line_mask = adc_line_get_all();
             snprintf(buffer, 20, "stat:%u:%u", dist_mask, line_mask);
             break;
+        }
         
     }
 

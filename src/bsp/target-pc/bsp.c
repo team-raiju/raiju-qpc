@@ -104,6 +104,7 @@ void QF_onClockTick(void) {
 
 }
 void Q_onAssert(char const * const module, int loc) {
+    QS_ASSERTION(module, loc, 10000U); /* report assertion to QS */
     fprintf(stderr, "Assertion failed in %s:%d", module, loc);
     exit(-1);
 }

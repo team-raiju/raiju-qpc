@@ -38,6 +38,8 @@
 #include "dma.h"
 #include "tim.h"
 #include "adc.h"
+#include "driving_service.h"
+#include "buzzer_service.h"
 
 __weak void SystemClock_Config(void);
 
@@ -153,7 +155,13 @@ Q_NORETURN Q_onAssert(char const * const module, int_t const loc) {
     */
     (void)module;
     (void)loc;
-    QS_ASSERTION(module, loc, 10000U); /* report assertion to QS */
 
-    NVIC_SystemReset();
+    drive(0, 0);
+    driving_disable();
+    buzzer_start();
+
+    while (1);
+    
+
+    // NVIC_SystemReset();
 }
