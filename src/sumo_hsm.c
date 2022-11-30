@@ -3519,30 +3519,28 @@ static QState SumoHSM_PreStrategy_PreStrategy_4_e(SumoHSM * const me) {
     cust_strategy_reset();
     uint8_t current_step = cust_strategy_current_step();
     movement_t first_step = cust_strategy_move_type(current_step);
+
     uint16_t movement_delay_ms;
+    uint16_t movement_parameter = cust_strategy_move(current_step);
     switch (first_step) {
-        case FRONT: {
+        case MOVE_FRONT: {
             drive(100,100);
-            uint16_t cm_to_move = cust_strategy_front(current_step);
-            movement_delay_ms = get_time_to_move_ms(cm_to_move, 100, &parameters);
+            movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
             break;
         }
-        case BACK: {
+        case MOVE_BACK: {
             drive(-100,-100);
-            uint16_t cm_to_move = cust_strategy_back(current_step);
-            movement_delay_ms = get_time_to_move_ms(cm_to_move, 100, &parameters);
+            movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
             break;
         }
-        case LEFT: {
+        case MOVE_LEFT: {
             drive(-100,100);
-            uint16_t degrees_to_move = cust_strategy_left(current_step);
-            movement_delay_ms = get_time_to_turn_ms(degrees_to_move, 100, SIDE_LEFT, &parameters);
+            movement_delay_ms = get_time_to_turn_ms(movement_parameter, 100, SIDE_LEFT, &parameters);
             break;
         }
-        case RIGHT: {
+        case MOVE_RIGHT: {
             drive(100,-100);
-            uint16_t degrees_to_move = cust_strategy_right(current_step);
-            movement_delay_ms = get_time_to_turn_ms(degrees_to_move, 100, SIDE_RIGHT, &parameters);
+            movement_delay_ms = get_time_to_turn_ms(movement_parameter, 100, SIDE_RIGHT, &parameters);
             break;
         }
         default: {
@@ -3565,29 +3563,26 @@ static QState SumoHSM_PreStrategy_PreStrategy_4(SumoHSM * const me, QEvt const *
             uint8_t current_step = cust_strategy_current_step();
             movement_t step = cust_strategy_move_type(current_step);
             uint16_t movement_delay_ms;
+            uint16_t movement_parameter = cust_strategy_move(current_step);
             switch (step) {
-                case FRONT: {
+                case MOVE_FRONT: {
                     drive(100,100);
-                    uint16_t cm_to_move = cust_strategy_front(current_step);
-                    movement_delay_ms = get_time_to_move_ms(cm_to_move, 100, &parameters);
+                    movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
                     break;
                 }
-                case BACK: {
+                case MOVE_BACK: {
                     drive(-100,-100);
-                    uint16_t cm_to_move = cust_strategy_back(current_step);
-                    movement_delay_ms = get_time_to_move_ms(cm_to_move, 100, &parameters);
+                    movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
                     break;
                 }
-                case LEFT: {
+                case MOVE_LEFT: {
                     drive(-100,100);
-                    uint16_t degrees_to_move = cust_strategy_left(current_step);
-                    movement_delay_ms = get_time_to_turn_ms(degrees_to_move, 100, SIDE_LEFT, &parameters);
+                    movement_delay_ms = get_time_to_turn_ms(movement_parameter, 100, SIDE_LEFT, &parameters);
                     break;
                 }
-                case RIGHT: {
+                case MOVE_RIGHT: {
                     drive(100,-100);
-                    uint16_t degrees_to_move = cust_strategy_right(current_step);
-                    movement_delay_ms = get_time_to_turn_ms(degrees_to_move, 100, SIDE_RIGHT, &parameters);
+                    movement_delay_ms = get_time_to_turn_ms(movement_parameter, 100, SIDE_RIGHT, &parameters);
                     break;
                 }
                 default: {
