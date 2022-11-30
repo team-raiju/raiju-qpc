@@ -3373,8 +3373,10 @@ static QState SumoHSM_PreStrategy_pre_strategy_2_sub1_e(SumoHSM * const me) {
 static QState SumoHSM_PreStrategy_pre_strategy_2_sub1(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_s~::TIMEOUT} */
-        case TIMEOUT_SIG: {
+        /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_s~::TIMEOUT, LINE_CHANGED_FL, LINE_C~} */
+        case TIMEOUT_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FR_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];
@@ -3439,8 +3441,10 @@ static QState SumoHSM_PreStrategy_pre_strategy_1_sub1_e(SumoHSM * const me) {
 static QState SumoHSM_PreStrategy_pre_strategy_1_sub1(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_s~::TIMEOUT} */
-        case TIMEOUT_SIG: {
+        /*${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_s~::TIMEOUT, LINE_CHANGED_FL, LINE_C~} */
+        case TIMEOUT_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_FR_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];

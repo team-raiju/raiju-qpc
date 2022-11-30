@@ -1463,7 +1463,7 @@ uint16_t turn_time_ms = get_time_to_turn_ms(30, 100, SIDE_LEFT, &amp;parameters)
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_3_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../5">
-       <tran_glyph conn="104,48,3,2,10,12,-45,5">
+       <tran_glyph conn="104,50,3,2,10,10,-45,5">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -1478,7 +1478,7 @@ uint16_t turn_time_ms = get_time_to_turn_ms(75, 100, SIDE_LEFT, &amp;parameters)
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../5">
-       <tran_glyph conn="72,48,3,2,11,12,-14,5">
+       <tran_glyph conn="72,50,3,2,11,10,-14,5">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -1491,8 +1491,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
       <entry brief="motor_front">drive(100,100);
 uint16_t move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_s~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../12">
+      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_2_s~::TIMEOUT, LINE_CHANGED_FL, LINE_C~}-->
+      <tran trig="TIMEOUT, LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../12">
        <tran_glyph conn="72,34,3,0,11,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
@@ -1521,8 +1521,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
       <entry brief="motor_front">drive(100,100);
 uint16_t move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_s~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../14">
+      <!--${AOs::SumoHSM::SM::PreStrategy::pre_strategy_1_s~::TIMEOUT, LINE_CHANGED_FL, LINE_C~}-->
+      <tran trig="TIMEOUT, LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../14">
        <tran_glyph conn="40,34,3,0,13,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
