@@ -91,6 +91,7 @@ typedef struct {
     struct SM_PreStrategy {
         QMState super;
         QActionHandler const XP1; /* eXit-Point segment */
+        QActionHandler const STOP; /* eXit-Point segment */
     } const *sub_PreStrategy;
     /* exit points for submachine ${AOs::SumoHSM::SM::BLESubmachine} */
     struct SM_BLESubmachine {
@@ -223,6 +224,7 @@ static struct SM_LineSubmachine const SumoHSM_line2_s = {
 static QState SumoHSM_pre_strategy  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_pre_strategy_e(SumoHSM * const me);
 static QState SumoHSM_pre_strategy_XP1(SumoHSM * const me);
+static QState SumoHSM_pre_strategy_STOP(SumoHSM * const me);
 static struct SM_PreStrategy const SumoHSM_pre_strategy_s = {
     {
         QM_STATE_NULL, /* superstate (top) */
@@ -232,6 +234,7 @@ static struct SM_PreStrategy const SumoHSM_pre_strategy_s = {
         Q_ACTION_NULL  /* no initial tran. */
     }
     ,Q_ACTION_CAST(&SumoHSM_pre_strategy_XP1)
+    ,Q_ACTION_CAST(&SumoHSM_pre_strategy_STOP)
 };
 static QState SumoHSM_line_rc  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_line_rc_e(SumoHSM * const me);
@@ -303,6 +306,7 @@ static struct SM_LineSubmachine const SumoHSM_line3_s = {
 static QState SumoHSM_pre_strategy_rc  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_pre_strategy_rc_e(SumoHSM * const me);
 static QState SumoHSM_pre_strategy_rc_XP1(SumoHSM * const me);
+static QState SumoHSM_pre_strategy_rc_STOP(SumoHSM * const me);
 static struct SM_PreStrategy const SumoHSM_pre_strategy_rc_s = {
     {
         QM_STATE_NULL, /* superstate (top) */
@@ -312,6 +316,7 @@ static struct SM_PreStrategy const SumoHSM_pre_strategy_rc_s = {
         Q_ACTION_NULL  /* no initial tran. */
     }
     ,Q_ACTION_CAST(&SumoHSM_pre_strategy_rc_XP1)
+    ,Q_ACTION_CAST(&SumoHSM_pre_strategy_rc_STOP)
 };
 static QState SumoHSM_ble1  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_ble1_e(SumoHSM * const me);
@@ -2051,6 +2056,22 @@ static QState SumoHSM_pre_strategy_XP1(SumoHSM * const me) {
     return status_;
 }
 /*${AOs::SumoHSM::SM::pre_strategy} */
+static QState SumoHSM_pre_strategy_STOP(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_AutoEnd_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_AutoEnd_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::pre_strategy} */
 static QState SumoHSM_pre_strategy(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
@@ -2410,6 +2431,22 @@ static QState SumoHSM_pre_strategy_rc_e(SumoHSM * const me) {
 }
 /*${AOs::SumoHSM::SM::pre_strategy_rc} */
 static QState SumoHSM_pre_strategy_rc_XP1(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_RC_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_RC_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::pre_strategy_rc} */
+static QState SumoHSM_pre_strategy_rc_STOP(SumoHSM * const me) {
     static struct {
         QMState const *target;
         QActionHandler act[3];
@@ -3051,12 +3088,22 @@ static QState SumoHSM_PreStrategy_x(SumoHSM * const me) {
 static QState SumoHSM_PreStrategy(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
+        /*${AOs::SumoHSM::SM::PreStrategy::STOP} */
+        case STOP_SIG: {
+            static QMTranActTable const tatbl_ = { /* tran-action table */
+                &SumoHSM_PreStrategy_s, /* target submachine */
+                {
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN_XP(me->sub_PreStrategy->STOP, &tatbl_);
+            break;
+        }
         default: {
             status_ = QM_SUPER_SUB(&me->sub_PreStrategy->super);
             break;
         }
     }
-    (void)me; /* unused parameter */
     return status_;
 }
 /*${AOs::SumoHSM::SM::PreStrategy::EP-EP0} */
