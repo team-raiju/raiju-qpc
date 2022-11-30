@@ -185,6 +185,17 @@ bool adc_line_is_white(line_sensor_t position){
 
 }
 
+uint16_t adc_line_get_all(){
+    uint16_t mask = 0;
+    for (int i = 0; i < NUM_OF_LINE_SENSORS; i++) {
+        if (adc_line_is_white(i)){
+            mask |= (1 << i);
+        }
+    }
+
+    return mask;
+}
+
 bool adc_line_none_white(){
     return !adc_line_is_white(LINE_FL) && !adc_line_is_white(LINE_FR) && !adc_line_is_white(LINE_BL) && !adc_line_is_white(LINE_BR);
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model version="5.2.2" links="1">
  <!--${qpc}-->
- <framework name="qpc" license="../../../qp-linux_7.1.2/qp/qpc/LICENSES/QM-EVAL-QPC.qlc"/>
+ <framework name="qpc"/>
  <!--${AOs}-->
  <package name="AOs" stereotype="0x02">
   <!--${AOs::SumoHSM}-->
@@ -256,8 +256,8 @@ parameters_set_strategy_led(&amp;parameters);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::BLE_DATA_REQUEST}-->
      <tran trig="BLE_DATA_REQUEST" target="../../22">
-      <tran_glyph conn="133,24,3,3,-5,-12,7">
-       <action box="-17,-15,18,2"/>
+      <tran_glyph conn="133,24,3,3,-9,-12,11">
+       <action box="-8,-8,18,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::BLE_DATA_UPDATE}-->
@@ -271,14 +271,20 @@ parameters_set_strategy_led(&amp;parameters);</action>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::LINE_CHANGED_BL, LINE_CHANGED_BR~}-->
-     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR, LINE_CHANGED_FL, LINE_CHANGED_FR">
+     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR, LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../22">
       <action brief="buzzer_on">if (adc_line_none_white()){
     buzzer_stop();
 } else {
     buzzer_start();
 }</action>
-      <tran_glyph conn="133,31,3,-1,16">
+      <tran_glyph conn="133,31,3,3,-12,-20,14">
        <action box="0,-2,23,4"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::RCWait::DIST_SENSOR_CHANGE}-->
+     <tran trig="DIST_SENSOR_CHANGE" target="../../22">
+      <tran_glyph conn="164,27,1,1,18,-12,-21">
+       <action box="0,-2,21,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="133,19,31,35">
@@ -380,13 +386,13 @@ radio_service_en_radio_data_sig(false);</entry>
         <action box="17,-3,6,2"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="35,87,3,-1,17,15">
+      <tran_glyph conn="35,90,3,-1,17,12">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../2">
-      <tran_glyph conn="71,56,1,3,31,-30,31">
+      <tran_glyph conn="71,56,1,3,31,-22,31">
        <action box="1,-3,33,2"/>
       </tran_glyph>
      </tran>
@@ -423,17 +429,23 @@ parameters_set_strategy_led(&amp;parameters);</action>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::LINE_CHANGED_BL, LINE_CHANGED_BR~}-->
-     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR, LINE_CHANGED_FL, LINE_CHANGED_FR">
+     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR, LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../21">
       <action brief="buzzer_on">if (adc_line_none_white()){
     buzzer_stop();
 } else {
     buzzer_start();
 }</action>
-      <tran_glyph conn="35,80,3,-1,16">
+      <tran_glyph conn="35,77,3,2,-25,-15">
        <action box="0,-2,34,6"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="35,48,36,41">
+     <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHANGE}-->
+     <tran trig="DIST_SENSOR_CHANGE" target="../../21">
+      <tran_glyph conn="35,83,3,2,-27,-21">
+       <action box="0,-2,22,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="35,48,36,44">
       <entry box="1,2,35,8"/>
      </state_glyph>
     </state>
@@ -939,7 +951,7 @@ buzzer_start();
 QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);</entry>
      <!--${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../4">
-      <tran_glyph conn="6,241,3,3,-4,-165,33">
+      <tran_glyph conn="6,241,3,3,-4,-154,33">
        <action box="1,-1,23,2"/>
       </tran_glyph>
      </tran>
@@ -1087,7 +1099,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);</action>
     <smstate name="ble3" submachine="../31">
      <!--${AOs::SumoHSM::SM::ble3::XP1}-->
      <xpseg xpref="../../31/0" target="../../2">
-      <xpseg_glyph conn="161,11,1,1,7,19,-4">
+      <xpseg_glyph conn="161,11,1,1,24,19,-21">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>

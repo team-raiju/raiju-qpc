@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define PARAMETERS_REPORT_SIZE  9
+#define PARAMETERS_REPORT_SIZE  10
 
 typedef struct sumo_parameters {
 

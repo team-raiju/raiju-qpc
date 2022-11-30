@@ -91,11 +91,21 @@ bool distance_is_active(dist_sensor_t position){
 
 }
 
+uint16_t distance_get_all_active(){
+    uint16_t mask = 0;
+    for (int i = 0; i < NUM_OF_DIST_SENSORS; i++) {
+        if (distance_is_active(i)){
+            mask |= (1 << i);
+        }
+    }
+
+    return mask;
+}
+
 bool distance_none_active() {
 
-    for (int i = 0; i < NUM_OF_DIST_SENSORS; i++)
-    {
-        if (dist_sensor_is_active[i]){
+    for (int i = 0; i < NUM_OF_DIST_SENSORS; i++) {
+        if (distance_is_active(i)){
             return false;
         }
     }
