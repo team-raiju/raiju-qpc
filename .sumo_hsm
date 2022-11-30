@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <session version="5.2.2">
+ <item name="license">/home/marco/qp-linux_7.1.2/qp/qpc/LICENSES/QM-EVAL-QPC.qlc</item>
  <group name="locked"/>
  <group name="settings">
   <item name="tabs">1</item>
@@ -8,13 +9,13 @@
   <item name="backups">0</item>
  </group>
  <group name="windows">
-  <item id="AOs::SumoHSM::SM">0,0,966,682,*</item>
-  <item id=".::src::sumo_hsm.c">0,0,966,709</item>
-  <item id=".::inc::bsp.h">-754,0,1080,507</item>
-  <item id=".::src::main.c">0,0,1080,534</item>
-  <item id="AOs::SumoHSM::SM::LineSubmachine">-314,0,640,480</item>
+  <item id="AOs::SumoHSM::SM">0,0,1024,775,*</item>
   <item id="AOs::SumoHSM::SM::PreStrategy">0,0,640,480</item>
-  <item id="AOs::SumoHSM::SM::BLESubmachine">-314,0,640,480</item>
+  <item id=".::src::sumo_hsm.c">0,0,966,709</item>
+  <item id=".::inc::bsp.h">-696,0,1080,507</item>
+  <item id=".::src::main.c">0,0,1080,534</item>
+  <item id="AOs::SumoHSM::SM::LineSubmachine">-256,32,640,480</item>
+  <item id="AOs::SumoHSM::SM::BLESubmachine">0,32,640,480</item>
  </group>
  <group name="search">
   <item name="options">2032128</item>

@@ -64,38 +64,38 @@ static movement_t type_of_movements[STRATEGY_MAX_STEPS] = {
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void reset_step() {
+void cust_strategy_reset() {
     current_step = 0;
 }
 
-void increase_step() {
+void cust_strategy_increase_step() {
     current_step++;
 }
 
-uint8_t get_num_of_steps(){
+uint8_t cust_strategy_num_steps(){
     return num_of_steps;
 }
 
-uint8_t get_current_step() {
+uint8_t cust_strategy_current_step() {
     return current_step;
 }
 
-movement_t get_movement_type(uint8_t step) {
+movement_t cust_strategy_move_type(uint8_t step) {
     return type_of_movements[step];
 }
 
-uint8_t get_front_movement(uint8_t step) {
+uint8_t cust_strategy_front(uint8_t step) {
     return front_movements_cm[step];
 }
 
-uint8_t get_back_movement(uint8_t step) {
+uint8_t cust_strategy_back(uint8_t step) {
     return back_movements_cm[step];
 }
 
-uint8_t get_right_movement(uint8_t step) {
+uint8_t cust_strategy_right(uint8_t step) {
     return right_movements[step];
 }
 
-uint8_t get_left_movement(uint8_t step) {
+uint8_t cust_strategy_left(uint8_t step) {
     return left_movements[step];
 }

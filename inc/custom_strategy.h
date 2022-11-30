@@ -12,15 +12,15 @@ typedef enum {
 } movement_t;
 
 
-void reset_step(); 
-void increase_step(); 
-uint8_t get_current_step();
-uint8_t get_num_of_steps();
-movement_t get_movement_type(uint8_t step);
-uint8_t get_front_movement(uint8_t step);
-uint8_t get_back_movement(uint8_t step); 
-uint8_t get_right_movement(uint8_t step); 
-uint8_t get_left_movement(uint8_t step); 
+void cust_strategy_reset(); 
+void cust_strategy_increase_step(); 
+uint8_t cust_strategy_current_step();
+uint8_t cust_strategy_num_steps();
+movement_t cust_strategy_move_type(uint8_t step);
+uint8_t cust_strategy_front(uint8_t step);
+uint8_t cust_strategy_back(uint8_t step); 
+uint8_t cust_strategy_right(uint8_t step); 
+uint8_t cust_strategy_left(uint8_t step); 
 
 
 #endif /* CUSTOM_STARTEGY_H */

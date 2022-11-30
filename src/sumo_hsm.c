@@ -3465,32 +3465,32 @@ static QState SumoHSM_PreStrategy_pre_strategy_1_sub1(SumoHSM * const me, QEvt c
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4} ..........................*/
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4} */
 static QState SumoHSM_PreStrategy_PreStrategy_4_e(SumoHSM * const me) {
-    reset_step();
-    uint8_t current_step = get_current_step();
-    movement_t first_step = get_movement_type(current_step);
+    cust_strategy_reset();
+    uint8_t current_step = cust_strategy_current_step();
+    movement_t first_step = cust_strategy_move_type(current_step);
     uint16_t movement_delay_ms;
     switch (first_step) {
         case FRONT: {
             drive(100,100);
-            uint16_t cm_to_move = get_front_movement(current_step);
+            uint16_t cm_to_move = cust_strategy_front(current_step);
             movement_delay_ms = get_time_to_move_ms(cm_to_move, 100, &parameters);
             break;
         }
         case BACK: {
             drive(-100,-100);
-            uint16_t cm_to_move = get_back_movement(current_step);
+            uint16_t cm_to_move = cust_strategy_back(current_step);
             movement_delay_ms = get_time_to_move_ms(cm_to_move, 100, &parameters);
             break;
         }
         case LEFT: {
             drive(-100,100);
-            uint16_t degrees_to_move = get_left_movement(current_step);
+            uint16_t degrees_to_move = cust_strategy_left(current_step);
             movement_delay_ms = get_time_to_turn_ms(degrees_to_move, 100, SIDE_LEFT, &parameters);
             break;
         }
         case RIGHT: {
             drive(100,-100);
-            uint16_t degrees_to_move = get_right_movement(current_step);
+            uint16_t degrees_to_move = cust_strategy_right(current_step);
             movement_delay_ms = get_time_to_turn_ms(degrees_to_move, 100, SIDE_RIGHT, &parameters);
             break;
         }
@@ -3510,32 +3510,32 @@ static QState SumoHSM_PreStrategy_PreStrategy_4(SumoHSM * const me, QEvt const *
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4::TIMEOUT} */
         case TIMEOUT_SIG: {
-            increase_step();
-            uint8_t current_step = get_current_step();
-            movement_t step = get_movement_type(current_step);
+            cust_strategy_increase_step();
+            uint8_t current_step = cust_strategy_current_step();
+            movement_t step = cust_strategy_move_type(current_step);
             uint16_t movement_delay_ms;
             switch (step) {
                 case FRONT: {
                     drive(100,100);
-                    uint16_t cm_to_move = get_front_movement(current_step);
+                    uint16_t cm_to_move = cust_strategy_front(current_step);
                     movement_delay_ms = get_time_to_move_ms(cm_to_move, 100, &parameters);
                     break;
                 }
                 case BACK: {
                     drive(-100,-100);
-                    uint16_t cm_to_move = get_back_movement(current_step);
+                    uint16_t cm_to_move = cust_strategy_back(current_step);
                     movement_delay_ms = get_time_to_move_ms(cm_to_move, 100, &parameters);
                     break;
                 }
                 case LEFT: {
                     drive(-100,100);
-                    uint16_t degrees_to_move = get_left_movement(current_step);
+                    uint16_t degrees_to_move = cust_strategy_left(current_step);
                     movement_delay_ms = get_time_to_turn_ms(degrees_to_move, 100, SIDE_LEFT, &parameters);
                     break;
                 }
                 case RIGHT: {
                     drive(100,-100);
-                    uint16_t degrees_to_move = get_right_movement(current_step);
+                    uint16_t degrees_to_move = cust_strategy_right(current_step);
                     movement_delay_ms = get_time_to_turn_ms(degrees_to_move, 100, SIDE_RIGHT, &parameters);
                     break;
                 }
@@ -3546,7 +3546,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_4(SumoHSM * const me, QEvt const *
                 }
             }
 
-            if (current_step >= get_num_of_steps() - 1){
+            if (current_step >= cust_strategy_num_steps() - 1){
                 QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
             } else {
                 QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
