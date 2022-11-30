@@ -17,7 +17,7 @@
  **************************************************************************************************/
 
 #define NUM_OF_STRATEGIES        3
-#define NUM_OF_PRE_STRATEGIES    4
+#define NUM_OF_PRE_STRATEGIES    5
 
 #define ARENA_LENGHT_CM          154.0f
 #define SUMO_LENGHT_CM           20.0f
@@ -227,6 +227,7 @@ void parameters_set_strategy_led(sumo_parameters_t *params){
         COLOR_BLUE,
         COLOR_ORANGE,
         COLOR_PINK,
+        COLOR_YELLOW,
     };
 
     if (params->strategy < NUM_OF_STRATEGIES){

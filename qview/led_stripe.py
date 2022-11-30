@@ -45,7 +45,7 @@ def led_stripe_set(qview_led_stripe, num, r, g, b):
     elif (color == '#7f007f'):
         color = '#c42be2'
     elif (color == '#7f7f00'):
-        color = '##ffff00'
+        color = '#ffff00'
     elif (color == '#64c800'):
         color = '#ff6f00'
     elif (color == '#3f3f3f'):
