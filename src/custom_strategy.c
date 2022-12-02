@@ -2,6 +2,7 @@
  * INCLUDES
  **************************************************************************************************/
 #include <string.h>
+#include <stdbool.h>
 #include "custom_strategy.h"
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -87,18 +88,29 @@ uint8_t cust_strategy_move(uint8_t step) {
     return cust_strategy_movements[step];
 }
 
-void cust_strategy_move_type_set(movement_t * movements_type, uint8_t size){
-    if (size > STRATEGY_MAX_STEPS){
+void cust_strategy_update_from_ble(uint8_t * last_data, uint8_t size){
+
+    if (size < STRATEGY_MAX_STEPS + 3){
         return;
     }
+    
+    bool update_type_list = last_data[1];
+    num_of_steps = last_data[2];
 
-    memcpy(type_of_movements, movements_type, size);
-}
-
-void cust_strategy_move_set(uint8_t * movements, uint8_t size){
-    if (size > STRATEGY_MAX_STEPS){
-        return;
+    if (update_type_list){
+        memset(type_of_movements, 0, sizeof(type_of_movements));
+    } else {
+        memset(cust_strategy_movements, 0, sizeof(cust_strategy_movements));
     }
 
-    memcpy(cust_strategy_movements, movements, size);
+    for (int i = 0; i < STRATEGY_MAX_STEPS; i++)
+    {
+        if (update_type_list){
+            type_of_movements[i] = last_data[3 + i];
+        } else {
+            cust_strategy_movements[i] = last_data[3 + i];
+        }
+    }
+    
+    
 }

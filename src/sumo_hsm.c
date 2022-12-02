@@ -1298,8 +1298,13 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         case BLE_DATA_UPDATE_SIG: {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
-            parameters_update_from_ble(&parameters, last_data._raw);
-            parameters_set_strategy_led(&parameters);
+
+            if (ble_service_last_packet_type() == BLE_UPDATE_PARAMETERS){
+                parameters_update_from_ble(&parameters, last_data._raw);
+                parameters_set_strategy_led(&parameters);
+            } else if (ble_service_last_packet_type() == BLE_UPDATE_CUST_STRATEGY){
+                cust_strategy_update_from_ble(last_data._raw, BLE_RECEIVE_PACKET_SIZE);
+            }
             status_ = QM_HANDLED();
             break;
         }

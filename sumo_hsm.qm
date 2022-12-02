@@ -429,8 +429,13 @@ parameters_set_strategy_led(&amp;parameters);</action>
      <tran trig="BLE_DATA_UPDATE">
       <action>ble_rcv_packet_t last_data;
 ble_service_last_packet(&amp;last_data);
-parameters_update_from_ble(&amp;parameters, last_data._raw);
-parameters_set_strategy_led(&amp;parameters);</action>
+
+if (ble_service_last_packet_type() == BLE_UPDATE_PARAMETERS){
+    parameters_update_from_ble(&amp;parameters, last_data._raw);
+    parameters_set_strategy_led(&amp;parameters);
+} else if (ble_service_last_packet_type() == BLE_UPDATE_CUST_STRATEGY){
+    cust_strategy_update_from_ble(last_data._raw, BLE_RECEIVE_PACKET_SIZE);
+}</action>
       <tran_glyph conn="35,69,3,-1,14">
        <action box="0,-2,20,2"/>
       </tran_glyph>
@@ -573,8 +578,8 @@ radio_service_en_radio_data_sig(true);</entry>
      <tran trig="CHANGE_STATE_EVT" target="../../1">
       <action>led_stripe_set_all_color(COLOR_PURPLE);
 ble_service_send_string(&quot;state:IDLE&quot;);</action>
-      <tran_glyph conn="259,13,0,1,-14,-153,18,-21">
-       <action box="-152,-17,17,2"/>
+      <tran_glyph conn="259,13,0,1,-9,-153,13,-21">
+       <action box="-151,-12,17,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::CalibWait::TIMEOUT}-->

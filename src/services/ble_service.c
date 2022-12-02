@@ -106,7 +106,9 @@ ble_data_header_t ble_service_last_packet_type(){
         return BLE_REQUEST_DATA;
     } else if (ble_last_data._raw[0] == 0xFE && ble_last_data._raw[1] == 0xEF){
         return BLE_CHANGE_STATE;
-    } 
+    } else if (ble_last_data._raw[0] == 0xFD){
+        return BLE_UPDATE_CUST_STRATEGY;
+    }
 
     return BLE_UPDATE_PARAMETERS;
 }

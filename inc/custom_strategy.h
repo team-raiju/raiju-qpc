@@ -18,9 +18,7 @@ uint8_t cust_strategy_current_step();
 uint8_t cust_strategy_num_steps();
 movement_t cust_strategy_move_type(uint8_t step);
 uint8_t cust_strategy_move(uint8_t step);
-void cust_strategy_move_type_set(movement_t * movements_type, uint8_t size);
-void cust_strategy_move_set(uint8_t * movements, uint8_t size);
-
+void cust_strategy_update_from_ble(uint8_t * last_data, uint8_t size);
 
 #endif /* CUSTOM_STARTEGY_H */
 
