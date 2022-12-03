@@ -4,28 +4,42 @@
  <framework name="qpc"/>
  <!--${AOs}-->
  <package name="AOs" stereotype="0x02">
+  <!--${AOs::SumoHSM_ctor}-->
+  <operation name="SumoHSM_ctor" type="void" visibility="0x00" properties="0x01">
+   <documentation>The Blinky &quot;constructor&quot; is provided outside of the Blinky class, so that it can be used independently from the class. This is part of the &quot;opaque pointer&quot; design idiom.</documentation>
+   <code>SumoHSM *me = (SumoHSM *)AO_SumoHSM;
+QMActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
+QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super.super, TIMEOUT_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;timeEvt_2, &amp;me-&gt;super.super, TIMEOUT_2_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;timeEvtBle, &amp;me-&gt;super.super, TIMEOUT_SEND_BLE_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;buzzerStopTimer, &amp;me-&gt;super.super, STOP_BUZZER_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;timerFailSafe, &amp;me-&gt;super.super, FAILSAFE_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;timeEvtStuck, &amp;me-&gt;super.super, STUCK_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;timeEvtStuckEnd, &amp;me-&gt;super.super, STUCK_END_SIG, 0U);
+me-&gt;ble_counter = 0;
+parameters_init(&amp;parameters);
+</code>
+  </operation>
   <!--${AOs::SumoHSM}-->
   <class name="SumoHSM" superclass="qpc::QMActive">
    <!--${AOs::SumoHSM::timeEvt}-->
    <attribute name="timeEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
-   <!--${AOs::SumoHSM::buzzerStopTimer}-->
-   <attribute name="buzzerStopTimer" type="QTimeEvt" visibility="0x02" properties="0x00"/>
-   <!--${AOs::SumoHSM::buzzerCount}-->
-   <attribute name="buzzerCount" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::timeEvt_2}-->
    <attribute name="timeEvt_2" type="QTimeEvt" visibility="0x02" properties="0x00"/>
-   <!--${AOs::SumoHSM::calib_time_1}-->
-   <attribute name="calib_time_1" type="uint32_t" visibility="0x02" properties="0x00"/>
-   <!--${AOs::SumoHSM::calib_time_2}-->
-   <attribute name="calib_time_2" type="uint32_t" visibility="0x02" properties="0x00"/>
-   <!--${AOs::SumoHSM::calib_status}-->
-   <attribute name="calib_status" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::timeEvtBle}-->
    <attribute name="timeEvtBle" type="QTimeEvt" visibility="0x02" properties="0x00"/>
-   <!--${AOs::SumoHSM::ble_counter}-->
-   <attribute name="ble_counter" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::timerFailSafe}-->
    <attribute name="timerFailSafe" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::buzzerStopTimer}-->
+   <attribute name="buzzerStopTimer" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::timeEvtStuck}-->
+   <attribute name="timeEvtStuck" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::timeEvtStuckEnd}-->
+   <attribute name="timeEvtStuckEnd" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::buzzerCount}-->
+   <attribute name="buzzerCount" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::ble_counter}-->
+   <attribute name="ble_counter" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::CheckDistAndMove}-->
    <operation name="CheckDistAndMove" type="uint8_t" visibility="0x02" properties="0x00">
     <code>(void)me;
@@ -34,13 +48,13 @@ if (distance_is_active(DIST_SENSOR_F)){
 } else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(100,100);
 } else if (distance_is_active(DIST_SENSOR_R)) {
-   drive(80,-80);
+    drive(80,-80);
 } else if (distance_is_active(DIST_SENSOR_FR)) {
-   drive(80,0);
+    drive(80,0);
 } else if (distance_is_active(DIST_SENSOR_FL)) {
-   drive(0,80);
+    drive(0,80);
 } else if (distance_is_active(DIST_SENSOR_L)) {
-   drive(-80,80);
+    drive(-80,80);
 } else {
    return false;
 }
@@ -55,15 +69,15 @@ if (distance_is_active(DIST_SENSOR_F)&amp;&amp;
 } else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(0,0);
 } else if (distance_is_active(DIST_SENSOR_R)) {
-   drive(80,-80);
+    drive(80,-80);
 } else if (distance_is_active(DIST_SENSOR_FR)) {
-   drive(30,-30);
+    drive(30,-30);
 } else if (distance_is_active(DIST_SENSOR_FL)) {
-   drive(-30,30);
+    drive(-30,30);
 } else if (distance_is_active(DIST_SENSOR_L)) {
-   drive(-80,80);
+    drive(-80,80);
 } else {
-   return false;
+    return false;
 }
 return true;</code>
    </operation>
@@ -315,6 +329,9 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);</entr
      <tran trig="DIST_SENSOR_CHANGE">
       <action brief="CheckSensors">if (!SumoHSM_CheckDistAndMove(me)){
    drive(parameters.star_speed, parameters.star_speed);
+    QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
+} else {
+    QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 3000);
 }</action>
       <tran_glyph conn="14,153,3,-1,20">
        <action box="0,-2,24,4"/>
@@ -329,7 +346,13 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);</entr
      </tran>
      <!--${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR">
-      <action>if (adc_line_is_white(LINE_BL)){
+      <action>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
+QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);
+// Enable all distance sensor because they might be disable
+// If the robot was in stuck event mode
+distance_service_set_mask(parameters.enabled_distance_sensors);
+
+if (adc_line_is_white(LINE_BL)){
     drive(100, 100);
 } else if (adc_line_is_white(LINE_BR)){
     drive(100, 100);
@@ -340,6 +363,26 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);</entr
 }</action>
       <tran_glyph conn="14,178,3,-1,14">
        <action box="0,-2,17,4"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StarStrategy::STUCK_END}-->
+     <tran trig="STUCK_END">
+      <action>distance_service_set_mask(parameters.enabled_distance_sensors);
+if (!SumoHSM_CheckDistAndMove(me)){
+   drive(parameters.star_speed, parameters.star_speed);
+}</action>
+      <tran_glyph conn="14,172,3,-1,12">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::StarStrategy::STUCK}-->
+     <tran trig="STUCK">
+      <action>distance_service_set_mask(0);
+drive(-100,-100);
+uint16_t move_time_ms = get_time_to_move_ms(40, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);</action>
+      <tran_glyph conn="14,166,3,-1,12">
+       <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="14,142,24,55">
@@ -567,7 +610,6 @@ drive(100, -100);</entry>
 drive(0,0);
 driving_disable();
 parameters_set_strategy_led(&amp;parameters);
-me-&gt;calib_status = 0;
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
@@ -1704,23 +1746,6 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtBle);</exit>
     <state_diagram size="397,259"/>
    </statechart>
   </class>
-  <!--${AOs::SumoHSM_ctor}-->
-  <operation name="SumoHSM_ctor" type="void" visibility="0x00" properties="0x01">
-   <documentation>The Blinky &quot;constructor&quot; is provided outside of the Blinky class, so that it can be used independently from the class. This is part of the &quot;opaque pointer&quot; design idiom.</documentation>
-   <code>SumoHSM *me = (SumoHSM *)AO_SumoHSM;
-QMActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;SumoHSM_initial));
-QTimeEvt_ctorX(&amp;me-&gt;timeEvt, &amp;me-&gt;super.super, TIMEOUT_SIG, 0U);
-QTimeEvt_ctorX(&amp;me-&gt;timeEvt_2, &amp;me-&gt;super.super, TIMEOUT_2_SIG, 0U);
-QTimeEvt_ctorX(&amp;me-&gt;timeEvtBle, &amp;me-&gt;super.super, TIMEOUT_SEND_BLE_SIG, 0U);
-QTimeEvt_ctorX(&amp;me-&gt;buzzerStopTimer, &amp;me-&gt;super.super, STOP_BUZZER_SIG, 0U);
-QTimeEvt_ctorX(&amp;me-&gt;timerFailSafe, &amp;me-&gt;super.super, FAILSAFE_SIG, 0U);
-me-&gt;calib_time_1 = 0;
-me-&gt;calib_time_2 = 0;
-me-&gt;calib_status = 0;
-me-&gt;ble_counter = 0;
-parameters_init(&amp;parameters);
-</code>
-  </operation>
  </package>
  <!--${.}-->
  <directory name=".">
@@ -1777,11 +1802,11 @@ void sumoHSM_update_qs_dict(){
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.buzzerStopTimer);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.buzzerCount);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvt_2);
-    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.calib_time_1);
-    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.calib_time_2);
-    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.calib_status);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvtBle);
     QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timerFailSafe);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvtStuck);
+    QS_OBJ_DICTIONARY(&amp;l_sumo_hsm.timeEvtStuckEnd);
+
 
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
@@ -1805,6 +1830,8 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_SEND_BLE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(FAILSAFE_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(STUCK_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(STUCK_END_SIG,  (void *)0);
 
 
 }
@@ -1895,6 +1922,8 @@ enum SumoHSMSignals {
     LOW_BATTERY_SIG,
     TIMEOUT_SEND_BLE_SIG,
     FAILSAFE_SIG,
+    STUCK_SIG,
+    STUCK_END_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 

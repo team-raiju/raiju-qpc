@@ -70,15 +70,14 @@ typedef struct {
 
 /* private: */
     QTimeEvt timeEvt;
-    QTimeEvt buzzerStopTimer;
-    uint8_t buzzerCount;
     QTimeEvt timeEvt_2;
-    uint32_t calib_time_1;
-    uint32_t calib_time_2;
-    uint8_t calib_status;
     QTimeEvt timeEvtBle;
-    uint8_t ble_counter;
     QTimeEvt timerFailSafe;
+    QTimeEvt buzzerStopTimer;
+    QTimeEvt timeEvtStuck;
+    QTimeEvt timeEvtStuckEnd;
+    uint8_t buzzerCount;
+    uint8_t ble_counter;
 
 /* private submachines */
     /* exit points for submachine ${AOs::SumoHSM::SM::LineSubmachine} */
@@ -611,9 +610,8 @@ void SumoHSM_ctor(void) {
     QTimeEvt_ctorX(&me->timeEvtBle, &me->super.super, TIMEOUT_SEND_BLE_SIG, 0U);
     QTimeEvt_ctorX(&me->buzzerStopTimer, &me->super.super, STOP_BUZZER_SIG, 0U);
     QTimeEvt_ctorX(&me->timerFailSafe, &me->super.super, FAILSAFE_SIG, 0U);
-    me->calib_time_1 = 0;
-    me->calib_time_2 = 0;
-    me->calib_status = 0;
+    QTimeEvt_ctorX(&me->timeEvtStuck, &me->super.super, STUCK_SIG, 0U);
+    QTimeEvt_ctorX(&me->timeEvtStuckEnd, &me->super.super, STUCK_END_SIG, 0U);
     me->ble_counter = 0;
     parameters_init(&parameters);
 
@@ -634,13 +632,13 @@ static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me) {
     } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
         drive(100,100);
     } else if (distance_is_active(DIST_SENSOR_R)) {
-       drive(80,-80);
+        drive(80,-80);
     } else if (distance_is_active(DIST_SENSOR_FR)) {
-       drive(80,0);
+        drive(80,0);
     } else if (distance_is_active(DIST_SENSOR_FL)) {
-       drive(0,80);
+        drive(0,80);
     } else if (distance_is_active(DIST_SENSOR_L)) {
-       drive(-80,80);
+        drive(-80,80);
     } else {
        return false;
     }
@@ -656,15 +654,15 @@ static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me) {
     } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
         drive(0,0);
     } else if (distance_is_active(DIST_SENSOR_R)) {
-       drive(80,-80);
+        drive(80,-80);
     } else if (distance_is_active(DIST_SENSOR_FR)) {
-       drive(30,-30);
+        drive(30,-30);
     } else if (distance_is_active(DIST_SENSOR_FL)) {
-       drive(-30,30);
+        drive(-30,30);
     } else if (distance_is_active(DIST_SENSOR_L)) {
-       drive(-80,80);
+        drive(-80,80);
     } else {
-       return false;
+        return false;
     }
     return true;
 }
@@ -1117,6 +1115,9 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
         case DIST_SENSOR_CHANGE_SIG: {
             if (!SumoHSM_CheckDistAndMove(me)){
                drive(parameters.star_speed, parameters.star_speed);
+                QTimeEvt_disarm(&me->timeEvtStuck);
+            } else {
+                QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 3000);
             }
             status_ = QM_HANDLED();
             break;
@@ -1130,6 +1131,12 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED_BL, LINE_CHANGED_BR} */
         case LINE_CHANGED_BL_SIG: /* intentionally fall through */
         case LINE_CHANGED_BR_SIG: {
+            QTimeEvt_disarm(&me->timeEvtStuck);
+            QTimeEvt_disarm(&me->timeEvtStuckEnd);
+            // Enable all distance sensor because they might be disable
+            // If the robot was in stuck event mode
+            distance_service_set_mask(parameters.enabled_distance_sensors);
+
             if (adc_line_is_white(LINE_BL)){
                 drive(100, 100);
             } else if (adc_line_is_white(LINE_BR)){
@@ -1139,6 +1146,24 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
                     drive(parameters.star_speed, parameters.star_speed);
                 }
             }
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StarStrategy::STUCK_END} */
+        case STUCK_END_SIG: {
+            distance_service_set_mask(parameters.enabled_distance_sensors);
+            if (!SumoHSM_CheckDistAndMove(me)){
+               drive(parameters.star_speed, parameters.star_speed);
+            }
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::StarStrategy::STUCK} */
+        case STUCK_SIG: {
+            distance_service_set_mask(0);
+            drive(-100,-100);
+            uint16_t move_time_ms = get_time_to_move_ms(40, 100, &parameters);
+            QTimeEvt_rearm(&me->timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);
             status_ = QM_HANDLED();
             break;
         }
@@ -1513,7 +1538,6 @@ static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     drive(0,0);
     driving_disable();
     parameters_set_strategy_led(&parameters);
-    me->calib_status = 0;
     QTimeEvt_disarm(&me->timeEvt_2);
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
@@ -3691,11 +3715,11 @@ void sumoHSM_update_qs_dict(){
     QS_OBJ_DICTIONARY(&l_sumo_hsm.buzzerStopTimer);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.buzzerCount);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvt_2);
-    QS_OBJ_DICTIONARY(&l_sumo_hsm.calib_time_1);
-    QS_OBJ_DICTIONARY(&l_sumo_hsm.calib_time_2);
-    QS_OBJ_DICTIONARY(&l_sumo_hsm.calib_status);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvtBle);
     QS_OBJ_DICTIONARY(&l_sumo_hsm.timerFailSafe);
+    QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvtStuck);
+    QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvtStuckEnd);
+
 
     QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
@@ -3719,6 +3743,8 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
     QS_SIG_DICTIONARY(TIMEOUT_SEND_BLE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(FAILSAFE_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(STUCK_SIG,  (void *)0);
+    QS_SIG_DICTIONARY(STUCK_END_SIG,  (void *)0);
 
 
 }

@@ -78,6 +78,8 @@ enum SumoHSMSignals {
     LOW_BATTERY_SIG,
     TIMEOUT_SEND_BLE_SIG,
     FAILSAFE_SIG,
+    STUCK_SIG,
+    STUCK_END_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 
