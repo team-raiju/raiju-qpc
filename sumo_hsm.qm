@@ -331,7 +331,7 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);</entr
    drive(parameters.star_speed, parameters.star_speed);
     QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 } else {
-    QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 3000);
+    QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout);
 }</action>
       <tran_glyph conn="14,153,3,-1,20">
        <action box="0,-2,24,4"/>

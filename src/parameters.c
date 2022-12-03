@@ -64,6 +64,7 @@ static sumo_parameters_t init_parameters_default = {
     .step_wait_time_ms = 1500,
     .step_advance_time_ms = 150,
     .time_ms_to_cross_at_60_vel = 600,
+    .is_stucked_timeout = 3000
 };
 
 /***************************************************************************************************
@@ -121,6 +122,7 @@ void parameters_init(sumo_parameters_t *params){
     read_and_update_parameter_16_bit(TURN_180_LEFT_TIME_ADDR, &temp_params.turn_180_left_time_ms);
     read_and_update_parameter_16_bit(TIME_MS_TO_CROSS_AT_60_ADDR, &temp_params.time_ms_to_cross_at_60_vel);
 
+    read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED, &temp_params.is_stucked_timeout);
 
     *params = temp_params;
 
@@ -192,7 +194,7 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * last_data){
     parameters_set_strategy(params, ble_packet.strategy);
     parameters_update_pre_strategy(params, ble_packet.preStrategy);
 
-    // Save in eeprom
+    // TODO: Save in eeprom
 }
 
 void parameters_set_strategy(sumo_parameters_t *params, uint8_t strategy){

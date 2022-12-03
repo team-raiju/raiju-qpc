@@ -35,6 +35,7 @@ typedef enum eeprom_addresses {
     TURN_180_LEFT_TIME_ADDR,
     TIME_MS_TO_CROSS_AT_60_ADDR,
 
+    TIMEOUT_IS_STUCKED,
 
 } eeprom_addresses_t;
 

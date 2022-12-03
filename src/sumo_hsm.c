@@ -1117,7 +1117,7 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
                drive(parameters.star_speed, parameters.star_speed);
                 QTimeEvt_disarm(&me->timeEvtStuck);
             } else {
-                QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 3000);
+                QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout);
             }
             status_ = QM_HANDLED();
             break;
