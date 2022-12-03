@@ -1,4 +1,4 @@
-include config.mk
+include config_substitute.mk
 
 PROJECT     := sumo_hsm
 

@@ -17,6 +17,7 @@ QTimeEvt_ctorX(&amp;me-&gt;timerFailSafe, &amp;me-&gt;super.super, FAILSAFE_SIG,
 QTimeEvt_ctorX(&amp;me-&gt;timeEvtStuck, &amp;me-&gt;super.super, STUCK_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvtStuckEnd, &amp;me-&gt;super.super, STUCK_END_SIG, 0U);
 me-&gt;ble_counter = 0;
+me-&gt;stuck_counter = 0;
 parameters_init(&amp;parameters);
 </code>
   </operation>
@@ -40,6 +41,8 @@ parameters_init(&amp;parameters);
    <attribute name="buzzerCount" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::ble_counter}-->
    <attribute name="ble_counter" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::stuck_counter}-->
+   <attribute name="stuck_counter" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::CheckDistAndMove}-->
    <operation name="CheckDistAndMove" type="uint8_t" visibility="0x02" properties="0x00">
     <code>(void)me;
@@ -328,10 +331,12 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);</entr
      <!--${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE}-->
      <tran trig="DIST_SENSOR_CHANGE">
       <action brief="CheckSensors">if (!SumoHSM_CheckDistAndMove(me)){
-   drive(parameters.star_speed, parameters.star_speed);
+    drive(parameters.star_speed, parameters.star_speed);
     QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 } else {
-    QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout);
+    if (me-&gt;stuck_counter &lt; 3){
+        QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout);
+    }
 }</action>
       <tran_glyph conn="14,153,3,-1,20">
        <action box="0,-2,24,4"/>
@@ -377,10 +382,22 @@ if (!SumoHSM_CheckDistAndMove(me)){
      </tran>
      <!--${AOs::SumoHSM::SM::StarStrategy::STUCK}-->
      <tran trig="STUCK">
-      <action>distance_service_set_mask(0);
-drive(-100,-100);
-uint16_t move_time_ms = get_time_to_move_ms(40, 100, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);</action>
+      <action>me-&gt;stuck_counter++;
+distance_service_set_mask(0);
+
+uint16_t move_time_ms;
+
+if (me-&gt;stuck_counter &gt; 2){
+    drive(-100,-20);
+    move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
+} else {
+    drive(-100,-100);
+    move_time_ms = get_time_to_move_ms(40, 100, &amp;parameters);
+}
+
+
+QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);
+</action>
       <tran_glyph conn="14,166,3,-1,12">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -397,7 +414,8 @@ board_led_on();
 ble_service_send_string(&quot;state:AUTO&quot;);
 parameters_set_strategy_led(&amp;parameters);
 start_module_check_event();
-radio_service_en_radio_data_sig(false);</entry>
+radio_service_en_radio_data_sig(false);
+me-&gt;stuck_counter = 0;</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
       <action>driving_enable();</action>

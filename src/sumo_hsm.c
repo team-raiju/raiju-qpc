@@ -78,6 +78,7 @@ typedef struct {
     QTimeEvt timeEvtStuckEnd;
     uint8_t buzzerCount;
     uint8_t ble_counter;
+    uint8_t stuck_counter;
 
 /* private submachines */
     /* exit points for submachine ${AOs::SumoHSM::SM::LineSubmachine} */
@@ -613,6 +614,7 @@ void SumoHSM_ctor(void) {
     QTimeEvt_ctorX(&me->timeEvtStuck, &me->super.super, STUCK_SIG, 0U);
     QTimeEvt_ctorX(&me->timeEvtStuckEnd, &me->super.super, STUCK_END_SIG, 0U);
     me->ble_counter = 0;
+    me->stuck_counter = 0;
     parameters_init(&parameters);
 
 }
@@ -1114,10 +1116,12 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::StarStrategy::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
             if (!SumoHSM_CheckDistAndMove(me)){
-               drive(parameters.star_speed, parameters.star_speed);
+                drive(parameters.star_speed, parameters.star_speed);
                 QTimeEvt_disarm(&me->timeEvtStuck);
             } else {
-                QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout);
+                if (me->stuck_counter < 3){
+                    QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout);
+                }
             }
             status_ = QM_HANDLED();
             break;
@@ -1160,10 +1164,22 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::StarStrategy::STUCK} */
         case STUCK_SIG: {
+            me->stuck_counter++;
             distance_service_set_mask(0);
-            drive(-100,-100);
-            uint16_t move_time_ms = get_time_to_move_ms(40, 100, &parameters);
+
+            uint16_t move_time_ms;
+
+            if (me->stuck_counter > 2){
+                drive(-100,-20);
+                move_time_ms = get_time_to_move_ms(60, 100, &parameters);
+            } else {
+                drive(-100,-100);
+                move_time_ms = get_time_to_move_ms(40, 100, &parameters);
+            }
+
+
             QTimeEvt_rearm(&me->timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);
+
             status_ = QM_HANDLED();
             break;
         }
@@ -1185,7 +1201,7 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     parameters_set_strategy_led(&parameters);
     start_module_check_event();
     radio_service_en_radio_data_sig(false);
-    (void)me; /* unused parameter */
+    me->stuck_counter = 0;
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
 /*${AOs::SumoHSM::SM::AutoWait} */
