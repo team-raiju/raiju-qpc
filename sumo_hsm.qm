@@ -1777,7 +1777,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_su~::TIMEOUT, LINE_CHANGED_FL, LINE_C~}-->
       <tran trig="TIMEOUT, LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../18">
        <tran_glyph conn="80,34,3,0,10,8">
-        <action box="0,-2,10,2"/>
+        <action box="0,-2,17,6"/>
        </tran_glyph>
       </tran>
       <state_glyph node="80,26,18,12">
@@ -1807,10 +1807,10 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_su~::TIMEOUT, LINE_CHANGED_FL, LINE_C~}-->
       <tran trig="TIMEOUT, LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../20">
        <tran_glyph conn="56,34,3,0,13,8">
-        <action box="0,-2,10,2"/>
+        <action box="0,-2,19,6"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="56,26,18,11">
+      <state_glyph node="56,26,18,12">
        <entry box="1,2,15,4"/>
       </state_glyph>
      </state>
@@ -1985,8 +1985,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
       <entry brief="arc_right">drive(100,50);
 uint16_t move_time_ms = get_time_to_move_ms(110, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../31">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6_su~::TIMEOUT, LINE_CHANGED_FL, LINE_C~}-->
+      <tran trig="TIMEOUT, LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../31">
        <tran_glyph conn="152,34,3,0,12,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
@@ -2000,8 +2000,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
       <entry brief="arc_left">drive(50,100);
 uint16_t move_time_ms = get_time_to_move_ms(110, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../32">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7_su~::TIMEOUT, LINE_CHANGED_FL, LINE_C~}-->
+      <tran trig="TIMEOUT, LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../32">
        <tran_glyph conn="176,34,3,0,11,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
