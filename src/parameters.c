@@ -17,7 +17,7 @@
  **************************************************************************************************/
 
 #define NUM_OF_STRATEGIES        3
-#define NUM_OF_PRE_STRATEGIES    5
+#define NUM_OF_PRE_STRATEGIES    8
 
 #define ARENA_LENGHT_CM          154.0f
 #define SUMO_LENGHT_CM           20.0f
@@ -227,10 +227,15 @@ void parameters_set_strategy_led(sumo_parameters_t *params){
 
     color_name_t pre_strategy_colors[NUM_OF_PRE_STRATEGIES] = {
         COLOR_GREEN,
+        COLOR_GREEN,
+        COLOR_BLUE,
         COLOR_BLUE,
         COLOR_ORANGE,
+        COLOR_ORANGE,
         COLOR_PINK,
-        COLOR_YELLOW,
+        COLOR_PINK,
+        // COLOR_YELLOW,
+        // COLOR_YELLOW,
     };
 
     if (params->strategy < NUM_OF_STRATEGIES){
@@ -239,8 +244,15 @@ void parameters_set_strategy_led(sumo_parameters_t *params){
         led_stripe_set_range_color(0, (LED_STRIPE_NUM / 2), COLOR_BLACK);
     }
 
+
+
     if (params->pre_strategy < NUM_OF_PRE_STRATEGIES){
-        led_stripe_set_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, pre_strategy_colors[params->pre_strategy]);
+        if (params->pre_strategy % 2 == 0){
+            led_stripe_set_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3), pre_strategy_colors[params->pre_strategy]);
+            led_stripe_set_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_BLACK);
+        } else {
+            led_stripe_set_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4), pre_strategy_colors[params->pre_strategy]);
+        }
     } else {
         led_stripe_set_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
     }
