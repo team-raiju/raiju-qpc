@@ -29,6 +29,8 @@ typedef struct sumo_parameters {
     uint16_t time_ms_to_cross_at_60_vel;
 
     uint16_t is_stucked_timeout;
+
+    uint8_t attack_when_near;
     
 
 } sumo_parameters_t;

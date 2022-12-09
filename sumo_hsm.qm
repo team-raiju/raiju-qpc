@@ -457,7 +457,8 @@ ble_service_send_string(&quot;state:AUTO&quot;);
 parameters_set_strategy_led(&amp;parameters);
 start_module_check_event();
 radio_service_en_radio_data_sig(false);
-me-&gt;stuck_counter = 0;</entry>
+me-&gt;stuck_counter = 0;
+parameters.attack_when_near = false;</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
       <action>driving_enable();</action>
@@ -524,7 +525,7 @@ me-&gt;stuck_counter = 0;</entry>
         <action box="15,-3,6,2"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="35,90,3,-1,17,12">
+      <tran_glyph conn="35,93,3,-1,17,9">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -583,12 +584,26 @@ if (ble_service_last_packet_type() == BLE_UPDATE_PARAMETERS){
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHANGE}-->
-     <tran trig="DIST_SENSOR_CHANGE" target="../../21">
-      <tran_glyph conn="35,83,3,2,-27,-21">
+     <tran trig="DIST_SENSOR_CHANGE">
+      <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[attack_when_near]}-->
+      <choice target="../../../12" cpref="../../../30/0">
+       <guard brief="attack_when_near">parameters.attack_when_near &amp;&amp; distance_is_active(DIST_SENSOR_F)</guard>
+       <choice_glyph conn="19,83,5,0,-4,30,12,4">
+        <action box="-3,2,14,2"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[not_attack_near]}-->
+      <choice target="../../../21">
+       <guard brief="not_attack_near">else</guard>
+       <choice_glyph conn="19,83,5,2,-11,-21">
+        <action box="-10,-4,17,2"/>
+       </choice_glyph>
+      </choice>
+      <tran_glyph conn="35,83,3,-1,-16">
        <action box="0,-2,22,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="35,48,36,44">
+     <state_glyph node="35,48,36,47">
       <entry box="1,2,35,8"/>
      </state_glyph>
     </state>
@@ -1145,10 +1160,11 @@ board_led_off();
 led_stripe_set_all_color(COLOR_BLACK);
 ble_service_send_string(&quot;state:AUTOEND&quot;);
 buzzer_start();
-QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);</entry>
+QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
+</entry>
      <!--${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../4">
-      <tran_glyph conn="6,241,3,3,-4,-154,33">
+      <tran_glyph conn="6,241,3,3,-4,-151,33">
        <action box="1,-1,23,2"/>
       </tran_glyph>
      </tran>

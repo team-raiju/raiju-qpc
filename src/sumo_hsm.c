@@ -1399,6 +1399,7 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     start_module_check_event();
     radio_service_en_radio_data_sig(false);
     me->stuck_counter = 0;
+    parameters.attack_when_near = false;
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
 /*${AOs::SumoHSM::SM::AutoWait} */
@@ -1631,17 +1632,35 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[2];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_BLESubmachine_s, /* target submachine */
-                {
-                    Q_ACTION_CAST(&SumoHSM_ble2_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN(&tatbl_);
+            /*${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[attack_when_near]} */
+            if (parameters.attack_when_near && distance_is_active(DIST_SENSOR_F)) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[3];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_PreStrategy_s, /* target submachine */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
+                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP0_ep), /* EP */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN_EP(&tatbl_);
+            }
+            /*${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[not_attack_near]} */
+            else {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[2];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_BLESubmachine_s, /* target submachine */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_ble2_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
             break;
         }
         default: {
@@ -2570,6 +2589,7 @@ static QState SumoHSM_AutoEnd_e(SumoHSM * const me) {
     ble_service_send_string("state:AUTOEND");
     buzzer_start();
     QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
+
     return QM_ENTRY(&SumoHSM_AutoEnd_s);
 }
 /*${AOs::SumoHSM::SM::AutoEnd} */
