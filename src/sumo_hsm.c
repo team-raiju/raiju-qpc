@@ -750,6 +750,7 @@ static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me) {
         drive(100,100);
     } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
         drive(0,0);
+        return false;
     } else if (distance_is_active(DIST_SENSOR_R)) {
         drive(80,-80);
     } else if (distance_is_active(DIST_SENSOR_FR)) {
