@@ -1663,11 +1663,18 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             }
             break;
         }
+        /*${AOs::SumoHSM::SM::AutoWait::BLE_ATTACK_NEAR} */
+        case BLE_ATTACK_NEAR_SIG: {
+            parameters.attack_when_near = 1;
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -4524,7 +4531,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(FAILSAFE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STUCK_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STUCK_END_SIG,  (void *)0);
-
+    QS_SIG_DICTIONARY(BLE_ATTACK_NEAR_SIG,  (void *)0);
 
 }
 

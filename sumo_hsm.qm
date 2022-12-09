@@ -603,6 +603,13 @@ if (ble_service_last_packet_type() == BLE_UPDATE_PARAMETERS){
        <action box="0,-2,22,2"/>
       </tran_glyph>
      </tran>
+     <!--${AOs::SumoHSM::SM::AutoWait::BLE_ATTACK_NEAR}-->
+     <tran trig="BLE_ATTACK_NEAR">
+      <action>parameters.attack_when_near = 1;</action>
+      <tran_glyph conn="35,86,3,-1,15">
+       <action box="0,-2,16,2"/>
+      </tran_glyph>
+     </tran>
      <state_glyph node="35,48,36,47">
       <entry box="1,2,35,8"/>
      </state_glyph>
@@ -2208,7 +2215,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(FAILSAFE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STUCK_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STUCK_END_SIG,  (void *)0);
-
+    QS_SIG_DICTIONARY(BLE_ATTACK_NEAR_SIG,  (void *)0);
 
 }
 
@@ -2300,6 +2307,7 @@ enum SumoHSMSignals {
     FAILSAFE_SIG,
     STUCK_SIG,
     STUCK_END_SIG,
+    BLE_ATTACK_NEAR_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 
