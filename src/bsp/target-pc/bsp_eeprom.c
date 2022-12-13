@@ -34,12 +34,18 @@ eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t* data){
     while (fgets(line, MAX_ADDRESSES, fp) != NULL){
         uint16_t read_address;
         uint16_t read_data;
-        sscanf(line, "%hu : %hu", &read_address, &read_data);
-        if (read_address == address){
-            *data = read_data;
-            printf("EEPROM read %hu from address %hu\r\n", *data, address);
-            fclose(fp);
-            return EEPROM_OK;
+        // printf("Line = %s\r\n", line);
+        // printf("Line[0] = %d, %c\r\n", (uint8_t) line[0], line[0]);
+        if (line[0] < '0' || line[0] > '9'){
+            printf("Error Line\r\n");
+        } else{
+            sscanf(line, "%hu : %hu", &read_address, &read_data);
+            if (read_address == address){
+                *data = read_data;
+                printf("EEPROM read %hu from address %hu\r\n", *data, address);
+                fclose(fp);
+                return EEPROM_OK;
+            }
         }
     }
 
