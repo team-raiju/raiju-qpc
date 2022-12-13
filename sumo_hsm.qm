@@ -722,7 +722,10 @@ if (!SumoHSM_CheckDistAndMove(me)){
      </tran>
      <!--${AOs::SumoHSM::SM::StepsStrategy::STUCK}-->
      <tran trig="STUCK">
-      <action>me-&gt;stuck_counter++;
+      <action>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
+QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);
+
+me-&gt;stuck_counter++;
 distance_service_set_mask(0);
 
 uint16_t move_time_ms;
@@ -1282,7 +1285,10 @@ if (adc_line_is_white(LINE_BL)){
      </tran>
      <!--${AOs::SumoHSM::SM::DefensiveStrateg~::STUCK}-->
      <tran trig="STUCK">
-      <action>me-&gt;stuck_counter++;
+      <action>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
+QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);
+
+me-&gt;stuck_counter++;
 distance_service_set_mask(0);
 
 uint16_t move_time_ms;
