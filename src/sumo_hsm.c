@@ -1814,6 +1814,9 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::StepsStrategy::STUCK} */
         case STUCK_SIG: {
+            QTimeEvt_disarm(&me->timeEvtStuck);
+            QTimeEvt_disarm(&me->timeEvtStuckEnd);
+
             me->stuck_counter++;
             distance_service_set_mask(0);
 
@@ -2758,6 +2761,9 @@ static QState SumoHSM_DefensiveStrategy(SumoHSM * const me, QEvt const * const e
         }
         /*${AOs::SumoHSM::SM::DefensiveStrateg~::STUCK} */
         case STUCK_SIG: {
+            QTimeEvt_disarm(&me->timeEvtStuck);
+            QTimeEvt_disarm(&me->timeEvtStuckEnd);
+
             me->stuck_counter++;
             distance_service_set_mask(0);
 
