@@ -38,7 +38,9 @@ class UARTDevice:
 
     @classmethod
     def uart_write(cls, value, options):
-        print('raw bytes:', value)
+        hex_string = "".join("0x%02x, " % b for b in value)
+        print ('received:  ' + hex_string)
+        print('received str: ', value)
         print('With options:', options)
         # print('Text value:', bytes(value).decode('utf-8'))
         cls.update_tx(value)
