@@ -140,9 +140,9 @@ static void line_sensor_update(uint32_t* adc_raw_data) {
 
 static void adc_data_interrupt(uint32_t* out_data){
 
-    uint32_t aux_readings[ADC_DMA_CHANNELS];
+    uint32_t aux_readings[ADC_DMA_CHANNELS] = {0};
 
-    for (uint16_t i = 0; i < ADC_DMA_HALF_BUFFER_SIZE; i += ADC_DMA_CHANNELS) {
+    for (uint16_t i = 0; i < (ADC_DMA_HALF_BUFFER_SIZE - 1); i += ADC_DMA_CHANNELS) {
         for (uint16_t j = 0; j < ADC_DMA_CHANNELS; j++) {
             aux_readings[j] += out_data[i + j];
         }
