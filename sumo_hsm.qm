@@ -107,7 +107,7 @@ parameters.pre_strategy = 0;
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 
-if (adc_get_low_battery()){
+if (adc_get_low_ctrl_bat()){
     led_stripe_set_all_color(COLOR_RED);
 }</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
@@ -174,7 +174,7 @@ if (me-&gt;buzzerCount &lt; 15){
     QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
     bsp_ble_start();
     adc_service_start_callback();
-    if (adc_get_low_battery()){
+    if (adc_get_low_ctrl_bat()){
         led_stripe_set_all_color(COLOR_RED);
     }
 }

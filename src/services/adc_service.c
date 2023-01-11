@@ -17,13 +17,19 @@
 
 #define WHITE_THRESHOLD           1000
 
-#define BATTERY_THRESHOLD_MV      14800.0
-#define BAT_VOLTAGE_DIV_R1        47.0
-#define BAT_VOLTAGE_DIV_R2        10.0
-#define BAT_VOLTAGE_MULTIPLIER   ((BAT_VOLTAGE_DIV_R1 + BAT_VOLTAGE_DIV_R2)/BAT_VOLTAGE_DIV_R2)
+/* Vcc ---- R1 --- R2 --- GND*/
+#define CTRL_BATTERY_THRESHOLD_MV      14800.0
+#define CTRL_BAT_VOLTAGE_DIV_R1        47.0
+#define CTRL_BAT_VOLTAGE_DIV_R2        10.0
+#define CTRL_BAT_VOLTAGE_MULTIPLIER   ((CTRL_BAT_VOLTAGE_DIV_R1 + CTRL_BAT_VOLTAGE_DIV_R2)/CTRL_BAT_VOLTAGE_DIV_R2)
+#define CTRL_BAT_POSITION_IN_ADC  0
 
 
-#define  BAT_POSITION_IN_ADC  0
+#define PWR_BATTERY_THRESHOLD_MV      38000.0
+#define PWR_BAT_VOLTAGE_DIV_R1        330.0
+#define PWR_BAT_VOLTAGE_DIV_R2        23.5
+#define PWR_BAT_VOLTAGE_MULTIPLIER   ((PWR_BAT_VOLTAGE_DIV_R1 + PWR_BAT_VOLTAGE_DIV_R2)/PWR_BAT_VOLTAGE_DIV_R2)
+#define PWR_BAT_POSITION_IN_ADC  7
 
 /***************************************************************************************************
  * LOCAL TYPEDEFS
@@ -41,10 +47,11 @@ typedef enum line_position_in_adc
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
-static void battery_value_update(uint16_t bat_raw_adc);
+static void ctrl_battery_value_update(uint16_t bat_raw_adc);
 static void adc_data_interrupt(uint32_t* out_data);
 static void gen_line_events(void);
-static void gen_battery_events(void);
+static void gen_ctrl_battery_events(void);
+static void gen_pwr_battery_events(void);
 
 /***************************************************************************************************
  * LOCAL VARIABLES
@@ -52,8 +59,10 @@ static void gen_battery_events(void);
 
 static volatile bool line_sensor_is_white[NUM_OF_LINE_SENSORS];
 static volatile bool line_sensor_is_white_last[NUM_OF_LINE_SENSORS];
-static volatile double battery_voltage_mv = 16000;
-static volatile double battery_voltage_mv_last = 16000;
+static volatile double ctrl_bat_voltage_mv = 16000;
+static volatile double ctrl_bat_voltage_mv_last = 16000;
+static volatile double pwr_bat_voltage_mv = 42000;
+static volatile double pwr_bat_voltage_mv_last = 42000;
 static uint8_t line_sensor_mask = 0xff;
 
 
@@ -65,20 +74,40 @@ static uint8_t line_sensor_mask = 0xff;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void battery_value_update(uint16_t bat_raw_adc){
+static void ctrl_battery_value_update(uint16_t bat_raw_adc){
 
     double measured_voltage = (bat_raw_adc / ADC_MAX_VALUE) * ADC_MAX_VOLTAGE_MV;
     
-    battery_voltage_mv = (measured_voltage * BAT_VOLTAGE_MULTIPLIER);
+    ctrl_bat_voltage_mv = (measured_voltage * CTRL_BAT_VOLTAGE_MULTIPLIER);
 
-    gen_battery_events();
+    gen_ctrl_battery_events();
 
-    battery_voltage_mv_last = battery_voltage_mv;
+    ctrl_bat_voltage_mv_last = ctrl_bat_voltage_mv;
 }
 
-static void gen_battery_events() {
+static void pwr_battery_value_update(uint16_t bat_raw_adc){
 
-    if (battery_voltage_mv_last > BATTERY_THRESHOLD_MV && battery_voltage_mv <= BATTERY_THRESHOLD_MV){
+    double measured_voltage = (bat_raw_adc / ADC_MAX_VALUE) * ADC_MAX_VOLTAGE_MV;
+    
+    pwr_bat_voltage_mv = (measured_voltage * PWR_BAT_VOLTAGE_MULTIPLIER);
+
+    gen_pwr_battery_events();
+
+    pwr_bat_voltage_mv_last = pwr_bat_voltage_mv;
+}
+
+static void gen_ctrl_battery_events() {
+
+    if (ctrl_bat_voltage_mv_last > CTRL_BATTERY_THRESHOLD_MV && ctrl_bat_voltage_mv <= CTRL_BATTERY_THRESHOLD_MV){
+        QEvt evt = {.sig = LOW_BATTERY_SIG};
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+}
+
+static void gen_pwr_battery_events() {
+
+    if (pwr_bat_voltage_mv_last > PWR_BATTERY_THRESHOLD_MV && pwr_bat_voltage_mv <= PWR_BATTERY_THRESHOLD_MV){
         QEvt evt = {.sig = LOW_BATTERY_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
@@ -154,7 +183,8 @@ static void adc_data_interrupt(uint32_t* out_data){
 
     line_sensor_update(aux_readings);
 
-    battery_value_update(aux_readings[BAT_POSITION_IN_ADC]);
+    ctrl_battery_value_update(aux_readings[CTRL_BAT_POSITION_IN_ADC]);
+    pwr_battery_value_update(aux_readings[PWR_BAT_POSITION_IN_ADC]);
 
 
 }
@@ -200,12 +230,20 @@ bool adc_line_none_white(){
     return !adc_line_is_white(LINE_FL) && !adc_line_is_white(LINE_FR) && !adc_line_is_white(LINE_BL) && !adc_line_is_white(LINE_BR);
 }
 
-bool adc_get_low_battery() {
-    return (battery_voltage_mv <= BATTERY_THRESHOLD_MV);
+bool adc_get_low_ctrl_bat() {
+    return (ctrl_bat_voltage_mv <= CTRL_BATTERY_THRESHOLD_MV);
 }
 
-double adc_get_battery_mv(){
-    return battery_voltage_mv;
+double adc_get_ctrl_bat_mv(){
+    return ctrl_bat_voltage_mv;
+}
+
+bool adc_get_low_pwr_bat() {
+    return (pwr_bat_voltage_mv <= PWR_BATTERY_THRESHOLD_MV);
+}
+
+double adc_get_pwr_bat_mv(){
+    return pwr_bat_voltage_mv;
 }
 
 void adc_line_set_mask(uint8_t mask) {

@@ -21,8 +21,10 @@ void adc_service_start_callback();
 bool adc_line_is_white(line_sensor_t position);
 uint16_t adc_line_get_all(void);
 bool adc_line_none_white();
-bool adc_get_low_battery(void);
-double adc_get_battery_mv(void);
+bool adc_get_low_ctrl_bat(void);
+double adc_get_ctrl_bat_mv(void);
+bool adc_get_low_pwr_bat(void);
+double adc_get_pwr_bat_mv(void);
 void adc_line_set_mask(uint8_t mask);
 
 #endif /* ADC_SERVICE_H */
