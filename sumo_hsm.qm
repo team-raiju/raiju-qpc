@@ -107,8 +107,10 @@ parameters.pre_strategy = 0;
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 
-if (adc_get_low_ctrl_bat()){
+if (adc_get_low_pwr_bat()){
     led_stripe_set_all_color(COLOR_RED);
+} else if (adc_get_low_ctrl_bat()){
+    led_stripe_set_all_color(COLOR_ORANGE);
 }</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
@@ -136,7 +138,12 @@ bsp_ble_start();</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::LOW_BATTERY}-->
      <tran trig="LOW_BATTERY">
-      <action brief="led_color_red">led_stripe_set_all_color(COLOR_RED);</action>
+      <action brief="led_color_red">if (adc_get_low_pwr_bat()){
+    led_stripe_set_all_color(COLOR_RED);
+} else if (adc_get_low_ctrl_bat()){
+    led_stripe_set_all_color(COLOR_ORANGE);
+}
+</action>
       <tran_glyph conn="41,20,3,-1,18">
        <action box="0,-2,22,4"/>
       </tran_glyph>

@@ -853,8 +853,10 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 
-    if (adc_get_low_ctrl_bat()){
+    if (adc_get_low_pwr_bat()){
         led_stripe_set_all_color(COLOR_RED);
+    } else if (adc_get_low_ctrl_bat()){
+        led_stripe_set_all_color(COLOR_ORANGE);
     }
     return QM_ENTRY(&SumoHSM_Idle_s);
 }
@@ -900,7 +902,12 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::Idle::LOW_BATTERY} */
         case LOW_BATTERY_SIG: {
-            led_stripe_set_all_color(COLOR_RED);
+            if (adc_get_low_pwr_bat()){
+                led_stripe_set_all_color(COLOR_RED);
+            } else if (adc_get_low_ctrl_bat()){
+                led_stripe_set_all_color(COLOR_ORANGE);
+            }
+
             status_ = QM_HANDLED();
             break;
         }

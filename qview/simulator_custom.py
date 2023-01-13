@@ -31,7 +31,8 @@ global canvas_dict
 global sumo_robot
 global key_pressed_dict
 global line_sensors
-global battery_full
+global ctrl_battery_full
+global pwr_battery_full
 
 QS_USER_DATA_ID = {
     "QS_LED_ID":    0,
@@ -47,13 +48,16 @@ def custom_menu_command():
                      "RESET POSITION 3", 
                      "RESET POSITION 4", 
                      "RESET POSITION 5", 
-                     "SET_LOW_BATTERY"]
+                     "SET_LOW_CTRL_BATTERY",
+                     "SET_LOW_PWR_BATTERY",]
     command_functions = [reset_position, 
                         reset_position_2, 
                         reset_position_3, 
                         reset_position_4, 
                         reset_position_5, 
-                        set_low_battery]
+                        set_low_ctrl_battery,
+                        set_low_pwr_battery,
+                        ]
 
     return (command_names, command_functions)
 
@@ -77,12 +81,14 @@ def custom_qview_init(qview):
     global key_pressed_dict, gamepad_dict
     global last_gamepad
     global last_line_sensor_state
-    global battery_full
+    global ctrl_battery_full
+    global pwr_battery_full
 
 
     last_gamepad = (0,0,0,0)
     last_line_sensor_state = (False, False, False, False)
-    battery_full = True
+    ctrl_battery_full = True
+    pwr_battery_full = True
 
 
     HOME_DIR = os.path.dirname(__file__)
@@ -295,7 +301,8 @@ def custom_on_poll():
         # Line Sensor simulator
         update_line_sensor(robot_pos_x, robot_pos_y,angle)
         if (line_sensor_changed()):
-            adc_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], line_sensors["BL"]["active"], line_sensors["BR"]["active"], battery_full)
+            adc_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], \
+            line_sensors["BL"]["active"], line_sensors["BR"]["active"], ctrl_battery_full, pwr_battery_full)
 
         # Distance Sensor simulator:
         sensor_active = is_mouse_direction(robot_pos_x, robot_pos_y, angle)
@@ -321,10 +328,10 @@ def stop_command(*args):
 def button_command(*args):
     qview_base.command(2, 0)
 
-def adc_command(line_fl, line_fr, line_bl, line_br, battery_full):
+def adc_command(line_fl, line_fr, line_bl, line_br, ctrl_battery_full, pwr_battery_full):
 
     set_line_code = (line_fl << 3) | (line_fr << 2) | (line_bl << 1) | (line_br) 
-    qview_base.command(3, set_line_code, battery_full)
+    qview_base.command(3, set_line_code, ctrl_battery_full, pwr_battery_full)
 
 def sensor_command(sensor):
     qview_base.command(4, sensor)
@@ -334,11 +341,6 @@ def send_radio_command_ch1_ch2(ch1, ch2):
 
 def send_radio_command_ch3_ch4_ch6(ch3, ch4, ch6):
     qview_base.command(8, ch3, ch4, ch6)
-
-def low_battery_command():
-    qview_base.command(10, 0)
-
-
 
 
 def send_ble_command(ble_bytearray):
@@ -444,11 +446,20 @@ def send_keyboard():
     send_radio_command_ch3_ch4_ch6(ch3, ch4, ch6)
 
 
-def set_low_battery():
-    global battery_full
-    battery_full = False
-    adc_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], line_sensors["BL"]["active"], line_sensors["BR"]["active"], battery_full)
+def set_low_ctrl_battery():
+    global ctrl_battery_full
+    ctrl_battery_full = not ctrl_battery_full
+    adc_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], \
+            line_sensors["BL"]["active"], line_sensors["BR"]["active"], \
+            ctrl_battery_full ,pwr_battery_full)
+    
 
+def set_low_pwr_battery():
+    global pwr_battery_full
+    pwr_battery_full = not pwr_battery_full
+    adc_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], \
+            line_sensors["BL"]["active"], line_sensors["BR"]["active"], \
+            ctrl_battery_full, pwr_battery_full)
 
 
 def set_position(x, y, theta):
