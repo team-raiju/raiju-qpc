@@ -4457,7 +4457,7 @@ static QState SumoHSM_BLESubmachine_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvtBle);
 
     me->ble_counter = 0;
-    QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);
+    QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 40, 0);
     return QM_ENTRY(&SumoHSM_BLESubmachine_s);
 }
 /*${AOs::SumoHSM::SM::BLESubmachine} */
@@ -4474,11 +4474,11 @@ static QState SumoHSM_BLESubmachine(SumoHSM * const me, QEvt const * const e) {
         case TIMEOUT_SEND_BLE_SIG: {
             if (me->ble_counter < (PARAMETERS_REPORT_SIZE - 1)){
                 parameters_report(parameters, me->ble_counter);
-                QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);
+                QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 40, 0);
                 me->ble_counter++;
             } else {
                 parameters_report(parameters, (PARAMETERS_REPORT_SIZE - 1));
-                QTimeEvt_armX(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 10, 0);
+                QTimeEvt_armX(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 40, 0);
             }
 
 
