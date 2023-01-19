@@ -65,6 +65,7 @@ static volatile double pwr_bat_voltage_mv = 42000;
 static volatile double pwr_bat_voltage_mv_last = 42000;
 static uint8_t line_sensor_mask = 0xff;
 
+static uint32_t last_adc_raw[NUM_OF_LINE_SENSORS];
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -153,10 +154,15 @@ static void gen_line_events(void){
 
 static void line_sensor_update(uint32_t* adc_raw_data) {
 
-    line_sensor_is_white[LINE_FR] = (adc_raw_data[LINE_POS_FR] < WHITE_THRESHOLD);
-    line_sensor_is_white[LINE_FL] = (adc_raw_data[LINE_POS_FL] < WHITE_THRESHOLD);
-    line_sensor_is_white[LINE_BR] = (adc_raw_data[LINE_POS_BR] < WHITE_THRESHOLD);
-    line_sensor_is_white[LINE_BL] = (adc_raw_data[LINE_POS_BL] < WHITE_THRESHOLD);
+    last_adc_raw[LINE_FR] = adc_raw_data[LINE_POS_FR];
+    last_adc_raw[LINE_FL] = adc_raw_data[LINE_POS_FL];
+    last_adc_raw[LINE_BR] = adc_raw_data[LINE_POS_BR];
+    last_adc_raw[LINE_BL] = adc_raw_data[LINE_POS_BL];
+
+    line_sensor_is_white[LINE_FR] = (last_adc_raw[LINE_POS_FR] < WHITE_THRESHOLD);
+    line_sensor_is_white[LINE_FL] = (last_adc_raw[LINE_POS_FL] < WHITE_THRESHOLD);
+    line_sensor_is_white[LINE_BR] = (last_adc_raw[LINE_POS_BR] < WHITE_THRESHOLD);
+    line_sensor_is_white[LINE_BL] = (last_adc_raw[LINE_POS_BL] < WHITE_THRESHOLD);
 
     gen_line_events();
 
