@@ -33,13 +33,13 @@ static volatile bool dist_sensor_is_active[NUM_OF_DIST_SENSORS];
 
 /* Adjust looking at  gpio_dist_sensor_pins in bsp_gpio.c*/
 static uint8_t sensor_num_to_position[NUM_OF_DIST_SENSORS] = {
-    DIST_SENSOR_DR, /* HARDWARE SILK DIST 1 */
-    DIST_SENSOR_R,  /* HARDWARE SILK DIST 2 */
-    DIST_SENSOR_FR, /* HARDWARE SILK DIST 3 */
-    DIST_SENSOR_F,  /* HARDWARE SILK DIST 6 */
-    DIST_SENSOR_FL, /* HARDWARE SILK DIST 7 */
-    DIST_SENSOR_L,  /* HARDWARE SILK DIST 8 */
-    DIST_SENSOR_DL, /* HARDWARE SILK DIST 9 */
+    DIST_SENSOR_F,  /* HARDWARE SILK DIST 1 */
+    DIST_SENSOR_DR, /* HARDWARE SILK DIST 2 */
+    DIST_SENSOR_FL, /* HARDWARE SILK DIST 3 */
+    DIST_SENSOR_R,  /* HARDWARE SILK DIST 6 */
+    DIST_SENSOR_FR, /* HARDWARE SILK DIST 7 */
+    DIST_SENSOR_DL, /* HARDWARE SILK DIST 8 */
+    DIST_SENSOR_L,  /* HARDWARE SILK DIST 9 */
 };
 
 /***************************************************************************************************
@@ -57,7 +57,9 @@ static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state){
     }
 
     dist_sensor_t sensor_position = sensor_num_to_position[sensor_num];
-    dist_sensor_is_active[sensor_position] = state;
+
+    /* Sensor is low when seeing */
+    dist_sensor_is_active[sensor_position] = !state;
 
     bool dist_sensor_enable = distance_sensor_mask & (1 << sensor_position);
     if (dist_sensor_enable){
