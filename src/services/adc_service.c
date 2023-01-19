@@ -159,10 +159,10 @@ static void line_sensor_update(uint32_t* adc_raw_data) {
     last_adc_raw[LINE_BR] = adc_raw_data[LINE_POS_BR];
     last_adc_raw[LINE_BL] = adc_raw_data[LINE_POS_BL];
 
-    line_sensor_is_white[LINE_FR] = (last_adc_raw[LINE_POS_FR] < WHITE_THRESHOLD);
-    line_sensor_is_white[LINE_FL] = (last_adc_raw[LINE_POS_FL] < WHITE_THRESHOLD);
-    line_sensor_is_white[LINE_BR] = (last_adc_raw[LINE_POS_BR] < WHITE_THRESHOLD);
-    line_sensor_is_white[LINE_BL] = (last_adc_raw[LINE_POS_BL] < WHITE_THRESHOLD);
+    line_sensor_is_white[LINE_FR] = (last_adc_raw[LINE_FR] < WHITE_THRESHOLD);
+    line_sensor_is_white[LINE_FL] = (last_adc_raw[LINE_FL] < WHITE_THRESHOLD);
+    line_sensor_is_white[LINE_BR] = (last_adc_raw[LINE_BR] < WHITE_THRESHOLD);
+    line_sensor_is_white[LINE_BL] = (last_adc_raw[LINE_BL] < WHITE_THRESHOLD);
 
     gen_line_events();
 
