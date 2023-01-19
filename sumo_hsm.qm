@@ -580,30 +580,26 @@ if (ble_service_last_packet_type() == BLE_UPDATE_PARAMETERS){
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::LINE_CHANGED_BL, LINE_CHANGED_BR~}-->
-     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR, LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../21">
+     <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR, LINE_CHANGED_FL, LINE_CHANGED_FR">
       <action brief="buzzer_on">if (adc_line_none_white()){
     buzzer_stop();
 } else {
     buzzer_start();
-}</action>
-      <tran_glyph conn="35,77,3,2,-25,-15">
+}
+
+parameters_report(parameters, 9);</action>
+      <tran_glyph conn="35,77,3,-1,19">
        <action box="0,-2,34,6"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHANGE}-->
      <tran trig="DIST_SENSOR_CHANGE">
+      <action>parameters_report(parameters, 9);</action>
       <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[attack_when_near]}-->
       <choice target="../../../12" cpref="../../../30/0">
        <guard brief="attack_when_near">parameters.attack_when_near &amp;&amp; distance_is_active(DIST_SENSOR_F)</guard>
        <choice_glyph conn="19,83,5,0,-4,30,12,4">
         <action box="-3,2,14,2"/>
-       </choice_glyph>
-      </choice>
-      <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[not_attack_near]}-->
-      <choice target="../../../21">
-       <guard brief="not_attack_near">else</guard>
-       <choice_glyph conn="19,83,5,2,-11,-21">
-        <action box="-10,-4,17,2"/>
        </choice_glyph>
       </choice>
       <tran_glyph conn="35,83,3,-1,-16">

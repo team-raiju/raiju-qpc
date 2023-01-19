@@ -1619,26 +1619,19 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         case LINE_CHANGED_BR_SIG: /* intentionally fall through */
         case LINE_CHANGED_FL_SIG: /* intentionally fall through */
         case LINE_CHANGED_FR_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[2];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_BLESubmachine_s, /* target submachine */
-                {
-                    Q_ACTION_CAST(&SumoHSM_ble2_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
             if (adc_line_none_white()){
                 buzzer_stop();
             } else {
                 buzzer_start();
             }
-            status_ = QM_TRAN(&tatbl_);
+
+            parameters_report(parameters, 9);
+            status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
+            parameters_report(parameters, 9);
             /*${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[attack_when_near]} */
             if (parameters.attack_when_near && distance_is_active(DIST_SENSOR_F)) {
                 static struct {
@@ -1654,19 +1647,8 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
                 };
                 status_ = QM_TRAN_EP(&tatbl_);
             }
-            /*${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[not_attack_near]} */
             else {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[2];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_BLESubmachine_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_ble2_e), /* entry */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN(&tatbl_);
+                status_ = QM_UNHANDLED();
             }
             break;
         }
