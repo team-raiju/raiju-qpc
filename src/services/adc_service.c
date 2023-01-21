@@ -65,7 +65,7 @@ static volatile double pwr_bat_voltage_mv = 42000;
 static volatile double pwr_bat_voltage_mv_last = 42000;
 static uint8_t line_sensor_mask = 0xff;
 
-static uint32_t last_adc_raw[NUM_OF_LINE_SENSORS];
+static volatile uint32_t last_adc_raw[NUM_OF_LINE_SENSORS];
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -254,4 +254,15 @@ double adc_get_pwr_bat_mv(){
 
 void adc_line_set_mask(uint8_t mask) {
     line_sensor_mask = mask;
+}
+
+
+uint32_t adc_get_raw_line(line_sensor_t position){
+
+    if (position > NUM_OF_LINE_SENSORS){
+        return 0;
+    }
+
+    return last_adc_raw[position];
+
 }

@@ -416,6 +416,15 @@ static QMState const SumoHSM_CalibStop_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
+static QState SumoHSM_CalibSensors  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_CalibSensors_e(SumoHSM * const me);
+static QMState const SumoHSM_CalibSensors_s = {
+    QM_STATE_NULL, /* superstate (top) */
+    Q_STATE_CAST(&SumoHSM_CalibSensors),
+    Q_ACTION_CAST(&SumoHSM_CalibSensors_e),
+    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_NULL  /* no initial tran. */
+};
 
 /* submachine ${AOs::SumoHSM::SM::LineSubmachine} */
 static QState SumoHSM_LineSubmachine  (SumoHSM * const me, QEvt const * const e);
@@ -811,6 +820,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_CalibStarGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_CalibeStarTurn);
     QS_FUN_DICTIONARY(&SumoHSM_CalibStop);
+    QS_FUN_DICTIONARY(&SumoHSM_CalibSensors);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurnLeft);
@@ -2028,6 +2038,21 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN(&tatbl_);
                 }
+                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[calib_mode_4]} */
+                else if (parameters.calib_mode == 4) {
+                    static struct {
+                        QMState const *target;
+                        QActionHandler act[3];
+                    } const tatbl_ = { /* tran-action table */
+                        &SumoHSM_CalibSensors_s, /* target state */
+                        {
+                            Q_ACTION_CAST(&SumoHSM_CalibWait_x), /* exit */
+                            Q_ACTION_CAST(&SumoHSM_CalibSensors_e), /* entry */
+                            Q_ACTION_NULL /* zero terminator */
+                        }
+                    };
+                    status_ = QM_TRAN(&tatbl_);
+                }
                 else {
                     status_ = QM_UNHANDLED();
                 }
@@ -2073,6 +2098,15 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                         parameters.star_speed = 30;
                     }
                     BSP_eeprom_write(STAR_SPEED_ADDR, parameters.star_speed);
+                    break;
+                }
+
+                case 4: {
+                    // Not aplicable
+                    break;
+                }
+
+                default: {
                     break;
                 }
 
@@ -3235,6 +3269,53 @@ static QState SumoHSM_CalibStop(SumoHSM * const me, QEvt const * const e) {
         }
     }
     (void)me; /* unused parameter */
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::CalibSensors} ........................................*/
+/*${AOs::SumoHSM::SM::CalibSensors} */
+static QState SumoHSM_CalibSensors_e(SumoHSM * const me) {
+    QTimeEvt_rearm(&me->timeEvt,  BSP_TICKS_PER_MILISSEC * 100);
+    return QM_ENTRY(&SumoHSM_CalibSensors_s);
+}
+/*${AOs::SumoHSM::SM::CalibSensors} */
+static QState SumoHSM_CalibSensors(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::CalibSensors::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            QTimeEvt_rearm(&me->timeEvt_2,  BSP_TICKS_PER_MILISSEC * 100);
+            report_raw_line_data_ble(true);
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibSensors::CHANGE_STATE_EVT} */
+        case CHANGE_STATE_EVT_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibStop_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibSensors::TIMEOUT_2} */
+        case TIMEOUT_2_SIG: {
+            QTimeEvt_rearm(&me->timeEvt,  BSP_TICKS_PER_MILISSEC * 100);
+            report_raw_line_data_ble(false);
+            status_ = QM_HANDLED();
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
     return status_;
 }
 

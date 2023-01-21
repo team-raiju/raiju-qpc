@@ -26,5 +26,6 @@ double adc_get_ctrl_bat_mv(void);
 bool adc_get_low_pwr_bat(void);
 double adc_get_pwr_bat_mv(void);
 void adc_line_set_mask(uint8_t mask);
+uint32_t adc_get_raw_line(line_sensor_t position);
 
 #endif /* ADC_SERVICE_H */

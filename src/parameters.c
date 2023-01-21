@@ -18,7 +18,7 @@
 
 #define NUM_OF_STRATEGIES        3
 #define NUM_OF_PRE_STRATEGIES    9
-#define NUM_OF_CALIB_MODES       4
+#define NUM_OF_CALIB_MODES       5
 
 #define ARENA_LENGHT_CM          154.0f
 #define SUMO_LENGHT_CM           20.0f
@@ -69,7 +69,7 @@ static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
     COLOR_BLUE,
     COLOR_ORANGE,
     COLOR_PINK,
-    // COLOR_YELLOW,
+    COLOR_YELLOW,
 };
 
 static const char * strategy_names[] = {
@@ -82,7 +82,7 @@ static const char * strategy_names[] = {
 static sumo_parameters_t init_parameters_default = {
     .strategy = 0,
     .pre_strategy = 0,
-    .calib_mode = 0,
+    .calib_mode = 4,
     .enabled_distance_sensors = 0b111111111,
     .enabled_line_sensors = 0b001111,
     .star_speed = 60,
@@ -206,6 +206,25 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
     }
 
     ble_service_send_data((uint8_t *)buffer, 20);
+
+}
+
+void report_raw_line_data_ble(bool front) {
+    char buffer[20] = {0};
+
+    if (front) {
+        uint32_t line_fr = adc_get_raw_line(LINE_FR);
+        uint32_t line_fl = adc_get_raw_line(LINE_FL);
+        snprintf(buffer, 20, "linef:%lu:%lu", line_fl, line_fr);
+
+    } else {
+        uint32_t line_br = adc_get_raw_line(LINE_BR);
+        uint32_t line_bl = adc_get_raw_line(LINE_BL);
+        snprintf(buffer, 20, "lineb:%lu:%lu", line_br, line_bl);
+    }
+
+    ble_service_send_data((uint8_t *)buffer, 20);
+
 
 }
 
