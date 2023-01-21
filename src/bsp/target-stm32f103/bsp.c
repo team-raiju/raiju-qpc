@@ -74,6 +74,8 @@ void BSP_init(void)   {
     MX_GPIO_Init();
     MX_DMA_Init();
 
+    HAL_Delay(10);
+
 }
 
 

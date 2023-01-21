@@ -700,6 +700,7 @@ QActive * const AO_SumoHSM = &l_sumo_hsm.super.super;
 /*${AOs::SumoHSM_ctor} .....................................................*/
 void SumoHSM_ctor(void) {
     SumoHSM *me = (SumoHSM *)AO_SumoHSM;
+    parameters_init(&parameters);
     QMActive_ctor(&me->super, Q_STATE_CAST(&SumoHSM_initial));
     QTimeEvt_ctorX(&me->timeEvt, &me->super.super, TIMEOUT_SIG, 0U);
     QTimeEvt_ctorX(&me->timeEvt_2, &me->super.super, TIMEOUT_2_SIG, 0U);
@@ -710,7 +711,6 @@ void SumoHSM_ctor(void) {
     QTimeEvt_ctorX(&me->timeEvtStuckEnd, &me->super.super, STUCK_END_SIG, 0U);
     me->ble_counter = 0;
     me->stuck_counter = 0;
-    parameters_init(&parameters);
 
 }
 /*$enddef${AOs::SumoHSM_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
