@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <session version="5.2.2">
- <item name="license">/home/marco/qp-linux_7.1.2/qp/qpc/LICENSES/QM-EVAL-QPC.qlc</item>
  <group name="locked"/>
  <group name="settings">
   <item name="tabs">1</item>
@@ -9,13 +8,12 @@
   <item name="backups">0</item>
  </group>
  <group name="windows">
-  <item id="AOs::SumoHSM::SM">-734,0,1024,475</item>
-  <item id="AOs::SumoHSM::SM::PreStrategy">0,0,930,475,*</item>
+  <item id="AOs::SumoHSM::SM">0,0,975,587,*</item>
+  <item id="AOs::SumoHSM::SM::PreStrategy">0,0,930,475</item>
   <item id=".::src::sumo_hsm.c">0,0,966,709</item>
-  <item id=".::inc::bsp.h">-790,0,1080,507</item>
+  <item id=".::inc::bsp.h">-745,0,1080,507</item>
   <item id=".::src::main.c">0,0,1080,534</item>
-  <item id="AOs::SumoHSM::SM::LineSubmachine">-350,0,640,480</item>
-  <item id="AOs::SumoHSM::SM::BLESubmachine">-350,0,640,480</item>
+  <item id="AOs::SumoHSM::SM::LineSubmachine">-640,0,975,587</item>
  </group>
  <group name="search">
   <item name="options">2032128</item>
