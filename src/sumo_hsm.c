@@ -700,7 +700,6 @@ QActive * const AO_SumoHSM = &l_sumo_hsm.super.super;
 /*${AOs::SumoHSM_ctor} .....................................................*/
 void SumoHSM_ctor(void) {
     SumoHSM *me = (SumoHSM *)AO_SumoHSM;
-    parameters_init(&parameters);
     QMActive_ctor(&me->super, Q_STATE_CAST(&SumoHSM_initial));
     QTimeEvt_ctorX(&me->timeEvt, &me->super.super, TIMEOUT_SIG, 0U);
     QTimeEvt_ctorX(&me->timeEvt_2, &me->super.super, TIMEOUT_2_SIG, 0U);
@@ -711,6 +710,7 @@ void SumoHSM_ctor(void) {
     QTimeEvt_ctorX(&me->timeEvtStuckEnd, &me->super.super, STUCK_END_SIG, 0U);
     me->ble_counter = 0;
     me->stuck_counter = 0;
+    parameters_init(&parameters);
 
 }
 /*$enddef${AOs::SumoHSM_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
@@ -976,6 +976,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
 static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     board_led_off();
     parameters_set_strategy_led(&parameters);
+    parameters_set_pre_strategy_led(&parameters);
     drive(0,0);
     driving_disable();
     start_module_disable_event();
@@ -1183,7 +1184,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::RCWait::CHANGE_PRE_STRATEGY_EVT} */
         case CHANGE_PRE_STRATEGY_EVT_SIG: {
             parameters_update_pre_strategy(&parameters, (parameters.pre_strategy + 1));
-            parameters_set_strategy_led(&parameters);
+            parameters_set_pre_strategy_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
@@ -1209,6 +1210,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
             ble_service_last_packet(&last_data);
             parameters_update_from_ble(&parameters, last_data._raw);
             parameters_set_strategy_led(&parameters);
+            parameters_set_pre_strategy_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
@@ -1403,6 +1405,7 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     board_led_on();
     ble_service_send_string("state:AUTO");
     parameters_set_strategy_led(&parameters);
+    parameters_set_pre_strategy_led(&parameters);
     start_module_check_event();
     radio_service_en_radio_data_sig(false);
     me->stuck_counter = 0;
@@ -1581,7 +1584,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::AutoWait::CHANGE_PRE_STRATEGY_EVT} */
         case CHANGE_PRE_STRATEGY_EVT_SIG: {
             parameters_update_pre_strategy(&parameters, (parameters.pre_strategy + 1));
-            parameters_set_strategy_led(&parameters);
+            parameters_set_pre_strategy_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
@@ -1608,6 +1611,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             if (ble_service_last_packet_type() == BLE_UPDATE_PARAMETERS){
                 parameters_update_from_ble(&parameters, last_data._raw);
                 parameters_set_strategy_led(&parameters);
+                parameters_set_pre_strategy_led(&parameters);
             } else if (ble_service_last_packet_type() == BLE_UPDATE_CUST_STRATEGY){
                 cust_strategy_update_from_ble(last_data._raw, BLE_RECEIVE_PACKET_SIZE);
             }
@@ -1875,7 +1879,7 @@ static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     board_led_on();
     drive(0,0);
     driving_disable();
-    parameters_set_strategy_led(&parameters);
+    parameters_set_calib_mode_led(&parameters);
     QTimeEvt_disarm(&me->timeEvt_2);
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
@@ -1929,8 +1933,8 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::CalibWait::CHANGE_STRATEGY_EVT} */
         case CHANGE_STRATEGY_EVT_SIG: {
-            parameters_set_strategy(&parameters, (parameters.strategy + 1));
-            parameters_set_strategy_led(&parameters);
+            parameters_update_calib_mode(&parameters, (parameters.calib_mode + 1));
+            parameters_set_calib_mode_led(&parameters);
             status_ = QM_HANDLED();
             break;
         }
@@ -1964,8 +1968,8 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
             if ((abs(radio_service_get_channel(RADIO_CH1)) > 70) || (abs(radio_service_get_channel(RADIO_CH2)) > 70)) {
                 driving_enable();
                 led_stripe_set_all_color(COLOR_RED);
-                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[strat_0]} */
-                if (parameters.strategy == 0) {
+                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[calib_mode_0]} */
+                if (parameters.calib_mode == 0) {
                     static struct {
                         QMState const *target;
                         QActionHandler act[3];
@@ -1979,8 +1983,8 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[strat_1]} */
-                else if (parameters.strategy == 1) {
+                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[calib_mode_1]} */
+                else if (parameters.calib_mode == 1) {
                     static struct {
                         QMState const *target;
                         QActionHandler act[3];
@@ -1994,8 +1998,8 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[strat_2]} */
-                else if (parameters.strategy == 2) {
+                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[calib_mode_2]} */
+                else if (parameters.calib_mode == 2) {
                     static struct {
                         QMState const *target;
                         QActionHandler act[3];
@@ -2009,8 +2013,8 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[strat_3]} */
-                else if (parameters.strategy == 3) {
+                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[calib_mode_3]} */
+                else if (parameters.calib_mode == 3) {
                     static struct {
                         QMState const *target;
                         QActionHandler act[3];
@@ -2038,7 +2042,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
             buzzer_start();
             QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
 
-            switch (parameters.strategy)
+            switch (parameters.calib_mode)
             {
                 case 0: {
                     parameters.turn_180_right_time_ms += 10;
@@ -3157,8 +3161,8 @@ static QState SumoHSM_CalibStarGoBack(SumoHSM * const me, QEvt const * const e) 
 /*${AOs::SumoHSM::SM::CalibeStarTurn} */
 static QState SumoHSM_CalibeStarTurn_e(SumoHSM * const me) {
     drive(parameters.turn_speed, -parameters.turn_speed);
-    uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_right_time_ms * (0.6);
-    QTimeEvt_rearm(&me->timeEvt, turn_time);
+    uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.turn_speed, SIDE_RIGHT, &parameters);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
     return QM_ENTRY(&SumoHSM_CalibeStarTurn_s);
 }
 /*${AOs::SumoHSM::SM::CalibeStarTurn} */

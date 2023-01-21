@@ -18,6 +18,7 @@
 
 #define NUM_OF_STRATEGIES        3
 #define NUM_OF_PRE_STRATEGIES    9
+#define NUM_OF_CALIB_MODES       4
 
 #define ARENA_LENGHT_CM          154.0f
 #define SUMO_LENGHT_CM           20.0f
@@ -42,6 +43,35 @@ static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t * upda
  * LOCAL VARIABLES
  **************************************************************************************************/
 
+static color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
+    COLOR_GREEN,
+    COLOR_BLUE,
+    COLOR_ORANGE,
+    // COLOR_PINK,
+    // COLOR_YELLOW,
+};
+
+static color_name_t pre_strategy_colors[NUM_OF_PRE_STRATEGIES] = {
+    COLOR_GREEN,
+    COLOR_GREEN,
+    COLOR_BLUE,
+    COLOR_BLUE,
+    COLOR_ORANGE,
+    COLOR_ORANGE,
+    COLOR_PINK,
+    COLOR_PINK,
+    COLOR_YELLOW,
+    // COLOR_YELLOW,
+};
+
+static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
+    COLOR_GREEN,
+    COLOR_BLUE,
+    COLOR_ORANGE,
+    COLOR_PINK,
+    // COLOR_YELLOW,
+};
+
 static const char * strategy_names[] = {
     "star",
     "small steps",
@@ -52,6 +82,7 @@ static const char * strategy_names[] = {
 static sumo_parameters_t init_parameters_default = {
     .strategy = 0,
     .pre_strategy = 0,
+    .calib_mode = 0,
     .enabled_distance_sensors = 0b111111111,
     .enabled_line_sensors = 0b001111,
     .star_speed = 60,
@@ -218,26 +249,18 @@ void parameters_update_pre_strategy(sumo_parameters_t *params, uint8_t pre_strat
 
 }
 
+void parameters_update_calib_mode(sumo_parameters_t *params, uint8_t calib_mode){
+
+    if (calib_mode >= NUM_OF_CALIB_MODES){
+        calib_mode = 0;
+    }
+
+    params->calib_mode = calib_mode;
+
+}
+
+
 void parameters_set_strategy_led(sumo_parameters_t *params){
-
-    color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
-        COLOR_GREEN,
-        COLOR_BLUE,
-        COLOR_ORANGE,
-    };
-
-    color_name_t pre_strategy_colors[NUM_OF_PRE_STRATEGIES] = {
-        COLOR_GREEN,
-        COLOR_GREEN,
-        COLOR_BLUE,
-        COLOR_BLUE,
-        COLOR_ORANGE,
-        COLOR_ORANGE,
-        COLOR_PINK,
-        COLOR_PINK,
-        COLOR_YELLOW,
-        // COLOR_YELLOW,
-    };
 
     if (params->strategy < NUM_OF_STRATEGIES){
         led_stripe_set_range_color(0, (LED_STRIPE_NUM / 2), strategy_colors[params->strategy]);
@@ -245,7 +268,9 @@ void parameters_set_strategy_led(sumo_parameters_t *params){
         led_stripe_set_range_color(0, (LED_STRIPE_NUM / 2), COLOR_BLACK);
     }
 
+}
 
+void parameters_set_pre_strategy_led(sumo_parameters_t *params){
 
     if (params->pre_strategy < NUM_OF_PRE_STRATEGIES){
         if (params->pre_strategy % 2 == 0){
@@ -260,6 +285,15 @@ void parameters_set_strategy_led(sumo_parameters_t *params){
 
 }
 
+void parameters_set_calib_mode_led(sumo_parameters_t *params){
+
+    if (params->calib_mode < NUM_OF_CALIB_MODES){
+        led_stripe_set_range_color(0, (LED_STRIPE_NUM), calib_mode_colors[params->calib_mode]);
+    } else {
+        led_stripe_set_range_color(0, (LED_STRIPE_NUM / 2), COLOR_BLACK);
+    }
+
+}
 
 uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, sumo_parameters_t *params) {
 
