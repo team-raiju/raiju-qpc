@@ -125,7 +125,7 @@ bsp_ble_start();</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../4">
-      <tran_glyph conn="41,43,3,3,-12,10,6">
+      <tran_glyph conn="41,43,3,3,-12,12,6">
        <action box="-16,-3,18,2"/>
       </tran_glyph>
      </tran>
@@ -152,7 +152,7 @@ bsp_ble_start();</exit>
      <tran trig="BLE_DATA_UPDATE">
       <action>ble_rcv_packet_t last_data;
 ble_service_last_packet(&amp;last_data);
-parameters_update_from_ble(&amp;parameters, last_data._raw);</action>
+parameters_update_from_ble(&amp;parameters, last_data.data);</action>
       <tran_glyph conn="41,35,3,-1,18">
        <action box="0,-2,21,2"/>
       </tran_glyph>
@@ -325,9 +325,7 @@ parameters_set_pre_strategy_led(&amp;parameters);</action>
      <tran trig="BLE_DATA_UPDATE">
       <action>ble_rcv_packet_t last_data;
 ble_service_last_packet(&amp;last_data);
-parameters_update_from_ble(&amp;parameters, last_data._raw);
-parameters_set_strategy_led(&amp;parameters);
-parameters_set_pre_strategy_led(&amp;parameters);</action>
+parameters_update_from_ble(&amp;parameters, last_data.data);</action>
       <tran_glyph conn="133,38,3,-1,17">
        <action box="0,-2,18,2"/>
       </tran_glyph>
@@ -475,73 +473,73 @@ parameters.attack_when_near = false;</entry>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_0]}-->
       <choice target="../../../12" cpref="../../../31/0">
        <guard brief="ps_0">parameters.pre_strategy == 0</guard>
-       <choice_glyph conn="52,102,5,0,-25,15">
+       <choice_glyph conn="52,104,5,0,-25,13">
         <action box="-29,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_1]}-->
       <choice target="../../../12" cpref="../../../31/1">
        <guard brief="ps_1">parameters.pre_strategy == 1</guard>
-       <choice_glyph conn="52,102,5,0,-20,15">
+       <choice_glyph conn="52,104,5,0,-20,13">
         <action box="-23,-3,7,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_2]}-->
       <choice target="../../../12" cpref="../../../31/2">
        <guard brief="ps_2">parameters.pre_strategy == 2</guard>
-       <choice_glyph conn="52,102,5,0,-15,15">
+       <choice_glyph conn="52,104,5,0,-15,13">
         <action box="-18,-3,7,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_3]}-->
       <choice target="../../../12" cpref="../../../31/3">
        <guard brief="ps_3">parameters.pre_strategy == 3</guard>
-       <choice_glyph conn="52,102,5,0,-10,15">
+       <choice_glyph conn="52,104,5,0,-10,13">
         <action box="-12,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_4]}-->
       <choice target="../../../12" cpref="../../../31/4">
        <guard brief="ps_4">parameters.pre_strategy == 4</guard>
-       <choice_glyph conn="52,102,5,0,-5,15">
+       <choice_glyph conn="52,104,5,0,-5,13">
         <action box="-6,-3,5,3"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_5]}-->
       <choice target="../../../12" cpref="../../../31/5">
        <guard brief="ps_5">parameters.pre_strategy == 5</guard>
-       <choice_glyph conn="52,102,5,0,1,15">
+       <choice_glyph conn="52,104,5,0,1,13">
         <action box="0,-3,5,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_6]}-->
       <choice target="../../../12" cpref="../../../31/6">
        <guard brief="ps_6">parameters.pre_strategy == 6</guard>
-       <choice_glyph conn="52,102,5,0,6,15">
+       <choice_glyph conn="52,104,5,0,6,13">
         <action box="5,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_7]}-->
       <choice target="../../../12" cpref="../../../31/7">
        <guard brief="ps_7">parameters.pre_strategy == 7</guard>
-       <choice_glyph conn="52,102,5,0,11,15">
+       <choice_glyph conn="52,104,5,0,11,13">
         <action box="10,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_8]}-->
       <choice target="../../../12" cpref="../../../31/8">
        <guard brief="ps_8">parameters.pre_strategy == 8</guard>
-       <choice_glyph conn="52,102,5,0,16,15">
+       <choice_glyph conn="52,104,5,0,16,13">
         <action box="15,-3,6,2"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="35,93,3,-1,17,9">
+      <tran_glyph conn="35,95,3,-1,17,9">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../2">
-      <tran_glyph conn="71,56,1,3,31,-22,31">
+      <tran_glyph conn="71,58,1,3,31,-24,31">
        <action box="1,-3,33,2"/>
       </tran_glyph>
      </tran>
@@ -549,7 +547,7 @@ parameters.attack_when_near = false;</entry>
      <tran trig="CHANGE_STRATEGY_EVT">
       <action brief="change_strategy">parameters_set_strategy(&amp;parameters, (parameters.strategy + 1));
 parameters_set_strategy_led(&amp;parameters);</action>
-      <tran_glyph conn="35,63,3,-1,11">
+      <tran_glyph conn="35,65,3,-1,11">
        <action box="0,-3,29,2"/>
       </tran_glyph>
      </tran>
@@ -557,13 +555,13 @@ parameters_set_strategy_led(&amp;parameters);</action>
      <tran trig="CHANGE_PRE_STRATEGY_EVT">
       <action brief="change_pre_strategy">parameters_update_pre_strategy(&amp;parameters, (parameters.pre_strategy + 1));
 parameters_set_pre_strategy_led(&amp;parameters);</action>
-      <tran_glyph conn="35,66,3,-1,12">
+      <tran_glyph conn="35,68,3,-1,12">
        <action box="0,-2,31,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::BLE_DATA_REQUEST}-->
      <tran trig="BLE_DATA_REQUEST" target="../../21">
-      <tran_glyph conn="35,73,3,2,-23,-11">
+      <tran_glyph conn="35,75,3,2,-23,-13">
        <action box="0,-2,19,2"/>
       </tran_glyph>
      </tran>
@@ -571,15 +569,10 @@ parameters_set_pre_strategy_led(&amp;parameters);</action>
      <tran trig="BLE_DATA_UPDATE">
       <action>ble_rcv_packet_t last_data;
 ble_service_last_packet(&amp;last_data);
-
-if (ble_service_last_packet_type() == BLE_UPDATE_PARAMETERS){
-    parameters_update_from_ble(&amp;parameters, last_data._raw);
-    parameters_set_strategy_led(&amp;parameters);
-    parameters_set_pre_strategy_led(&amp;parameters);
-} else if (ble_service_last_packet_type() == BLE_UPDATE_CUST_STRATEGY){
-    cust_strategy_update_from_ble(last_data._raw, BLE_RECEIVE_PACKET_SIZE);
-}</action>
-      <tran_glyph conn="35,69,3,-1,14">
+parameters_update_from_ble(&amp;parameters, last_data.data);
+buzzer_start();
+QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);</action>
+      <tran_glyph conn="35,71,3,-1,14">
        <action box="0,-2,20,2"/>
       </tran_glyph>
      </tran>
@@ -592,7 +585,7 @@ if (ble_service_last_packet_type() == BLE_UPDATE_PARAMETERS){
 }
 
 parameters_report(parameters, 9);</action>
-      <tran_glyph conn="35,77,3,-1,19">
+      <tran_glyph conn="35,79,3,-1,19">
        <action box="0,-2,34,6"/>
       </tran_glyph>
      </tran>
@@ -602,22 +595,29 @@ parameters_report(parameters, 9);</action>
       <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[attack_when_near]}-->
       <choice target="../../../12" cpref="../../../31/0">
        <guard brief="attack_when_near">parameters.attack_when_near &amp;&amp; distance_is_active(DIST_SENSOR_F)</guard>
-       <choice_glyph conn="19,83,5,0,-4,30,12,4">
+       <choice_glyph conn="19,85,5,0,-4,30,12,2">
         <action box="-3,2,14,2"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="35,83,3,-1,-16">
+      <tran_glyph conn="35,85,3,-1,-16">
        <action box="0,-2,22,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::BLE_ATTACK_NEAR}-->
      <tran trig="BLE_ATTACK_NEAR">
       <action>parameters.attack_when_near = 1;</action>
-      <tran_glyph conn="35,86,3,-1,15">
-       <action box="0,-2,16,2"/>
+      <tran_glyph conn="35,88,3,-1,15">
+       <action box="0,-2,15,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="35,48,36,47">
+     <!--${AOs::SumoHSM::SM::AutoWait::STOP_BUZZER}-->
+     <tran trig="STOP_BUZZER">
+      <action brief="buzzer_stop()">buzzer_stop();</action>
+      <tran_glyph conn="35,91,3,-1,17">
+       <action box="0,-2,23,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="35,50,36,47">
       <entry box="1,2,35,8"/>
      </state_glyph>
     </state>
@@ -829,7 +829,7 @@ parameters_set_calib_mode_led(&amp;parameters);</action>
      <tran trig="BLE_DATA_UPDATE">
       <action>ble_rcv_packet_t last_data;
 ble_service_last_packet(&amp;last_data);
-parameters_update_from_ble(&amp;parameters, last_data._raw);</action>
+parameters_update_from_ble(&amp;parameters, last_data.data);</action>
       <tran_glyph conn="249,29,3,-1,13">
        <action box="0,-2,19,2"/>
       </tran_glyph>
@@ -1197,7 +1197,7 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
 </entry>
      <!--${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../4">
-      <tran_glyph conn="6,241,3,3,-4,-151,33">
+      <tran_glyph conn="6,241,3,3,-4,-147,33">
        <action box="1,-1,23,2"/>
       </tran_glyph>
      </tran>
@@ -1392,7 +1392,7 @@ if (!SumoHSM_CheckDistAndMove(me)){
     <smstate name="ble2" submachine="../32">
      <!--${AOs::SumoHSM::SM::ble2::XP1}-->
      <xpseg xpref="../../32/0" target="../../4">
-      <xpseg_glyph conn="25,58,1,3,10">
+      <xpseg_glyph conn="25,58,1,3,8,2,2">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>

@@ -925,7 +925,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         case BLE_DATA_UPDATE_SIG: {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
-            parameters_update_from_ble(&parameters, last_data._raw);
+            parameters_update_from_ble(&parameters, last_data.data);
             status_ = QM_HANDLED();
             break;
         }
@@ -1218,9 +1218,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         case BLE_DATA_UPDATE_SIG: {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
-            parameters_update_from_ble(&parameters, last_data._raw);
-            parameters_set_strategy_led(&parameters);
-            parameters_set_pre_strategy_led(&parameters);
+            parameters_update_from_ble(&parameters, last_data.data);
             status_ = QM_HANDLED();
             break;
         }
@@ -1617,14 +1615,9 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         case BLE_DATA_UPDATE_SIG: {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
-
-            if (ble_service_last_packet_type() == BLE_UPDATE_PARAMETERS){
-                parameters_update_from_ble(&parameters, last_data._raw);
-                parameters_set_strategy_led(&parameters);
-                parameters_set_pre_strategy_led(&parameters);
-            } else if (ble_service_last_packet_type() == BLE_UPDATE_CUST_STRATEGY){
-                cust_strategy_update_from_ble(last_data._raw, BLE_RECEIVE_PACKET_SIZE);
-            }
+            parameters_update_from_ble(&parameters, last_data.data);
+            buzzer_start();
+            QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);
             status_ = QM_HANDLED();
             break;
         }
@@ -1669,6 +1662,12 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::AutoWait::BLE_ATTACK_NEAR} */
         case BLE_ATTACK_NEAR_SIG: {
             parameters.attack_when_near = 1;
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::STOP_BUZZER} */
+        case STOP_BUZZER_SIG: {
+            buzzer_stop();
             status_ = QM_HANDLED();
             break;
         }
@@ -1968,7 +1967,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
         case BLE_DATA_UPDATE_SIG: {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
-            parameters_update_from_ble(&parameters, last_data._raw);
+            parameters_update_from_ble(&parameters, last_data.data);
             status_ = QM_HANDLED();
             break;
         }

@@ -40,12 +40,21 @@ static volatile ble_rcv_packet_t ble_last_data;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
+static int8_t validate_data(uint8_t * data, uint8_t size){
+
+    if (size != BLE_RECEIVE_PACKET_SIZE){
+        return -1;
+    }
+
+    return 0;
+}
+
 static void ble_process_events(ble_rcv_packet_t rcv_packet){
 
-    if (rcv_packet._raw[0] == 0xFE && rcv_packet._raw[1] == 0xEF){
+    if (rcv_packet.header == BLE_CHANGE_STATE){
         QEvt evt = {.sig = CHANGE_STATE_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-    } else if (rcv_packet._raw[0] == 0xFE && rcv_packet._raw[1] == 0xFE) {
+    } else if (rcv_packet.header == BLE_REQUEST_DATA) {
         QEvt evt = {.sig = BLE_DATA_REQUEST_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     } else {
@@ -57,11 +66,11 @@ static void ble_process_events(ble_rcv_packet_t rcv_packet){
 
 static void ble_callback(uint8_t * ble_data, uint8_t rcv_size) {
 
-    if (rcv_size != BLE_RECEIVE_PACKET_SIZE){
+    if (validate_data(ble_data, rcv_size) != 0){
         return;
     }
 
-    memcpy((void * restrict) ble_last_data._raw, ble_data, BLE_RECEIVE_PACKET_SIZE);
+    memcpy((void * restrict) ble_last_data.packet, ble_data, BLE_RECEIVE_PACKET_SIZE);
 
     ble_process_events(ble_last_data);
 
@@ -101,14 +110,9 @@ void ble_service_last_packet(ble_rcv_packet_t * data){
 
 }
 
-ble_data_header_t ble_service_last_packet_type(){
-    if (ble_last_data._raw[0] == 0xFE && ble_last_data._raw[1] == 0xFE){
-        return BLE_REQUEST_DATA;
-    } else if (ble_last_data._raw[0] == 0xFE && ble_last_data._raw[1] == 0xEF){
-        return BLE_CHANGE_STATE;
-    } else if (ble_last_data._raw[0] == 0xFD){
-        return BLE_UPDATE_CUST_STRATEGY;
-    }
+ble_header_t ble_service_last_packet_type(){
 
-    return BLE_UPDATE_PARAMETERS;
+    return (ble_header_t) ble_last_data.header;
+    
 }
+        

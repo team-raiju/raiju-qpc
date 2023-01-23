@@ -11,6 +11,7 @@
 #include "distance_service.h"
 #include "adc_service.h"
 #include "led_service.h"
+#include "custom_strategy.h"
 
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -33,6 +34,38 @@
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
+
+typedef enum {
+    BLE_DATA_HDR_CUST_STRATEGY,
+    BLE_DATA_HDR_STRATEGY,
+    BLE_DATA_HDR_PRE_STRATEGY,
+    BLE_DATA_HDR_CALIB_MODE,
+    BLE_DATA_HDR_EN_DISTANCE_SENSORS,
+    BLE_DATA_HDR_EN_LINE_SENSORS,
+    BLE_DATA_HDR_STAR_SPEED,
+    BLE_DATA_HDR_MAX_SPEED,
+    BLE_DATA_HDR_REVERSE_SPEED,
+    BLE_DATA_HDR_REVERSE_TIME_MS,
+    BLE_DATA_HDR_TURN_SPEED,
+    BLE_DATA_HDR_TURN_180_RIGHT_TIME_MS,
+    BLE_DATA_HDR_TURN_180_LEFT_TIME_MS,
+    BLE_DATA_HDR_STEP_WAIT_TIME_MS,
+    BLE_DATA_HDR_STEP_ADVANCE_TIME_MS,
+    BLE_DATA_HDR_TIME_MS_TO_CROSS_AT_60_VEL,
+    BLE_DATA_HDR_IS_STUCKED_TIMEOUT,
+    BLE_DATA_HDR_ATTACK_WHEN_NEAR,
+    BLE_DATA_MAX_HDR
+} ble_data_header_t;
+
+
+typedef union{
+    uint8_t _raw[BLE_RECEIVE_PACKET_SIZE - 2];
+    struct {
+        uint8_t header;
+        uint8_t param_data[BLE_RECEIVE_PACKET_SIZE - 3];
+    };
+
+} ble_update_param_packet_t;
 
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
@@ -228,22 +261,75 @@ void report_raw_line_data_ble(bool front) {
 
 }
 
-void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * last_data){
+void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
 
-    ble_rcv_packet_t ble_packet;
-    memcpy(ble_packet._raw, last_data, BLE_RECEIVE_PACKET_SIZE);
+    ble_update_param_packet_t ble_packet;
+    memcpy(ble_packet._raw, data, BLE_RECEIVE_PACKET_SIZE - 2);
 
-    params->enabled_distance_sensors = ble_packet.enabledDistanceSensors;
-    params->enabled_line_sensors = ble_packet.enabledLineSensors;
-    params->reverse_speed = ble_packet.reverseSpeed;
-    params->reverse_time_ms = ble_packet.reverseTimeMs;
-    params->turn_speed = ble_packet.turnSpeed;
-    params->turn_180_right_time_ms  = ble_packet.turnTimeMs;
-    params->step_wait_time_ms = ble_packet.stepWaitTimeMs;
-    params->max_speed = ble_packet.maxMotorSpeed;
+    switch (ble_packet.header)
+    {
+    case BLE_DATA_HDR_CUST_STRATEGY:
+        cust_strategy_update_from_ble(ble_packet.param_data, sizeof(ble_packet.param_data));
+        break;
+    case BLE_DATA_HDR_STRATEGY:
+        parameters_set_strategy(params, ble_packet.param_data[0]);
+        parameters_set_strategy_led(params);
+        break;
+    case BLE_DATA_HDR_PRE_STRATEGY:
+        parameters_update_pre_strategy(params, ble_packet.param_data[0]);
+        parameters_set_pre_strategy_led(params);
+        break;
+    case BLE_DATA_HDR_CALIB_MODE:
+        parameters_update_calib_mode(params, ble_packet.param_data[0]);
+        parameters_set_calib_mode_led(params);
+        break;
+    case BLE_DATA_HDR_EN_DISTANCE_SENSORS:
+        params->enabled_distance_sensors = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        break;
+    case BLE_DATA_HDR_EN_LINE_SENSORS:
+        params->enabled_line_sensors = ble_packet.param_data[0];
+        break;
+    case BLE_DATA_HDR_STAR_SPEED:
+        params->star_speed = ble_packet.param_data[0];
+        break;
+    case BLE_DATA_HDR_MAX_SPEED:
+        params->max_speed = ble_packet.param_data[0];
+        break;
+    case BLE_DATA_HDR_REVERSE_SPEED:
+        params->reverse_speed = ble_packet.param_data[0];
+        break;
+    case BLE_DATA_HDR_REVERSE_TIME_MS:
+        params->reverse_time_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        break;
+    case BLE_DATA_HDR_TURN_SPEED:
+        params->turn_speed = ble_packet.param_data[0];
+        break;
+    case BLE_DATA_HDR_TURN_180_RIGHT_TIME_MS:
+        params->turn_180_right_time_ms  = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        break;
+    case BLE_DATA_HDR_TURN_180_LEFT_TIME_MS:
+        params->turn_180_left_time_ms  = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        break;
+    case BLE_DATA_HDR_STEP_WAIT_TIME_MS:
+        params->step_wait_time_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        break;
+    case BLE_DATA_HDR_STEP_ADVANCE_TIME_MS:
+        params->step_advance_time_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        break;
+    case BLE_DATA_HDR_TIME_MS_TO_CROSS_AT_60_VEL:
+        params->time_ms_to_cross_at_60_vel = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        break;
+    case BLE_DATA_HDR_IS_STUCKED_TIMEOUT:
+        params->is_stucked_timeout = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        break;
+    case BLE_DATA_HDR_ATTACK_WHEN_NEAR:
+        params->attack_when_near = ble_packet.param_data[0];
+        break;
+    default:
+        break;
+    }
 
-    parameters_set_strategy(params, ble_packet.strategy);
-    parameters_update_pre_strategy(params, ble_packet.preStrategy);
+
 
     // TODO: Save in eeprom
 }

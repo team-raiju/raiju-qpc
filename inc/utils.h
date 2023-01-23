@@ -29,6 +29,13 @@
  */
 #define constrain(v, x, y) ((v) < (x) ? (x) : ((v) > (y) ? (y) : (v)))
 
+
+
+#define TWO_BYTES_TO_UINT16(b1, b2) ((b1 << 8) | (b2))
+
+#define TWO_BYTES_TO_UINT32(b1, b2, b3, b4) ((b1 << 24) | (b2 << 16) | (b3 << 8) | (b4))
+
+
 /**
  * @brief Returns the length of statically defined arrays.
  */

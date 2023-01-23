@@ -6,28 +6,18 @@
 
 
 typedef enum  {
+    BLE_CHANGE_STATE,
     BLE_REQUEST_DATA,
     BLE_UPDATE_PARAMETERS,
-    BLE_CHANGE_STATE,
-    BLE_UPDATE_CUST_STRATEGY,
-} ble_data_header_t;
+} ble_header_t;
 
 typedef union{
-    uint8_t _raw[BLE_RECEIVE_PACKET_SIZE];
+    uint8_t packet[BLE_RECEIVE_PACKET_SIZE];
 
     struct {
-        uint8_t _header;
-        uint8_t enabledDistanceSensors;
-        uint8_t enabledLineSensors;
-        uint8_t reverseSpeed;
-        uint8_t reverseTimeMs;
-        uint8_t turnSpeed;
-        uint8_t turnTimeMs;
-        uint8_t stepWaitTimeMs;
-        uint8_t preStrategy;
-        uint8_t strategy;
-        uint8_t maxMotorSpeed;
-        uint8_t _chk;
+        uint8_t header;
+        uint8_t data[BLE_RECEIVE_PACKET_SIZE - 2];
+        uint8_t chk;
     };
 
 } ble_rcv_packet_t;
@@ -37,6 +27,6 @@ void ble_service_init(void);
 void ble_service_send_data(uint8_t * data, uint8_t size);
 void ble_service_send_string(char * str);
 void ble_service_last_packet(ble_rcv_packet_t * data);
-ble_data_header_t ble_service_last_packet_type(void);
+ble_header_t ble_service_last_packet_type(void);
 
 #endif /* BLE_SERVICE_H */

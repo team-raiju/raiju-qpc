@@ -7,7 +7,7 @@
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-#define STRATEGY_MAX_STEPS          8
+#define STRATEGY_MAX_STEPS          7
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -90,12 +90,12 @@ uint8_t cust_strategy_move(uint8_t step) {
 
 void cust_strategy_update_from_ble(uint8_t * last_data, uint8_t size){
 
-    if (size < STRATEGY_MAX_STEPS + 3){
+    if (size != STRATEGY_MAX_STEPS + 2){
         return;
     }
     
-    bool update_type_list = last_data[1];
-    num_of_steps = last_data[2];
+    bool update_type_list = last_data[0];
+    num_of_steps = last_data[1];
 
     if (update_type_list){
         memset(type_of_movements, 0, sizeof(type_of_movements));
@@ -106,9 +106,9 @@ void cust_strategy_update_from_ble(uint8_t * last_data, uint8_t size){
     for (int i = 0; i < STRATEGY_MAX_STEPS; i++)
     {
         if (update_type_list){
-            type_of_movements[i] = last_data[3 + i];
+            type_of_movements[i] = last_data[2 + i];
         } else {
-            cust_strategy_movements[i] = last_data[3 + i];
+            cust_strategy_movements[i] = last_data[2 + i];
         }
     }
     
