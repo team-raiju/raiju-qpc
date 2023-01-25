@@ -29,7 +29,8 @@
 
 #define REFERENCE_TURN_SPEED     100.0f
 
-
+#define BLE_PACKET_TRANSMIT_SIZE 20
+#define PARAMS_PACKET_VERSION           0
 
 /***************************************************************************************************
  * LOCAL TYPEDEFS
@@ -65,6 +66,80 @@ typedef union{
     };
 
 } ble_update_param_packet_t;
+
+
+typedef union{
+    uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
+    struct {
+        uint8_t version;
+        uint8_t header;
+
+        uint8_t strategy;
+        uint8_t pre_strategy;
+        uint8_t calib_mode;
+        uint16_t en_dist_sensors;
+        uint8_t en_line_sensors;
+        uint8_t  star_speed;
+        uint8_t  max_speed;
+        uint8_t  reverse_speed; 
+        uint16_t reverse_time_ms;
+        uint8_t  turn_speed;
+        uint16_t turn_180_right_time_ms;
+        uint16_t turn_180_left_time_ms;
+
+        uint8_t empty[2];
+    } __attribute__((packed, scalar_storage_order("big-endian")));
+
+} ble_transmit_packet_0_t;
+
+typedef union{
+    uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
+    struct {
+        uint8_t version;
+        uint8_t header;
+
+        uint16_t step_wait_time_ms;
+        uint16_t step_advance_time_ms;
+        uint16_t time_ms_to_cross_at_60_vel;
+        uint16_t is_stucked_timeout;
+
+        uint8_t attack_when_near;
+        uint8_t empty[9];
+    }__attribute__((packed, scalar_storage_order("big-endian")));
+
+} ble_transmit_packet_1_t;
+
+typedef union{
+    uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
+    struct {
+        uint8_t version;
+        uint8_t header;
+
+        uint16_t dist_mask;
+        uint16_t line_mask;
+
+        uint8_t empty[14];
+        
+    }__attribute__((packed, scalar_storage_order("big-endian")));
+
+} ble_transmit_packet_2_t;
+
+typedef union{
+    uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
+    struct {
+        uint8_t version;
+        uint8_t header;
+
+        uint32_t line_fr;
+        uint32_t line_fl;
+        uint32_t line_br;
+        uint32_t line_bl;
+        uint8_t empty[2];
+        
+    }__attribute__((packed, scalar_storage_order("big-endian")));
+
+} ble_transmit_packet_3_t;
+
 
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
@@ -104,11 +179,11 @@ static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
     COLOR_YELLOW,
 };
 
-static const char * strategy_names[] = {
-    "star",
-    "small steps",
-    "defensive"
-};
+// static const char * strategy_names[] = {
+//     "star",
+//     "small steps",
+//     "defensive"
+// };
 
 
 static sumo_parameters_t init_parameters_default = {
@@ -198,65 +273,74 @@ void parameters_init(sumo_parameters_t *params){
 
 void parameters_report(sumo_parameters_t params, uint8_t config_num){
 
-    char buffer[20] = {0};
+    char buffer[BLE_PACKET_TRANSMIT_SIZE] = {0};
     switch (config_num)
     {
-        case 0:
-            snprintf(buffer, 20, "ss:%d:%s", 0, strategy_names[0]);
+        case 0: {
+
+            ble_transmit_packet_0_t packet_0 = {0};
+            packet_0.version = PARAMS_PACKET_VERSION;
+            packet_0.header = 0;
+            packet_0.strategy = params.strategy;
+            packet_0.pre_strategy = params.pre_strategy;
+            packet_0.calib_mode = params.calib_mode; 
+            packet_0.en_dist_sensors = params.enabled_distance_sensors; 
+            packet_0.en_line_sensors = params.enabled_line_sensors; 
+            packet_0.star_speed = params.star_speed; 
+            packet_0.max_speed = params.max_speed; 
+            packet_0.reverse_speed = params.reverse_speed; 
+            packet_0.reverse_time_ms = params.reverse_time_ms; 
+            packet_0.turn_speed = params.turn_speed; 
+            packet_0.turn_180_right_time_ms = params.turn_180_right_time_ms; 
+            packet_0.turn_180_left_time_ms = params.turn_180_left_time_ms; 
+            memcpy(buffer, packet_0._raw, BLE_PACKET_TRANSMIT_SIZE);
             break;
-        case 1:
-            snprintf(buffer, 20, "ss:%d:%s", 1, strategy_names[1]);
+        }
+        case 1:{
+
+            ble_transmit_packet_1_t packet_1 = {0};
+            packet_1.version = PARAMS_PACKET_VERSION;
+            packet_1.header = 1;
+            packet_1.step_wait_time_ms = params.step_wait_time_ms;
+            packet_1.step_advance_time_ms = params.step_advance_time_ms;
+            packet_1.time_ms_to_cross_at_60_vel = params.time_ms_to_cross_at_60_vel;
+            packet_1.is_stucked_timeout = params.is_stucked_timeout;
+            packet_1.attack_when_near = params.attack_when_near;
+            memcpy(buffer, packet_1._raw, BLE_PACKET_TRANSMIT_SIZE);
             break;
-        case 2:
-            snprintf(buffer, 20, "ss:%d:%s", 2, strategy_names[2]);
-            break;
-        case 3:
-            snprintf(buffer, 20, "sens:%hu:%hu", params.enabled_distance_sensors, params.enabled_line_sensors);
-            break;
-        case 4:
-            snprintf(buffer, 20, "rev:%hu:%hu", params.reverse_speed, params.reverse_time_ms);
-            break;
-        case 5:
-            snprintf(buffer, 20, "turn:%hu:%hu", params.turn_180_left_time_ms, params.turn_180_right_time_ms);
-            break;
-        case 6:
-            snprintf(buffer, 20, "step:%hu", params.step_wait_time_ms);
-            break;
-        case 7:
-            snprintf(buffer, 20, "str:%hu:%hu", params.strategy, params.pre_strategy);
-            break;
-        case 8:
-            snprintf(buffer, 20, "mms:%hu", params.max_speed);
-            break;
-        case 9: {
-            uint16_t dist_mask = distance_get_all_active();
-            uint16_t line_mask = adc_line_get_all();
-            snprintf(buffer, 20, "stat:%u:%u", dist_mask, line_mask);
+
+        }
+        case 2: {
+            ble_transmit_packet_2_t packet_2 = {0};
+            packet_2.version = PARAMS_PACKET_VERSION;
+            packet_2.header = 2;
+            packet_2.dist_mask = distance_get_all_active();
+            packet_2.line_mask = adc_line_get_all();
+            memcpy(buffer, packet_2._raw, BLE_PACKET_TRANSMIT_SIZE);
             break;
         }
         
     }
 
-    ble_service_send_data((uint8_t *)buffer, 20);
+    ble_service_send_data((uint8_t *)buffer, BLE_PACKET_TRANSMIT_SIZE);
 
 }
 
-void report_raw_line_data_ble(bool front) {
-    char buffer[20] = {0};
+void report_raw_line_data_ble() {
+    char buffer[BLE_PACKET_TRANSMIT_SIZE] = {0};
+    ble_transmit_packet_3_t packet_3;
 
-    if (front) {
-        uint32_t line_fr = adc_get_raw_line(LINE_FR);
-        uint32_t line_fl = adc_get_raw_line(LINE_FL);
-        snprintf(buffer, 20, "linef:%lu:%lu", line_fl, line_fr);
+    packet_3.version = PARAMS_PACKET_VERSION;
+    packet_3.header = 3;
 
-    } else {
-        uint32_t line_br = adc_get_raw_line(LINE_BR);
-        uint32_t line_bl = adc_get_raw_line(LINE_BL);
-        snprintf(buffer, 20, "lineb:%lu:%lu", line_br, line_bl);
-    }
+    packet_3.line_fr = adc_get_raw_line(LINE_FR);
+    packet_3.line_fl = adc_get_raw_line(LINE_FL);
+    packet_3.line_br = adc_get_raw_line(LINE_BR);
+    packet_3.line_bl = adc_get_raw_line(LINE_BL);
 
-    ble_service_send_data((uint8_t *)buffer, 20);
+    memcpy(buffer, packet_3._raw, BLE_PACKET_TRANSMIT_SIZE);
 
+    ble_service_send_data((uint8_t *)buffer, BLE_PACKET_TRANSMIT_SIZE);
 
 }
 
@@ -273,12 +357,12 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
         parameters_set_strategy_led(params);
         parameters_set_pre_strategy_led(params);
         break;
-    case BLE_DATA_HDR_CUST_STRATEGY:
-        cust_strategy_update_from_ble(ble_packet.param_data, sizeof(ble_packet.param_data));
-        break;
     case BLE_DATA_HDR_CALIB_MODE:
         parameters_update_calib_mode(params, ble_packet.param_data[0]);
         parameters_set_calib_mode_led(params);
+        break;
+    case BLE_DATA_HDR_CUST_STRATEGY:
+        cust_strategy_update_from_ble(ble_packet.param_data, sizeof(ble_packet.param_data));
         break;
     case BLE_DATA_HDR_EN_DISTANCE_SENSORS:
         params->enabled_distance_sensors = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);

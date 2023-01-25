@@ -102,8 +102,6 @@ me-&gt;buzzerCount = 0U;</action>
      <entry>board_led_off();
 driving_disable();
 drive(0,0);
-parameters.strategy = 0;
-parameters.pre_strategy = 0;
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 
@@ -1515,8 +1513,8 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);</entr
      <entry>QTimeEvt_rearm(&amp;me-&gt;timeEvt,  BSP_TICKS_PER_MILISSEC * 100);</entry>
      <!--${AOs::SumoHSM::SM::CalibSensors::TIMEOUT}-->
      <tran trig="TIMEOUT">
-      <action>QTimeEvt_rearm(&amp;me-&gt;timeEvt_2,  BSP_TICKS_PER_MILISSEC * 100);
-report_raw_line_data_ble(true);</action>
+      <action>QTimeEvt_rearm(&amp;me-&gt;timeEvt,  BSP_TICKS_PER_MILISSEC * 100);
+report_raw_line_data_ble();</action>
       <tran_glyph conn="361,89,3,-1,14">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -1525,14 +1523,6 @@ report_raw_line_data_ble(true);</action>
      <tran trig="CHANGE_STATE_EVT" target="../../28">
       <tran_glyph conn="361,100,3,0,-2,9,17,28">
        <action box="1,-2,18,2"/>
-      </tran_glyph>
-     </tran>
-     <!--${AOs::SumoHSM::SM::CalibSensors::TIMEOUT_2}-->
-     <tran trig="TIMEOUT_2">
-      <action>QTimeEvt_rearm(&amp;me-&gt;timeEvt,  BSP_TICKS_PER_MILISSEC * 100);
-report_raw_line_data_ble(false);</action>
-      <tran_glyph conn="361,94,3,-1,14">
-       <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="361,80,26,24">

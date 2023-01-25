@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define PARAMETERS_REPORT_SIZE  10
+#define PARAMETERS_REPORT_SIZE  3
 
 typedef struct sumo_parameters {
 
@@ -45,7 +45,7 @@ typedef enum {
 void parameters_report(sumo_parameters_t params, uint8_t config_num);
 void parameters_init(sumo_parameters_t *params);
 void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * last_data);
-void report_raw_line_data_ble(bool front);
+void report_raw_line_data_ble();
 void parameters_set_strategy(sumo_parameters_t *params, uint8_t strategy);
 void parameters_update_pre_strategy(sumo_parameters_t *params, uint8_t pre_strategy);
 void parameters_update_calib_mode(sumo_parameters_t *params, uint8_t calib_mode);

@@ -858,8 +858,6 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
     board_led_off();
     driving_disable();
     drive(0,0);
-    parameters.strategy = 0;
-    parameters.pre_strategy = 0;
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
 
@@ -3283,8 +3281,8 @@ static QState SumoHSM_CalibSensors(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::CalibSensors::TIMEOUT} */
         case TIMEOUT_SIG: {
-            QTimeEvt_rearm(&me->timeEvt_2,  BSP_TICKS_PER_MILISSEC * 100);
-            report_raw_line_data_ble(true);
+            QTimeEvt_rearm(&me->timeEvt,  BSP_TICKS_PER_MILISSEC * 100);
+            report_raw_line_data_ble();
             status_ = QM_HANDLED();
             break;
         }
@@ -3301,13 +3299,6 @@ static QState SumoHSM_CalibSensors(SumoHSM * const me, QEvt const * const e) {
                 }
             };
             status_ = QM_TRAN(&tatbl_);
-            break;
-        }
-        /*${AOs::SumoHSM::SM::CalibSensors::TIMEOUT_2} */
-        case TIMEOUT_2_SIG: {
-            QTimeEvt_rearm(&me->timeEvt,  BSP_TICKS_PER_MILISSEC * 100);
-            report_raw_line_data_ble(false);
-            status_ = QM_HANDLED();
             break;
         }
         default: {
