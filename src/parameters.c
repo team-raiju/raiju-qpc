@@ -325,6 +325,10 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
             memcpy(buffer, packet_2._raw, BLE_PACKET_TRANSMIT_SIZE);
             break;
         }
+
+        default:{
+            return;
+        }
         
     }
 

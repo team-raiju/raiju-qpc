@@ -1625,13 +1625,13 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
                 buzzer_start();
             }
 
-            parameters_report(parameters, 9);
+            parameters_report(parameters, 2);
             status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
-            parameters_report(parameters, 9);
+            parameters_report(parameters, 2);
             /*${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[attack_when_near]} */
             if (parameters.attack_when_near && distance_is_active(DIST_SENSOR_F)) {
                 static struct {

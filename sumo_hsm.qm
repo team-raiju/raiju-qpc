@@ -593,14 +593,14 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);</acti
     buzzer_start();
 }
 
-parameters_report(parameters, 9);</action>
+parameters_report(parameters, 2);</action>
       <tran_glyph conn="35,79,3,-1,19">
        <action box="0,-2,34,6"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHANGE}-->
      <tran trig="DIST_SENSOR_CHANGE">
-      <action>parameters_report(parameters, 9);</action>
+      <action>parameters_report(parameters, 2);</action>
       <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[attack_when_near]}-->
       <choice target="../../../12" cpref="../../../30/0">
        <guard brief="attack_when_near">parameters.attack_when_near &amp;&amp; distance_is_active(DIST_SENSOR_F)</guard>
