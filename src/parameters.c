@@ -36,10 +36,9 @@
  **************************************************************************************************/
 
 typedef enum {
-    BLE_DATA_HDR_CUST_STRATEGY,
-    BLE_DATA_HDR_STRATEGY,
-    BLE_DATA_HDR_PRE_STRATEGY,
+    BLE_DATA_HDR_STRATEGY_AND_PRE,
     BLE_DATA_HDR_CALIB_MODE,
+    BLE_DATA_HDR_CUST_STRATEGY,
     BLE_DATA_HDR_EN_DISTANCE_SENSORS,
     BLE_DATA_HDR_EN_LINE_SENSORS,
     BLE_DATA_HDR_STAR_SPEED,
@@ -268,16 +267,14 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
 
     switch (ble_packet.header)
     {
+    case BLE_DATA_HDR_STRATEGY_AND_PRE:
+        parameters_set_strategy(params, ble_packet.param_data[0]);
+        parameters_update_pre_strategy(params, ble_packet.param_data[1]);
+        parameters_set_strategy_led(params);
+        parameters_set_pre_strategy_led(params);
+        break;
     case BLE_DATA_HDR_CUST_STRATEGY:
         cust_strategy_update_from_ble(ble_packet.param_data, sizeof(ble_packet.param_data));
-        break;
-    case BLE_DATA_HDR_STRATEGY:
-        parameters_set_strategy(params, ble_packet.param_data[0]);
-        parameters_set_strategy_led(params);
-        break;
-    case BLE_DATA_HDR_PRE_STRATEGY:
-        parameters_update_pre_strategy(params, ble_packet.param_data[0]);
-        parameters_set_pre_strategy_led(params);
         break;
     case BLE_DATA_HDR_CALIB_MODE:
         parameters_update_calib_mode(params, ble_packet.param_data[0]);
@@ -287,22 +284,22 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
         params->enabled_distance_sensors = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_EN_LINE_SENSORS:
-        params->enabled_line_sensors = ble_packet.param_data[0];
+        params->enabled_line_sensors = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_STAR_SPEED:
-        params->star_speed = ble_packet.param_data[0];
+        params->star_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_MAX_SPEED:
-        params->max_speed = ble_packet.param_data[0];
+        params->max_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_REVERSE_SPEED:
-        params->reverse_speed = ble_packet.param_data[0];
+        params->reverse_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_REVERSE_TIME_MS:
         params->reverse_time_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_TURN_SPEED:
-        params->turn_speed = ble_packet.param_data[0];
+        params->turn_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_TURN_180_RIGHT_TIME_MS:
         params->turn_180_right_time_ms  = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
@@ -323,7 +320,7 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
         params->is_stucked_timeout = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_ATTACK_WHEN_NEAR:
-        params->attack_when_near = ble_packet.param_data[0];
+        params->attack_when_near = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     default:
         break;
