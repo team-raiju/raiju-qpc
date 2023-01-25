@@ -118,7 +118,10 @@ typedef union{
         uint16_t dist_mask;
         uint16_t line_mask;
 
-        uint8_t empty[14];
+        uint16_t ctrl_battery;
+        uint16_t pwr_battery;
+
+        uint8_t empty[10];
         
     }__attribute__((packed, scalar_storage_order("big-endian")));
 
@@ -316,6 +319,9 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
             packet_2.header = 2;
             packet_2.dist_mask = distance_get_all_active();
             packet_2.line_mask = adc_line_get_all();
+            packet_2.ctrl_battery = adc_get_ctrl_bat_mv();
+            packet_2.pwr_battery = adc_get_pwr_bat_mv();
+
             memcpy(buffer, packet_2._raw, BLE_PACKET_TRANSMIT_SIZE);
             break;
         }

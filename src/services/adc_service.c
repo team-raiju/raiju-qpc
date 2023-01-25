@@ -240,16 +240,16 @@ bool adc_get_low_ctrl_bat() {
     return (ctrl_bat_voltage_mv <= CTRL_BATTERY_THRESHOLD_MV);
 }
 
-double adc_get_ctrl_bat_mv(){
-    return ctrl_bat_voltage_mv;
+uint16_t adc_get_ctrl_bat_mv(){
+    return (uint16_t) ctrl_bat_voltage_mv;
 }
 
 bool adc_get_low_pwr_bat() {
     return (pwr_bat_voltage_mv <= PWR_BATTERY_THRESHOLD_MV);
 }
 
-double adc_get_pwr_bat_mv(){
-    return pwr_bat_voltage_mv;
+uint16_t adc_get_pwr_bat_mv(){
+    return (uint16_t) pwr_bat_voltage_mv;
 }
 
 void adc_line_set_mask(uint8_t mask) {
