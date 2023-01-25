@@ -116,12 +116,12 @@ static void radio_dispatch_events(){
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
-    if (radio_data[RADIO_CH4] > 75 && last_radio_data[RADIO_CH4] <= 75){
+    if (radio_data[RADIO_CH6] > 75 && last_radio_data[RADIO_CH6] <= 75){
         QEvt evt = {.sig = CHANGE_STRATEGY_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
-    if (radio_data[RADIO_CH6] > 75 && last_radio_data[RADIO_CH6] <= 75){
+    if (radio_data[RADIO_CH7] > 75 && last_radio_data[RADIO_CH7] <= 75){
         QEvt evt = {.sig = CHANGE_PRE_STRATEGY_EVT_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
