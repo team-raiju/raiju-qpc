@@ -108,3 +108,10 @@ void BSP_GPIO_Register_Button_Callback(bsp_button_callback_t callback_function){
 
 }
 
+
+void fake_init_dist_sensor_pins(){
+    for (int i = 0; i < BOARD_NUM_DIST_SENSORS; i++) {
+        BSP_GPIO_Write_Pin(gpio_dist_sensor_ports[i], gpio_dist_sensor_pins[i], true);
+    }
+
+}

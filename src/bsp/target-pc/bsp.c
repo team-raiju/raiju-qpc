@@ -69,8 +69,9 @@ void BSP_init(void)   {
     BSP_ledInit();
     BSP_motorsInit();
     BSP_buzzerInit();
+    fake_init_dist_sensor_pins();
     // BSP_radioInit();
-   
+
 
     #ifdef Q_SPY
 
@@ -154,11 +155,11 @@ void QS_onCommand(uint8_t cmdId,
             uint8_t sensor_pin = param1;
 
             if (sensor_pin != 0){
-                BSP_GPIO_Write_Pin(IO_PORTA, sensor_pin , true);
+                BSP_GPIO_Write_Pin(IO_PORTA, sensor_pin , false);
                 HAL_Fake_GPIO_EXTI_Callback(sensor_pin);
             } 
 
-            BSP_GPIO_Write_Pin(IO_PORTA, last_sensor_updated, false);
+            BSP_GPIO_Write_Pin(IO_PORTA, last_sensor_updated, true);
             HAL_Fake_GPIO_EXTI_Callback(last_sensor_updated);
 
             last_sensor_updated = sensor_pin;
