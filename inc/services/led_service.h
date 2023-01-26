@@ -31,6 +31,7 @@ void board_led_off();
 void led_stripe_init();
 void led_stripe_send();
 
+void led_stripe_prepare_range_color(uint8_t from, uint8_t to, color_name_t color_name);
 void led_stripe_set(uint8_t idx, color_rgb_t color);
 void led_stripe_set_range(uint8_t from, uint8_t to, color_rgb_t color);
 void led_stripe_set_all(color_rgb_t color);

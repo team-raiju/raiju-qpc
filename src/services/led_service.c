@@ -20,6 +20,7 @@
  **************************************************************************************************/
 static void led_stripe_prepare (uint8_t idx, color_rgb_t color);
 static void convert_color_name_to_rgb (color_name_t name, color_rgb_t* rgb);
+static void led_stripe_prepare_range(uint8_t from, uint8_t to, color_rgb_t color);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
@@ -41,10 +42,6 @@ static color_rgb_t pink       = {0x00, 0xC8, 0x64};
 /***************************************************************************************************
  * LOCAL FUNCTIONS
  **************************************************************************************************/
-
-static void led_stripe_prepare (uint8_t idx, color_rgb_t color){
-    BSP_ws2812_set(idx, color.R, color.G, color.B);
-}
 
 static void convert_color_name_to_rgb (color_name_t name, color_rgb_t* rgb) {
 
@@ -85,6 +82,18 @@ static void convert_color_name_to_rgb (color_name_t name, color_rgb_t* rgb) {
 
 }
 
+static void led_stripe_prepare(uint8_t idx, color_rgb_t color){
+    BSP_ws2812_set(idx, color.R, color.G, color.B);
+}
+
+static void led_stripe_prepare_range(uint8_t from, uint8_t to, color_rgb_t color){
+
+    to = min(to, LED_STRIPE_NUM);
+
+    for (uint8_t i = from; i < to; i++) {
+        led_stripe_prepare(i, color);
+    }
+}
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
@@ -157,4 +166,10 @@ void led_stripe_set_all_color(color_name_t color_name){
     color_rgb_t color_rgb;
     convert_color_name_to_rgb(color_name, &color_rgb);
     led_stripe_set_all(color_rgb);
+}
+
+void led_stripe_prepare_range_color(uint8_t from, uint8_t to, color_name_t color_name){
+    color_rgb_t color_rgb;
+    convert_color_name_to_rgb(color_name, &color_rgb);
+    led_stripe_prepare_range(from, to, color_rgb);
 }
