@@ -1573,7 +1573,7 @@ if (adc_line_is_white(LINE_FL)){
 }</entry>
       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../4">
-       <tran_glyph conn="7,23,3,0,9,9">
+       <tran_glyph conn="7,25,3,0,9,7">
         <action box="0,-2,16,4"/>
        </tran_glyph>
       </tran>
@@ -1585,8 +1585,14 @@ if (adc_line_is_white(LINE_FL)){
       </tran>
       <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::TIMEOUT_2}-->
       <tran trig="TIMEOUT_2" target="../../5">
-       <tran_glyph conn="7,18,3,0,38,14">
+       <tran_glyph conn="7,21,3,0,38,11">
         <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::LineSubmachine::LineGoBack::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
+      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../.." cpref="../../0">
+       <tran_glyph conn="7,16,3,0,52,-8,13,-5">
+        <action box="0,-2,19,5"/>
        </tran_glyph>
       </tran>
       <state_glyph node="7,9,54,19">
@@ -1596,7 +1602,6 @@ if (adc_line_is_white(LINE_FL)){
      <!--${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight}-->
      <state name="LineTurnRight">
       <entry brief="turn right">drive(parameters.turn_speed, -parameters.turn_speed);
-
 uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.turn_speed, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <exit>drive(0,0);</exit>
