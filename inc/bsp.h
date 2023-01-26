@@ -92,6 +92,8 @@ extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */
 void SumoHSM_ctor(void);
 /*$enddecl${AOs::SumoHSM_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
+void sumo_parameters_init(void);
+
 #ifdef Q_SPY
 void sumoHSM_update_qs_dict(void);
 #endif

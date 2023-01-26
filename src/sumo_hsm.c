@@ -681,6 +681,12 @@ static QMState const SumoHSM_BLESubmachine_s = {
 static SumoHSM l_sumo_hsm;
 QActive * const AO_SumoHSM = &l_sumo_hsm.super.super;
 
+
+// Needs to be called in the beggining of the program, so that we don't have problems accessing the eeprom
+void sumo_parameters_init(){
+    parameters_init(&parameters);
+}
+
 /* ask QM to define the Blinky class ---------------------------------------*/
 /*$skip${QP_VERSION} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
 /* Check for the minimum required QP version */
@@ -704,8 +710,6 @@ void SumoHSM_ctor(void) {
     QTimeEvt_ctorX(&me->timeEvtStuckEnd, &me->super.super, STUCK_END_SIG, 0U);
     me->ble_counter = 0;
     me->stuck_counter = 0;
-    parameters_init(&parameters);
-
 }
 /*$enddef${AOs::SumoHSM_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 

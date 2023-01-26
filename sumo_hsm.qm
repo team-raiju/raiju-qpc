@@ -17,9 +17,7 @@ QTimeEvt_ctorX(&amp;me-&gt;timerFailSafe, &amp;me-&gt;super.super, FAILSAFE_SIG,
 QTimeEvt_ctorX(&amp;me-&gt;timeEvtStuck, &amp;me-&gt;super.super, STUCK_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvtStuckEnd, &amp;me-&gt;super.super, STUCK_END_SIG, 0U);
 me-&gt;ble_counter = 0;
-me-&gt;stuck_counter = 0;
-parameters_init(&amp;parameters);
-</code>
+me-&gt;stuck_counter = 0;</code>
   </operation>
   <!--${AOs::SumoHSM}-->
   <class name="SumoHSM" superclass="qpc::QMActive">
@@ -2215,6 +2213,12 @@ $declare${AOs::SumoHSM}
 static SumoHSM l_sumo_hsm;
 QActive * const AO_SumoHSM = &amp;l_sumo_hsm.super.super;
 
+
+// Needs to be called in the beggining of the program, so that we don't have problems accessing the eeprom
+void sumo_parameters_init(){
+    parameters_init(&amp;parameters);
+}
+
 /* ask QM to define the Blinky class ---------------------------------------*/
 $define${AOs::SumoHSM_ctor}
 
@@ -2360,6 +2364,8 @@ enum SumoHSMSignals {
 /* active object(s) used in this application -------------------------------*/
 extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */
 $declare${AOs::SumoHSM_ctor}
+
+void sumo_parameters_init(void);
 
 #ifdef Q_SPY
 void sumoHSM_update_qs_dict(void);
