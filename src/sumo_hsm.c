@@ -1217,23 +1217,14 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         case LINE_CHANGED_BR_SIG: /* intentionally fall through */
         case LINE_CHANGED_FL_SIG: /* intentionally fall through */
         case LINE_CHANGED_FR_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[3];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_BLESubmachine_s, /* target submachine */
-                {
-                    Q_ACTION_CAST(&SumoHSM_RCWait_x), /* exit */
-                    Q_ACTION_CAST(&SumoHSM_ble3_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
             if (adc_line_none_white()){
                 buzzer_stop();
             } else {
                 buzzer_start();
             }
-            status_ = QM_TRAN(&tatbl_);
+
+            parameters_report(parameters, 2);
+            status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::RCWait::DIST_SENSOR_CHANGE} */
@@ -1255,6 +1246,12 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::RCWait::STOP_BUZZER} */
         case STOP_BUZZER_SIG: {
             buzzer_stop();
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::RCWait::DIST_SENSOR_CHANGE} */
+        case DIST_SENSOR_CHANGE_SIG: {
+            parameters_report(parameters, 2);
             status_ = QM_HANDLED();
             break;
         }
