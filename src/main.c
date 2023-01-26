@@ -48,6 +48,7 @@ int main() {
 
     QF_init();  /* initialize the framework */
     BSP_init(); /* initialize the BSP */
+    sumo_parameters_init();
     APP_init();
 
     /* instantiate and start the SumoHSM active object */
