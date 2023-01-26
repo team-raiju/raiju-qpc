@@ -48,12 +48,16 @@ if (distance_is_active(DIST_SENSOR_F)){
     drive(100,100);
 } else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(100,100);
+} else if (distance_is_active(DIST_SENSOR_FR)) {
+    drive(30,-30);
+} else if (distance_is_active(DIST_SENSOR_FL)) {
+    drive(-30,30);
+} else if (distance_is_active(DIST_SENSOR_DR)) {
+    drive(50,-50);
+} else if (distance_is_active(DIST_SENSOR_DL)) {
+    drive(-50,50);
 } else if (distance_is_active(DIST_SENSOR_R)) {
     drive(80,-80);
-} else if (distance_is_active(DIST_SENSOR_FR)) {
-    drive(80,0);
-} else if (distance_is_active(DIST_SENSOR_FL)) {
-    drive(0,80);
 } else if (distance_is_active(DIST_SENSOR_L)) {
     drive(-80,80);
 } else {
@@ -70,12 +74,16 @@ if (distance_is_active(DIST_SENSOR_F)&amp;&amp;
 } else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(0,0);
     return false;
-} else if (distance_is_active(DIST_SENSOR_R)) {
-    drive(80,-80);
 } else if (distance_is_active(DIST_SENSOR_FR)) {
     drive(30,-30);
 } else if (distance_is_active(DIST_SENSOR_FL)) {
     drive(-30,30);
+} else if (distance_is_active(DIST_SENSOR_DR)) {
+    drive(50,-50);
+} else if (distance_is_active(DIST_SENSOR_DL)) {
+    drive(-50,50);
+} else if (distance_is_active(DIST_SENSOR_R)) {
+    drive(80,-80);
 } else if (distance_is_active(DIST_SENSOR_L)) {
     drive(-80,80);
 } else {
@@ -315,8 +323,8 @@ parameters_set_pre_strategy_led(&amp;parameters);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::BLE_DATA_REQUEST}-->
      <tran trig="BLE_DATA_REQUEST" target="../../21">
-      <tran_glyph conn="133,37,3,3,-13,-23,19">
-       <action box="-12,-18,18,2"/>
+      <tran_glyph conn="164,32,1,1,17,-19,-18">
+       <action box="0,-3,18,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::BLE_DATA_UPDATE}-->
@@ -341,12 +349,6 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);</acti
 parameters_report(parameters, 2);</action>
       <tran_glyph conn="133,44,5,-1,16">
        <action box="0,-2,23,4"/>
-      </tran_glyph>
-     </tran>
-     <!--${AOs::SumoHSM::SM::RCWait::DIST_SENSOR_CHANGE}-->
-     <tran trig="DIST_SENSOR_CHANGE" target="../../21">
-      <tran_glyph conn="164,40,1,1,18,-23,-17">
-       <action box="0,-2,21,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::STOP_BUZZER}-->
@@ -1405,11 +1407,11 @@ if (!SumoHSM_CheckDistAndMove(me)){
     <smstate name="ble3" submachine="../31">
      <!--${AOs::SumoHSM::SM::ble3::XP1}-->
      <xpseg xpref="../../31/0" target="../../2">
-      <xpseg_glyph conn="165,13,1,1,20,30,-21">
+      <xpseg_glyph conn="163,10,1,1,20,26,-19">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
-     <smstate_glyph node="139,10,26,8"/>
+     <smstate_glyph node="137,7,26,8"/>
     </smstate>
     <!--${AOs::SumoHSM::SM::ble4}-->
     <smstate name="ble4" submachine="../31">

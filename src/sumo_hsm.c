@@ -726,12 +726,16 @@ static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me) {
         drive(100,100);
     } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
         drive(100,100);
+    } else if (distance_is_active(DIST_SENSOR_FR)) {
+        drive(30,-30);
+    } else if (distance_is_active(DIST_SENSOR_FL)) {
+        drive(-30,30);
+    } else if (distance_is_active(DIST_SENSOR_DR)) {
+        drive(50,-50);
+    } else if (distance_is_active(DIST_SENSOR_DL)) {
+        drive(-50,50);
     } else if (distance_is_active(DIST_SENSOR_R)) {
         drive(80,-80);
-    } else if (distance_is_active(DIST_SENSOR_FR)) {
-        drive(80,0);
-    } else if (distance_is_active(DIST_SENSOR_FL)) {
-        drive(0,80);
     } else if (distance_is_active(DIST_SENSOR_L)) {
         drive(-80,80);
     } else {
@@ -749,12 +753,16 @@ static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me) {
     } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
         drive(0,0);
         return false;
-    } else if (distance_is_active(DIST_SENSOR_R)) {
-        drive(80,-80);
     } else if (distance_is_active(DIST_SENSOR_FR)) {
         drive(30,-30);
     } else if (distance_is_active(DIST_SENSOR_FL)) {
         drive(-30,30);
+    } else if (distance_is_active(DIST_SENSOR_DR)) {
+        drive(50,-50);
+    } else if (distance_is_active(DIST_SENSOR_DL)) {
+        drive(-50,50);
+    } else if (distance_is_active(DIST_SENSOR_R)) {
+        drive(80,-80);
     } else if (distance_is_active(DIST_SENSOR_L)) {
         drive(-80,80);
     } else {
@@ -1225,22 +1233,6 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
 
             parameters_report(parameters, 2);
             status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::RCWait::DIST_SENSOR_CHANGE} */
-        case DIST_SENSOR_CHANGE_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[3];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_BLESubmachine_s, /* target submachine */
-                {
-                    Q_ACTION_CAST(&SumoHSM_RCWait_x), /* exit */
-                    Q_ACTION_CAST(&SumoHSM_ble3_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN(&tatbl_);
             break;
         }
         /*${AOs::SumoHSM::SM::RCWait::STOP_BUZZER} */
