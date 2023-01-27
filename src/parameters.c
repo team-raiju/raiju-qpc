@@ -377,9 +377,11 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
         break;
     case BLE_DATA_HDR_EN_DISTANCE_SENSORS:
         params->enabled_distance_sensors = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        distance_service_set_mask(params->enabled_distance_sensors);
         break;
     case BLE_DATA_HDR_EN_LINE_SENSORS:
         params->enabled_line_sensors = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        adc_line_set_mask(params->enabled_line_sensors);
         break;
     case BLE_DATA_HDR_STAR_SPEED:
         params->star_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);

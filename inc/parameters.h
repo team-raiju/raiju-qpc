@@ -12,8 +12,8 @@ typedef struct sumo_parameters {
     uint8_t  pre_strategy;               /* Current pre strategy */
     uint8_t  calib_mode;                 /* Current calib mode */
 
-    uint16_t enabled_distance_sensors;   /* Bits corresponding to which sensors are enabled bit 6-0 -> R,FR,DR,F,DL,FL,L*/
-    uint8_t  enabled_line_sensors;       /* Current calib mode */
+    uint16_t enabled_distance_sensors;   /* Bits corresponding to which dist sensors are enabled bit 6-0 -> R,FR,DR,F,DL,FL,L*/
+    uint8_t  enabled_line_sensors;       /* Bits corresponding to which line sensors are enabled bit 3-0 -> BL[3],BR[2],FL[1],FR[0]*/
 
     uint8_t  star_speed;                 /* Velocity to look for opponents whiles not seeing */
     uint8_t  max_speed;                  /* Max possible speed. Current UNUSED */
