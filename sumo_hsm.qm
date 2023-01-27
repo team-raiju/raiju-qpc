@@ -401,7 +401,7 @@ distance_service_set_mask(parameters.enabled_distance_sensors);</exit>
     QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 } else {
     if (me-&gt;stuck_counter &lt; 3){
-        QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout);
+        QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
     }
 }</action>
       <tran_glyph conn="14,153,3,-1,20">
@@ -685,7 +685,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);</action>
     QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 } else {
     if (me-&gt;stuck_counter &lt; 3){
-        QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout);
+        QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
     }
 }
 </action>
@@ -1177,7 +1177,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, reverse_time);</entry>
     </state>
     <!--${AOs::SumoHSM::SM::CalibeFrontTurn}-->
     <state name="CalibeFrontTurn">
-     <entry brief="turn">drive(parameters.turn_speed, -parameters.turn_speed);
+     <entry brief="turn">drive(parameters.line_seen_turn_speed, -parameters.line_seen_turn_speed);
 uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_right_time_ms * (0.6);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, turn_time);</entry>
      <!--${AOs::SumoHSM::SM::CalibeFrontTurn::TIMEOUT}-->
@@ -1256,7 +1256,7 @@ distance_service_set_mask(parameters.enabled_distance_sensors);</exit>
     QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);
 } else {
     if (me-&gt;stuck_counter &lt; 3){
-        QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout);
+        QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
     }
 }</action>
       <tran_glyph conn="82,153,3,-1,20">
@@ -1476,8 +1476,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, reverse_time);</entry>
     </state>
     <!--${AOs::SumoHSM::SM::CalibeStarTurn}-->
     <state name="CalibeStarTurn">
-     <entry brief="turn">drive(parameters.turn_speed, -parameters.turn_speed);
-uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.turn_speed, SIDE_RIGHT, &amp;parameters);
+     <entry brief="turn">drive(parameters.line_seen_turn_speed, -parameters.line_seen_turn_speed);
+uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.line_seen_turn_speed, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
      <!--${AOs::SumoHSM::SM::CalibeStarTurn::TIMEOUT}-->
      <tran trig="TIMEOUT" target="../../27">
@@ -1601,8 +1601,8 @@ if (adc_line_is_white(LINE_FL)){
      </state>
      <!--${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight}-->
      <state name="LineTurnRight">
-      <entry brief="turn right">drive(parameters.turn_speed, -parameters.turn_speed);
-uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.turn_speed, SIDE_RIGHT, &amp;parameters);
+      <entry brief="turn right">drive(parameters.line_seen_turn_speed, -parameters.line_seen_turn_speed);
+uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.line_seen_turn_speed, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <exit>drive(0,0);</exit>
       <!--${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight::TIMEOUT}-->
@@ -1631,8 +1631,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      </state>
      <!--${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft}-->
      <state name="LineTurnLeft">
-      <entry brief="turn left">drive(-parameters.turn_speed, parameters.turn_speed);
-uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.turn_speed, SIDE_LEFT, &amp;parameters);
+      <entry brief="turn left">drive(-parameters.line_seen_turn_speed, parameters.line_seen_turn_speed);
+uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.line_seen_turn_speed, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <exit>drive(0,0);</exit>
       <!--${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft::TIMEOUT}-->

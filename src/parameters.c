@@ -83,7 +83,7 @@ typedef union{
         uint8_t  max_speed;
         uint8_t  reverse_speed; 
         uint16_t reverse_time_ms;
-        uint8_t  turn_speed;
+        uint8_t  line_seen_turn_speed;
         uint16_t turn_180_right_time_ms;
         uint16_t turn_180_left_time_ms;
 
@@ -101,7 +101,7 @@ typedef union{
         uint16_t step_wait_time_ms;
         uint16_t step_advance_time_ms;
         uint16_t time_ms_to_cross_at_60_vel;
-        uint16_t is_stucked_timeout;
+        uint16_t is_stucked_timeout_ms;
 
         uint8_t attack_when_near;
         uint8_t empty[9];
@@ -194,19 +194,19 @@ static sumo_parameters_t init_parameters_default = {
     .strategy = 0,
     .pre_strategy = 0,
     .calib_mode = 0,
-    .enabled_distance_sensors = 0b111111111,
+    .enabled_distance_sensors = 0b001111111,
     .enabled_line_sensors = 0b001111,
     .star_speed = 60,
     .max_speed = 100,
     .reverse_speed = 100,
     .reverse_time_ms = 250,
-    .turn_speed = 100,
+    .line_seen_turn_speed = 100,
     .turn_180_right_time_ms = 300,
     .turn_180_left_time_ms = 300,
     .step_wait_time_ms = 1500,
     .step_advance_time_ms = 150,
     .time_ms_to_cross_at_60_vel = 600,
-    .is_stucked_timeout = 3000,
+    .is_stucked_timeout_ms = 2000,
     .attack_when_near = 0,
 };
 
@@ -256,7 +256,7 @@ void parameters_init(sumo_parameters_t *params){
 
     read_and_update_parameter_8_bit(REVERSE_SPEED_ADDR, &temp_params.reverse_speed);
     read_and_update_parameter_16_bit(REVERSE_TIME_MS_ADDR, &temp_params.reverse_time_ms);
-    read_and_update_parameter_8_bit(TURN_SPEED_ADDR, &temp_params.turn_speed);
+    read_and_update_parameter_8_bit(TURN_SPEED_ADDR, &temp_params.line_seen_turn_speed);
 
     read_and_update_parameter_16_bit(STEP_WAIT_TIME_MS_ADDR, &temp_params.step_wait_time_ms);
     read_and_update_parameter_16_bit(STEP_ADVANCE_TIME_MS_ADDR, &temp_params.step_advance_time_ms);
@@ -265,7 +265,7 @@ void parameters_init(sumo_parameters_t *params){
     read_and_update_parameter_16_bit(TURN_180_LEFT_TIME_ADDR, &temp_params.turn_180_left_time_ms);
     read_and_update_parameter_16_bit(TIME_MS_TO_CROSS_AT_60_ADDR, &temp_params.time_ms_to_cross_at_60_vel);
 
-    read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED, &temp_params.is_stucked_timeout);
+    read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED, &temp_params.is_stucked_timeout_ms);
 
     *params = temp_params;
 
@@ -294,7 +294,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
             packet_0.max_speed = params.max_speed; 
             packet_0.reverse_speed = params.reverse_speed; 
             packet_0.reverse_time_ms = params.reverse_time_ms; 
-            packet_0.turn_speed = params.turn_speed; 
+            packet_0.line_seen_turn_speed = params.line_seen_turn_speed; 
             packet_0.turn_180_right_time_ms = params.turn_180_right_time_ms; 
             packet_0.turn_180_left_time_ms = params.turn_180_left_time_ms; 
             memcpy(buffer, packet_0._raw, BLE_PACKET_TRANSMIT_SIZE);
@@ -308,7 +308,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
             packet_1.step_wait_time_ms = params.step_wait_time_ms;
             packet_1.step_advance_time_ms = params.step_advance_time_ms;
             packet_1.time_ms_to_cross_at_60_vel = params.time_ms_to_cross_at_60_vel;
-            packet_1.is_stucked_timeout = params.is_stucked_timeout;
+            packet_1.is_stucked_timeout_ms = params.is_stucked_timeout_ms;
             packet_1.attack_when_near = params.attack_when_near;
             memcpy(buffer, packet_1._raw, BLE_PACKET_TRANSMIT_SIZE);
             break;
@@ -394,7 +394,7 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
         params->reverse_time_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_TURN_SPEED:
-        params->turn_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        params->line_seen_turn_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_TURN_180_RIGHT_TIME_MS:
         params->turn_180_right_time_ms  = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
@@ -412,7 +412,7 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
         params->time_ms_to_cross_at_60_vel = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_IS_STUCKED_TIMEOUT:
-        params->is_stucked_timeout = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        params->is_stucked_timeout_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_ATTACK_WHEN_NEAR:
         params->attack_when_near = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
