@@ -319,6 +319,10 @@ prepare:
 	$(AT)-mv -f $(CUBE_LOCATION)/Src/main.c $(CUBE_LOCATION)/Src/cube_main.c
 	$(AT)-rm -f $(CUBE_LOCATION)/Makefile
 
+erase:
+	@echo "Erasing device"
+	$(AT)$(STM_PROG) -c port=SWD -e all
+
 ###############################################################################
 ## VS Code files
 ###############################################################################
