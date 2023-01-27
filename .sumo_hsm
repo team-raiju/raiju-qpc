@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <session version="5.2.2">
+ <item name="license">/home/marco/qp-linux_7.1.2/qp/qpc/LICENSES/QM-EVAL-QPC.qlc</item>
  <group name="locked"/>
  <group name="settings">
   <item name="tabs">1</item>

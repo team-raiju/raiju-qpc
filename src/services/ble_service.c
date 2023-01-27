@@ -42,6 +42,7 @@ static volatile ble_rcv_packet_t ble_last_data;
 
 static int8_t validate_data(uint8_t * data, uint8_t size){
 
+    Q_UNUSED_PAR(data);
     if (size != BLE_RECEIVE_PACKET_SIZE){
         return -1;
     }

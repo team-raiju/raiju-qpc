@@ -19,8 +19,8 @@ typedef struct sumo_parameters {
     uint8_t  max_speed;                  /* Max possible speed. Current UNUSED */
     
     uint8_t  reverse_speed;              /* When seeing line, absolute value of speed that will reverse the motor - default 100*/   
-    uint16_t reverse_time_ms;            /* When seeing line, time that motor will be reversing at reverse seped */
-    uint8_t  line_seen_turn_speed;       /* When seeing line, time that motor will be reversing at reverse seped  */
+    uint16_t reverse_time_ms;            /* When seeing line, time that motor will be reversing at 100% */
+    uint8_t  line_seen_turn_angle;       /* When seeing line, angle that will turn after going back */
 
     uint16_t turn_180_right_time_ms;     /* Time to turn 180 degrees right at 100%*/
     uint16_t turn_180_left_time_ms;      /* Time to turn 180 degrees left at 100%*/

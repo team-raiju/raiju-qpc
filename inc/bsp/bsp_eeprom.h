@@ -26,7 +26,7 @@ typedef enum eeprom_addresses {
     REVERSE_SPEED_ADDR,
     REVERSE_TIME_MS_ADDR,
     
-    TURN_SPEED_ADDR,
+    LINE_TURN_ANGLE_ADDR,
 
     STEP_WAIT_TIME_MS_ADDR,
     STEP_ADVANCE_TIME_MS_ADDR,

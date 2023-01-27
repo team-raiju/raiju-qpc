@@ -46,7 +46,7 @@ typedef enum {
     BLE_DATA_HDR_MAX_SPEED,
     BLE_DATA_HDR_REVERSE_SPEED,
     BLE_DATA_HDR_REVERSE_TIME_MS,
-    BLE_DATA_HDR_TURN_SPEED,
+    BLE_DATA_HDR_LINE_TURN_ANGLE,
     BLE_DATA_HDR_TURN_180_RIGHT_TIME_MS,
     BLE_DATA_HDR_TURN_180_LEFT_TIME_MS,
     BLE_DATA_HDR_STEP_WAIT_TIME_MS,
@@ -83,7 +83,7 @@ typedef union{
         uint8_t  max_speed;
         uint8_t  reverse_speed; 
         uint16_t reverse_time_ms;
-        uint8_t  line_seen_turn_speed;
+        uint8_t  line_seen_turn_angle;
         uint16_t turn_180_right_time_ms;
         uint16_t turn_180_left_time_ms;
 
@@ -200,7 +200,7 @@ static sumo_parameters_t init_parameters_default = {
     .max_speed = 100,
     .reverse_speed = 100,
     .reverse_time_ms = 250,
-    .line_seen_turn_speed = 100,
+    .line_seen_turn_angle = 120,
     .turn_180_right_time_ms = 300,
     .turn_180_left_time_ms = 300,
     .step_wait_time_ms = 1500,
@@ -256,7 +256,7 @@ void parameters_init(sumo_parameters_t *params){
 
     read_and_update_parameter_8_bit(REVERSE_SPEED_ADDR, &temp_params.reverse_speed);
     read_and_update_parameter_16_bit(REVERSE_TIME_MS_ADDR, &temp_params.reverse_time_ms);
-    read_and_update_parameter_8_bit(TURN_SPEED_ADDR, &temp_params.line_seen_turn_speed);
+    read_and_update_parameter_8_bit(LINE_TURN_ANGLE_ADDR, &temp_params.line_seen_turn_angle);
 
     read_and_update_parameter_16_bit(STEP_WAIT_TIME_MS_ADDR, &temp_params.step_wait_time_ms);
     read_and_update_parameter_16_bit(STEP_ADVANCE_TIME_MS_ADDR, &temp_params.step_advance_time_ms);
@@ -294,7 +294,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num){
             packet_0.max_speed = params.max_speed; 
             packet_0.reverse_speed = params.reverse_speed; 
             packet_0.reverse_time_ms = params.reverse_time_ms; 
-            packet_0.line_seen_turn_speed = params.line_seen_turn_speed; 
+            packet_0.line_seen_turn_angle = params.line_seen_turn_angle; 
             packet_0.turn_180_right_time_ms = params.turn_180_right_time_ms; 
             packet_0.turn_180_left_time_ms = params.turn_180_left_time_ms; 
             memcpy(buffer, packet_0._raw, BLE_PACKET_TRANSMIT_SIZE);
@@ -395,8 +395,8 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
     case BLE_DATA_HDR_REVERSE_TIME_MS:
         params->reverse_time_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
-    case BLE_DATA_HDR_TURN_SPEED:
-        params->line_seen_turn_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+    case BLE_DATA_HDR_LINE_TURN_ANGLE:
+        params->line_seen_turn_angle = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         break;
     case BLE_DATA_HDR_TURN_180_RIGHT_TIME_MS:
         params->turn_180_right_time_ms  = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);

@@ -2511,9 +2511,9 @@ static QState SumoHSM_CalibFrontGoBack(SumoHSM * const me, QEvt const * const e)
 /*${AOs::SumoHSM::SM::CalibeFrontTurn} .....................................*/
 /*${AOs::SumoHSM::SM::CalibeFrontTurn} */
 static QState SumoHSM_CalibeFrontTurn_e(SumoHSM * const me) {
-    drive(parameters.line_seen_turn_speed, -parameters.line_seen_turn_speed);
-    uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_right_time_ms * (0.6);
-    QTimeEvt_rearm(&me->timeEvt, turn_time);
+    drive(100, -100);
+    uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &parameters);
+    QTimeEvt_rearm(&me->timeEvt, turn_time_ms);
     return QM_ENTRY(&SumoHSM_CalibeFrontTurn_s);
 }
 /*${AOs::SumoHSM::SM::CalibeFrontTurn} */
@@ -3121,8 +3121,8 @@ static QState SumoHSM_CalibStarGoBack(SumoHSM * const me, QEvt const * const e) 
 /*${AOs::SumoHSM::SM::CalibeStarTurn} ......................................*/
 /*${AOs::SumoHSM::SM::CalibeStarTurn} */
 static QState SumoHSM_CalibeStarTurn_e(SumoHSM * const me) {
-    drive(parameters.line_seen_turn_speed, -parameters.line_seen_turn_speed);
-    uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.line_seen_turn_speed, SIDE_RIGHT, &parameters);
+    drive(100, -100);
+    uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
     return QM_ENTRY(&SumoHSM_CalibeStarTurn_s);
 }
@@ -3362,8 +3362,8 @@ static QState SumoHSM_LineSubmachine_LineGoBack(SumoHSM * const me, QEvt const *
 /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} .......................*/
 /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnRight} */
 static QState SumoHSM_LineSubmachine_LineTurnRight_e(SumoHSM * const me) {
-    drive(parameters.line_seen_turn_speed, -parameters.line_seen_turn_speed);
-    uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.line_seen_turn_speed, SIDE_RIGHT, &parameters);
+    drive(100, -100);
+    uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineTurnRight_s);
 }
@@ -3434,8 +3434,8 @@ static QState SumoHSM_LineSubmachine_LineTurnRight(SumoHSM * const me, QEvt cons
 /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} ........................*/
 /*${AOs::SumoHSM::SM::LineSubmachine::LineTurnLeft} */
 static QState SumoHSM_LineSubmachine_LineTurnLeft_e(SumoHSM * const me) {
-    drive(-parameters.line_seen_turn_speed, parameters.line_seen_turn_speed);
-    uint16_t turn_time_ms = get_time_to_turn_ms(160, parameters.line_seen_turn_speed, SIDE_LEFT, &parameters);
+    drive(-100, 100);
+    uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_LEFT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
     return QM_ENTRY(&SumoHSM_LineSubmachine_LineTurnLeft_s);
 }
