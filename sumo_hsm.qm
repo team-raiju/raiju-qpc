@@ -684,6 +684,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);</action>
     QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);
     QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 } else {
+     QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+     QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
     if (me-&gt;stuck_counter &lt; 3){
         QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
     }
@@ -1255,6 +1257,8 @@ distance_service_set_mask(parameters.enabled_distance_sensors);</exit>
     uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
     QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);
 } else {
+    QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+    QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
     if (me-&gt;stuck_counter &lt; 3){
         QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
     }

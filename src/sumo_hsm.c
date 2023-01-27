@@ -1720,6 +1720,8 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
                 QTimeEvt_rearm(&me->timeEvt, small_step_wait);
                 QTimeEvt_disarm(&me->timeEvtStuck);
             } else {
+                 QTimeEvt_disarm(&me->timeEvt);
+                 QTimeEvt_disarm(&me->timeEvt_2);
                 if (me->stuck_counter < 3){
                     QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
                 }
@@ -2661,6 +2663,8 @@ static QState SumoHSM_DefensiveStrategy(SumoHSM * const me, QEvt const * const e
                 uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
                 QTimeEvt_rearm(&me->timeEvt, small_step_wait);
             } else {
+                QTimeEvt_disarm(&me->timeEvt);
+                QTimeEvt_disarm(&me->timeEvt_2);
                 if (me->stuck_counter < 3){
                     QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
                 }
