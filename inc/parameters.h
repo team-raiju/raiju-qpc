@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define PARAMETERS_REPORT_SIZE  3
+#define BLE_TRANSMIT_NUM_OF_PACKETS  3
 
 typedef struct sumo_parameters {
 
@@ -41,6 +41,28 @@ typedef enum {
     SIDE_LEFT,
     SIDE_RIGHT,
 } side_t;
+
+typedef enum {
+    BLE_DATA_HDR_STRATEGY_AND_PRE,
+    BLE_DATA_HDR_CALIB_MODE,
+    BLE_DATA_HDR_CUST_STRATEGY,
+    BLE_DATA_HDR_EN_DISTANCE_SENSORS,
+    BLE_DATA_HDR_EN_LINE_SENSORS,
+    BLE_DATA_HDR_STAR_SPEED,
+    BLE_DATA_HDR_MAX_SPEED,
+    BLE_DATA_HDR_REVERSE_SPEED,
+    BLE_DATA_HDR_REVERSE_TIME_MS,
+    BLE_DATA_HDR_LINE_TURN_ANGLE,
+    BLE_DATA_HDR_TURN_180_RIGHT_TIME_MS,
+    BLE_DATA_HDR_TURN_180_LEFT_TIME_MS,
+    BLE_DATA_HDR_STEP_WAIT_TIME_MS,
+    BLE_DATA_HDR_STEP_ADVANCE_TIME_MS,
+    BLE_DATA_HDR_TIME_MS_TO_CROSS_AT_60_VEL,
+    BLE_DATA_HDR_IS_STUCKED_TIMEOUT,
+    BLE_DATA_HDR_ATTACK_WHEN_NEAR,
+    BLE_DATA_MAX_HDR
+} ble_data_header_t;
+
 
 void parameters_report(sumo_parameters_t params, uint8_t config_num);
 void parameters_init(sumo_parameters_t *params);

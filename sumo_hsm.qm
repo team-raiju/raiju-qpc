@@ -938,7 +938,7 @@ switch (parameters.calib_mode)
 
     case 3: {
          parameters.star_speed += 2;
-        if (parameters.star_speed &gt; 90){
+        if (parameters.star_speed &gt; 98){
             parameters.star_speed = 30;
         }
         BSP_eeprom_write(STAR_SPEED_ADDR, parameters.star_speed);
@@ -2165,12 +2165,12 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtBle);</exit>
      </xp>
      <!--${AOs::SumoHSM::SM::BLESubmachine::TIMEOUT_SEND_BLE}-->
      <tran trig="TIMEOUT_SEND_BLE">
-      <action brief="report_params()">if (me-&gt;ble_counter &lt; (PARAMETERS_REPORT_SIZE - 1)){
+      <action brief="report_params()">if (me-&gt;ble_counter &lt; (BLE_TRANSMIT_NUM_OF_PACKETS - 1)){
     parameters_report(parameters, me-&gt;ble_counter);
     QTimeEvt_armX(&amp;me-&gt;timeEvtBle, BSP_TICKS_PER_MILISSEC * 40, 0);
     me-&gt;ble_counter++;
 } else {
-    parameters_report(parameters, (PARAMETERS_REPORT_SIZE - 1));
+    parameters_report(parameters, (BLE_TRANSMIT_NUM_OF_PACKETS - 1));
     QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 40, 0);
 }
 

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "parameters.h"
+#include "parameters_set.h"
 #include "ble_service.h"
 #include "utils.h"
 #include "bsp_eeprom.h"
@@ -35,29 +36,6 @@
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
-
-typedef enum {
-    BLE_DATA_HDR_STRATEGY_AND_PRE,
-    BLE_DATA_HDR_CALIB_MODE,
-    BLE_DATA_HDR_CUST_STRATEGY,
-    BLE_DATA_HDR_EN_DISTANCE_SENSORS,
-    BLE_DATA_HDR_EN_LINE_SENSORS,
-    BLE_DATA_HDR_STAR_SPEED,
-    BLE_DATA_HDR_MAX_SPEED,
-    BLE_DATA_HDR_REVERSE_SPEED,
-    BLE_DATA_HDR_REVERSE_TIME_MS,
-    BLE_DATA_HDR_LINE_TURN_ANGLE,
-    BLE_DATA_HDR_TURN_180_RIGHT_TIME_MS,
-    BLE_DATA_HDR_TURN_180_LEFT_TIME_MS,
-    BLE_DATA_HDR_STEP_WAIT_TIME_MS,
-    BLE_DATA_HDR_STEP_ADVANCE_TIME_MS,
-    BLE_DATA_HDR_TIME_MS_TO_CROSS_AT_60_VEL,
-    BLE_DATA_HDR_IS_STUCKED_TIMEOUT,
-    BLE_DATA_HDR_ATTACK_WHEN_NEAR,
-    BLE_DATA_MAX_HDR
-} ble_data_header_t;
-
-
 typedef union{
     uint8_t _raw[BLE_RECEIVE_PACKET_SIZE - 2];
     struct {
@@ -375,57 +353,13 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
     case BLE_DATA_HDR_CUST_STRATEGY:
         cust_strategy_update_from_ble(ble_packet.param_data, sizeof(ble_packet.param_data));
         break;
-    case BLE_DATA_HDR_EN_DISTANCE_SENSORS:
-        params->enabled_distance_sensors = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        distance_service_set_mask(params->enabled_distance_sensors);
-        break;
-    case BLE_DATA_HDR_EN_LINE_SENSORS:
-        params->enabled_line_sensors = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        adc_line_set_mask(params->enabled_line_sensors);
-        break;
-    case BLE_DATA_HDR_STAR_SPEED:
-        params->star_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_MAX_SPEED:
-        params->max_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_REVERSE_SPEED:
-        params->reverse_speed = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_REVERSE_TIME_MS:
-        params->reverse_time_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_LINE_TURN_ANGLE:
-        params->line_seen_turn_angle = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_TURN_180_RIGHT_TIME_MS:
-        params->turn_180_right_time_ms  = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_TURN_180_LEFT_TIME_MS:
-        params->turn_180_left_time_ms  = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_STEP_WAIT_TIME_MS:
-        params->step_wait_time_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_STEP_ADVANCE_TIME_MS:
-        params->step_advance_time_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_TIME_MS_TO_CROSS_AT_60_VEL:
-        params->time_ms_to_cross_at_60_vel = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_IS_STUCKED_TIMEOUT:
-        params->is_stucked_timeout_ms = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    case BLE_DATA_HDR_ATTACK_WHEN_NEAR:
-        params->attack_when_near = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        break;
-    default:
+    default: {
+        uint16_t new_param = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
+        set_validade_new_param_uint16_t(ble_packet.header, params, new_param);
         break;
     }
+    }
 
-
-
-    // TODO: Save in eeprom
 }
 
 void parameters_set_strategy(sumo_parameters_t *params, uint8_t strategy){

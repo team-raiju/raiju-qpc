@@ -2083,7 +2083,7 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
 
                 case 3: {
                      parameters.star_speed += 2;
-                    if (parameters.star_speed > 90){
+                    if (parameters.star_speed > 98){
                         parameters.star_speed = 30;
                     }
                     BSP_eeprom_write(STAR_SPEED_ADDR, parameters.star_speed);
@@ -4474,12 +4474,12 @@ static QState SumoHSM_BLESubmachine(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::BLESubmachine::TIMEOUT_SEND_BLE} */
         case TIMEOUT_SEND_BLE_SIG: {
-            if (me->ble_counter < (PARAMETERS_REPORT_SIZE - 1)){
+            if (me->ble_counter < (BLE_TRANSMIT_NUM_OF_PACKETS - 1)){
                 parameters_report(parameters, me->ble_counter);
                 QTimeEvt_armX(&me->timeEvtBle, BSP_TICKS_PER_MILISSEC * 40, 0);
                 me->ble_counter++;
             } else {
-                parameters_report(parameters, (PARAMETERS_REPORT_SIZE - 1));
+                parameters_report(parameters, (BLE_TRANSMIT_NUM_OF_PACKETS - 1));
                 QTimeEvt_armX(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 40, 0);
             }
 
