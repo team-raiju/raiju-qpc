@@ -30,6 +30,8 @@ static void uart_error_callback(void *arg);
 uint16_t rc_channels[RADIO_CRSF_MAX_CHANNELS];
 static bsp_uart_crsf_callback_t external_callback;
 
+static bool stopped = false;
+
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -50,7 +52,9 @@ static void uart_callback(void *arg) {
         external_callback(rc_channels, RADIO_CRSF_CHANNELS);
     }
     
-	HAL_UART_Receive_DMA(&huart4, rx_data, 1);
+    if(!stopped){
+    	HAL_UART_Receive_DMA(&huart4, rx_data, 1);
+    }
 
 
 }
@@ -76,12 +80,13 @@ void bsp_uart_crsf_init() {
 
 void bsp_uart_crsf_start() {
     HAL_UART_Receive_DMA(&huart4, rx_data, 1);
+    stopped = false;
 
 }
 
 void bsp_uart_crsf_stop() {
     HAL_UART_DMAStop(&huart4);
-
+    stopped = true;
 }
 
 

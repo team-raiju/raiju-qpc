@@ -1462,6 +1462,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::AutoWait::START} */
         case START_SIG: {
             driving_enable();
+            radio_service_disable();
             /*${AOs::SumoHSM::SM::AutoWait::START::[ps_0]} */
             if (parameters.pre_strategy == 0) {
                 static struct {
@@ -1690,6 +1691,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
                     }
                 };
                 driving_enable();
+                radio_service_disable();
                 status_ = QM_TRAN_EP(&tatbl_);
             }
             else {
@@ -2612,6 +2614,7 @@ static QState SumoHSM_CalibeFrontTurn(SumoHSM * const me, QEvt const * const e) 
 static QState SumoHSM_AutoEnd_e(SumoHSM * const me) {
     drive(0,0);
     driving_disable();
+    radio_service_enable();
     board_led_off();
     led_stripe_set_all_color(COLOR_BLACK);
     ble_service_send_string("state:AUTOEND");

@@ -517,7 +517,8 @@ me-&gt;stuck_counter = 0;
 parameters.attack_when_near = false;</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
-      <action>driving_enable();</action>
+      <action>driving_enable();
+radio_service_disable();</action>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_0]}-->
       <choice target="../../../12" cpref="../../../31/0">
        <guard brief="ps_0">parameters.pre_strategy == 0</guard>
@@ -645,9 +646,10 @@ parameters_report(parameters, 2);</action>
       <!--${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[attack_when_near]}-->
       <choice target="../../../12" cpref="../../../31/0">
        <guard brief="attack_when_near">parameters.attack_when_near &amp;&amp; distance_is_active(DIST_SENSOR_F)</guard>
-       <action brief="driving_enable">driving_enable();</action>
+       <action brief="driving_enable">driving_enable();
+radio_service_disable();</action>
        <choice_glyph conn="19,85,5,0,-4,30,12,2">
-        <action box="-3,2,15,5"/>
+        <action box="-3,2,14,7"/>
        </choice_glyph>
       </choice>
       <tran_glyph conn="35,85,3,-1,-16">
@@ -1238,6 +1240,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, turn_time_ms);</entry>
     <state name="AutoEnd">
      <entry brief="Disable Motors">drive(0,0);
 driving_disable();
+radio_service_enable();
 board_led_off();
 led_stripe_set_all_color(COLOR_BLACK);
 ble_service_send_string(&quot;state:AUTOEND&quot;);
