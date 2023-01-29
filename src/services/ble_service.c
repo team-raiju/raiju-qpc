@@ -14,7 +14,7 @@
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-
+#define VALIDATOR_NUM       0x14
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -42,8 +42,12 @@ static volatile ble_rcv_packet_t ble_last_data;
 
 static int8_t validate_data(uint8_t * data, uint8_t size){
 
-    Q_UNUSED_PAR(data);
     if (size != BLE_RECEIVE_PACKET_SIZE){
+        return -1;
+    }
+
+    uint8_t validator = data[BLE_RECEIVE_PACKET_SIZE - 1];
+    if (validator != VALIDATOR_NUM){
         return -1;
     }
 
