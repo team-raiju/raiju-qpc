@@ -70,6 +70,7 @@ void BSP_init(void)   {
     BSP_motorsInit();
     BSP_buzzerInit();
     fake_init_dist_sensor_pins();
+    BSP_eeprom_init();
     // BSP_radioInit();
 
 

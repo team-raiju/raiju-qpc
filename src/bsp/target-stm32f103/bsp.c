@@ -40,6 +40,7 @@
 #include "adc.h"
 #include "driving_service.h"
 #include "buzzer_service.h"
+#include "bsp_eeprom.h"
 
 __weak void SystemClock_Config(void);
 
@@ -75,6 +76,8 @@ void BSP_init(void)   {
     MX_DMA_Init();
 
     HAL_Delay(20);
+
+    BSP_eeprom_init();
 
 }
 
