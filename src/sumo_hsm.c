@@ -3312,7 +3312,7 @@ static QState SumoHSM_CalibSensors(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::RCAutomaticStart} */
 static QState SumoHSM_RCAutomaticStart_e(SumoHSM * const me) {
     board_led_off();
-    drive(30,30);
+    drive(100,100);
     uint32_t attack_timeout = 300 * BSP_TICKS_PER_MILISSEC;
     QTimeEvt_rearm(&me->timeEvt, attack_timeout);
     return QM_ENTRY(&SumoHSM_RCAutomaticStart_s);

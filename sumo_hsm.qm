@@ -1588,7 +1588,7 @@ report_raw_line_data_ble();</action>
     <!--${AOs::SumoHSM::SM::RCAutomaticStart}-->
     <state name="RCAutomaticStart">
      <entry brief="attack">board_led_off();
-drive(30,30);
+drive(100,100);
 uint32_t attack_timeout = 300 * BSP_TICKS_PER_MILISSEC;
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, attack_timeout);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
