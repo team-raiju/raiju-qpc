@@ -1185,6 +1185,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
+            parameters.attack_when_near = false;
             status_ = QM_TRAN(&tatbl_);
             break;
         }

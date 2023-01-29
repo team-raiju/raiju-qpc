@@ -297,8 +297,9 @@ ble_service_send_string(&quot;state:RC&quot;);</entry>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../7">
+      <action>parameters.attack_when_near = false;</action>
       <tran_glyph conn="164,50,1,3,83,-13,2">
-       <action box="0,-2,18,3"/>
+       <action box="0,-2,32,4"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::RCWait::TIMEOUT}-->
