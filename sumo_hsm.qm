@@ -219,7 +219,7 @@ ble_service_send_string(&quot;state:RC&quot;);</entry>
      <tran trig="RADIO_DATA">
       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70]}-->
       <choice>
-       <guard brief="|ch1| or |ch2|&gt; 70">(abs(radio_service_get_channel(RADIO_CH1)) &gt; 70) || (abs(radio_service_get_channel(RADIO_CH2)) &gt; 70)</guard>
+       <guard brief="|ch1| or |ch2|&gt; 70">(abs(radio_service_get_channel(RADIO_CH1)) &gt; 50) || (abs(radio_service_get_channel(RADIO_CH2)) &gt; 50)</guard>
        <action brief="en_motors()">driving_enable();</action>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[0]}-->
        <choice target="../../../../18" cpref="../../../../30/0">
@@ -1011,11 +1011,20 @@ if (parameters.strategy == 0){
         drive(mot1, mot2);
     }
 
-} else {
+} else { // Strategy &gt;= 2
 
-    if (adc_line_none_white() &amp;&amp; distance_none_active()){
-        drive(mot1, mot2);
+    // Auto if coord &gt; y
+    if (coord_y &gt;= 60 &amp;&amp; adc_line_none_white()) {
+        if (!SumoHSM_CheckDistAndMove(me)){
+            // If no sensor is seeing, return to manual mode
+            drive(mot1, mot2);
+        }
+    } else {
+        if (adc_line_none_white()){
+            drive(mot1, mot2);
+        }
     }
+
 }
 
 QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
@@ -1048,7 +1057,7 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
 
 }</action>
       <tran_glyph conn="131,120,3,-1,20">
-       <action box="0,-2,15,2"/>
+       <action box="0,-2,18,4"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::RC::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
@@ -1063,17 +1072,6 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
 }</action>
       <tran_glyph conn="131,116,3,-1,20">
        <action box="0,-2,25,4"/>
-      </tran_glyph>
-     </tran>
-     <!--${AOs::SumoHSM::SM::RC::DIST_SENSOR_CHANGE}-->
-     <tran trig="DIST_SENSOR_CHANGE">
-      <action>if (parameters.strategy &gt; 1){
-    if (!SumoHSM_CheckDistAndMove(me)){
-        drive(0, 0);
-    }
-}</action>
-      <tran_glyph conn="131,112,3,-1,14">
-       <action box="0,-2,21,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::RC::FAILSAFE}-->

@@ -1003,7 +1003,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA} */
         case RADIO_DATA_SIG: {
             /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70]} */
-            if ((abs(radio_service_get_channel(RADIO_CH1)) > 70) || (abs(radio_service_get_channel(RADIO_CH2)) > 70)) {
+            if ((abs(radio_service_get_channel(RADIO_CH1)) > 50) || (abs(radio_service_get_channel(RADIO_CH2)) > 50)) {
                 driving_enable();
                 /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[0]} */
                 if (parameters.pre_strategy == 0) {
@@ -2196,11 +2196,20 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
                     drive(mot1, mot2);
                 }
 
-            } else {
+            } else { // Strategy >= 2
 
-                if (adc_line_none_white() && distance_none_active()){
-                    drive(mot1, mot2);
+                // Auto if coord > y
+                if (coord_y >= 60 && adc_line_none_white()) {
+                    if (!SumoHSM_CheckDistAndMove(me)){
+                        // If no sensor is seeing, return to manual mode
+                        drive(mot1, mot2);
+                    }
+                } else {
+                    if (adc_line_none_white()){
+                        drive(mot1, mot2);
+                    }
                 }
+
             }
 
             QTimeEvt_armX(&me->timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
@@ -2253,16 +2262,6 @@ static QState SumoHSM_RC(SumoHSM * const me, QEvt const * const e) {
                     drive(100, 100);
                 }
 
-            }
-            status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::RC::DIST_SENSOR_CHANGE} */
-        case DIST_SENSOR_CHANGE_SIG: {
-            if (parameters.strategy > 1){
-                if (!SumoHSM_CheckDistAndMove(me)){
-                    drive(0, 0);
-                }
             }
             status_ = QM_HANDLED();
             break;
