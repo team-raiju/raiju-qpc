@@ -919,9 +919,11 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         case BLE_DATA_UPDATE_SIG: {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
-            parameters_update_from_ble(&parameters, last_data.data);
-            buzzer_start();
-            QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);
+            param_error_t stat = parameters_update_from_ble(&parameters, last_data.data);
+            if (stat == PARAM_OK){
+                buzzer_start();
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);
+            }
             status_ = QM_HANDLED();
             break;
         }
@@ -1214,9 +1216,11 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         case BLE_DATA_UPDATE_SIG: {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
-            parameters_update_from_ble(&parameters, last_data.data);
-            buzzer_start();
-            QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);
+            param_error_t stat = parameters_update_from_ble(&parameters, last_data.data);
+            if (stat == PARAM_OK){
+                buzzer_start();
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);
+            }
             status_ = QM_HANDLED();
             break;
         }
@@ -1244,6 +1248,39 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::RCWait::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
             parameters_report(parameters, 2);
+            /*${AOs::SumoHSM::SM::RCWait::DIST_SENSOR_CHAN~::[attack_when_near]} */
+            if (parameters.attack_when_near && distance_is_active(DIST_SENSOR_F)) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[4];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_PreStrategy_s, /* target submachine */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_RCWait_x), /* exit */
+                        Q_ACTION_CAST(&SumoHSM_pre_strategy_rc_e), /* entry */
+                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP0_ep), /* EP */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN_EP(&tatbl_);
+            }
+            else {
+                status_ = QM_UNHANDLED();
+            }
+            break;
+        }
+        /*${AOs::SumoHSM::SM::RCWait::BLE_ATTACK_NEAR} */
+        case BLE_ATTACK_NEAR_SIG: {
+            parameters.attack_when_near = !parameters.attack_when_near;
+            if (parameters.attack_when_near){
+                led_stripe_set_all_color(COLOR_RED);
+                buzzer_start();
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 1000);
+            } else {
+                led_stripe_set_all_color(COLOR_BLACK);
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 1000);
+                buzzer_start();
+            }
             status_ = QM_HANDLED();
             break;
         }
@@ -1252,7 +1289,6 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
             break;
         }
     }
-    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -1601,9 +1637,11 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         case BLE_DATA_UPDATE_SIG: {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
-            parameters_update_from_ble(&parameters, last_data.data);
-            buzzer_start();
-            QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);
+            param_error_t stat = parameters_update_from_ble(&parameters, last_data.data);
+            if (stat == PARAM_OK){
+                buzzer_start();
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);
+            }
             status_ = QM_HANDLED();
             break;
         }
@@ -1647,7 +1685,16 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::AutoWait::BLE_ATTACK_NEAR} */
         case BLE_ATTACK_NEAR_SIG: {
-            parameters.attack_when_near = 1;
+            parameters.attack_when_near = !parameters.attack_when_near;
+            if (parameters.attack_when_near){
+                led_stripe_set_all_color(COLOR_RED);
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 1000);
+                buzzer_start();
+            } else {
+                led_stripe_set_all_color(COLOR_BLACK);
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 1000);
+                buzzer_start();
+            }
             status_ = QM_HANDLED();
             break;
         }
@@ -1955,9 +2002,11 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
         case BLE_DATA_UPDATE_SIG: {
             ble_rcv_packet_t last_data;
             ble_service_last_packet(&last_data);
-            parameters_update_from_ble(&parameters, last_data.data);
-            buzzer_start();
-            QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);
+            param_error_t stat = parameters_update_from_ble(&parameters, last_data.data);
+            if (stat == PARAM_OK){
+                buzzer_start();
+                QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);
+            }
             status_ = QM_HANDLED();
             break;
         }

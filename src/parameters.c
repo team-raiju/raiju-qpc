@@ -333,7 +333,7 @@ void report_raw_line_data_ble() {
 
 }
 
-void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
+param_error_t parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
 
     ble_update_param_packet_t ble_packet;
     memcpy(ble_packet._raw, data, BLE_RECEIVE_PACKET_SIZE - 2);
@@ -355,10 +355,11 @@ void parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
         break;
     default: {
         uint16_t new_param = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
-        set_validade_new_param_uint16_t(ble_packet.header, params, new_param);
-        break;
+        return set_validade_new_param_uint16_t(ble_packet.header, params, new_param);
     }
     }
+
+    return PARAM_OK;
 
 }
 
