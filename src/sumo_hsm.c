@@ -410,6 +410,16 @@ static QMState const SumoHSM_CalibSensors_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
+static QState SumoHSM_RCAutomaticStart  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_RCAutomaticStart_e(SumoHSM * const me);
+static QState SumoHSM_RCAutomaticStart_x(SumoHSM * const me);
+static QMState const SumoHSM_RCAutomaticStart_s = {
+    QM_STATE_NULL, /* superstate (top) */
+    Q_STATE_CAST(&SumoHSM_RCAutomaticStart),
+    Q_ACTION_CAST(&SumoHSM_RCAutomaticStart_e),
+    Q_ACTION_CAST(&SumoHSM_RCAutomaticStart_x),
+    Q_ACTION_NULL  /* no initial tran. */
+};
 
 /* submachine ${AOs::SumoHSM::SM::LineSubmachine} */
 static QState SumoHSM_LineSubmachine  (SumoHSM * const me, QEvt const * const e);
@@ -817,6 +827,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_CalibeStarTurn);
     QS_FUN_DICTIONARY(&SumoHSM_CalibStop);
     QS_FUN_DICTIONARY(&SumoHSM_CalibSensors);
+    QS_FUN_DICTIONARY(&SumoHSM_RCAutomaticStart);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineSubmachine_LineTurnLeft);
@@ -987,6 +998,7 @@ static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     parameters_set_pre_strategy_led(&parameters);
     drive(0,0);
     driving_disable();
+    parameters.attack_when_near = false;
     start_module_disable_event();
     radio_service_en_radio_data_sig(true);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
@@ -1252,17 +1264,17 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
             if (parameters.attack_when_near && distance_is_active(DIST_SENSOR_F)) {
                 static struct {
                     QMState const *target;
-                    QActionHandler act[4];
+                    QActionHandler act[3];
                 } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
+                    &SumoHSM_RCAutomaticStart_s, /* target state */
                     {
                         Q_ACTION_CAST(&SumoHSM_RCWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_rc_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP0_ep), /* EP */
+                        Q_ACTION_CAST(&SumoHSM_RCAutomaticStart_e), /* entry */
                         Q_ACTION_NULL /* zero terminator */
                     }
                 };
-                status_ = QM_TRAN_EP(&tatbl_);
+                driving_enable();
+                status_ = QM_TRAN(&tatbl_);
             }
             else {
                 status_ = QM_UNHANDLED();
@@ -1676,6 +1688,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
                         Q_ACTION_NULL /* zero terminator */
                     }
                 };
+                driving_enable();
                 status_ = QM_TRAN_EP(&tatbl_);
             }
             else {
@@ -3277,6 +3290,49 @@ static QState SumoHSM_CalibSensors(SumoHSM * const me, QEvt const * const e) {
                 &SumoHSM_CalibStop_s, /* target state */
                 {
                     Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::RCAutomaticStart} ....................................*/
+/*${AOs::SumoHSM::SM::RCAutomaticStart} */
+static QState SumoHSM_RCAutomaticStart_e(SumoHSM * const me) {
+    board_led_off();
+    drive(30,30);
+    uint32_t attack_timeout = 300 * BSP_TICKS_PER_MILISSEC;
+    QTimeEvt_rearm(&me->timeEvt, attack_timeout);
+    return QM_ENTRY(&SumoHSM_RCAutomaticStart_s);
+}
+/*${AOs::SumoHSM::SM::RCAutomaticStart} */
+static QState SumoHSM_RCAutomaticStart_x(SumoHSM * const me) {
+    QTimeEvt_disarm(&me->timeEvt);
+    led_stripe_set_all_color(COLOR_RED);
+    return QM_EXIT(&SumoHSM_RCAutomaticStart_s);
+}
+/*${AOs::SumoHSM::SM::RCAutomaticStart} */
+static QState SumoHSM_RCAutomaticStart(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::RCAutomaticStart::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[3];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_RC_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_RCAutomaticStart_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_RC_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
