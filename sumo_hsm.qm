@@ -2154,7 +2154,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
 QTimeEvt_disarm(&amp;me-&gt;timeEvtBle);
 
 me-&gt;ble_counter = 0;
-QTimeEvt_armX(&amp;me-&gt;timeEvtBle, BSP_TICKS_PER_MILISSEC * 40, 0);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvtBle, BSP_TICKS_PER_MILISSEC * 10, 0);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 QTimeEvt_disarm(&amp;me-&gt;timeEvtBle);</exit>
      <!--${AOs::SumoHSM::SM::BLESubmachine::XP-XP1}-->
@@ -2167,11 +2167,11 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtBle);</exit>
      <tran trig="TIMEOUT_SEND_BLE">
       <action brief="report_params()">if (me-&gt;ble_counter &lt; (BLE_TRANSMIT_NUM_OF_PACKETS - 1)){
     parameters_report(parameters, me-&gt;ble_counter);
-    QTimeEvt_armX(&amp;me-&gt;timeEvtBle, BSP_TICKS_PER_MILISSEC * 40, 0);
+    QTimeEvt_armX(&amp;me-&gt;timeEvtBle, BSP_TICKS_PER_MILISSEC * 60, 0);
     me-&gt;ble_counter++;
 } else {
     parameters_report(parameters, (BLE_TRANSMIT_NUM_OF_PACKETS - 1));
-    QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 40, 0);
+    QTimeEvt_armX(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 60, 0);
 }
 
 </action>
