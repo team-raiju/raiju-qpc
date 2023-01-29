@@ -350,9 +350,12 @@ param_error_t parameters_update_from_ble(sumo_parameters_t *params, uint8_t * da
         parameters_update_calib_mode(params, ble_packet.param_data[0]);
         parameters_set_calib_mode_led(params);
         break;
-    case BLE_DATA_HDR_CUST_STRATEGY:
-        cust_strategy_update_from_ble(ble_packet.param_data, sizeof(ble_packet.param_data));
+    case BLE_DATA_HDR_CUST_STRATEGY:{
+        uint8_t ret;
+        ret = cust_strategy_update_from_ble(ble_packet.param_data, sizeof(ble_packet.param_data));
+        return (ret == 0) ? PARAM_OK : PARAM_ERROR;
         break;
+    }
     default: {
         uint16_t new_param = TWO_BYTES_TO_UINT16(ble_packet.param_data[0], ble_packet.param_data[1]);
         return set_validade_new_param_uint16_t(ble_packet.header, params, new_param);

@@ -88,14 +88,14 @@ uint8_t cust_strategy_move(uint8_t step) {
     return cust_strategy_movements[step];
 }
 
-void cust_strategy_update_from_ble(uint8_t * strategy_data, uint8_t size){
+int8_t cust_strategy_update_from_ble(uint8_t * strategy_data, uint8_t size){
 
     if (size != STRATEGY_MAX_STEPS + 2){
-        return;
+        return -1;
     }
 
     if (strategy_data[1] > STRATEGY_MAX_STEPS){
-        return;
+        return -1;
     }
     
     bool update_type_list = strategy_data[0];
@@ -113,10 +113,15 @@ void cust_strategy_update_from_ble(uint8_t * strategy_data, uint8_t size){
             movement_t move = strategy_data[2 + i];
             if (move < 4){
                 type_of_movements[i] = strategy_data[2 + i];
+            } else {
+                // Got an invalid movement so will stop here
+                return 0;
             }
         } else {
             cust_strategy_movements[i] = strategy_data[2 + i];
         }
     }
+
+    return 0;
     
 }
