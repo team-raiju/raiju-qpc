@@ -22,5 +22,6 @@ void radio_service_init(void);
 void radio_service_enable(void);
 void radio_service_disable(void);
 int8_t radio_service_get_channel(radio_channel_t ch);
+void radio_service_en_radio_data_sig(bool enabled);
 
 #endif /* RADIO_SERVICE_H */

@@ -14,7 +14,8 @@
 #include "qs_defines.h"
 #endif
 
-#define FAKE_ADC_BATTERY_POSITION 0
+#define FAKE_ADC_CTRL_BAT_POSITION 0
+#define FAKE_ADC_PWR_BAT_POSITION 7
 
 typedef enum line_position_in_adc_fake 
 {
@@ -34,7 +35,7 @@ static void default_adc_dma_callback(uint32_t * out_data) {
 }
 
 
-void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool battery_full) {
+void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool ctrl_bat_full, bool pwr_bat_full) {
 
     if (!enabled){
         return;
@@ -52,13 +53,16 @@ void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool battery_
                     dma_buffer[i + j] = 2000 * fl;
                     break;
                 case FAKE_LINE_POS_BR:
-                    dma_buffer[i + j] = 2000 * bl;
-                    break;
-                case FAKE_LINE_POS_BL:
                     dma_buffer[i + j] = 2000 * br;
                     break;
-                case FAKE_ADC_BATTERY_POSITION:
-                    dma_buffer[i + j] = 4095 * battery_full;
+                case FAKE_LINE_POS_BL:
+                    dma_buffer[i + j] = 2000 * bl;
+                    break;
+                case FAKE_ADC_CTRL_BAT_POSITION:
+                    dma_buffer[i + j] = 4095 * ctrl_bat_full;
+                    break;
+                case FAKE_ADC_PWR_BAT_POSITION:
+                    dma_buffer[i + j] = 4095 * pwr_bat_full;
                     break;
                 default:
                     dma_buffer[i + j] = 0;

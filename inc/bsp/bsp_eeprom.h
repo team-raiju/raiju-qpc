@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 
-#define EEPROM_NB_OF_VAR    ((uint8_t)0x02)
+#define EEPROM_NB_OF_VAR    ((uint8_t)24)
 
 typedef enum eeprom_result {
 
@@ -25,12 +25,17 @@ typedef enum eeprom_addresses {
 
     REVERSE_SPEED_ADDR,
     REVERSE_TIME_MS_ADDR,
-
-    TURN_SPEED_ADDR,
-    TURN_180_TIME_ADDR,
+    
+    LINE_TURN_ANGLE_ADDR,
 
     STEP_WAIT_TIME_MS_ADDR,
     STEP_ADVANCE_TIME_MS_ADDR,
+
+    TURN_180_RIGHT_TIME_ADDR,
+    TURN_180_LEFT_TIME_ADDR,
+    TIME_MS_TO_CROSS_AT_60_ADDR,
+
+    TIMEOUT_IS_STUCKED,
 
 } eeprom_addresses_t;
 

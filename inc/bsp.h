@@ -58,8 +58,7 @@ void BSP_init(void);
 enum SumoHSMSignals {
     TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
     TIMEOUT_2_SIG,
-    TIMEOUT_3_SIG,
-    PLAY_BUZZER_SIG,
+    STOP_BUZZER_SIG,
     START_SIG,
     STOP_SIG,
     CHANGE_STATE_EVT_SIG,
@@ -73,9 +72,15 @@ enum SumoHSMSignals {
     RADIO_DATA_SIG,
     BUTTON_SIG,
     START_MODULE_CHECK_SIG,
-    BLE_DATA_SIG,
+    START_MODULE_DISABLE_SIG,
+    BLE_DATA_UPDATE_SIG,
+    BLE_DATA_REQUEST_SIG,
     LOW_BATTERY_SIG,
     TIMEOUT_SEND_BLE_SIG,
+    FAILSAFE_SIG,
+    STUCK_SIG,
+    STUCK_END_SIG,
+    BLE_ATTACK_NEAR_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 
@@ -86,6 +91,8 @@ extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */
 /*${AOs::SumoHSM_ctor} .....................................................*/
 void SumoHSM_ctor(void);
 /*$enddecl${AOs::SumoHSM_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+
+void sumo_parameters_init(void);
 
 #ifdef Q_SPY
 void sumoHSM_update_qs_dict(void);

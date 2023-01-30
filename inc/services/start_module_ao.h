@@ -3,5 +3,7 @@
 
 
 void start_module_ao_init();
+void start_module_check_event();
+void start_module_disable_event();
 
 #endif /* START_MODULE_AO_H */

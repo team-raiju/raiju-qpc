@@ -6,7 +6,6 @@
 #include "button.h"
 #include "buzzer_service.h"
 #include "radio_service.h"
-#include "bsp_eeprom.h"
 #include "ble_service.h"
 
 void APP_init(){
@@ -18,7 +17,6 @@ void APP_init(){
     button_init();
     buzzer_service_init();
     radio_service_init();
-    BSP_eeprom_init();
     ble_service_init();
 
 }
