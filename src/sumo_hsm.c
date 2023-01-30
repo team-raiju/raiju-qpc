@@ -49,8 +49,8 @@
 #include "bsp_eeprom.h"
 #include "ble_service.h"
 #include "parameters.h"
-#include "start_module_ao.h"
 #include "custom_strategy.h"
+#include "start_module.h"
 
 
 #define CALIB_ANGLE_MULT    2.5
@@ -999,7 +999,6 @@ static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     drive(0,0);
     driving_disable();
     parameters.attack_when_near = false;
-    start_module_disable_event();
     radio_service_en_radio_data_sig(true);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
     ble_service_send_string("state:RC");
@@ -1449,10 +1448,10 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     ble_service_send_string("state:AUTO");
     parameters_set_strategy_led(&parameters);
     parameters_set_pre_strategy_led(&parameters);
-    start_module_check_event();
     radio_service_en_radio_data_sig(false);
     me->stuck_counter = 0;
     parameters.attack_when_near = false;
+    start_module_enable();
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
 /*${AOs::SumoHSM::SM::AutoWait} */
@@ -1615,6 +1614,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
+            start_module_disable();
             status_ = QM_TRAN(&tatbl_);
             break;
         }
@@ -2620,7 +2620,7 @@ static QState SumoHSM_AutoEnd_e(SumoHSM * const me) {
     ble_service_send_string("state:AUTOEND");
     buzzer_start();
     QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
-
+    start_module_disable();
     return QM_ENTRY(&SumoHSM_AutoEnd_s);
 }
 /*${AOs::SumoHSM::SM::AutoEnd} */
@@ -4645,8 +4645,6 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(START_MODULE_CHECK_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(START_MODULE_DISABLE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_UPDATE_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_DATA_REQUEST_SIG,  (void *)0);
     QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);

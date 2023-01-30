@@ -123,8 +123,7 @@ static param_error_t set_validate_is_stucked_timeout_ms(sumo_parameters_t * para
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_attack_when_near(sumo_parameters_t * params, uint16_t new_data){
-
+static param_error_t set_validate_attack_when_near(uint16_t new_data){
     if(IS_BETWEEN(new_data, 0, 1)){
         QEvt evt = {.sig = BLE_ATTACK_NEAR_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
@@ -165,7 +164,7 @@ param_error_t set_validade_new_param_uint16_t(ble_data_header_t header, sumo_par
     case BLE_DATA_HDR_IS_STUCKED_TIMEOUT:
         return set_validate_is_stucked_timeout_ms(params, new_data);
     case BLE_DATA_HDR_ATTACK_WHEN_NEAR:
-        return set_validate_attack_when_near(params, new_data);
+        return set_validate_attack_when_near(new_data);
     default:
         break;
     }

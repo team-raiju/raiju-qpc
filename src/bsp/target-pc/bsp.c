@@ -119,11 +119,11 @@ void QS_onCommand(uint8_t cmdId,
 {
     switch (cmdId) {
        case 0: { 
-            BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , true);
+            ADC_Fake_Start_Module(true);
             break;
         }
         case 1: { 
-            BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , false);
+            ADC_Fake_Start_Module(false);
             break;
         }
 
