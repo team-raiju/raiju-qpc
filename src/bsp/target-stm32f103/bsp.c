@@ -59,6 +59,9 @@ void QF_onStartup(void)
     * DO NOT LEAVE THE ISR PRIORITIES AT THE DEFAULT VALUE!
     */
     // HAL_NVIC_SetPriority(SysTick_IRQn, QF_AWARE_ISR_CMSIS_PRI + 1, 0U);
+    // Min possible value is QF_AWARE_ISR_CMSIS_PRI. Read 
+    // https://www.state-machine.com/doc/AN_QP_and_ARM-Cortex-M.pdf
+    // For more details about interupt configuration
 
     
 }
