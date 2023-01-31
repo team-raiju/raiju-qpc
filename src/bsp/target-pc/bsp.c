@@ -119,11 +119,11 @@ void QS_onCommand(uint8_t cmdId,
 {
     switch (cmdId) {
        case 0: { 
-            BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , true);
+            ADC_Fake_Start_Module(true);
             break;
         }
         case 1: { 
-            BSP_GPIO_Write_Pin(IO_PORTB, IO_PIN_2 , false);
+            ADC_Fake_Start_Module(false);
             break;
         }
 
@@ -193,15 +193,15 @@ void QS_onCommand(uint8_t cmdId,
 
         case 8: { 
             int16_t radio_ch3_val = param1;
-            int16_t radio_ch4_val = param2;
-            int16_t radio_ch6_val = param3;
+            int16_t radio_ch6_val = param2;
+            int16_t radio_ch7_val = param3;
 
 
             #if defined (RADIO_MODE_PPM)
             fake_ppm_exti_callback(2, radio_ch3_val);
             fake_ppm_exti_callback(3, radio_ch4_val);
             #elif defined (RADIO_MODE_UART) || defined (RADIO_MODE_UART_CRSF)
-            int16_t data[4] = {1, radio_ch3_val, radio_ch4_val, radio_ch6_val};
+            int16_t data[4] = {1, radio_ch3_val, radio_ch6_val, radio_ch7_val};
             HAL_UART_Fake_UartData(UART_NUM_4, data);
             #endif 
 

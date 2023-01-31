@@ -56,8 +56,8 @@ static void uart_callback(void *arg) {
         rc_channels[1] = map(data[2], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
     } else if (data[0] == 1){
         rc_channels[2] = map(data[1], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
-        rc_channels[3] = map(data[2], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
-        rc_channels[5] = map(data[3], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
+        rc_channels[5] = map(data[2], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
+        rc_channels[6] = map(data[3], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
         if (!stop_uart){
             external_callback(rc_channels, RADIO_CRSF_CHANNELS);
         }

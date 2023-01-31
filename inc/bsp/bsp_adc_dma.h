@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define ADC_DMA_CHANNELS    8
+#define ADC_DMA_CHANNELS    7
 #define READINGS_PER_ADC    32
 
 
