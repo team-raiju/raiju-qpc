@@ -106,8 +106,8 @@ def custom_qview_init(qview):
         "left": False,
         "right": False,
         "three": False,
-        "four": False,
         "six": False,
+        "seven": False,
     }
 
     line_sensors = {
@@ -133,7 +133,7 @@ def custom_qview_init(qview):
         "ch1": 127,
         "ch2": 127,
         "ch3": 127,
-        "ch4": 127,
+        "ch7": 127,
         "ch5": 127,
         "ch6": 127,
     }
@@ -339,8 +339,8 @@ def sensor_command(sensor):
 def send_radio_command_ch1_ch2(ch1, ch2):
     qview_base.command(7, ch1, ch2)
 
-def send_radio_command_ch3_ch4_ch6(ch3, ch4, ch6):
-    qview_base.command(8, ch3, ch4, ch6)
+def send_radio_command_ch3_ch6_ch7(ch3, ch7, ch6):
+    qview_base.command(8, ch3, ch7, ch6)
 
 
 def send_ble_command(ble_bytearray):
@@ -386,10 +386,10 @@ def send_game_pad():
     else:
         ch3 = 127
 
-    if (gamepad_dict["ch4"]):
-        ch4 = 255
+    if (gamepad_dict["ch7"]):
+        ch7 = 255
     else:
-        ch4 = 127
+        ch7 = 127
     
     if (gamepad_dict["ch6"]):
         ch6 = 255
@@ -399,9 +399,9 @@ def send_game_pad():
     # Send only when there is change so that the simulator does not get slow
     if (last_gamepad[0] != ch1 or last_gamepad[1] != ch2 or last_gamepad[2] != ch3 or last_gamepad[3] != ch3):
         send_radio_command_ch1_ch2(ch1, ch2)
-        send_radio_command_ch3_ch4_ch6(ch3, ch4, ch6)
+        send_radio_command_ch3_ch6_ch7(ch3, ch6, ch7)
         
-    last_gamepad = (ch1, ch2, ch3, ch4)
+    last_gamepad = (ch1, ch2, ch3, ch7)
 
 def send_keyboard():
 
@@ -429,11 +429,11 @@ def send_keyboard():
     else:
         ch3 = 127
 
-    # ch 4
-    if (key_pressed_dict["four"]):
-        ch4 = 255
+    # ch 7
+    if (key_pressed_dict["seven"]):
+        ch7 = 255
     else:
-        ch4 = 127
+        ch7 = 127
     
     # ch 6
     if (key_pressed_dict["six"]):
@@ -443,7 +443,7 @@ def send_keyboard():
 
     
     send_radio_command_ch1_ch2(x_keyboard, y_keyboard)  
-    send_radio_command_ch3_ch4_ch6(ch3, ch4, ch6)
+    send_radio_command_ch3_ch6_ch7(ch3, ch6, ch7)
 
 
 def set_low_ctrl_battery():
@@ -564,8 +564,8 @@ def on_press(key):
             key_pressed_dict["left"] = True
         elif (key.char == '3'):
             key_pressed_dict["three"] = True
-        elif (key.char == '4'):
-            key_pressed_dict["four"] = True
+        elif (key.char == '7'):
+            key_pressed_dict["seven"] = True
         elif (key.char == '6'):
             key_pressed_dict["six"] = True
         
@@ -589,8 +589,8 @@ def on_release(key):
             key_pressed_dict["left"] = False
         elif (key.char == '3'):
             key_pressed_dict["three"] = False
-        elif (key.char == '4'):
-            key_pressed_dict["four"] = False
+        elif (key.char == '7'):
+            key_pressed_dict["seven"] = False
         elif (key.char == '6'):
             key_pressed_dict["six"] = False
     
@@ -617,7 +617,7 @@ def gamepad_thread():
         elif (event[0].code == "BTN_SOUTH"):
             gamepad_dict["ch3"] = event[0].state
         elif (event[0].code == "BTN_TL"):
-            gamepad_dict["ch4"] = event[0].state
+            gamepad_dict["ch7"] = event[0].state
         elif (event[0].code == "BTN_DPAD_UP"):
             gamepad_dict["ch5"] = event[0].state
         elif (event[0].code == "BTN_TR"):
