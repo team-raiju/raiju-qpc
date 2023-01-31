@@ -7,6 +7,9 @@
 #include "dma.h"
 #include "utils.h"
 
+#include "qpc.h"
+#include "qk_port.h"
+
 uint32_t dma_buffer[ADC_DMA_BUFFER_SIZE];
 
 bsp_adc_dma_callback_t adc_dma_callback_function;
@@ -17,12 +20,17 @@ static void default_adc_dma_callback(uint32_t *out_data)
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 {
+    QK_ISR_ENTRY();
     adc_dma_callback_function(&dma_buffer[0]);
+    QK_ISR_EXIT();
+
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
+    QK_ISR_ENTRY();
     adc_dma_callback_function(&dma_buffer[ADC_DMA_HALF_BUFFER_SIZE]);
+    QK_ISR_EXIT();
 }
 
 void BSP_ADC_DMA_Init(void)

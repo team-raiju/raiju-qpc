@@ -9,6 +9,8 @@
 #include "gpio.h"
 #include "bsp_gpio_mapping.h"
 
+#include "qpc.h"
+#include "qk_port.h"
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
@@ -108,6 +110,8 @@ static GPIO_TypeDef *BSP_GPIO_Port_Mapping(io_port_t io_port)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+    QK_ISR_ENTRY();
+
     // Button
     if (GPIO_Pin == BSP_GPIO_Pin_Mapping(GPIO_BUTTON_PIN)) {
         if (button_callback_function != NULL) {
@@ -140,6 +144,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
 
 #endif
+
+    QK_ISR_EXIT();
 }
 
 /***************************************************************************************************

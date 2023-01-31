@@ -11,13 +11,6 @@
 #include "buzzer_service.h"
 #include "bsp_eeprom.h"
 
-enum KernelAwareISRs {
-    GPIOPORTA_PRI = QF_AWARE_ISR_CMSIS_PRI, /* see NOTE00 */
-    SYSTICK_PRIO,
-
-    MAX_KERNEL_AWARE_CMSIS_PRI /* Max Value is 15 for stm32f103 */
-};
-
 __weak void SystemClock_Config(void);
 
 void SysTick_Handler(void)
@@ -53,8 +46,11 @@ void QF_onStartup(void)
     /* set up the SysTick timer to fire at BSP_TICKS_PER_SEC rate */
     SysTick_Config(SystemCoreClock / BSP_TICKS_PER_SEC);
 
+
+    /* All the code below is executed in HAL auto generated files */
+
     /* assing all priority bits for preemption-prio. and none to sub-prio. */
-    NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+    // NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
     /* set priorities of ALL ISRs used in the system, see NOTE00
     *
@@ -62,12 +58,9 @@ void QF_onStartup(void)
     * Assign a priority to EVERY ISR explicitly by calling NVIC_SetPriority().
     * DO NOT LEAVE THE ISR PRIORITIES AT THE DEFAULT VALUE!
     */
-    HAL_NVIC_SetPriority(SysTick_IRQn, SYSTICK_PRIO, 0U);
+    // HAL_NVIC_SetPriority(SysTick_IRQn, QF_AWARE_ISR_CMSIS_PRI + 1, 0U);
 
-    // NVIC_SetPriority(GPIOPortA_IRQn, GPIOPORTA_PRIO);
-
-    /* enable IRQs... */
-    // NVIC_EnableIRQ(GPIOPortA_IRQn);
+    
 }
 
 void QF_onCleanup(void)

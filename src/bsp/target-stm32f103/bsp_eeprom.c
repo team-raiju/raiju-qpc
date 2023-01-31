@@ -1,6 +1,9 @@
 #include "bsp_eeprom.h"
 #include "eeprom.h"
 
+#include "qpc.h"
+#include "qf_port.h"
+
 uint16_t VirtAddVarTab[EEPROM_NB_OF_VAR];
 
 eeprom_result_t BSP_eeprom_init()
@@ -9,9 +12,11 @@ eeprom_result_t BSP_eeprom_init()
         VirtAddVarTab[i] = i;
     }
 
+    QF_CRIT_ENTRY();
     HAL_FLASH_Unlock();
     uint16_t ret = EE_Init();
     HAL_FLASH_Lock();
+    QF_CRIT_EXIT();
 
     if (ret == 0) {
         return EEPROM_OK;
@@ -27,9 +32,11 @@ eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t *data)
         return EEPROM_ERROR;
     }
 
+    QF_CRIT_ENTRY();
     HAL_FLASH_Unlock();
     uint16_t ret = EE_ReadVariable(VirtAddVarTab[address], data);
     HAL_FLASH_Lock();
+    QF_CRIT_EXIT();
 
     if (ret == 0) {
         return EEPROM_OK;
@@ -45,9 +52,11 @@ eeprom_result_t BSP_eeprom_write(uint16_t address, uint16_t data)
         return EEPROM_ERROR;
     }
 
+    QF_CRIT_ENTRY();
     HAL_FLASH_Unlock();
     uint16_t ret = EE_WriteVariable(VirtAddVarTab[address], data);
     HAL_FLASH_Lock();
+    QF_CRIT_EXIT();
 
     if (ret == 0) {
         return EEPROM_OK;

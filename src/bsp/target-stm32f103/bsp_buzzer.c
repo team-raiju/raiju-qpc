@@ -3,6 +3,9 @@
 #include "bsp_gpio.h"
 #include "tim.h"
 
+#include "qpc.h"
+#include "qk_port.h"
+
 #define CPU_FREQUENCY  (72000000UL) //SystemCoreClock
 #define COUNTER_PERIOD (100)
 
@@ -64,9 +67,11 @@ void BSP_buzzerSetFrequency(uint16_t frequency_hz)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+    QK_ISR_ENTRY();
     if (htim->Instance == TIM3) {
         BSP_GPIO_Toggle_Pin(IO_PORTB, IO_PIN_14);
     }
+    QK_ISR_EXIT();
 }
 
 #endif

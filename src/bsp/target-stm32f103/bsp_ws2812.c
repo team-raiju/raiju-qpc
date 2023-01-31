@@ -8,6 +8,10 @@
 #include "dma.h"
 #include "tim.h"
 
+#include "qpc.h"
+#include "qk_port.h"
+
+
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
@@ -72,9 +76,11 @@ static uint32_t color_to_bits(uint8_t r, uint8_t g, uint8_t b)
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
+    QK_ISR_ENTRY();
     if (htim->Instance == TIM2) {
         HAL_TIM_PWM_Stop_DMA(htim, TIM_CHANNEL_1);
     }
+    QK_ISR_EXIT();
 }
 
 /***************************************************************************************************

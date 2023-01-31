@@ -10,6 +10,8 @@
 #include "bsp_gpio.h"
 #include "bsp_ppm.h"
 
+#include "qpc.h"
+#include "qk_port.h"
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
@@ -45,6 +47,8 @@ static bsp_ppm_callback_t external_callback;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+    QK_ISR_ENTRY();
+
     for (size_t i = 0; i < BOARD_NUM_OF_PPMS; i++) {
         if (htim->Instance == PPM_TIMER->Instance) {
             ppms[i]._fail_count++;
@@ -54,6 +58,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
             }
         }
     }
+    
+    QK_ISR_EXIT();
 }
 
 static void ppm_exti_callback(uint8_t ppm_num, io_level_t state)
