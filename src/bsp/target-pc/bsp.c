@@ -33,8 +33,8 @@
 #include <stdlib.h> /* for exit() */
 #include <stdbool.h>
 
-#include "qpc.h"    /* QP/C framework API */
-#include "bsp.h"    /* Board Support Package interface */
+#include "qpc.h" /* QP/C framework API */
+#include "bsp.h" /* Board Support Package interface */
 #include "bsp_led.h"
 #include "bsp_motors.h"
 #include "bsp_buzzer.h"
@@ -44,13 +44,12 @@
 #include "bsp_gpio_mapping.h"
 #include "bsp_eeprom.h"
 
-#if defined (RADIO_MODE_PPM)
+#if defined(RADIO_MODE_PPM)
 #include "bsp_ppm_fake.h"
-#elif defined (RADIO_MODE_UART) || defined (RADIO_MODE_UART_CRSF)
+#elif defined(RADIO_MODE_UART) || defined(RADIO_MODE_UART_CRSF)
 #include "bsp_uart_fake.h"
 #include "bsp_uart.h"
-#endif 
-
+#endif
 
 #ifdef Q_SPY
 
@@ -59,12 +58,11 @@ static QSpyId const l_clock_tick = { QS_AP_ID };
 
 #endif
 
-
 uint8_t ble_data[20];
 
-
-void BSP_init(void)   {
-    printf("SumoHSM;  QP/C version: %s\r\n",  QP_VERSION_STR);
+void BSP_init(void)
+{
+    printf("SumoHSM;  QP/C version: %s\r\n", QP_VERSION_STR);
 
     BSP_ledInit();
     BSP_motorsInit();
@@ -73,11 +71,10 @@ void BSP_init(void)   {
     BSP_eeprom_init();
     // BSP_radioInit();
 
-
-    #ifdef Q_SPY
+#ifdef Q_SPY
 
     QS_INIT((void *)0);
-    
+
     QS_FUN_DICTIONARY(&QHsm_top);
     QS_OBJ_DICTIONARY(&l_clock_tick);
     QS_USR_DICTIONARY(SIMULATOR);
@@ -86,26 +83,28 @@ void BSP_init(void)   {
     QS_GLB_FILTER(QS_ALL_RECORDS);
     QS_GLB_FILTER(-QS_QF_TICK);
 
-    #endif
-
+#endif
 }
-
 
 /* callback functions needed by the framework ------------------------------*/
-void QF_onStartup(void) {
+void QF_onStartup(void)
+{
     QF_setTickRate(BSP_TICKS_PER_SEC, 50); /* desired tick rate/ticker-prio */
 }
-void QF_onCleanup(void) {}
-void QF_onClockTick(void) {
+void QF_onCleanup(void)
+{
+}
+void QF_onClockTick(void)
+{
     QF_TICK_X(0U, (void *)0); /* QF clock tick processing for rate 0 */
 
-    #ifdef Q_SPY
+#ifdef Q_SPY
     QS_RX_INPUT(); /* handle the QS-RX input */
     QS_OUTPUT();   /* handle the QS output */
-    #endif
-
+#endif
 }
-void Q_onAssert(char const * const module, int loc) {
+void Q_onAssert(char const *const module, int loc)
+{
     QS_ASSERTION(module, loc, 10000U); /* report assertion to QS */
     fprintf(stderr, "Assertion failed in %s:%d", module, loc);
     exit(-1);
@@ -114,145 +113,135 @@ void Q_onAssert(char const * const module, int loc) {
 #ifdef Q_SPY
 /*..........................................................................*/
 /*! callback function to execute user commands */
-void QS_onCommand(uint8_t cmdId,
-                  uint32_t param1, uint32_t param2, uint32_t param3)
+void QS_onCommand(uint8_t cmdId, uint32_t param1, uint32_t param2, uint32_t param3)
 {
     switch (cmdId) {
-       case 0: { 
-            ADC_Fake_Start_Module(true);
-            break;
-        }
-        case 1: { 
-            ADC_Fake_Start_Module(false);
-            break;
-        }
+    case 0: {
+        ADC_Fake_Start_Module(true);
+        break;
+    }
+    case 1: {
+        ADC_Fake_Start_Module(false);
+        break;
+    }
 
-        case 2: { 
-            // BSP_GPIO_Write_Pin(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN , true);
-            HAL_Fake_GPIO_EXTI_Callback(GPIO_BUTTON_PIN);
-            break;
-        }
+    case 2: {
+        // BSP_GPIO_Write_Pin(GPIO_BUTTON_PORT, GPIO_BUTTON_PIN , true);
+        HAL_Fake_GPIO_EXTI_Callback(GPIO_BUTTON_PIN);
+        break;
+    }
 
-        case 3: { 
-            // When seeing line, real sensor responds with 0
-            bool sensor_line_fl = !((param1 & 8) >> 3);
-            bool sensor_line_fr = !((param1 & 4) >> 2);
-            bool sensor_line_bl = !((param1 & 2) >> 1);
-            bool sensor_line_br = !((param1 & 1));
+    case 3: {
+        // When seeing line, real sensor responds with 0
+        bool sensor_line_fl = !((param1 & 8) >> 3);
+        bool sensor_line_fr = !((param1 & 4) >> 2);
+        bool sensor_line_bl = !((param1 & 2) >> 1);
+        bool sensor_line_br = !((param1 & 1));
 
-            bool ctrl_bat_full = param2;
-            bool pwr_bat_full = param3;
+        bool ctrl_bat_full = param2;
+        bool pwr_bat_full = param3;
 
+        ADC_Fake_ConvCpltCallback(sensor_line_fl, sensor_line_fr, sensor_line_bl, sensor_line_br, ctrl_bat_full,
+                                  pwr_bat_full);
 
-            ADC_Fake_ConvCpltCallback(sensor_line_fl, sensor_line_fr, sensor_line_bl, sensor_line_br, ctrl_bat_full, pwr_bat_full);
+        break;
+    }
 
-            break;
-        }
+    case 4: {
+        static uint8_t last_sensor_updated;
 
-        case 4: { 
+        uint8_t sensor_pin = param1;
 
-            static uint8_t last_sensor_updated;
-
-            uint8_t sensor_pin = param1;
-
-            if (sensor_pin != 0){
-                BSP_GPIO_Write_Pin(IO_PORTA, sensor_pin , false);
-                HAL_Fake_GPIO_EXTI_Callback(sensor_pin);
-            } 
-
-            BSP_GPIO_Write_Pin(IO_PORTA, last_sensor_updated, true);
-            HAL_Fake_GPIO_EXTI_Callback(last_sensor_updated);
-
-            last_sensor_updated = sensor_pin;
-            break;
+        if (sensor_pin != 0) {
+            BSP_GPIO_Write_Pin(IO_PORTA, sensor_pin, false);
+            HAL_Fake_GPIO_EXTI_Callback(sensor_pin);
         }
 
-        case 5: { 
-            break;
+        BSP_GPIO_Write_Pin(IO_PORTA, last_sensor_updated, true);
+        HAL_Fake_GPIO_EXTI_Callback(last_sensor_updated);
+
+        last_sensor_updated = sensor_pin;
+        break;
+    }
+
+    case 5: {
+        break;
+    }
+
+    case 6: {
+        break;
+    }
+
+    case 7: {
+        int16_t radio_ch1_val = param1;
+        int16_t radio_ch2_val = param2;
+
+#if defined(RADIO_MODE_PPM)
+        fake_ppm_exti_callback(0, radio_ch1_val);
+        fake_ppm_exti_callback(1, radio_ch2_val);
+#elif defined(RADIO_MODE_UART) || defined(RADIO_MODE_UART_CRSF)
+        int16_t data[4] = { 0, radio_ch1_val, radio_ch2_val, 0 };
+        HAL_UART_Fake_UartData(UART_NUM_4, data);
+#endif
+
+        break;
+    }
+
+    case 8: {
+        int16_t radio_ch3_val = param1;
+        int16_t radio_ch6_val = param2;
+        int16_t radio_ch7_val = param3;
+
+#if defined(RADIO_MODE_PPM)
+        fake_ppm_exti_callback(2, radio_ch3_val);
+        fake_ppm_exti_callback(3, radio_ch4_val);
+#elif defined(RADIO_MODE_UART) || defined(RADIO_MODE_UART_CRSF)
+        int16_t data[4] = { 1, radio_ch3_val, radio_ch6_val, radio_ch7_val };
+        HAL_UART_Fake_UartData(UART_NUM_4, data);
+#endif
+
+        break;
+    }
+
+    /* Update First 12 bytes of BLE */
+    case 9: {
+        for (int i = 0; i < 4; i++) {
+            ble_data[i + 0] = (param1 >> (8 * (3 - i)) & 0xff);
         }
 
-        case 6: { 
-            break;
+        for (int i = 0; i < 4; i++) {
+            ble_data[i + 4] = (param2 >> (8 * (3 - i)) & 0xff);
         }
 
-        case 7: { 
-            int16_t radio_ch1_val = param1;
-            int16_t radio_ch2_val = param2;
-
-
-            #if defined (RADIO_MODE_PPM)
-            fake_ppm_exti_callback(0, radio_ch1_val);
-            fake_ppm_exti_callback(1, radio_ch2_val);
-            #elif defined (RADIO_MODE_UART) || defined (RADIO_MODE_UART_CRSF)
-            int16_t data[4] = {0, radio_ch1_val, radio_ch2_val, 0};
-            HAL_UART_Fake_UartData(UART_NUM_4, data);
-            #endif 
-
-            break;
+        for (int i = 0; i < 4; i++) {
+            ble_data[i + 8] = (param3 >> (8 * (3 - i)) & 0xff);
         }
 
-        case 8: { 
-            int16_t radio_ch3_val = param1;
-            int16_t radio_ch6_val = param2;
-            int16_t radio_ch7_val = param3;
+        break;
+    }
 
-
-            #if defined (RADIO_MODE_PPM)
-            fake_ppm_exti_callback(2, radio_ch3_val);
-            fake_ppm_exti_callback(3, radio_ch4_val);
-            #elif defined (RADIO_MODE_UART) || defined (RADIO_MODE_UART_CRSF)
-            int16_t data[4] = {1, radio_ch3_val, radio_ch6_val, radio_ch7_val};
-            HAL_UART_Fake_UartData(UART_NUM_4, data);
-            #endif 
-
-
-            break;
+    /* Update Last 8 bytes of BLE */
+    case 10: {
+        for (int i = 0; i < 4; i++) {
+            ble_data[i + 12] = (param1 >> (8 * (3 - i)) & 0xff);
         }
 
-        /* Update First 12 bytes of BLE */
-        case 9: {
-
-            for (int i = 0; i < 4; i++) {
-                ble_data[i + 0] = (param1 >> (8 * (3 - i)) & 0xff);
-            }
-
-            for (int i = 0; i < 4; i++) {
-                ble_data[i + 4] = (param2 >> (8 * (3 - i)) & 0xff);
-            }
-
-            for (int i = 0; i < 4; i++) {
-                ble_data[i + 8] = (param3 >> (8 * (3 - i)) & 0xff);
-            }
-
-            break;
-            
+        for (int i = 0; i < 4; i++) {
+            ble_data[i + 16] = (param2 >> (8 * (3 - i)) & 0xff);
         }
 
-        /* Update Last 8 bytes of BLE */
-        case 10: {
+        break;
+    }
 
-            for (int i = 0; i < 4; i++) {
-                ble_data[i + 12] = (param1 >> (8 * (3 - i)) & 0xff);
-            }
+    /* Generate BLE interrupt */
+    case 11: {
+        HAL_UART_Fake_UartData(UART_NUM_3, (int16_t *)ble_data);
 
-            for (int i = 0; i < 4; i++) {
-                ble_data[i + 16] = (param2 >> (8 * (3 - i)) & 0xff);
-            }
+        break;
+    }
 
-            break;
-            
-        }
-
-        /* Generate BLE interrupt */
-        case 11: {
-            
-            HAL_UART_Fake_UartData(UART_NUM_3, (int16_t *) ble_data);
-
-            break;
-        }
-
-       default:
-           break;
+    default:
+        break;
     }
 
     /* unused parameters */

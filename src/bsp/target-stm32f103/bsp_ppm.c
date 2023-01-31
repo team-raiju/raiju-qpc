@@ -21,11 +21,10 @@
  * LOCAL TYPEDEFS
  **************************************************************************************************/
 
-
 typedef struct ppm_input {
-    uint16_t           value;
-    uint16_t           _tmp_count;
-    uint32_t           _fail_count;
+    uint16_t value;
+    uint16_t _tmp_count;
+    uint32_t _fail_count;
 } ppm_input_t;
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
@@ -44,8 +43,8 @@ static bsp_ppm_callback_t external_callback;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
     for (size_t i = 0; i < BOARD_NUM_OF_PPMS; i++) {
         if (htim->Instance == PPM_TIMER->Instance) {
             ppms[i]._fail_count++;
@@ -57,7 +56,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
     }
 }
 
-static void ppm_exti_callback(uint8_t ppm_num, io_level_t state) {
+static void ppm_exti_callback(uint8_t ppm_num, io_level_t state)
+{
     if (state == IO_HIGH) {
         ppms[ppm_num]._tmp_count = __HAL_TIM_GET_COUNTER(PPM_TIMER);
     } else {
@@ -65,16 +65,14 @@ static void ppm_exti_callback(uint8_t ppm_num, io_level_t state) {
         ppms[ppm_num]._fail_count = 0;
         external_callback(ppm_num, ppms[ppm_num].value);
     }
-
 }
 
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-
-void bsp_ppm_init(){
-
+void bsp_ppm_init()
+{
     for (int i = 0; i < BOARD_NUM_OF_PPMS; i++) {
         ppms[i].value = PPM_STOPPED_VALUE_MS;
         ppms[i]._fail_count = 0;
@@ -82,23 +80,25 @@ void bsp_ppm_init(){
     }
 
     BSP_GPIO_Register_PPM_Callback(ppm_exti_callback);
-    
+
     MX_TIM7_Init();
 
     bsp_ppm_start();
-    
 }
 
-void bsp_ppm_start(){
+void bsp_ppm_start()
+{
     HAL_TIM_Base_Start_IT(&htim7);
     __HAL_TIM_SET_COUNTER(&htim7, 0);
 }
 
-void bsp_ppm_stop(){
+void bsp_ppm_stop()
+{
     HAL_TIM_Base_Stop_IT(&htim7);
 }
 
-void bsp_ppm_register_callback(bsp_ppm_callback_t callback_function){
+void bsp_ppm_register_callback(bsp_ppm_callback_t callback_function)
+{
     external_callback = callback_function;
 }
 

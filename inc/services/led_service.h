@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define LED_STRIPE_NUM  16
+#define LED_STRIPE_NUM 16
 
 typedef struct color {
     uint8_t R;
@@ -23,7 +23,6 @@ typedef enum {
     COLOR_BLACK,
 } color_name_t;
 
-
 void board_led_toggle();
 void board_led_on();
 void board_led_off();
@@ -42,6 +41,5 @@ void led_stripe_set_all_color(color_name_t color_name);
 
 void led_stripe_reset();
 void led_stripe_send();
-
 
 #endif /* LED_SERVICE_H */

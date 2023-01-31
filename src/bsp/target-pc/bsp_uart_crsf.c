@@ -12,8 +12,8 @@
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-#define RADIO_CRSF_CHANNELS  8
-#define RADIO_CRSF_MAX_CHANNELS  16
+#define RADIO_CRSF_CHANNELS     8
+#define RADIO_CRSF_MAX_CHANNELS 16
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -32,7 +32,6 @@ static void uart_error_callback(void *arg);
 uint16_t rc_channels[RADIO_CRSF_MAX_CHANNELS];
 static bsp_uart_crsf_callback_t external_callback;
 
-
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -41,33 +40,31 @@ static bsp_uart_crsf_callback_t external_callback;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void uart_callback(void *arg) {
-
+static void uart_callback(void *arg)
+{
     int16_t data[4];
 
-    data[0] = *(((int16_t*) (arg)) + 0); 
-    data[1] = *(((int16_t*) (arg)) + 1); 
-    data[2] = *(((int16_t*) (arg)) + 2);
-    data[3] = *(((int16_t*) (arg)) + 3);
+    data[0] = *(((int16_t *)(arg)) + 0);
+    data[1] = *(((int16_t *)(arg)) + 1);
+    data[2] = *(((int16_t *)(arg)) + 2);
+    data[3] = *(((int16_t *)(arg)) + 3);
 
     // Fake implementation of uart radio service
-    if (data[0] == 0){
+    if (data[0] == 0) {
         rc_channels[0] = map(data[1], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
         rc_channels[1] = map(data[2], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
-    } else if (data[0] == 1){
+    } else if (data[0] == 1) {
         rc_channels[2] = map(data[1], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
         rc_channels[5] = map(data[2], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
         rc_channels[6] = map(data[3], 0, 255, RADIO_CRSF_MIN_VALUE, RADIO_CRSF_MAX_VALUE);
-        if (!stop_uart){
+        if (!stop_uart) {
             external_callback(rc_channels, RADIO_CRSF_CHANNELS);
         }
-    
     }
-    
 }
 
-
-void uart_error_callback(void *arg){
+void uart_error_callback(void *arg)
+{
     (void)(arg); // Unused Parameter
 }
 
@@ -75,24 +72,26 @@ void uart_error_callback(void *arg){
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void bsp_uart_crsf_init() {
+void bsp_uart_crsf_init()
+{
     printf("UART RADIO CRSF INIT \r\n");
     BSP_UART_Register_Callback(UART_NUM_4, uart_callback);
     BSP_UART_Register_Error_Callback(UART_NUM_4, uart_error_callback);
     stop_uart = true;
-
 }
 
-void bsp_uart_crsf_start() {
+void bsp_uart_crsf_start()
+{
     stop_uart = false;
 }
 
-void bsp_uart_crsf_stop() {
+void bsp_uart_crsf_stop()
+{
     stop_uart = true;
 }
 
-
-void bsp_uart_crsf_register_callback(bsp_uart_crsf_callback_t callback_function){
+void bsp_uart_crsf_register_callback(bsp_uart_crsf_callback_t callback_function)
+{
     external_callback = callback_function;
 }
 

@@ -3,25 +3,23 @@
 
 #include <stdint.h>
 
+#define CRSF_RX_BAUDRATE      420000
+#define CRSF_TX_BAUDRATE_FAST 400000
+#define CRSF_TX_BAUDRATE_SLOW 115200
+#define CRSF_NUM_CHANNELS     16
 
-#define CRSF_RX_BAUDRATE                420000
-#define CRSF_TX_BAUDRATE_FAST           400000
-#define CRSF_TX_BAUDRATE_SLOW           115200
-#define CRSF_NUM_CHANNELS               16
+#define CRSF_SYNC_BYTE 0xC8
 
-#define CRSF_SYNC_BYTE                  0xC8
+#define CRSF_PAYLOAD_SIZE_MAX   62
+#define CRSF_FRAME_START_BYTES  2 // address + len (start of the CRSF frame, not counted to frame len)
+#define CRSF_FRAME_HEADER_BYTES 2 // type + crc
 
-#define CRSF_PAYLOAD_SIZE_MAX           62
-#define CRSF_FRAME_START_BYTES          2 // address + len (start of the CRSF frame, not counted to frame len)
-#define CRSF_FRAME_HEADER_BYTES         2 // type + crc
+#define CRSF_FRAME_SIZE(payload_size)     ((payload_size) + CRSF_FRAME_HEADER_BYTES) // See crsf_header_t.frame_size
+#define CRSF_EXT_FRAME_SIZE(payload_size) (CRSF_FRAME_SIZE(payload_size) + CRSF_FRAME_START_BYTES)
+#define CRSF_FRAME_SIZE_MAX               (CRSF_PAYLOAD_SIZE_MAX + CRSF_FRAME_START_BYTES)
 
-#define CRSF_FRAME_SIZE(payload_size)       ((payload_size) + CRSF_FRAME_HEADER_BYTES) // See crsf_header_t.frame_size
-#define CRSF_EXT_FRAME_SIZE(payload_size)   ( CRSF_FRAME_SIZE(payload_size) + CRSF_FRAME_START_BYTES)
-#define CRSF_FRAME_SIZE_MAX                 (CRSF_PAYLOAD_SIZE_MAX + CRSF_FRAME_START_BYTES)
-
-#define CRSF_MSP_FRAME_HEADER_BYTES 4 // type, dest, orig, crc
+#define CRSF_MSP_FRAME_HEADER_BYTES       4 // type, dest, orig, crc
 #define CRSF_MSP_FRAME_SIZE(payload_size) (CRSF_FRAME_SIZE(payload_size) + CRSF_MSP_FRAME_HEADER_BYTES)
-
 
 // OUT to flight controller
 #define ELRS_MIN        0
@@ -29,18 +27,16 @@
 #define ELRS_SWITCH_MIN 0
 #define ELRS_SWITCH_MAX 6
 
-#define CRSF_MIN        172
-#define CRSF_MID        992
-#define CRSF_MAX        1811
+#define CRSF_MIN 172
+#define CRSF_MID 992
+#define CRSF_MAX 1811
 
-#define RX_BAUDRATE     CRSF_RX_BAUDRATE
-
+#define RX_BAUDRATE CRSF_RX_BAUDRATE
 
 #define CRSF_FRAME_RX_MSP_FRAME_SIZE 8
 #define CRSF_FRAME_TX_MSP_FRAME_SIZE 58
 
 typedef enum crsf_packet_ret {
-
     CRSF_PACKET,
     CRSF_PACKET_NORMAL,
     CRSF_PACKET_COMPLETE,
@@ -48,9 +44,7 @@ typedef enum crsf_packet_ret {
 
 } crsf_packet_ret_t;
 
-
-enum crsf_frame_type_e
-{
+enum crsf_frame_type_e {
     CRSF_FRAMETYPE_GPS = 0x02,
     CRSF_FRAMETYPE_BATTERY_SENSOR = 0x08,
     CRSF_FRAMETYPE_LINK_STATISTICS = 0x14,
@@ -72,25 +66,22 @@ enum crsf_frame_type_e
     CRSF_FRAMETYPE_PARAMETER_WRITE = 0x2D,
     CRSF_FRAMETYPE_COMMAND = 0x32,
     // MSP commands
-    CRSF_FRAMETYPE_MSP_REQ = 0x7A,   // response request using msp sequence as command
-    CRSF_FRAMETYPE_MSP_RESP = 0x7B,  // reply with 58 byte chunked binary
-    CRSF_FRAMETYPE_MSP_WRITE = 0x7C, // write with 8 byte chunked binary (OpenTX outbound telemetry buffer limit)
+    CRSF_FRAMETYPE_MSP_REQ = 0x7A,         // response request using msp sequence as command
+    CRSF_FRAMETYPE_MSP_RESP = 0x7B,        // reply with 58 byte chunked binary
+    CRSF_FRAMETYPE_MSP_WRITE = 0x7C,       // write with 8 byte chunked binary (OpenTX outbound telemetry buffer limit)
     CRSF_FRAMETYPE_DISPLAYPORT_CMD = 0x7D, // displayport control command
 };
 
-enum
-{
-    CRSF_COMMAND_SUBCMD_GENERAL = 0x0A,    // general command
+enum {
+    CRSF_COMMAND_SUBCMD_GENERAL = 0x0A, // general command
 };
 
-enum
-{
-    CRSF_COMMAND_SUBCMD_GENERAL_CRSF_SPEED_PROPOSAL = 0x70,    // proposed new CRSF port speed
-    CRSF_COMMAND_SUBCMD_GENERAL_CRSF_SPEED_RESPONSE = 0x71,    // response to the proposed CRSF port speed
+enum {
+    CRSF_COMMAND_SUBCMD_GENERAL_CRSF_SPEED_PROPOSAL = 0x70, // proposed new CRSF port speed
+    CRSF_COMMAND_SUBCMD_GENERAL_CRSF_SPEED_RESPONSE = 0x71, // response to the proposed CRSF port speed
 };
 
-enum crsf_addr_e
-{
+enum crsf_addr_e {
     CRSF_ADDRESS_BROADCAST = 0x00,
     CRSF_ADDRESS_USB = 0x10,
     CRSF_ADDRESS_TBS_CORE_PNP_PRO = 0x80,
@@ -106,17 +97,13 @@ enum crsf_addr_e
     CRSF_ADDRESS_CRSF_TRANSMITTER = 0xEE,
 };
 
-
-
-typedef struct crsf_header_s
-{
+typedef struct crsf_header_s {
     uint8_t device_addr; // from crsf_addr_e
     uint8_t frame_size;  // counts size after this byte, so it must be the payload size + 2 (type and crc)
     uint8_t type;        // from crsf_frame_type_e
 } __attribute__((packed)) crsf_header_t;
 
-typedef struct crsf_channels_s
-{
+typedef struct crsf_channels_s {
     unsigned ch0 : 11;
     unsigned ch1 : 11;
     unsigned ch2 : 11;
@@ -135,10 +122,7 @@ typedef struct crsf_channels_s
     unsigned ch15 : 11;
 } __attribute__((packed)) crsf_channels_t;
 
-
-
-
 crsf_packet_ret_t crsf_parse_byte(uint8_t inChar);
-void crsf_get_rc_data(uint16_t * const rc_data, uint8_t len);
+void crsf_get_rc_data(uint16_t *const rc_data, uint8_t len);
 
 #endif /* INC_CRSF_H_ */

@@ -4,20 +4,23 @@
 #include "bsp_gpio_mapping.h"
 #include "utils.h"
 
-void driving_init(){
+void driving_init()
+{
     BSP_motorsInit();
 }
 
-void driving_enable(){
+void driving_enable()
+{
     BSP_GPIO_Write_Pin(GPIO_MOT_EN_PORT, GPIO_MOT_EN_PIN, IO_LOW);
 }
 
-void driving_disable(){
+void driving_disable()
+{
     BSP_GPIO_Write_Pin(GPIO_MOT_EN_PORT, GPIO_MOT_EN_PIN, IO_HIGH);
 }
 
-void drive(int16_t left, int16_t right){
-
+void drive(int16_t left, int16_t right)
+{
     left = constrain(left, -99, 99);
     right = constrain(right, -99, 99);
 
@@ -30,5 +33,4 @@ void drive(int16_t left, int16_t right){
     }
 
     BSP_motors(left, right);
-
 }
