@@ -68,6 +68,12 @@ void ADC_Fake_Start_Module(bool stat)
             case FAKE_LINE_POS_BL:
                 dma_buffer[i + j] = 2000;
                 break;
+            case FAKE_ADC_CTRL_BAT_POSITION:
+                dma_buffer[i + j] = 4095;
+                break;
+            case FAKE_ADC_PWR_BAT_POSITION:
+                dma_buffer[i + j] = 4095;
+                break;
             default:
                 dma_buffer[i + j] = 0;
                 break;
