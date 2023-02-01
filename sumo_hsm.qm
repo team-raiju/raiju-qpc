@@ -118,8 +118,15 @@ if (adc_get_low_pwr_bat()){
 }</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 buzzer_stop();
-bsp_ble_start();</exit>
+
+// Buzzer was not finished so  there are missing initializations
+if (me-&gt;buzzerCount &lt;= 16){
+    me-&gt;buzzerCount = 17;
+    bsp_ble_start();
+    adc_service_start_callback();
+}</exit>
      <!--${AOs::SumoHSM::SM::Idle::TIMEOUT}-->
      <tran trig="TIMEOUT">
       <action brief="board_toggle_led()">board_led_toggle();</action>
@@ -179,23 +186,21 @@ if (me-&gt;buzzerCount &lt; 15){
     led_stripe_set_color(me-&gt;buzzerCount, COLOR_PURPLE);
     QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
     QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 84);
-    me-&gt;buzzerCount += 1;
 } else if (me-&gt;buzzerCount == 15) {
     led_stripe_set_color(me-&gt;buzzerCount, COLOR_PURPLE);
     QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
     QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 200);
-    me-&gt;buzzerCount += 1;
 } else {
     QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
     bsp_ble_start();
     adc_service_start_callback();
-    if (adc_get_low_ctrl_bat()){
+    if (adc_get_low_pwr_bat()){
         led_stripe_set_all_color(COLOR_RED);
+    } else if (adc_get_low_ctrl_bat()){
+        led_stripe_set_all_color(COLOR_ORANGE);
     }
 }
-
-
-</action>
+me-&gt;buzzerCount += 1;</action>
       <tran_glyph conn="41,27,3,-1,18">
        <action box="0,-2,32,2"/>
       </tran_glyph>
@@ -521,67 +526,67 @@ radio_service_disable();</action>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_0]}-->
       <choice target="../../../12" cpref="../../../31/0">
        <guard brief="ps_0">parameters.pre_strategy == 0</guard>
-       <choice_glyph conn="52,104,5,0,-25,13">
+       <choice_glyph conn="52,107,5,0,-25,10">
         <action box="-29,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_1]}-->
       <choice target="../../../12" cpref="../../../31/1">
        <guard brief="ps_1">parameters.pre_strategy == 1</guard>
-       <choice_glyph conn="52,104,5,0,-20,13">
+       <choice_glyph conn="52,107,5,0,-20,10">
         <action box="-23,-3,7,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_2]}-->
       <choice target="../../../12" cpref="../../../31/2">
        <guard brief="ps_2">parameters.pre_strategy == 2</guard>
-       <choice_glyph conn="52,104,5,0,-15,13">
+       <choice_glyph conn="52,107,5,0,-15,10">
         <action box="-18,-3,7,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_3]}-->
       <choice target="../../../12" cpref="../../../31/3">
        <guard brief="ps_3">parameters.pre_strategy == 3</guard>
-       <choice_glyph conn="52,104,5,0,-10,13">
+       <choice_glyph conn="52,107,5,0,-10,10">
         <action box="-12,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_4]}-->
       <choice target="../../../12" cpref="../../../31/4">
        <guard brief="ps_4">parameters.pre_strategy == 4</guard>
-       <choice_glyph conn="52,104,5,0,-5,13">
+       <choice_glyph conn="52,107,5,0,-5,10">
         <action box="-6,-3,5,3"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_5]}-->
       <choice target="../../../12" cpref="../../../31/5">
        <guard brief="ps_5">parameters.pre_strategy == 5</guard>
-       <choice_glyph conn="52,104,5,0,1,13">
+       <choice_glyph conn="52,107,5,0,1,10">
         <action box="0,-3,5,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_6]}-->
       <choice target="../../../12" cpref="../../../31/6">
        <guard brief="ps_6">parameters.pre_strategy == 6</guard>
-       <choice_glyph conn="52,104,5,0,6,13">
+       <choice_glyph conn="52,107,5,0,6,10">
         <action box="5,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_7]}-->
       <choice target="../../../12" cpref="../../../31/7">
        <guard brief="ps_7">parameters.pre_strategy == 7</guard>
-       <choice_glyph conn="52,104,5,0,11,13">
+       <choice_glyph conn="52,107,5,0,11,10">
         <action box="10,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_8]}-->
       <choice target="../../../12" cpref="../../../31/8">
        <guard brief="ps_8">parameters.pre_strategy == 8</guard>
-       <choice_glyph conn="52,104,5,0,16,13">
+       <choice_glyph conn="52,107,5,0,16,10">
         <action box="15,-3,6,2"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="35,95,3,-1,17,9">
+      <tran_glyph conn="35,99,3,-1,17,8">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -675,11 +680,11 @@ if (parameters.attack_when_near){
      <!--${AOs::SumoHSM::SM::AutoWait::STOP_BUZZER}-->
      <tran trig="STOP_BUZZER">
       <action brief="buzzer_stop()">buzzer_stop();</action>
-      <tran_glyph conn="35,91,3,-1,17">
+      <tran_glyph conn="35,92,3,-1,17">
        <action box="0,-2,23,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="35,50,36,47">
+     <state_glyph node="35,50,36,51">
       <entry box="1,2,35,8"/>
      </state_glyph>
     </state>
@@ -1249,7 +1254,7 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
 start_module_disable();</entry>
      <!--${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../4">
-      <tran_glyph conn="6,241,3,3,-4,-147,33">
+      <tran_glyph conn="6,241,3,3,-4,-146,33">
        <action box="1,-1,23,2"/>
       </tran_glyph>
      </tran>

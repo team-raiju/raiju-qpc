@@ -879,8 +879,15 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
 static QState SumoHSM_Idle_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->buzzerStopTimer);
+    QTimeEvt_disarm(&me->timeEvt_2);
     buzzer_stop();
-    bsp_ble_start();
+
+    // Buzzer was not finished so  there are missing initializations
+    if (me->buzzerCount <= 16){
+        me->buzzerCount = 17;
+        bsp_ble_start();
+        adc_service_start_callback();
+    }
     return QM_EXIT(&SumoHSM_Idle_s);
 }
 /*${AOs::SumoHSM::SM::Idle} */
@@ -962,23 +969,21 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
                 led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
                 QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
                 QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 84);
-                me->buzzerCount += 1;
             } else if (me->buzzerCount == 15) {
                 led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
                 QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
                 QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 200);
-                me->buzzerCount += 1;
             } else {
                 QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
                 bsp_ble_start();
                 adc_service_start_callback();
-                if (adc_get_low_ctrl_bat()){
+                if (adc_get_low_pwr_bat()){
                     led_stripe_set_all_color(COLOR_RED);
+                } else if (adc_get_low_ctrl_bat()){
+                    led_stripe_set_all_color(COLOR_ORANGE);
                 }
             }
-
-
-
+            me->buzzerCount += 1;
             status_ = QM_HANDLED();
             break;
         }
