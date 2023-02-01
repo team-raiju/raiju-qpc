@@ -7,14 +7,12 @@
 #define NUM_OF_LINE_SENSORS 4
 
 // Position of sensor on ADC DMA buffer
-typedef enum line_sensor 
-{
-    LINE_FR, 
+typedef enum line_sensor {
+    LINE_FR,
     LINE_FL,
-    LINE_BR,      
+    LINE_BR,
     LINE_BL,
 } line_sensor_t;
-
 
 void adc_service_init(void);
 void adc_service_start_callback();

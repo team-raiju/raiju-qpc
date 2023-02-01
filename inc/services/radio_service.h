@@ -5,8 +5,7 @@
 
 #define NUM_OF_RADIO_CHANNELS 8
 
-typedef enum radio_channel 
-{
+typedef enum radio_channel {
     RADIO_CH1,
     RADIO_CH2,
     RADIO_CH3,
@@ -16,7 +15,6 @@ typedef enum radio_channel
     RADIO_CH7,
     RADIO_CH8,
 } radio_channel_t;
-
 
 void radio_service_init(void);
 void radio_service_enable(void);

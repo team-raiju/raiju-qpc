@@ -18,25 +18,25 @@
  * LOCAL DEFINES
  **************************************************************************************************/
 
-#define NUM_OF_STRATEGIES        3
-#define NUM_OF_PRE_STRATEGIES    9
-#define NUM_OF_CALIB_MODES       5
+#define NUM_OF_STRATEGIES     3
+#define NUM_OF_PRE_STRATEGIES 9
+#define NUM_OF_CALIB_MODES    5
 
-#define ARENA_LENGHT_CM          154.0f
-#define SUMO_LENGHT_CM           20.0f
-#define REFERENCE_DIST_CM        (ARENA_LENGHT_CM - SUMO_LENGHT_CM)
+#define ARENA_LENGHT_CM   154.0f
+#define SUMO_LENGHT_CM    20.0f
+#define REFERENCE_DIST_CM (ARENA_LENGHT_CM - SUMO_LENGHT_CM)
 
-#define REFERENCE_SPEED          60.0f
+#define REFERENCE_SPEED 60.0f
 
-#define REFERENCE_TURN_SPEED     100.0f
+#define REFERENCE_TURN_SPEED 100.0f
 
 #define BLE_PACKET_TRANSMIT_SIZE 20
-#define PARAMS_PACKET_VERSION           0
+#define PARAMS_PACKET_VERSION    0
 
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
-typedef union{
+typedef union {
     uint8_t _raw[BLE_RECEIVE_PACKET_SIZE - 2];
     struct {
         uint8_t header;
@@ -45,8 +45,7 @@ typedef union{
 
 } ble_update_param_packet_t;
 
-
-typedef union{
+typedef union {
     uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
     struct {
         uint8_t version;
@@ -57,11 +56,11 @@ typedef union{
         uint8_t calib_mode;
         uint16_t en_dist_sensors;
         uint8_t en_line_sensors;
-        uint8_t  star_speed;
-        uint8_t  max_speed;
-        uint8_t  reverse_speed; 
+        uint8_t star_speed;
+        uint8_t max_speed;
+        uint8_t reverse_speed;
         uint16_t reverse_time_ms;
-        uint8_t  line_seen_turn_angle;
+        uint8_t line_seen_turn_angle;
         uint16_t turn_180_right_time_ms;
         uint16_t turn_180_left_time_ms;
 
@@ -70,7 +69,7 @@ typedef union{
 
 } ble_transmit_packet_0_t;
 
-typedef union{
+typedef union {
     uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
     struct {
         uint8_t version;
@@ -83,11 +82,11 @@ typedef union{
 
         uint8_t attack_when_near;
         uint8_t empty[9];
-    }__attribute__((packed, scalar_storage_order("big-endian")));
+    } __attribute__((packed, scalar_storage_order("big-endian")));
 
 } ble_transmit_packet_1_t;
 
-typedef union{
+typedef union {
     uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
     struct {
         uint8_t version;
@@ -100,12 +99,12 @@ typedef union{
         uint16_t pwr_battery;
 
         uint8_t empty[10];
-        
-    }__attribute__((packed, scalar_storage_order("big-endian")));
+
+    } __attribute__((packed, scalar_storage_order("big-endian")));
 
 } ble_transmit_packet_2_t;
 
-typedef union{
+typedef union {
     uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
     struct {
         uint8_t version;
@@ -116,49 +115,34 @@ typedef union{
         uint32_t line_br;
         uint32_t line_bl;
         uint8_t empty[2];
-        
-    }__attribute__((packed, scalar_storage_order("big-endian")));
+
+    } __attribute__((packed, scalar_storage_order("big-endian")));
 
 } ble_transmit_packet_3_t;
-
 
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
-static void read_and_update_parameter_16_bit(uint16_t eeprom_addr, uint16_t * updated_data);
-static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t * updated_data);
+static void read_and_update_parameter_16_bit(uint16_t eeprom_addr, uint16_t *updated_data);
+static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t *updated_data);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
 
 static color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
-    COLOR_GREEN,
-    COLOR_BLUE,
-    COLOR_ORANGE,
+    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE,
     // COLOR_PINK,
     // COLOR_YELLOW,
 };
 
 static color_name_t pre_strategy_colors[NUM_OF_PRE_STRATEGIES] = {
-    COLOR_BLACK,
-    COLOR_GREEN,
-    COLOR_BLUE,
-    COLOR_BLUE,
-    COLOR_ORANGE,
-    COLOR_ORANGE,
-    COLOR_PINK,
-    COLOR_PINK,
-    COLOR_PURPLE,
+    COLOR_BLACK, COLOR_GREEN, COLOR_BLUE, COLOR_BLUE, COLOR_ORANGE, COLOR_ORANGE, COLOR_PINK, COLOR_PINK, COLOR_PURPLE,
     // COLOR_WHITE,
     // COLOR_YELLOW,
 };
 
 static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
-    COLOR_GREEN,
-    COLOR_BLUE,
-    COLOR_ORANGE,
-    COLOR_PINK,
-    COLOR_PURPLE,
+    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_PURPLE,
 };
 
 // static const char * strategy_names[] = {
@@ -166,7 +150,6 @@ static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
 //     "small steps",
 //     "defensive"
 // };
-
 
 static sumo_parameters_t init_parameters_default = {
     .strategy = 0,
@@ -196,34 +179,34 @@ static sumo_parameters_t init_parameters_default = {
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void read_and_update_parameter_16_bit(uint16_t eeprom_addr, uint16_t * updated_data){
+static void read_and_update_parameter_16_bit(uint16_t eeprom_addr, uint16_t *updated_data)
+{
     uint16_t eeprom_data;
 
-    if (BSP_eeprom_read(eeprom_addr, &eeprom_data) ==  EEPROM_OK){
+    if (BSP_eeprom_read(eeprom_addr, &eeprom_data) == EEPROM_OK) {
         *updated_data = eeprom_data;
     } else {
         BSP_eeprom_write(eeprom_addr, *updated_data);
     }
-
 }
 
-static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t * updated_data){
+static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t *updated_data)
+{
     uint16_t eeprom_data;
 
-    if (BSP_eeprom_read(eeprom_addr, &eeprom_data) ==  EEPROM_OK){
+    if (BSP_eeprom_read(eeprom_addr, &eeprom_data) == EEPROM_OK) {
         *updated_data = eeprom_data;
     } else {
         BSP_eeprom_write(eeprom_addr, *updated_data);
     }
-
 }
 
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void parameters_init(sumo_parameters_t *params){
-
+void parameters_init(sumo_parameters_t *params)
+{
     sumo_parameters_t temp_params = init_parameters_default;
 
     read_and_update_parameter_16_bit(EN_DIST_SENSOR_ADDR, &temp_params.enabled_distance_sensors);
@@ -249,74 +232,67 @@ void parameters_init(sumo_parameters_t *params){
 
     distance_service_set_mask(params->enabled_distance_sensors);
     adc_line_set_mask(params->enabled_line_sensors);
-
 }
 
+void parameters_report(sumo_parameters_t params, uint8_t config_num)
+{
+    char buffer[BLE_PACKET_TRANSMIT_SIZE] = { 0 };
+    switch (config_num) {
+    case 0: {
+        ble_transmit_packet_0_t packet_0 = { 0 };
+        packet_0.version = PARAMS_PACKET_VERSION;
+        packet_0.header = 0;
+        packet_0.strategy = params.strategy;
+        packet_0.pre_strategy = params.pre_strategy;
+        packet_0.calib_mode = params.calib_mode;
+        packet_0.en_dist_sensors = params.enabled_distance_sensors;
+        packet_0.en_line_sensors = params.enabled_line_sensors;
+        packet_0.star_speed = params.star_speed;
+        packet_0.max_speed = params.max_speed;
+        packet_0.reverse_speed = params.reverse_speed;
+        packet_0.reverse_time_ms = params.reverse_time_ms;
+        packet_0.line_seen_turn_angle = params.line_seen_turn_angle;
+        packet_0.turn_180_right_time_ms = params.turn_180_right_time_ms;
+        packet_0.turn_180_left_time_ms = params.turn_180_left_time_ms;
+        memcpy(buffer, packet_0._raw, BLE_PACKET_TRANSMIT_SIZE);
+        break;
+    }
+    case 1: {
+        ble_transmit_packet_1_t packet_1 = { 0 };
+        packet_1.version = PARAMS_PACKET_VERSION;
+        packet_1.header = 1;
+        packet_1.step_wait_time_ms = params.step_wait_time_ms;
+        packet_1.step_advance_time_ms = params.step_advance_time_ms;
+        packet_1.time_ms_to_cross_at_60_vel = params.time_ms_to_cross_at_60_vel;
+        packet_1.is_stucked_timeout_ms = params.is_stucked_timeout_ms;
+        packet_1.attack_when_near = params.attack_when_near;
+        memcpy(buffer, packet_1._raw, BLE_PACKET_TRANSMIT_SIZE);
+        break;
+    }
+    case 2: {
+        ble_transmit_packet_2_t packet_2 = { 0 };
+        packet_2.version = PARAMS_PACKET_VERSION;
+        packet_2.header = 2;
+        packet_2.dist_mask = distance_get_all_active();
+        packet_2.line_mask = adc_line_get_all();
+        packet_2.ctrl_battery = adc_get_ctrl_bat_mv();
+        packet_2.pwr_battery = adc_get_pwr_bat_mv();
 
-void parameters_report(sumo_parameters_t params, uint8_t config_num){
+        memcpy(buffer, packet_2._raw, BLE_PACKET_TRANSMIT_SIZE);
+        break;
+    }
 
-    char buffer[BLE_PACKET_TRANSMIT_SIZE] = {0};
-    switch (config_num)
-    {
-        case 0: {
-
-            ble_transmit_packet_0_t packet_0 = {0};
-            packet_0.version = PARAMS_PACKET_VERSION;
-            packet_0.header = 0;
-            packet_0.strategy = params.strategy;
-            packet_0.pre_strategy = params.pre_strategy;
-            packet_0.calib_mode = params.calib_mode; 
-            packet_0.en_dist_sensors = params.enabled_distance_sensors; 
-            packet_0.en_line_sensors = params.enabled_line_sensors; 
-            packet_0.star_speed = params.star_speed; 
-            packet_0.max_speed = params.max_speed; 
-            packet_0.reverse_speed = params.reverse_speed; 
-            packet_0.reverse_time_ms = params.reverse_time_ms; 
-            packet_0.line_seen_turn_angle = params.line_seen_turn_angle; 
-            packet_0.turn_180_right_time_ms = params.turn_180_right_time_ms; 
-            packet_0.turn_180_left_time_ms = params.turn_180_left_time_ms; 
-            memcpy(buffer, packet_0._raw, BLE_PACKET_TRANSMIT_SIZE);
-            break;
-        }
-        case 1:{
-
-            ble_transmit_packet_1_t packet_1 = {0};
-            packet_1.version = PARAMS_PACKET_VERSION;
-            packet_1.header = 1;
-            packet_1.step_wait_time_ms = params.step_wait_time_ms;
-            packet_1.step_advance_time_ms = params.step_advance_time_ms;
-            packet_1.time_ms_to_cross_at_60_vel = params.time_ms_to_cross_at_60_vel;
-            packet_1.is_stucked_timeout_ms = params.is_stucked_timeout_ms;
-            packet_1.attack_when_near = params.attack_when_near;
-            memcpy(buffer, packet_1._raw, BLE_PACKET_TRANSMIT_SIZE);
-            break;
-
-        }
-        case 2: {
-            ble_transmit_packet_2_t packet_2 = {0};
-            packet_2.version = PARAMS_PACKET_VERSION;
-            packet_2.header = 2;
-            packet_2.dist_mask = distance_get_all_active();
-            packet_2.line_mask = adc_line_get_all();
-            packet_2.ctrl_battery = adc_get_ctrl_bat_mv();
-            packet_2.pwr_battery = adc_get_pwr_bat_mv();
-
-            memcpy(buffer, packet_2._raw, BLE_PACKET_TRANSMIT_SIZE);
-            break;
-        }
-
-        default:{
-            return;
-        }
-        
+    default: {
+        return;
+    }
     }
 
     ble_service_send_data((uint8_t *)buffer, BLE_PACKET_TRANSMIT_SIZE);
-
 }
 
-void report_raw_line_data_ble() {
-    char buffer[BLE_PACKET_TRANSMIT_SIZE] = {0};
+void report_raw_line_data_ble()
+{
+    char buffer[BLE_PACKET_TRANSMIT_SIZE] = { 0 };
     ble_transmit_packet_3_t packet_3;
 
     packet_3.version = PARAMS_PACKET_VERSION;
@@ -330,16 +306,14 @@ void report_raw_line_data_ble() {
     memcpy(buffer, packet_3._raw, BLE_PACKET_TRANSMIT_SIZE);
 
     ble_service_send_data((uint8_t *)buffer, BLE_PACKET_TRANSMIT_SIZE);
-
 }
 
-param_error_t parameters_update_from_ble(sumo_parameters_t *params, uint8_t * data){
-
+param_error_t parameters_update_from_ble(sumo_parameters_t *params, uint8_t *data)
+{
     ble_update_param_packet_t ble_packet;
     memcpy(ble_packet._raw, data, BLE_RECEIVE_PACKET_SIZE - 2);
 
-    switch (ble_packet.header)
-    {
+    switch (ble_packet.header) {
     case BLE_DATA_HDR_STRATEGY_AND_PRE:
         parameters_set_strategy(params, ble_packet.param_data[0]);
         parameters_update_pre_strategy(params, ble_packet.param_data[1]);
@@ -350,7 +324,7 @@ param_error_t parameters_update_from_ble(sumo_parameters_t *params, uint8_t * da
         parameters_update_calib_mode(params, ble_packet.param_data[0]);
         parameters_set_calib_mode_led(params);
         break;
-    case BLE_DATA_HDR_CUST_STRATEGY:{
+    case BLE_DATA_HDR_CUST_STRATEGY: {
         uint8_t ret;
         ret = cust_strategy_update_from_ble(ble_packet.param_data, sizeof(ble_packet.param_data));
         return (ret == 0) ? PARAM_OK : PARAM_ERROR;
@@ -363,43 +337,38 @@ param_error_t parameters_update_from_ble(sumo_parameters_t *params, uint8_t * da
     }
 
     return PARAM_OK;
-
 }
 
-void parameters_set_strategy(sumo_parameters_t *params, uint8_t strategy){
-
-    if (strategy >= NUM_OF_STRATEGIES){
+void parameters_set_strategy(sumo_parameters_t *params, uint8_t strategy)
+{
+    if (strategy >= NUM_OF_STRATEGIES) {
         strategy = 0;
     }
 
     params->strategy = strategy;
-
 }
 
-void parameters_update_pre_strategy(sumo_parameters_t *params, uint8_t pre_strategy){
-
-    if (pre_strategy >= NUM_OF_PRE_STRATEGIES){
+void parameters_update_pre_strategy(sumo_parameters_t *params, uint8_t pre_strategy)
+{
+    if (pre_strategy >= NUM_OF_PRE_STRATEGIES) {
         pre_strategy = 0;
     }
 
     params->pre_strategy = pre_strategy;
-
 }
 
-void parameters_update_calib_mode(sumo_parameters_t *params, uint8_t calib_mode){
-
-    if (calib_mode >= NUM_OF_CALIB_MODES){
+void parameters_update_calib_mode(sumo_parameters_t *params, uint8_t calib_mode)
+{
+    if (calib_mode >= NUM_OF_CALIB_MODES) {
         calib_mode = 0;
     }
 
     params->calib_mode = calib_mode;
-
 }
 
-
-void parameters_set_strategy_led(sumo_parameters_t *params){
-
-    if (params->strategy < NUM_OF_STRATEGIES){
+void parameters_set_strategy_led(sumo_parameters_t *params)
+{
+    if (params->strategy < NUM_OF_STRATEGIES) {
         led_stripe_prepare_range_color(0, (LED_STRIPE_NUM / 2), strategy_colors[params->strategy]);
     } else {
         led_stripe_prepare_range_color(0, (LED_STRIPE_NUM / 2), COLOR_BLACK);
@@ -408,49 +377,51 @@ void parameters_set_strategy_led(sumo_parameters_t *params){
     led_stripe_send();
 }
 
-void parameters_set_pre_strategy_led(sumo_parameters_t *params){
-
-    if (params->pre_strategy < NUM_OF_PRE_STRATEGIES){
-        if (params->pre_strategy % 2 == 0){
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3), pre_strategy_colors[params->pre_strategy]);
+void parameters_set_pre_strategy_led(sumo_parameters_t *params)
+{
+    if (params->pre_strategy < NUM_OF_PRE_STRATEGIES) {
+        if (params->pre_strategy % 2 == 0) {
+            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3),
+                                           pre_strategy_colors[params->pre_strategy]);
             led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_BLACK);
         } else {
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4), pre_strategy_colors[params->pre_strategy]);
+            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4),
+                                           pre_strategy_colors[params->pre_strategy]);
         }
     } else {
         led_stripe_prepare_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
     }
 
     led_stripe_send();
-
 }
 
-void parameters_set_pre_and_strategy_leds(sumo_parameters_t *params){
-
-    if (params->strategy < NUM_OF_STRATEGIES){
+void parameters_set_pre_and_strategy_leds(sumo_parameters_t *params)
+{
+    if (params->strategy < NUM_OF_STRATEGIES) {
         led_stripe_prepare_range_color(0, (LED_STRIPE_NUM / 2), strategy_colors[params->strategy]);
     } else {
         led_stripe_prepare_range_color(0, (LED_STRIPE_NUM / 2), COLOR_BLACK);
     }
 
-    if (params->pre_strategy < NUM_OF_PRE_STRATEGIES){
-        if (params->pre_strategy % 2 == 0){
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3), pre_strategy_colors[params->pre_strategy]);
+    if (params->pre_strategy < NUM_OF_PRE_STRATEGIES) {
+        if (params->pre_strategy % 2 == 0) {
+            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3),
+                                           pre_strategy_colors[params->pre_strategy]);
             led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_BLACK);
         } else {
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4), pre_strategy_colors[params->pre_strategy]);
+            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4),
+                                           pre_strategy_colors[params->pre_strategy]);
         }
     } else {
         led_stripe_prepare_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
     }
 
     led_stripe_send();
-
 }
 
-void parameters_set_calib_mode_led(sumo_parameters_t *params){
-
-    if (params->calib_mode < NUM_OF_CALIB_MODES){
+void parameters_set_calib_mode_led(sumo_parameters_t *params)
+{
+    if (params->calib_mode < NUM_OF_CALIB_MODES) {
         led_stripe_prepare_range_color(0, (LED_STRIPE_NUM), calib_mode_colors[params->calib_mode]);
     } else {
         led_stripe_prepare_range_color(0, (LED_STRIPE_NUM / 2), COLOR_BLACK);
@@ -459,32 +430,30 @@ void parameters_set_calib_mode_led(sumo_parameters_t *params){
     led_stripe_send();
 }
 
-uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, sumo_parameters_t *params) {
-
+uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, sumo_parameters_t *params)
+{
     // TODO: Account for non linear effects on multiplicators
     double angle_multiplicator = degrees / 180.0;
     double speed_multiplicator = turn_speed / REFERENCE_TURN_SPEED;
 
     uint16_t turn_time_ms;
 
-    if (side == SIDE_LEFT){
+    if (side == SIDE_LEFT) {
         turn_time_ms = (angle_multiplicator * params->turn_180_left_time_ms) * speed_multiplicator;
     } else {
         turn_time_ms = (angle_multiplicator * params->turn_180_right_time_ms) * speed_multiplicator;
     }
 
     return turn_time_ms;
-
 }
 
-uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params) {
-
-    double reference_speed_cm_per_ms = REFERENCE_DIST_CM / (double) params->time_ms_to_cross_at_60_vel;
+uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params)
+{
+    double reference_speed_cm_per_ms = REFERENCE_DIST_CM / (double)params->time_ms_to_cross_at_60_vel;
     double speed_multiplicator = speed / REFERENCE_SPEED;
 
     // TODO: Account for non linear effects on speed multiplicator
     uint16_t move_time_ms = distance_cm / (reference_speed_cm_per_ms * speed_multiplicator);
 
     return move_time_ms;
-
 }

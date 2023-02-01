@@ -9,7 +9,7 @@
 #include "bsp_gpio_mapping.h"
 #include "utils.h"
 
-#include "qpc.h"  
+#include "qpc.h"
 #include "bsp.h"
 
 #ifdef Q_SPY
@@ -17,28 +17,28 @@
 #endif
 
 #define FAKE_ADC_CTRL_BAT_POSITION 0
-#define FAKE_ADC_PWR_BAT_POSITION 6
+#define FAKE_ADC_PWR_BAT_POSITION  6
 #define FAKE_START_MODULE_POSITION 4
 
-typedef enum line_position_in_adc_fake 
-{
-    FAKE_LINE_POS_FR = 3, 
+typedef enum line_position_in_adc_fake {
+    FAKE_LINE_POS_FR = 3,
     FAKE_LINE_POS_FL = 2,
-    FAKE_LINE_POS_BR = 5,      
+    FAKE_LINE_POS_BR = 5,
     FAKE_LINE_POS_BL = 1,
 } line_position_in_adc_fake;
-
 
 bsp_adc_dma_callback_t adc_dma_callback_function;
 static bool enabled;
 static bool fake_start_module_stat = 0;
 
-static void default_adc_dma_callback(uint32_t * out_data) {
+static void default_adc_dma_callback(uint32_t *out_data)
+{
     Q_UNUSED_PAR(out_data);
 }
 
-void ADC_Fake_Start_Module(bool stat){
-    if (!enabled){
+void ADC_Fake_Start_Module(bool stat)
+{
+    if (!enabled) {
         return;
     }
 
@@ -47,42 +47,40 @@ void ADC_Fake_Start_Module(bool stat){
     for (uint16_t i = 0; i < ADC_DMA_HALF_BUFFER_SIZE; i += ADC_DMA_CHANNELS) {
         for (uint16_t j = 0; j < ADC_DMA_CHANNELS; j++) {
             switch (j) {
-                case FAKE_START_MODULE_POSITION:
-                    if (BSP_GPIO_Read_Pin(GPIO_START_MODULE_EN_PORT, GPIO_START_MODULE_EN_PIN)){
-                        dma_buffer[i + j] = 4095 * stat;
-                        fake_start_module_stat = stat;
-                    } else {
-                        dma_buffer[i + j] = 0;
-                        fake_start_module_stat = 0;
-                    }
-                    break;
-                case FAKE_LINE_POS_FR:
-                    dma_buffer[i + j] = 2000;
-                    break;
-                case FAKE_LINE_POS_FL:
-                    dma_buffer[i + j] = 2000;
-                    break;
-                case FAKE_LINE_POS_BR:
-                    dma_buffer[i + j] = 2000;
-                    break;
-                case FAKE_LINE_POS_BL:
-                    dma_buffer[i + j] = 2000;
-                    break;
-                default:
+            case FAKE_START_MODULE_POSITION:
+                if (BSP_GPIO_Read_Pin(GPIO_START_MODULE_EN_PORT, GPIO_START_MODULE_EN_PIN)) {
+                    dma_buffer[i + j] = 4095 * stat;
+                    fake_start_module_stat = stat;
+                } else {
                     dma_buffer[i + j] = 0;
-                    break;
+                    fake_start_module_stat = 0;
+                }
+                break;
+            case FAKE_LINE_POS_FR:
+                dma_buffer[i + j] = 2000;
+                break;
+            case FAKE_LINE_POS_FL:
+                dma_buffer[i + j] = 2000;
+                break;
+            case FAKE_LINE_POS_BR:
+                dma_buffer[i + j] = 2000;
+                break;
+            case FAKE_LINE_POS_BL:
+                dma_buffer[i + j] = 2000;
+                break;
+            default:
+                dma_buffer[i + j] = 0;
+                break;
             }
         }
     }
-    
-    adc_dma_callback_function(&dma_buffer[0]);
 
+    adc_dma_callback_function(&dma_buffer[0]);
 }
 
-
-void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool ctrl_bat_full, bool pwr_bat_full) {
-
-    if (!enabled){
+void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool ctrl_bat_full, bool pwr_bat_full)
+{
+    if (!enabled) {
         return;
     }
 
@@ -91,61 +89,56 @@ void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool ctrl_bat
     for (uint16_t i = 0; i < ADC_DMA_HALF_BUFFER_SIZE; i += ADC_DMA_CHANNELS) {
         for (uint16_t j = 0; j < ADC_DMA_CHANNELS; j++) {
             switch (j) {
-                case FAKE_LINE_POS_FR:
-                    dma_buffer[i + j] = 2000 * fr;
-                    break;
-                case FAKE_LINE_POS_FL:
-                    dma_buffer[i + j] = 2000 * fl;
-                    break;
-                case FAKE_LINE_POS_BR:
-                    dma_buffer[i + j] = 2000 * br;
-                    break;
-                case FAKE_LINE_POS_BL:
-                    dma_buffer[i + j] = 2000 * bl;
-                    break;
-                case FAKE_ADC_CTRL_BAT_POSITION:
-                    dma_buffer[i + j] = 4095 * ctrl_bat_full;
-                    break;
-                case FAKE_ADC_PWR_BAT_POSITION:
-                    dma_buffer[i + j] = 4095 * pwr_bat_full;
-                    break;
-                case FAKE_START_MODULE_POSITION:
-                    dma_buffer[i + j] = 4095 * fake_start_module_stat;
-                    break;
-                default:
-                    dma_buffer[i + j] = 0;
-                    break;
+            case FAKE_LINE_POS_FR:
+                dma_buffer[i + j] = 2000 * fr;
+                break;
+            case FAKE_LINE_POS_FL:
+                dma_buffer[i + j] = 2000 * fl;
+                break;
+            case FAKE_LINE_POS_BR:
+                dma_buffer[i + j] = 2000 * br;
+                break;
+            case FAKE_LINE_POS_BL:
+                dma_buffer[i + j] = 2000 * bl;
+                break;
+            case FAKE_ADC_CTRL_BAT_POSITION:
+                dma_buffer[i + j] = 4095 * ctrl_bat_full;
+                break;
+            case FAKE_ADC_PWR_BAT_POSITION:
+                dma_buffer[i + j] = 4095 * pwr_bat_full;
+                break;
+            case FAKE_START_MODULE_POSITION:
+                dma_buffer[i + j] = 4095 * fake_start_module_stat;
+                break;
+            default:
+                dma_buffer[i + j] = 0;
+                break;
             }
         }
     }
-    
+
     adc_dma_callback_function(&dma_buffer[0]);
 }
 
-
-void BSP_ADC_DMA_Init(void) {
-    printf("ADC DMA Init \r\n"); 
+void BSP_ADC_DMA_Init(void)
+{
+    printf("ADC DMA Init \r\n");
     BSP_ADC_DMA_Register_Callback(default_adc_dma_callback);
 }
 
-void BSP_ADC_DMA_Start(void) {
-
-    printf("ADC DMA Start \r\n"); 
+void BSP_ADC_DMA_Start(void)
+{
+    printf("ADC DMA Start \r\n");
     enabled = true;
-
 }
 
-void BSP_ADC_DMA_Stop(void) {
-
-    printf("ADC DMA Stop \r\n"); 
+void BSP_ADC_DMA_Stop(void)
+{
+    printf("ADC DMA Stop \r\n");
     enabled = false;
-
-
 }
 
-void BSP_ADC_DMA_Register_Callback(bsp_adc_dma_callback_t callback_function){
-
+void BSP_ADC_DMA_Register_Callback(bsp_adc_dma_callback_t callback_function)
+{
     adc_dma_callback_function = callback_function;
-
 }
-

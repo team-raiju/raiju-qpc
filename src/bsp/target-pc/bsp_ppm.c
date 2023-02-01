@@ -19,7 +19,6 @@
  * LOCAL TYPEDEFS
  **************************************************************************************************/
 
-
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
@@ -37,48 +36,43 @@ static bool enabled;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-
-void fake_ppm_exti_callback(uint8_t ppm_num, uint8_t value) {
-
-    if (!enabled){
+void fake_ppm_exti_callback(uint8_t ppm_num, uint8_t value)
+{
+    if (!enabled) {
         return;
     }
 
-    if (ppm_num < BOARD_NUM_OF_PPMS){
+    if (ppm_num < BOARD_NUM_OF_PPMS) {
         uint16_t ppm = map(value, 0, 255, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS);
-
 
         external_callback(ppm_num, ppm);
     }
-    
 }
 
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-
-void bsp_ppm_init() {
-
+void bsp_ppm_init()
+{
     printf("BSP PPM INIT\r\n");
     enabled = true;
-
 }
 
-void bsp_ppm_start(){
+void bsp_ppm_start()
+{
     printf("BSP PPM START\r\n");
     enabled = true;
-   
 }
 
-void bsp_ppm_stop(){
-
+void bsp_ppm_stop()
+{
     printf("BSP PPM STOP\r\n");
     enabled = false;
-    
 }
 
-void bsp_ppm_register_callback(bsp_ppm_callback_t callback_function){
+void bsp_ppm_register_callback(bsp_ppm_callback_t callback_function)
+{
     external_callback = callback_function;
 }
 
