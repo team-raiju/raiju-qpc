@@ -2584,7 +2584,7 @@ static QState SumoHSM_CalibFrontGoBack(SumoHSM * const me, QEvt const * const e)
 static QState SumoHSM_CalibeFrontTurn_e(SumoHSM * const me) {
     drive(100, -100);
     uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &parameters);
-    QTimeEvt_rearm(&me->timeEvt, turn_time_ms);
+    QTimeEvt_rearm(&me->timeEvt, turn_time_ms * BSP_TICKS_PER_MILISSEC);
     return QM_ENTRY(&SumoHSM_CalibeFrontTurn_s);
 }
 /*${AOs::SumoHSM::SM::CalibeFrontTurn} */

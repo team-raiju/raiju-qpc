@@ -1230,7 +1230,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, reverse_time);</entry>
     <state name="CalibeFrontTurn">
      <entry brief="turn">drive(100, -100);
 uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, turn_time_ms);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, turn_time_ms * BSP_TICKS_PER_MILISSEC);</entry>
      <!--${AOs::SumoHSM::SM::CalibeFrontTurn::TIMEOUT}-->
      <tran trig="TIMEOUT" target="../../27">
       <tran_glyph conn="270,119,5,0,-2,18">
