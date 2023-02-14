@@ -2136,35 +2136,34 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtBle);</exit>
     </submachine>
     <!--${AOs::SumoHSM::SM::StarStrategy}-->
     <submachine name="StarStrategy">
-     <entry brief="CheckSensors">buzzer_start();
+     <entry brief="PlayBuzzer">buzzer_start();
 QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
-me-&gt;stuck_counter = 0;
-drive(parameters.star_speed, parameters.star_speed);</entry>
+me-&gt;stuck_counter = 0;</entry>
      <exit brief="DisableTimers">QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <!--${AOs::SumoHSM::SM::StarStrategy::XP-XP1}-->
      <xp name="XP1">
-      <xp_glyph point="20,87,2">
+      <xp_glyph point="20,73,2">
        <name box="1,-2,10,2"/>
       </xp_glyph>
      </xp>
      <!--${AOs::SumoHSM::SM::StarStrategy::XP-LINE_FRONT}-->
      <xp name="LINE_FRONT">
-      <xp_glyph point="49,87,2">
+      <xp_glyph point="49,73,2">
        <name box="1,-2,10,2"/>
       </xp_glyph>
      </xp>
      <!--${AOs::SumoHSM::SM::StarStrategy::XP-LINE_BACK}-->
      <xp name="LINE_BACK">
-      <xp_glyph point="112,87,2">
+      <xp_glyph point="112,73,2">
        <name box="1,-2,10,2"/>
       </xp_glyph>
      </xp>
      <!--${AOs::SumoHSM::SM::StarStrategy::initial}-->
      <initial target="../8">
-      <initial_glyph conn="30,8,5,0,18,5">
+      <initial_glyph conn="74,9,5,0,-8,13">
        <action box="0,-2,10,2"/>
       </initial_glyph>
      </initial>
@@ -2173,7 +2172,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
       <!--${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED_FL,~::[white]}-->
       <choice target="../.." cpref="../../1">
        <guard brief="white">adc_line_is_white(LINE_FL) || adc_line_is_white(LINE_FR)</guard>
-       <choice_glyph conn="28,52,5,2,3,30,18,4">
+       <choice_glyph conn="28,52,5,2,3,18,18,2">
         <action box="2,-3,7,2"/>
        </choice_glyph>
       </choice>
@@ -2193,7 +2192,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
       <!--${AOs::SumoHSM::SM::StarStrategy::LINE_CHANGED_BL,~::[white]}-->
       <choice target="../.." cpref="../../2">
        <guard brief="white">adc_line_is_white(LINE_BL) || adc_line_is_white(LINE_BR)</guard>
-       <choice_glyph conn="29,47,5,2,8,31,75,8">
+       <choice_glyph conn="29,47,5,2,8,21,75,4">
         <action box="2,-3,10,2"/>
        </choice_glyph>
       </choice>
@@ -2203,26 +2202,13 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::StarStrategy::STOP}-->
      <tran trig="STOP" target=".." cpref="../0">
-      <tran_glyph conn="2,63,3,2,18,23">
+      <tran_glyph conn="2,63,3,2,18,9">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::StarStrategy::Search}-->
-     <state name="Search">
-      <entry brief="Star Speed">drive(parameters.star_speed, parameters.star_speed);</entry>
-      <!--${AOs::SumoHSM::SM::StarStrategy::Search::DIST_SENSOR_CHANGE}-->
-      <tran trig="DIST_SENSOR_CHANGE" target="../../9">
-       <tran_glyph conn="42,21,3,3,28,-5,8">
-        <action box="0,-2,20,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="42,13,21,15">
-       <entry box="1,2,16,4"/>
-      </state_glyph>
-     </state>
-     <!--${AOs::SumoHSM::SM::StarStrategy::Attack}-->
-     <state name="Attack">
-      <entry>if (distance_is_active(DIST_SENSOR_F)){
+     <!--${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack}-->
+     <state name="SearchAndAttack">
+      <entry brief="CheckSensors and Move">if (distance_is_active(DIST_SENSOR_F)){
     drive(100,100);
 } else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(100,100);
@@ -2239,87 +2225,63 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
 } else if (distance_is_active(DIST_SENSOR_L)) {
     drive(-80,80);
 } else {
-   drive(parameters.star_speed, parameters.star_speed);
+    drive(parameters.star_speed, parameters.star_speed);
 }
 
-if (me-&gt;stuck_counter &lt; 3){
+bool seeing = !distance_none_active();
+if (seeing) {
     QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
-}</entry>
-      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
-      <!--${AOs::SumoHSM::SM::StarStrategy::Attack::DIST_SENSOR_CHANGE}-->
-      <tran trig="DIST_SENSOR_CHANGE">
-       <!--${AOs::SumoHSM::SM::StarStrategy::Attack::DIST_SENSOR_CHAN~::[distance_none_active()]}-->
-       <choice target="../../../8">
-        <guard>distance_none_active()</guard>
-        <choice_glyph conn="74,32,5,2,-25,-4">
-         <action box="-24,0,19,3"/>
-        </choice_glyph>
-       </choice>
-       <!--${AOs::SumoHSM::SM::StarStrategy::Attack::DIST_SENSOR_CHAN~::[else]}-->
-       <choice target="../..">
-        <guard>else</guard>
-        <choice_glyph conn="74,32,5,2,11,-5">
-         <action box="1,0,10,2"/>
-        </choice_glyph>
-       </choice>
-       <tran_glyph conn="78,21,3,-1,-4,11">
-        <action box="0,-2,21,2"/>
+} else {
+    QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
+}
+</entry>
+      <exit brief="Disable timer stuck">QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
+      <!--${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack::DIST_SENSOR_CHANGE}-->
+      <tran trig="DIST_SENSOR_CHANGE" target="..">
+       <tran_glyph conn="56,34,3,2,-12,6,20,-3">
+        <action box="-19,-3,21,2"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::StarStrategy::Attack::STUCK}-->
-      <tran trig="STUCK" target="../../10">
-       <tran_glyph conn="103,22,1,1,9,41,-27">
-        <action box="0,-2,10,2"/>
+      <!--${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack::STUCK}-->
+      <tran trig="STUCK" target="../../9">
+       <tran_glyph conn="81,29,1,3,18">
+        <action box="5,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="78,13,25,14">
-       <entry box="1,2,6,2"/>
-       <exit box="1,4,6,2"/>
+      <state_glyph node="56,22,25,15">
+       <entry box="1,2,24,5"/>
+       <exit box="1,7,22,4"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::StarStrategy::Stuck}-->
      <state name="Stuck">
-      <entry>me-&gt;stuck_counter++;
+      <entry>uint16_t move_time_ms;
 
-uint16_t move_time_ms;
-
-if (me-&gt;stuck_counter &gt; 2){
+if (me-&gt;stuck_counter &gt;= 2){
     drive(-100,-20);
     move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
+    me-&gt;stuck_counter = 0;
 } else {
     drive(-100,-100);
     move_time_ms = get_time_to_move_ms(40, 100, &amp;parameters);
+    me-&gt;stuck_counter++;
 }
 
 
 QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);</exit>
       <!--${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END}-->
-      <tran trig="STUCK_END">
-       <!--${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END::[else]}-->
-       <choice target="../../../9">
-        <guard>else</guard>
-        <choice_glyph conn="72,53,4,2,-10,21,-16">
-         <action box="3,-13,10,2"/>
-        </choice_glyph>
-       </choice>
-       <!--${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END::[distance_none_active()]}-->
-       <choice target="../../../8">
-        <guard>distance_none_active()</guard>
-        <choice_glyph conn="72,53,4,2,-10,-25,-15">
-         <action box="-22,-13,18,3"/>
-        </choice_glyph>
-       </choice>
-       <tran_glyph conn="60,70,3,-1,-5,-14,17,-3">
-        <action box="0,-2,10,2"/>
+      <tran trig="STUCK_END" target="../../8">
+       <tran_glyph conn="99,34,3,1,-18">
+        <action box="-15,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="60,58,25,15">
+      <state_glyph node="99,22,25,15">
        <entry box="1,2,7,2"/>
        <exit box="1,4,6,2"/>
       </state_glyph>
      </state>
-     <submachine_diagram size="149,85">
+     <submachine_diagram size="149,71">
       <entry box="1,2,21,3"/>
       <exit box="1,5,19,2"/>
      </submachine_diagram>
