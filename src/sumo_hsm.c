@@ -5130,27 +5130,17 @@ static QState SumoHSM_LineBackSubmachine(SumoHSM * const me, QEvt const * const 
 /*${AOs::SumoHSM::SM::StepsStrategy} .......................................*/
 /*${AOs::SumoHSM::SM::StepsStrategy} */
 static QState SumoHSM_StepsStrategy_e(SumoHSM * const me) {
-    QTimeEvt_disarm(&me->timeEvt);
-    QTimeEvt_disarm(&me->timeEvt_2);
-    if (!SumoHSM_CheckDistAndMove(me)){
-        drive(0,0);
-        uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-        QTimeEvt_rearm(&me->timeEvt, small_step_wait);
-    }
     buzzer_start();
     QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
+    me->stuck_counter = 0;
     return QM_ENTRY(&SumoHSM_StepsStrategy_s);
 }
 /*${AOs::SumoHSM::SM::StepsStrategy} */
 static QState SumoHSM_StepsStrategy_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->timeEvt_2);
-
     QTimeEvt_disarm(&me->timeEvtStuck);
     QTimeEvt_disarm(&me->timeEvtStuckEnd);
-    // Enable all distance sensor because they might be disable
-    // If the robot was in stuck event mode
-    distance_service_set_mask(parameters.enabled_distance_sensors);
     return QM_SM_EXIT(&me->sub_StepsStrategy->super);
 }
 /*${AOs::SumoHSM::SM::StepsStrategy::initial} */
