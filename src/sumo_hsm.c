@@ -4938,30 +4938,11 @@ static QState SumoHSM_StarStrategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack} .......................*/
 /*${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack} */
 static QState SumoHSM_StarStrategy_SearchAndAttack_e(SumoHSM * const me) {
-    if (distance_is_active(DIST_SENSOR_F)){
-        drive(100,100);
-    } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
-        drive(100,100);
-    } else if (distance_is_active(DIST_SENSOR_FR)) {
-        drive(30,-30);
-    } else if (distance_is_active(DIST_SENSOR_FL)) {
-        drive(-30,30);
-    } else if (distance_is_active(DIST_SENSOR_DR)) {
-        drive(50,-50);
-    } else if (distance_is_active(DIST_SENSOR_DL)) {
-        drive(-50,50);
-    } else if (distance_is_active(DIST_SENSOR_R)) {
-        drive(80,-80);
-    } else if (distance_is_active(DIST_SENSOR_L)) {
-        drive(-80,80);
-    } else {
-        drive(parameters.star_speed, parameters.star_speed);
-    }
-
-    bool seeing = !distance_none_active();
+    bool seeing = SumoHSM_CheckDistAndMove(me);
     if (seeing) {
         QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
     } else {
+        drive(parameters.star_speed, parameters.star_speed);
         QTimeEvt_disarm(&me->timeEvtStuck);
     }
 
@@ -5226,31 +5207,12 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::StepsStrategy::SearchAndAttack} ......................*/
 /*${AOs::SumoHSM::SM::StepsStrategy::SearchAndAttack} */
 static QState SumoHSM_StepsStrategy_SearchAndAttack_e(SumoHSM * const me) {
-    if (distance_is_active(DIST_SENSOR_F)){
-        drive(100,100);
-    } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
-        drive(100,100);
-    } else if (distance_is_active(DIST_SENSOR_FR)) {
-        drive(30,-30);
-    } else if (distance_is_active(DIST_SENSOR_FL)) {
-        drive(-30,30);
-    } else if (distance_is_active(DIST_SENSOR_DR)) {
-        drive(50,-50);
-    } else if (distance_is_active(DIST_SENSOR_DL)) {
-        drive(-50,50);
-    } else if (distance_is_active(DIST_SENSOR_R)) {
-        drive(80,-80);
-    } else if (distance_is_active(DIST_SENSOR_L)) {
-        drive(-80,80);
-    } else {
-        drive(0, 0);
-    }
-
-    bool seeing = !distance_none_active();
+    bool seeing = SumoHSM_CheckDistAndMove(me);
     if (seeing) {
         QTimeEvt_disarm(&me->timeEvt);
         QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
     } else {
+        drive(0,0);
         QTimeEvt_disarm(&me->timeEvtStuck);
         uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
         QTimeEvt_rearm(&me->timeEvt, small_step_wait);
@@ -5421,30 +5383,11 @@ static QState SumoHSM_StepsStrategy_Stuck(SumoHSM * const me, QEvt const * const
 /*${AOs::SumoHSM::SM::StepsStrategy::StarSearch} ...........................*/
 /*${AOs::SumoHSM::SM::StepsStrategy::StarSearch} */
 static QState SumoHSM_StepsStrategy_StarSearch_e(SumoHSM * const me) {
-    if (distance_is_active(DIST_SENSOR_F)){
-        drive(100,100);
-    } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
-        drive(100,100);
-    } else if (distance_is_active(DIST_SENSOR_FR)) {
-        drive(30,-30);
-    } else if (distance_is_active(DIST_SENSOR_FL)) {
-        drive(-30,30);
-    } else if (distance_is_active(DIST_SENSOR_DR)) {
-        drive(50,-50);
-    } else if (distance_is_active(DIST_SENSOR_DL)) {
-        drive(-50,50);
-    } else if (distance_is_active(DIST_SENSOR_R)) {
-        drive(80,-80);
-    } else if (distance_is_active(DIST_SENSOR_L)) {
-        drive(-80,80);
-    } else {
-        drive(parameters.star_speed, parameters.star_speed);
-    }
-
-    bool seeing = !distance_none_active();
+    bool seeing = SumoHSM_CheckDistAndMove(me);
     if (seeing) {
         QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
     } else {
+        drive(parameters.star_speed, parameters.star_speed);
         QTimeEvt_disarm(&me->timeEvtStuck);
     }
 

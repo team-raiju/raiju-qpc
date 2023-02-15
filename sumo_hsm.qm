@@ -1465,7 +1465,7 @@ led_stripe_set_all_color(COLOR_RED);</exit>
      </xpseg>
      <!--${AOs::SumoHSM::SM::StepsFL::STOP}-->
      <xpseg xpref="../../32/1" target="../../11">
-      <xpseg_glyph conn="62,178,2,0,2,-1,53">
+      <xpseg_glyph conn="62,178,2,0,53,-1,2">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -2233,30 +2233,11 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack}-->
      <state name="SearchAndAttack">
-      <entry brief="CheckSensors and Move">if (distance_is_active(DIST_SENSOR_F)){
-    drive(100,100);
-} else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
-    drive(100,100);
-} else if (distance_is_active(DIST_SENSOR_FR)) {
-    drive(30,-30);
-} else if (distance_is_active(DIST_SENSOR_FL)) {
-    drive(-30,30);
-} else if (distance_is_active(DIST_SENSOR_DR)) {
-    drive(50,-50);
-} else if (distance_is_active(DIST_SENSOR_DL)) {
-    drive(-50,50);
-} else if (distance_is_active(DIST_SENSOR_R)) {
-    drive(80,-80);
-} else if (distance_is_active(DIST_SENSOR_L)) {
-    drive(-80,80);
-} else {
-    drive(parameters.star_speed, parameters.star_speed);
-}
-
-bool seeing = !distance_none_active();
+      <entry brief="CheckSensors and Move">bool seeing = SumoHSM_CheckDistAndMove(me);
 if (seeing) {
     QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
 } else {
+    drive(parameters.star_speed, parameters.star_speed);
     QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 }
 </entry>
@@ -2426,31 +2407,12 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::StepsStrategy::SearchAndAttack}-->
      <state name="SearchAndAttack">
-      <entry>if (distance_is_active(DIST_SENSOR_F)){
-    drive(100,100);
-} else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
-    drive(100,100);
-} else if (distance_is_active(DIST_SENSOR_FR)) {
-    drive(30,-30);
-} else if (distance_is_active(DIST_SENSOR_FL)) {
-    drive(-30,30);
-} else if (distance_is_active(DIST_SENSOR_DR)) {
-    drive(50,-50);
-} else if (distance_is_active(DIST_SENSOR_DL)) {
-    drive(-50,50);
-} else if (distance_is_active(DIST_SENSOR_R)) {
-    drive(80,-80);
-} else if (distance_is_active(DIST_SENSOR_L)) {
-    drive(-80,80);
-} else {
-    drive(0, 0);
-}
-
-bool seeing = !distance_none_active();
+      <entry>bool seeing = SumoHSM_CheckDistAndMove(me);
 if (seeing) {
     QTimeEvt_disarm(&amp;me-&gt;timeEvt);
     QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
 } else {
+    drive(0,0);
     QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
     uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
     QTimeEvt_rearm(&amp;me-&gt;timeEvt, small_step_wait);
@@ -2528,30 +2490,11 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_m
      </state>
      <!--${AOs::SumoHSM::SM::StepsStrategy::StarSearch}-->
      <state name="StarSearch">
-      <entry>if (distance_is_active(DIST_SENSOR_F)){
-    drive(100,100);
-} else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
-    drive(100,100);
-} else if (distance_is_active(DIST_SENSOR_FR)) {
-    drive(30,-30);
-} else if (distance_is_active(DIST_SENSOR_FL)) {
-    drive(-30,30);
-} else if (distance_is_active(DIST_SENSOR_DR)) {
-    drive(50,-50);
-} else if (distance_is_active(DIST_SENSOR_DL)) {
-    drive(-50,50);
-} else if (distance_is_active(DIST_SENSOR_R)) {
-    drive(80,-80);
-} else if (distance_is_active(DIST_SENSOR_L)) {
-    drive(-80,80);
-} else {
-    drive(parameters.star_speed, parameters.star_speed);
-}
-
-bool seeing = !distance_none_active();
+      <entry>bool seeing = SumoHSM_CheckDistAndMove(me);
 if (seeing) {
     QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
 } else {
+    drive(parameters.star_speed, parameters.star_speed);
     QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 }
 </entry>
