@@ -1756,11 +1756,17 @@ if (current_step &gt;= cust_strategy_num_steps() - 1){
       </tran>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::TIMEOUT_2}-->
       <tran trig="TIMEOUT_2" target="../.." cpref="../../9">
-       <tran_glyph conn="32,50,3,2,-2,10,61,5">
+       <tran_glyph conn="32,33,3,2,-2,27,61,5">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="32,10,18,44">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
+      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../../36">
+       <tran_glyph conn="32,42,3,0,15,6">
+        <action box="0,-2,17,5"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="32,10,18,36">
        <entry box="1,2,15,4"/>
       </state_glyph>
      </state>
@@ -1956,6 +1962,21 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
        </tran_glyph>
       </tran>
       <state_glyph node="104,25,18,7">
+       <entry box="1,2,13,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1_sub1}-->
+     <state name="PreStrategy_1_sub1">
+      <entry brief="go_front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(15, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../9">
+       <tran_glyph conn="32,54,3,2,8,6,51,5">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="32,48,18,7">
        <entry box="1,2,13,2"/>
       </state_glyph>
      </state>
