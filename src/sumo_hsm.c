@@ -237,16 +237,6 @@ static QMState const SumoHSM_AutoEnd_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_DefensiveStrategy  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_DefensiveStrategy_e(SumoHSM * const me);
-static QState SumoHSM_DefensiveStrategy_x(SumoHSM * const me);
-static QMState const SumoHSM_DefensiveStrategy_s = {
-    QM_STATE_NULL, /* superstate (top) */
-    Q_STATE_CAST(&SumoHSM_DefensiveStrategy),
-    Q_ACTION_CAST(&SumoHSM_DefensiveStrategy_e),
-    Q_ACTION_CAST(&SumoHSM_DefensiveStrategy_x),
-    Q_ACTION_NULL  /* no initial tran. */
-};
 static QState SumoHSM_pre_strategy_rc  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_pre_strategy_rc_e(SumoHSM * const me);
 static QState SumoHSM_pre_strategy_rc_XP1(SumoHSM * const me);
@@ -426,21 +416,6 @@ static struct SM_LineBackSubmachine const SumoHSM_LineBStar_s = {
     }
     ,Q_ACTION_CAST(&SumoHSM_LineBStar_XP1)
     ,Q_ACTION_CAST(&SumoHSM_LineBStar_STOP)
-};
-static QState SumoHSM_LF_1  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_LF_1_e(SumoHSM * const me);
-static QState SumoHSM_LF_1_XP1(SumoHSM * const me);
-static QState SumoHSM_LF_1_STOP(SumoHSM * const me);
-static struct SM_LineFrontSubmachine const SumoHSM_LF_1_s = {
-    {
-        QM_STATE_NULL, /* superstate (top) */
-        Q_STATE_CAST(&SumoHSM_LF_1),
-        Q_ACTION_CAST(&SumoHSM_LF_1_e),
-        Q_ACTION_NULL, /* no exit action */
-        Q_ACTION_NULL  /* no initial tran. */
-    }
-    ,Q_ACTION_CAST(&SumoHSM_LF_1_XP1)
-    ,Q_ACTION_CAST(&SumoHSM_LF_1_STOP)
 };
 static QState SumoHSM_StepsAuto  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_StepsAuto_e(SumoHSM * const me);
@@ -986,7 +961,6 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_CalibFrontGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_CalibeFrontTurn);
     QS_FUN_DICTIONARY(&SumoHSM_AutoEnd);
-    QS_FUN_DICTIONARY(&SumoHSM_DefensiveStrategy);
     QS_FUN_DICTIONARY(&SumoHSM_pre_strategy_rc);
     QS_FUN_DICTIONARY(&SumoHSM_ble1);
     QS_FUN_DICTIONARY(&SumoHSM_ble2);
@@ -1002,7 +976,6 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_StarAuto);
     QS_FUN_DICTIONARY(&SumoHSM_LineFStar);
     QS_FUN_DICTIONARY(&SumoHSM_LineBStar);
-    QS_FUN_DICTIONARY(&SumoHSM_LF_1);
     QS_FUN_DICTIONARY(&SumoHSM_StepsAuto);
     QS_FUN_DICTIONARY(&SumoHSM_StepsBL);
     QS_FUN_DICTIONARY(&SumoHSM_StepsFL);
@@ -2281,12 +2254,13 @@ static QState SumoHSM_pre_strategy_XP1(SumoHSM * const me) {
     else {
         static struct {
             QMState const *target;
-            QActionHandler act[3];
+            QActionHandler act[4];
         } const tatbl_ = { /* tran-action table */
-            &SumoHSM_DefensiveStrategy_s, /* target state */
+            &SumoHSM_StepsStrategy_s, /* target submachine */
             {
                 Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_DefensiveStrategy_e), /* entry */
+                Q_ACTION_CAST(&SumoHSM_StepsAuto_e), /* entry */
+                Q_ACTION_CAST(&SumoHSM_StepsStrategy_i), /* initial tran. */
                 Q_ACTION_NULL /* zero terminator */
             }
         };
@@ -2312,20 +2286,40 @@ static QState SumoHSM_pre_strategy_STOP(SumoHSM * const me) {
 }
 /*${AOs::SumoHSM::SM::pre_strategy} */
 static QState SumoHSM_pre_strategy_F_LINE(SumoHSM * const me) {
-    static struct {
-        QMState const *target;
-        QActionHandler act[4];
-    } const tatbl_ = { /* tran-action table */
-        &SumoHSM_LineFrontSubmachine_s, /* target submachine */
-        {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
-            Q_ACTION_CAST(&SumoHSM_LF_1_e), /* entry */
-            Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_i), /* initial tran. */
-            Q_ACTION_NULL /* zero terminator */
-        }
-    };
-    (void)me; /* unused parameter */
-    return QM_TRAN(&tatbl_);
+    QState status_;
+    /*${AOs::SumoHSM::SM::pre_strategy::F_LINE::[strategy_0]} */
+    if (parameters.strategy == 0) {
+        static struct {
+            QMState const *target;
+            QActionHandler act[4];
+        } const tatbl_ = { /* tran-action table */
+            &SumoHSM_LineFrontSubmachine_s, /* target submachine */
+            {
+                Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
+                Q_ACTION_CAST(&SumoHSM_LineFStar_e), /* entry */
+                Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_i), /* initial tran. */
+                Q_ACTION_NULL /* zero terminator */
+            }
+        };
+        status_ = QM_TRAN(&tatbl_);
+    }
+    /*${AOs::SumoHSM::SM::pre_strategy::F_LINE::[else]} */
+    else {
+        static struct {
+            QMState const *target;
+            QActionHandler act[4];
+        } const tatbl_ = { /* tran-action table */
+            &SumoHSM_LineFrontSubmachine_s, /* target submachine */
+            {
+                Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
+                Q_ACTION_CAST(&SumoHSM_StepsFL_e), /* entry */
+                Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_i), /* initial tran. */
+                Q_ACTION_NULL /* zero terminator */
+            }
+        };
+        status_ = QM_TRAN(&tatbl_);
+    }
+    return status_;
 }
 /*${AOs::SumoHSM::SM::pre_strategy} */
 static QState SumoHSM_pre_strategy(SumoHSM * const me, QEvt const * const e) {
@@ -2461,143 +2455,6 @@ static QState SumoHSM_AutoEnd(SumoHSM * const me, QEvt const * const e) {
         }
     }
     (void)me; /* unused parameter */
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::DefensiveStrategy} ...................................*/
-/*${AOs::SumoHSM::SM::DefensiveStrategy} */
-static QState SumoHSM_DefensiveStrategy_e(SumoHSM * const me) {
-    QTimeEvt_disarm(&me->timeEvt);
-    QTimeEvt_disarm(&me->timeEvt_2);
-    if (!SumoHSM_CheckDistAndMoveDefense(me)){
-        drive(0,0);
-        uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-        QTimeEvt_rearm(&me->timeEvt, small_step_wait);
-    }
-    buzzer_start();
-    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
-    return QM_ENTRY(&SumoHSM_DefensiveStrategy_s);
-}
-/*${AOs::SumoHSM::SM::DefensiveStrategy} */
-static QState SumoHSM_DefensiveStrategy_x(SumoHSM * const me) {
-    QTimeEvt_disarm(&me->timeEvt);
-    QTimeEvt_disarm(&me->timeEvt_2);
-
-    QTimeEvt_disarm(&me->timeEvtStuck);
-    QTimeEvt_disarm(&me->timeEvtStuckEnd);
-    // Enable all distance sensor because they might be disable
-    // If the robot was in stuck event mode
-    distance_service_set_mask(parameters.enabled_distance_sensors);
-    return QM_EXIT(&SumoHSM_DefensiveStrategy_s);
-}
-/*${AOs::SumoHSM::SM::DefensiveStrategy} */
-static QState SumoHSM_DefensiveStrategy(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::DefensiveStrateg~::STOP} */
-        case STOP_SIG: {
-            status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::DefensiveStrateg~::DIST_SENSOR_CHANGE} */
-        case DIST_SENSOR_CHANGE_SIG: {
-            if (!SumoHSM_CheckDistAndMoveDefense(me)){
-                drive(0,0);
-                uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-                QTimeEvt_rearm(&me->timeEvt, small_step_wait);
-            } else {
-                QTimeEvt_disarm(&me->timeEvt);
-                QTimeEvt_disarm(&me->timeEvt_2);
-                if (me->stuck_counter < 3){
-                    QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
-                }
-            }
-            status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::DefensiveStrateg~::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            drive(100,100);
-            uint32_t small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
-            QTimeEvt_rearm(&me->timeEvt_2, small_step_advance_time);
-            status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::DefensiveStrateg~::TIMEOUT_2} */
-        case TIMEOUT_2_SIG: {
-            drive(0,0);
-            uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-            QTimeEvt_rearm(&me->timeEvt, small_step_wait);
-            status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::DefensiveStrateg~::STOP_BUZZER} */
-        case STOP_BUZZER_SIG: {
-            buzzer_stop();
-            status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::DefensiveStrateg~::LINE_CHANGED_BL, LINE_CHANGED_BR} */
-        case LINE_CHANGED_BL_SIG: /* intentionally fall through */
-        case LINE_CHANGED_BR_SIG: {
-            QTimeEvt_disarm(&me->timeEvtStuck);
-            QTimeEvt_disarm(&me->timeEvtStuckEnd);
-            // Enable all distance sensor because they might be disable
-            // If the robot was in stuck event mode
-            distance_service_set_mask(parameters.enabled_distance_sensors);
-
-            if (adc_line_is_white(LINE_BL)){
-                drive(100, 100);
-            } else if (adc_line_is_white(LINE_BR)){
-                drive(100, 100);
-            } else {
-                if (!SumoHSM_CheckDistAndMoveDefense(me)){
-                    drive(0,0);
-                    uint32_t small_step_wait = parameters.step_wait_time_ms * BSP_TICKS_PER_MILISSEC;
-                    QTimeEvt_rearm(&me->timeEvt, small_step_wait);
-                }
-            }
-            status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::DefensiveStrateg~::STUCK} */
-        case STUCK_SIG: {
-            QTimeEvt_disarm(&me->timeEvtStuck);
-            QTimeEvt_disarm(&me->timeEvtStuckEnd);
-
-            me->stuck_counter++;
-            distance_service_set_mask(0);
-
-            uint16_t move_time_ms;
-
-            if (me->stuck_counter > 2){
-                drive(-100,-20);
-                move_time_ms = get_time_to_move_ms(60, 100, &parameters);
-            } else {
-                drive(-100,-100);
-                move_time_ms = get_time_to_move_ms(40, 100, &parameters);
-            }
-
-
-            QTimeEvt_rearm(&me->timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);
-
-            status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::DefensiveStrateg~::STUCK_END} */
-        case STUCK_END_SIG: {
-            distance_service_set_mask(parameters.enabled_distance_sensors);
-            if (!SumoHSM_CheckDistAndMove(me)){
-               drive(parameters.star_speed, parameters.star_speed);
-            }
-            status_ = QM_HANDLED();
-            break;
-        }
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
     return status_;
 }
 
@@ -3255,93 +3112,6 @@ static QState SumoHSM_LineBStar_STOP(SumoHSM * const me) {
 }
 /*${AOs::SumoHSM::SM::LineBStar} */
 static QState SumoHSM_LineBStar(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
-    (void)me; /* unused parameter */
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::LF_1} ................................................*/
-/*${AOs::SumoHSM::SM::LF_1} */
-static QState SumoHSM_LF_1_e(SumoHSM * const me) {
-    me->sub_LineFrontSubmachine = &SumoHSM_LF_1_s; /* attach submachine */
-    return SumoHSM_LineFrontSubmachine_e(me); /* enter submachine */
-}
-/*${AOs::SumoHSM::SM::LF_1} */
-static QState SumoHSM_LF_1_STOP(SumoHSM * const me) {
-    static struct {
-        QMState const *target;
-        QActionHandler act[3];
-    } const tatbl_ = { /* tran-action table */
-        &SumoHSM_AutoEnd_s, /* target state */
-        {
-            Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_x), /* submachine exit */
-            Q_ACTION_CAST(&SumoHSM_AutoEnd_e), /* entry */
-            Q_ACTION_NULL /* zero terminator */
-        }
-    };
-    (void)me; /* unused parameter */
-    return QM_TRAN(&tatbl_);
-}
-/*${AOs::SumoHSM::SM::LF_1} */
-static QState SumoHSM_LF_1_XP1(SumoHSM * const me) {
-    QState status_;
-    /*${AOs::SumoHSM::SM::LF_1::XP1::[strategy_0]} */
-    if (parameters.strategy == 0) {
-        static struct {
-            QMState const *target;
-            QActionHandler act[4];
-        } const tatbl_ = { /* tran-action table */
-            &SumoHSM_StarStrategy_s, /* target submachine */
-            {
-                Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_StarAuto_e), /* entry */
-                Q_ACTION_CAST(&SumoHSM_StarStrategy_i), /* initial tran. */
-                Q_ACTION_NULL /* zero terminator */
-            }
-        };
-        status_ = QM_TRAN(&tatbl_);
-    }
-    /*${AOs::SumoHSM::SM::LF_1::XP1::[strategy_1]} */
-    else if (parameters.strategy == 1) {
-        static struct {
-            QMState const *target;
-            QActionHandler act[4];
-        } const tatbl_ = { /* tran-action table */
-            &SumoHSM_StepsStrategy_s, /* target submachine */
-            {
-                Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_StepsAuto_e), /* entry */
-                Q_ACTION_CAST(&SumoHSM_StepsStrategy_i), /* initial tran. */
-                Q_ACTION_NULL /* zero terminator */
-            }
-        };
-        status_ = QM_TRAN(&tatbl_);
-    }
-    /*${AOs::SumoHSM::SM::LF_1::XP1::[else]} */
-    else {
-        static struct {
-            QMState const *target;
-            QActionHandler act[3];
-        } const tatbl_ = { /* tran-action table */
-            &SumoHSM_DefensiveStrategy_s, /* target state */
-            {
-                Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_DefensiveStrategy_e), /* entry */
-                Q_ACTION_NULL /* zero terminator */
-            }
-        };
-        status_ = QM_TRAN(&tatbl_);
-    }
-    return status_;
-}
-/*${AOs::SumoHSM::SM::LF_1} */
-static QState SumoHSM_LF_1(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
         default: {
@@ -5207,7 +4977,14 @@ static QState SumoHSM_StepsStrategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::StepsStrategy::SearchAndAttack} ......................*/
 /*${AOs::SumoHSM::SM::StepsStrategy::SearchAndAttack} */
 static QState SumoHSM_StepsStrategy_SearchAndAttack_e(SumoHSM * const me) {
-    bool seeing = SumoHSM_CheckDistAndMove(me);
+    bool seeing;
+    if (parameters.strategy == 1){
+        seeing = SumoHSM_CheckDistAndMove(me);
+    } else {
+        seeing = SumoHSM_CheckDistAndMoveDefense(me);
+    }
+
+
     if (seeing) {
         QTimeEvt_disarm(&me->timeEvt);
         QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
@@ -5383,7 +5160,12 @@ static QState SumoHSM_StepsStrategy_Stuck(SumoHSM * const me, QEvt const * const
 /*${AOs::SumoHSM::SM::StepsStrategy::StarSearch} ...........................*/
 /*${AOs::SumoHSM::SM::StepsStrategy::StarSearch} */
 static QState SumoHSM_StepsStrategy_StarSearch_e(SumoHSM * const me) {
-    bool seeing = SumoHSM_CheckDistAndMove(me);
+    bool seeing;
+    if (parameters.strategy == 1){
+        seeing = SumoHSM_CheckDistAndMove(me);
+    } else {
+        seeing = SumoHSM_CheckDistAndMoveDefense(me);
+    }
     if (seeing) {
         QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
     } else {
