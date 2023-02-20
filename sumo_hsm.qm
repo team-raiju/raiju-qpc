@@ -1264,7 +1264,7 @@ led_stripe_set_all_color(COLOR_RED);</exit>
      </xpseg>
      <!--${AOs::SumoHSM::SM::StepsAuto::LINE_BACK}-->
      <xpseg xpref="../../40/0" target="../../28">
-      <xpseg_glyph conn="76,155,2,0,2,0,8">
+      <xpseg_glyph conn="76,155,2,0,10">
        <action box="0,1,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1325,7 +1325,7 @@ int mot2 = coord_y - coord_x;
 if (coord_y &gt;= 60) {
     bool seeing = SumoHSM_CheckDistAndMove(me);
     if (!seeing){
-        drive(mot1, mot2);
+        drive(parameters.star_speed, parameters.star_speed);
     }
 } else {
     drive(mot1, mot2);
@@ -1761,7 +1761,7 @@ uint16_t turn_time_ms = get_time_to_turn_ms(75, 100, SIDE_LEFT, &amp;parameters)
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../9">
-       <tran_glyph conn="80,50,3,2,11,10,0,5">
+       <tran_glyph conn="80,50,3,2,11,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>

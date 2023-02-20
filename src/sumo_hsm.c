@@ -3408,7 +3408,7 @@ static QState SumoHSM_RC_2(SumoHSM * const me, QEvt const * const e) {
             if (coord_y >= 60) {
                 bool seeing = SumoHSM_CheckDistAndMove(me);
                 if (!seeing){
-                    drive(mot1, mot2);
+                    drive(parameters.star_speed, parameters.star_speed);
                 }
             } else {
                 drive(mot1, mot2);
