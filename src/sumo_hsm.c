@@ -1255,10 +1255,10 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA} */
         case RADIO_DATA_SIG: {
-            /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70]} */
-            if ((abs(radio_service_get_channel(RADIO_CH1)) > 50) || (abs(radio_service_get_channel(RADIO_CH2)) > 50)) {
+            /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30]} */
+            if ((abs(radio_service_get_channel(RADIO_CH1)) > 30) || (abs(radio_service_get_channel(RADIO_CH2)) > 30)) {
                 driving_enable();
-                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[0]} */
+                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[0]} */
                 if (parameters.pre_strategy == 0) {
                     static struct {
                         QMState const *target;
@@ -1274,7 +1274,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[1]} */
+                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[1]} */
                 else if (parameters.pre_strategy == 1) {
                     static struct {
                         QMState const *target;
@@ -1290,7 +1290,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[2]} */
+                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[2]} */
                 else if (parameters.pre_strategy == 2) {
                     static struct {
                         QMState const *target;
@@ -1306,7 +1306,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[3]} */
+                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[3]} */
                 else if (parameters.pre_strategy == 3) {
                     static struct {
                         QMState const *target;
@@ -1322,7 +1322,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[4]} */
+                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[4]} */
                 else if (parameters.pre_strategy == 4) {
                     static struct {
                         QMState const *target;
@@ -1338,7 +1338,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[5]} */
+                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[5]} */
                 else if (parameters.pre_strategy == 5) {
                     static struct {
                         QMState const *target;
@@ -1354,7 +1354,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[6]} */
+                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[6]} */
                 else if (parameters.pre_strategy == 6) {
                     static struct {
                         QMState const *target;
@@ -1370,7 +1370,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[7]} */
+                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[7]} */
                 else if (parameters.pre_strategy == 7) {
                     static struct {
                         QMState const *target;
@@ -1386,7 +1386,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
                     };
                     status_ = QM_TRAN_EP(&tatbl_);
                 }
-                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[8]} */
+                /*${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[8]} */
                 else if (parameters.pre_strategy == 8) {
                     static struct {
                         QMState const *target;

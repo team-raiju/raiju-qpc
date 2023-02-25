@@ -224,67 +224,67 @@ ble_service_send_string(&quot;state:RC&quot;);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
-      <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70]}-->
+      <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30]}-->
       <choice>
-       <guard brief="|ch1| or |ch2|&gt; 70">(abs(radio_service_get_channel(RADIO_CH1)) &gt; 50) || (abs(radio_service_get_channel(RADIO_CH2)) &gt; 50)</guard>
+       <guard brief="|ch1| or |ch2|&gt; 30">(abs(radio_service_get_channel(RADIO_CH1)) &gt; 30) || (abs(radio_service_get_channel(RADIO_CH2)) &gt; 30)</guard>
        <action brief="en_motors()">driving_enable();</action>
-       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[0]}-->
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[0]}-->
        <choice target="../../../../12" cpref="../../../../36/0">
         <guard brief="0">parameters.pre_strategy == 0</guard>
         <choice_glyph conn="125,89,5,0,1,10">
          <action box="1,-3,6,2"/>
         </choice_glyph>
        </choice>
-       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[1]}-->
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[1]}-->
        <choice target="../../../../12" cpref="../../../../36/1">
         <guard brief="1">parameters.pre_strategy == 1</guard>
         <choice_glyph conn="125,89,5,0,5,10">
          <action box="4,-3,4,2"/>
         </choice_glyph>
        </choice>
-       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[2]}-->
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[2]}-->
        <choice target="../../../../12" cpref="../../../../36/2">
         <guard brief="2">parameters.pre_strategy == 2</guard>
         <choice_glyph conn="125,89,5,0,9,10">
          <action box="8,-3,4,2"/>
         </choice_glyph>
        </choice>
-       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[3]}-->
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[3]}-->
        <choice target="../../../../12" cpref="../../../../36/3">
         <guard brief="3">parameters.pre_strategy == 3</guard>
         <choice_glyph conn="125,89,5,0,13,10">
          <action box="12,-3,4,2"/>
         </choice_glyph>
        </choice>
-       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[4]}-->
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[4]}-->
        <choice target="../../../../12" cpref="../../../../36/4">
         <guard brief="4">parameters.pre_strategy == 4</guard>
         <choice_glyph conn="125,89,5,0,18,10">
          <action box="16,-3,4,2"/>
         </choice_glyph>
        </choice>
-       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[5]}-->
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[5]}-->
        <choice target="../../../../12" cpref="../../../../36/5">
         <guard brief="5">parameters.pre_strategy == 5</guard>
         <choice_glyph conn="125,89,5,0,22,10">
          <action box="21,-3,4,2"/>
         </choice_glyph>
        </choice>
-       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[6]}-->
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[6]}-->
        <choice target="../../../../12" cpref="../../../../36/6">
         <guard brief="6">parameters.pre_strategy == 6</guard>
         <choice_glyph conn="125,89,5,0,26,10">
          <action box="25,-3,4,2"/>
         </choice_glyph>
        </choice>
-       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[7]}-->
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[7]}-->
        <choice target="../../../../12" cpref="../../../../36/7">
         <guard brief="7">parameters.pre_strategy == 7</guard>
         <choice_glyph conn="125,89,5,0,30,10">
          <action box="29,-3,4,2"/>
         </choice_glyph>
        </choice>
-       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>70~::[8]}-->
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[8]}-->
        <choice target="../../../../12" cpref="../../../../36/8">
         <guard brief="8">parameters.pre_strategy == 8</guard>
         <choice_glyph conn="125,89,5,0,35,10">
