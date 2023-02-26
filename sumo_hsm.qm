@@ -2097,7 +2097,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_sub1}-->
      <state name="PreStrategy_4_sub1">
       <entry brief="go_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(34, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(23, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../9">

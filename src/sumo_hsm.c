@@ -4951,7 +4951,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_5_sub5(SumoHSM * const me, QEvt co
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_sub1} */
 static QState SumoHSM_PreStrategy_PreStrategy_4_sub1_e(SumoHSM * const me) {
     drive(100,100);
-    uint16_t move_time_ms = get_time_to_move_ms(34, 100, &parameters);
+    uint16_t move_time_ms = get_time_to_move_ms(23, 100, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_4_sub1_s);
 }
