@@ -461,8 +461,8 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
     }
 
     double angle_multiplicator = degrees / (15.0 * (index + 1));
-    double speed_multiplicator = turn_speed / REFERENCE_TURN_SPEED;
-    double battery_multiplicator = adc_get_pwr_bat_percent();
+    double speed_multiplicator = REFERENCE_TURN_SPEED / (double) turn_speed;
+    double battery_multiplicator = 1 / adc_get_pwr_bat_percent();
     uint16_t turn_time_ms;
 
     if (side == SIDE_LEFT) {
@@ -503,8 +503,8 @@ uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameter
     }
 
     double distance_multiplicator = distance_cm / (16.875 * (index + 1));
-    double battery_multiplicator = adc_get_pwr_bat_percent();
-    double speed_multiplicator = speed / REFERENCE_SPEED;
+    double battery_multiplicator = 1 / adc_get_pwr_bat_percent();
+    double speed_multiplicator = REFERENCE_SPEED / (double) speed;
 
     double reference_move_time_ms = params->time_ms_to_cross_at_max_vel / distance_dividers[index];
     uint16_t move_time_ms = (distance_multiplicator * reference_move_time_ms) * speed_multiplicator * battery_multiplicator;
