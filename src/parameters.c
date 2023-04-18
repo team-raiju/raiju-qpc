@@ -460,7 +460,7 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
         index = round((degrees / 15.0) - 1);
     }
 
-    double angle_multiplicator = degrees / (15 * (index + 1));
+    double angle_multiplicator = degrees / (15.0 * (index + 1));
     double speed_multiplicator = turn_speed / REFERENCE_TURN_SPEED;
     double battery_multiplicator = adc_get_pwr_bat_percent();
     uint16_t turn_time_ms;

@@ -7,6 +7,7 @@
 
 #include "adc_service.h"
 #include "bsp_adc_dma.h"
+#include "utils.h"
 
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -37,6 +38,7 @@
 #define START_MODULE_HIGH            3000
 #define START_MODULE_POSITION_IN_ADC 4
 
+#define PWR_BATTERY_MAX_MEASURE_MV   ADC_MAX_VOLTAGE_MV * PWR_BAT_VOLTAGE_MULTIPLIER
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -287,7 +289,8 @@ double adc_get_pwr_bat_percent(void)
 
     // 12S
     if (pwr_bat_voltage_mv > 43000) {
-        return pwr_bat_voltage_mv / 50400.0;
+        double max_voltage = min(50400.0, PWR_BATTERY_MAX_MEASURE_MV);
+        return pwr_bat_voltage_mv / max_voltage;
     }
 
     // 10S
