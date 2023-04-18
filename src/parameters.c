@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "parameters.h"
 #include "parameters_set.h"
 #include "ble_service.h"
@@ -26,7 +27,7 @@
 #define SUMO_LENGHT_CM    20.0f
 #define REFERENCE_DIST_CM (ARENA_LENGHT_CM - SUMO_LENGHT_CM)
 
-#define REFERENCE_SPEED 60.0f
+#define REFERENCE_SPEED 100.0f
 
 #define REFERENCE_TURN_SPEED 100.0f
 
@@ -77,7 +78,7 @@ typedef union {
 
         uint16_t step_wait_time_ms;
         uint16_t step_advance_time_ms;
-        uint16_t time_ms_to_cross_at_60_vel;
+        uint16_t time_ms_to_cross_at_max_vel;
         uint16_t is_stucked_timeout_ms;
 
         uint8_t attack_when_near;
@@ -166,7 +167,7 @@ static sumo_parameters_t init_parameters_default = {
     .turn_180_left_time_ms = 95,
     .step_wait_time_ms = 1500,
     .step_advance_time_ms = 150,
-    .time_ms_to_cross_at_60_vel = 600,
+    .time_ms_to_cross_at_max_vel = 200,
     .is_stucked_timeout_ms = 2000,
     .attack_when_near = 0,
 };
@@ -224,7 +225,7 @@ void parameters_init(sumo_parameters_t *params)
 
     read_and_update_parameter_16_bit(TURN_180_RIGHT_TIME_ADDR, &temp_params.turn_180_right_time_ms);
     read_and_update_parameter_16_bit(TURN_180_LEFT_TIME_ADDR, &temp_params.turn_180_left_time_ms);
-    read_and_update_parameter_16_bit(TIME_MS_TO_CROSS_AT_60_ADDR, &temp_params.time_ms_to_cross_at_60_vel);
+    read_and_update_parameter_16_bit(TIME_MS_TO_CROSS_AT_100_ADDR, &temp_params.time_ms_to_cross_at_max_vel);
 
     read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED, &temp_params.is_stucked_timeout_ms);
 
@@ -263,7 +264,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num)
         packet_1.header = 1;
         packet_1.step_wait_time_ms = params.step_wait_time_ms;
         packet_1.step_advance_time_ms = params.step_advance_time_ms;
-        packet_1.time_ms_to_cross_at_60_vel = params.time_ms_to_cross_at_60_vel;
+        packet_1.time_ms_to_cross_at_max_vel = params.time_ms_to_cross_at_max_vel;
         packet_1.is_stucked_timeout_ms = params.is_stucked_timeout_ms;
         packet_1.attack_when_near = params.attack_when_near;
         memcpy(buffer, packet_1._raw, BLE_PACKET_TRANSMIT_SIZE);
@@ -432,16 +433,44 @@ void parameters_set_calib_mode_led(sumo_parameters_t *params)
 
 uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, sumo_parameters_t *params)
 {
-    // TODO: Account for non linear effects on multiplicators
-    double angle_multiplicator = degrees / 180.0;
-    double speed_multiplicator = turn_speed / REFERENCE_TURN_SPEED;
+    double turn_angle_dividers[] = { 12.00, 6.00, 4.00, 3.00, 2.40, 2.00, 1.71, 1.50, 1.33, 1.20, 1.09, 1.00};
 
+    // Find experimentally
+    // double turn_angle_dividers[] = {
+    //     7.90,  // time to turn 15 degrees
+    //     4.30,  // time to turn 30 degrees
+    //     3.10,  // time to turn 45 degrees
+    //     2.40,  // time to turn 60 degrees
+    //     2.00,  // time to turn 75 degrees
+    //     1.70,  // time to turn 90 degrees
+    //     1.50,  // time to turn 105 degrees
+    //     1.30,  // time to turn 120 degrees
+    //     1.25, // time to turn 135 degrees
+    //     1.14, // time to turn 150 degrees
+    //     1.06, // time to turn 165 degrees
+    //     1.00,  // time to turn 180 degrees
+    // };
+
+    uint8_t index;
+    if (degrees >= 180) {
+        index = 11;
+    } else if (degrees < 15) {
+        index = 0;
+    } else {
+        index = round((degrees / 15.0) - 1);
+    }
+
+    double angle_multiplicator = degrees / (15 * (index + 1));
+    double speed_multiplicator = turn_speed / REFERENCE_TURN_SPEED;
+    double battery_multiplicator = adc_get_pwr_bat_percent();
     uint16_t turn_time_ms;
 
     if (side == SIDE_LEFT) {
-        turn_time_ms = (angle_multiplicator * params->turn_180_left_time_ms) * speed_multiplicator;
+        double reference_turn_time = params->turn_180_left_time_ms / turn_angle_dividers[index];
+        turn_time_ms = (angle_multiplicator * reference_turn_time) * speed_multiplicator * battery_multiplicator;
     } else {
-        turn_time_ms = (angle_multiplicator * params->turn_180_right_time_ms) * speed_multiplicator;
+        double reference_turn_time = params->turn_180_right_time_ms / turn_angle_dividers[index];
+        turn_time_ms = (angle_multiplicator * reference_turn_time) * speed_multiplicator * battery_multiplicator;
     }
 
     return turn_time_ms;
@@ -449,11 +478,36 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
 
 uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params)
 {
-    double reference_speed_cm_per_ms = REFERENCE_DIST_CM / (double)params->time_ms_to_cross_at_60_vel;
+
+    double distance_dividers[] = { 8, 4, 2.67, 2, 1.6, 1.33, 1.14, 1 };
+
+    // Find experimentally
+    // double distance_dividers[] = { 
+    //     6.00, // time cross 1/8 arena = 16.875cm
+    //     5.00, // time cross 2/8 arena = 33.750cm
+    //     3.00, // time cross 3/8 arena = 50.625cm
+    //     2.00, // time cross 4/8 arena = 67.500cm
+    //     1.60, // time cross 5/8 arena = 84.375cm
+    //     1.33, // time cross 6/8 arena = 101.25cm
+    //     1.14, // time cross 7/8 arena = 118.125cm
+    //     1.00  // time cross complete arena (155 - 20) = 135cm
+    // };
+
+    uint8_t index;
+    if (distance_cm >= 135) {
+        index = 7;
+    } else if (distance_cm < 17) {
+        index = 0;
+    } else {
+        index = round((distance_cm / 16.875) - 1);
+    }
+
+    double distance_multiplicator = distance_cm / (16.875 * (index + 1));
+    double battery_multiplicator = adc_get_pwr_bat_percent();
     double speed_multiplicator = speed / REFERENCE_SPEED;
 
-    // TODO: Account for non linear effects on speed multiplicator
-    uint16_t move_time_ms = distance_cm / (reference_speed_cm_per_ms * speed_multiplicator);
+    double reference_move_time_ms = params->time_ms_to_cross_at_max_vel / distance_dividers[index];
+    uint16_t move_time_ms = (distance_multiplicator * reference_move_time_ms) * speed_multiplicator * battery_multiplicator;
 
     return move_time_ms;
 }

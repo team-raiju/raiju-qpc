@@ -27,7 +27,7 @@ typedef struct sumo_parameters {
     uint16_t step_wait_time_ms;    /* Time between two little steps */
     uint16_t step_advance_time_ms; /* Time that will be going foward in little steps */
 
-    uint16_t time_ms_to_cross_at_60_vel; /* Time that it takes to cross the arena at 60% speed*/
+    uint16_t time_ms_to_cross_at_max_vel; /* Time that it takes to cross the arena at 100% speed*/
 
     uint16_t is_stucked_timeout_ms; /* Time seeing the same sensor to consider that the robot is stucked */
 
@@ -60,7 +60,7 @@ typedef enum {
     BLE_DATA_HDR_TURN_180_LEFT_TIME_MS,
     BLE_DATA_HDR_STEP_WAIT_TIME_MS,
     BLE_DATA_HDR_STEP_ADVANCE_TIME_MS,
-    BLE_DATA_HDR_TIME_MS_TO_CROSS_AT_60_VEL,
+    BLE_DATA_HDR_TIME_MS_TO_CROSS_AT_MAX_VEL,
     BLE_DATA_HDR_IS_STUCKED_TIMEOUT,
     BLE_DATA_HDR_ATTACK_WHEN_NEAR,
     BLE_DATA_MAX_HDR

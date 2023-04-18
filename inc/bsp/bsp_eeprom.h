@@ -29,7 +29,7 @@ typedef enum eeprom_addresses {
 
     TURN_180_RIGHT_TIME_ADDR,
     TURN_180_LEFT_TIME_ADDR,
-    TIME_MS_TO_CROSS_AT_60_ADDR,
+    TIME_MS_TO_CROSS_AT_100_ADDR,
 
     TIMEOUT_IS_STUCKED,
 

@@ -115,11 +115,11 @@ static param_error_t set_validate_step_advance_time_ms(sumo_parameters_t *params
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_time_ms_to_cross_at_60_vel(sumo_parameters_t *params, uint16_t new_data)
+static param_error_t set_validate_time_ms_to_cross_at_max_vel(sumo_parameters_t *params, uint16_t new_data)
 {
     if (IS_BETWEEN(new_data, 100, 5000)) {
-        params->time_ms_to_cross_at_60_vel = new_data;
-        BSP_eeprom_write(TIME_MS_TO_CROSS_AT_60_ADDR, params->time_ms_to_cross_at_60_vel);
+        params->time_ms_to_cross_at_max_vel = new_data;
+        BSP_eeprom_write(TIME_MS_TO_CROSS_AT_100_ADDR, params->time_ms_to_cross_at_max_vel);
         return PARAM_OK;
     }
     return PARAM_ERROR;
@@ -170,8 +170,8 @@ param_error_t set_validade_new_param_uint16_t(ble_data_header_t header, sumo_par
         return set_validate_step_wait_time_ms(params, new_data);
     case BLE_DATA_HDR_STEP_ADVANCE_TIME_MS:
         return set_validate_step_advance_time_ms(params, new_data);
-    case BLE_DATA_HDR_TIME_MS_TO_CROSS_AT_60_VEL:
-        return set_validate_time_ms_to_cross_at_60_vel(params, new_data);
+    case BLE_DATA_HDR_TIME_MS_TO_CROSS_AT_MAX_VEL:
+        return set_validate_time_ms_to_cross_at_max_vel(params, new_data);
     case BLE_DATA_HDR_IS_STUCKED_TIMEOUT:
         return set_validate_is_stucked_timeout_ms(params, new_data);
     case BLE_DATA_HDR_ATTACK_WHEN_NEAR:

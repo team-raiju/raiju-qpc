@@ -2426,8 +2426,8 @@ static QState SumoHSM_pre_strategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibFrontGoBack} */
 static QState SumoHSM_CalibFrontGoBack_e(SumoHSM * const me) {
     uint32_t time_until_line_ms = (0xFFFFFFFF - QTimeEvt_currCtr(&me->timeEvt_2)) / BSP_TICKS_PER_MILISSEC ;
-    parameters.time_ms_to_cross_at_60_vel = time_until_line_ms;
-    BSP_eeprom_write(TIME_MS_TO_CROSS_AT_60_ADDR, parameters.time_ms_to_cross_at_60_vel);
+    parameters.time_ms_to_cross_at_max_vel = time_until_line_ms;
+    BSP_eeprom_write(TIME_MS_TO_CROSS_AT_100_ADDR, parameters.time_ms_to_cross_at_max_vel);
 
 
     drive(-parameters.reverse_speed, -parameters.reverse_speed);

@@ -931,8 +931,8 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
     <!--${AOs::SumoHSM::SM::CalibFrontGoBack}-->
     <state name="CalibFrontGoBack">
      <entry>uint32_t time_until_line_ms = (0xFFFFFFFF - QTimeEvt_currCtr(&amp;me-&gt;timeEvt_2)) / BSP_TICKS_PER_MILISSEC ;
-parameters.time_ms_to_cross_at_60_vel = time_until_line_ms;
-BSP_eeprom_write(TIME_MS_TO_CROSS_AT_60_ADDR, parameters.time_ms_to_cross_at_60_vel);
+parameters.time_ms_to_cross_at_max_vel = time_until_line_ms;
+BSP_eeprom_write(TIME_MS_TO_CROSS_AT_100_ADDR, parameters.time_ms_to_cross_at_max_vel);
 
 
 drive(-parameters.reverse_speed, -parameters.reverse_speed);
@@ -1070,17 +1070,17 @@ start_module_disable();</entry>
     </smstate>
     <!--${AOs::SumoHSM::SM::CalibTurnLeft}-->
     <state name="CalibTurnLeft">
-     <entry brief="turn_180_right">uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_left_time_ms;
+     <entry brief="turn_180_left">uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_left_time_ms;
 
 QTimeEvt_rearm(&amp;me-&gt;timeEvt,  turn_time);
 drive(-100, 100);</entry>
      <!--${AOs::SumoHSM::SM::CalibTurnLeft::TIMEOUT}-->
      <tran trig="TIMEOUT" target="../../21">
-      <tran_glyph conn="243,87,3,0,-2,50">
+      <tran_glyph conn="244,87,3,0,-3,50">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="243,80,19,11">
+     <state_glyph node="244,80,18,11">
       <entry box="1,2,16,3"/>
      </state_glyph>
     </state>
@@ -1613,7 +1613,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP2}-->
      <epseg name="EP2" target="../17">
-      <epseg_glyph conn="65,2,0,0,6,0,2">
+      <epseg_glyph conn="65,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
