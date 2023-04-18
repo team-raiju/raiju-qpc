@@ -2,12 +2,12 @@
 #include "eeprom.h"
 
 #include "qpc.h"
+
 #include "qf_port.h"
 
 uint16_t VirtAddVarTab[EEPROM_NB_OF_VAR];
 
-eeprom_result_t BSP_eeprom_init()
-{
+eeprom_result_t BSP_eeprom_init() {
     for (int i = 0; i < EEPROM_NB_OF_VAR; i++) {
         VirtAddVarTab[i] = i;
     }
@@ -25,8 +25,7 @@ eeprom_result_t BSP_eeprom_init()
     return EEPROM_ERROR;
 }
 
-eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t *data)
-{
+eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t* data) {
     if (address >= EEPROM_NB_OF_VAR) {
         *data = 0;
         return EEPROM_ERROR;
@@ -46,8 +45,7 @@ eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t *data)
     return EEPROM_ERROR;
 }
 
-eeprom_result_t BSP_eeprom_write(uint16_t address, uint16_t data)
-{
+eeprom_result_t BSP_eeprom_write(uint16_t address, uint16_t data) {
     if (address >= EEPROM_NB_OF_VAR) {
         return EEPROM_ERROR;
     }

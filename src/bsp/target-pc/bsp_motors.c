@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include "qpc.h"
+
 #include "bsp.h"
 #include "bsp_motors.h"
+#include "qpc.h"
 #include "utils.h"
 
 #ifdef Q_SPY
@@ -10,13 +11,11 @@
 
 #define MAX_SPEED 100
 
-void BSP_motorsInit(void)
-{
+void BSP_motorsInit(void) {
     printf("Motors init \r\n");
 }
 
-void BSP_motors(int16_t vel_left, int16_t vel_right)
-{
+void BSP_motors(int16_t vel_left, int16_t vel_right) {
     vel_left = constrain(vel_left, -(MAX_SPEED - 1), (MAX_SPEED - 1));
     vel_right = constrain(vel_right, -(MAX_SPEED - 1), (MAX_SPEED - 1));
 

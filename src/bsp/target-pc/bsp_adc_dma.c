@@ -1,5 +1,3 @@
-
-
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -10,6 +8,7 @@
 #include "utils.h"
 
 #include "qpc.h"
+
 #include "bsp.h"
 
 #ifdef Q_SPY
@@ -17,7 +16,7 @@
 #endif
 
 #define FAKE_ADC_CTRL_BAT_POSITION 0
-#define FAKE_ADC_PWR_BAT_POSITION  6
+#define FAKE_ADC_PWR_BAT_POSITION 6
 #define FAKE_START_MODULE_POSITION 4
 
 typedef enum line_position_in_adc_fake {
@@ -31,13 +30,11 @@ bsp_adc_dma_callback_t adc_dma_callback_function;
 static bool enabled;
 static bool fake_start_module_stat = 0;
 
-static void default_adc_dma_callback(uint32_t *out_data)
-{
+static void default_adc_dma_callback(uint32_t* out_data) {
     Q_UNUSED_PAR(out_data);
 }
 
-void ADC_Fake_Start_Module(bool stat)
-{
+void ADC_Fake_Start_Module(bool stat) {
     if (!enabled) {
         return;
     }
@@ -84,8 +81,7 @@ void ADC_Fake_Start_Module(bool stat)
     adc_dma_callback_function(&dma_buffer[0]);
 }
 
-void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool ctrl_bat_full, bool pwr_bat_full)
-{
+void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool ctrl_bat_full, bool pwr_bat_full) {
     if (!enabled) {
         return;
     }
@@ -126,25 +122,21 @@ void ADC_Fake_ConvCpltCallback(bool fl, bool fr, bool bl, bool br, bool ctrl_bat
     adc_dma_callback_function(&dma_buffer[0]);
 }
 
-void BSP_ADC_DMA_Init(void)
-{
+void BSP_ADC_DMA_Init(void) {
     printf("ADC DMA Init \r\n");
     BSP_ADC_DMA_Register_Callback(default_adc_dma_callback);
 }
 
-void BSP_ADC_DMA_Start(void)
-{
+void BSP_ADC_DMA_Start(void) {
     printf("ADC DMA Start \r\n");
     enabled = true;
 }
 
-void BSP_ADC_DMA_Stop(void)
-{
+void BSP_ADC_DMA_Stop(void) {
     printf("ADC DMA Stop \r\n");
     enabled = false;
 }
 
-void BSP_ADC_DMA_Register_Callback(bsp_adc_dma_callback_t callback_function)
-{
+void BSP_ADC_DMA_Register_Callback(bsp_adc_dma_callback_t callback_function) {
     adc_dma_callback_function = callback_function;
 }

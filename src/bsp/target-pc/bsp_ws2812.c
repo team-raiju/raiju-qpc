@@ -1,7 +1,8 @@
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "qpc.h"
+
 #include "bsp.h"
 #include "bsp_ws2812.h"
 
@@ -13,13 +14,11 @@
 
 uint8_t led_stripe[WS2812_MAX_LED_AMOUNT][3];
 
-void BSP_ws2812_init()
-{
+void BSP_ws2812_init() {
     printf("BSP_WS2812 init \r\n");
 }
 
-void BSP_ws2812_set(uint8_t num, uint8_t r, uint8_t g, uint8_t b)
-{
+void BSP_ws2812_set(uint8_t num, uint8_t r, uint8_t g, uint8_t b) {
     printf("WS2812 Num %d RGB = %x,%x,%x\n", num, r, g, b);
 
     if (num >= WS2812_MAX_LED_AMOUNT) {
@@ -32,8 +31,7 @@ void BSP_ws2812_set(uint8_t num, uint8_t r, uint8_t g, uint8_t b)
     led_stripe[num][2] = b;
 }
 
-void BSP_ws2812_send()
-{
+void BSP_ws2812_send() {
     printf("WS2812 Send\n");
 
     for (int i = 0; i < WS2812_MAX_LED_AMOUNT; i++) {

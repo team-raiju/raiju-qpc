@@ -1,0 +1,12 @@
+{
+    "name": "Existing Dockerfile",
+    "context": "..",
+    "dockerFile": "../Dockerfile",
+    "settings": {},
+    "extensions": [
+        "twxs.cmake",
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools-extension-pack"
+    ]
+}

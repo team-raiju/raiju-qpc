@@ -6,7 +6,7 @@
 #define ADC_DMA_CHANNELS 7
 #define READINGS_PER_ADC 32
 
-#define ADC_DMA_BUFFER_SIZE      ADC_DMA_CHANNELS *READINGS_PER_ADC
+#define ADC_DMA_BUFFER_SIZE ADC_DMA_CHANNELS* READINGS_PER_ADC
 #define ADC_DMA_HALF_BUFFER_SIZE (ADC_DMA_BUFFER_SIZE / 2)
 
 /* When using 12MHz as ADC clock source */
@@ -25,7 +25,7 @@
 /* READINGS_PER_ADC = 64  -> 1.44ms */ /*5m/s -> 7.2mm */
 /* READINGS_PER_ADC = 128 -> 2.88ms */ /*5m/s -> 14.4mm */
 
-typedef void (*bsp_adc_dma_callback_t)(uint32_t *adc_data);
+typedef void (*bsp_adc_dma_callback_t)(uint32_t* adc_data);
 
 void BSP_ADC_DMA_Init();
 void BSP_ADC_DMA_Start();

@@ -5,16 +5,18 @@
  **************************************************************************************************/
 
 #include <stdbool.h>
-#include "usart.h"
+
 #include "bsp_uart.h"
 #include "bsp_uart_radio.h"
+#include "main.h"
+
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-#define RXDATA_SIZE         25
+#define RXDATA_SIZE 25
 #define RADIO_UART_CHANNELS 9
 #define RX_RADIO_FIRST_BYTE 0x0F
-#define RX_RADIO_LAST_BYTE  0x00
+#define RX_RADIO_LAST_BYTE 0x00
 
 /***************************************************************************************************
  * LOCAL TYPEDEFS
@@ -27,10 +29,13 @@
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-static uint8_t rxdata[RXDATA_SIZE] = { 0 };
-static uint16_t channels[RADIO_UART_CHANNELS] = { 0 };
+extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart3;
+
+static uint8_t rxdata[RXDATA_SIZE] = {0};
+static uint16_t channels[RADIO_UART_CHANNELS] = {0};
 static bsp_uart_radio_callback_t external_callback;
-static void uart_callback(void *arg);
+static void uart_callback(void* arg);
 
 static bool stop_uart;
 // static bool last_data_broken;
@@ -43,8 +48,7 @@ static bool stop_uart;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void uart_callback(void *arg)
-{
+static void uart_callback(void* arg) {
     UNUSED(arg);
 
     do {
@@ -80,25 +84,21 @@ static void uart_callback(void *arg)
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void bsp_uart_radio_init()
-{
+void bsp_uart_radio_init() {
     MX_UART4_Init();
     BSP_UART_Register_Callback(UART_NUM_4, uart_callback);
 }
 
-void bsp_uart_radio_start()
-{
+void bsp_uart_radio_start() {
     stop_uart = false;
     HAL_UART_Receive_IT(&huart4, rxdata, RXDATA_SIZE);
 }
 
-void bsp_uart_radio_stop()
-{
+void bsp_uart_radio_stop() {
     stop_uart = true;
 }
 
-void bsp_uart_radio_register_callback(bsp_uart_radio_callback_t callback_function)
-{
+void bsp_uart_radio_register_callback(bsp_uart_radio_callback_t callback_function) {
     external_callback = callback_function;
 }
 

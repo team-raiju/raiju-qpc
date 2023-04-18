@@ -1,7 +1,8 @@
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "qpc.h"
+
 #include "bsp.h"
 #include "bsp_led.h"
 
@@ -9,13 +10,11 @@
 #include "qs_defines.h"
 #endif
 
-void BSP_ledInit(void)
-{
+void BSP_ledInit(void) {
     printf("LED INIT\n");
 }
 
-void BSP_ledOff(void)
-{
+void BSP_ledOff(void) {
     printf("LED OFF\n");
     QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
     QS_I8(1, QS_LED_ID);
@@ -23,8 +22,7 @@ void BSP_ledOff(void)
     QS_END()
 }
 
-void BSP_ledOn(void)
-{
+void BSP_ledOn(void) {
     printf("LED ON\n");
     QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
     QS_I8(1, QS_LED_ID);
@@ -32,8 +30,7 @@ void BSP_ledOn(void)
     QS_END()
 }
 
-void BSP_ledToggle(void)
-{
+void BSP_ledToggle(void) {
     static bool toggle = false;
     if (toggle) {
         BSP_ledOff();

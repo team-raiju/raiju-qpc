@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<model version="5.2.2" links="1">
+<model version="5.2.5" links="1">
  <!--${qpc}-->
  <framework name="qpc"/>
  <!--${AOs}-->
@@ -137,7 +137,7 @@ if (me-&gt;buzzerCount &lt;= 16){
      <!--${AOs::SumoHSM::SM::Idle::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../3">
       <tran_glyph conn="41,43,3,3,-12,12,6">
-       <action box="-16,-3,18,2"/>
+       <action box="-24,-3,24,5"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::STOP_BUZZER}-->
@@ -618,7 +618,7 @@ radio_service_en_radio_data_sig(true);</entry>
       <action>led_stripe_set_all_color(COLOR_PURPLE);
 ble_service_send_string(&quot;state:IDLE&quot;);</action>
       <tran_glyph conn="259,13,0,1,-11,-153,15,-22">
-       <action box="-152,-10,17,2"/>
+       <action box="-152,-10,32,7"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::CalibWait::TIMEOUT}-->

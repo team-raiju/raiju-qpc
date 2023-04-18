@@ -1,30 +1,29 @@
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
+
 #include "bsp_eeprom.h"
 
 #define SIMULATED_EEPROM_FILE "./simulated_eeprom.txt"
-#define MAX_ADDRESSES         128
+#define MAX_ADDRESSES 128
 
-eeprom_result_t BSP_eeprom_init()
-{
+eeprom_result_t BSP_eeprom_init() {
     printf("EEPROM INIT\r\n");
 
-    FILE *fp;
+    FILE* fp;
     fp = fopen(SIMULATED_EEPROM_FILE, "a");
     fclose(fp);
 
     return EEPROM_OK;
 }
 
-eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t *data)
-{
+eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t* data) {
     if (address > MAX_ADDRESSES) {
         printf("EEPROM INVALID ADDRESS %hu\r\n", address);
         *data = 0;
         return EEPROM_ERROR;
     }
 
-    FILE *fp;
+    FILE* fp;
     fp = fopen(SIMULATED_EEPROM_FILE, "r");
 
     char line[MAX_ADDRESSES];
@@ -54,8 +53,7 @@ eeprom_result_t BSP_eeprom_read(uint16_t address, uint16_t *data)
     return EEPROM_DATA_NOT_FOUND;
 }
 
-eeprom_result_t BSP_eeprom_write(uint16_t address, uint16_t data)
-{
+eeprom_result_t BSP_eeprom_write(uint16_t address, uint16_t data) {
     if (address > MAX_ADDRESSES) {
         printf("EEPROM INVALID ADDRESS %hu\r\n", address);
         return EEPROM_ERROR;
@@ -76,9 +74,9 @@ eeprom_result_t BSP_eeprom_write(uint16_t address, uint16_t data)
         sscanf(line, "%hu : ", &read_address);
         if (read_address == address) {
             uint8_t buf[32];
-            sprintf((char *restrict)buf, "%hu : %hu\r\n", address, data);
+            sprintf((char* restrict)buf, "%hu : %hu\r\n", address, data);
             address_in_file = true;
-            fputs((char *restrict)buf, fp_aux);
+            fputs((char* restrict)buf, fp_aux);
         } else {
             fputs(line, fp_aux);
         }
@@ -86,8 +84,8 @@ eeprom_result_t BSP_eeprom_write(uint16_t address, uint16_t data)
 
     if (!address_in_file) {
         uint8_t buf[32];
-        sprintf((char *restrict)buf, "\r\n%hu : %hu", address, data);
-        fputs((char *restrict)buf, fp_aux);
+        sprintf((char* restrict)buf, "\r\n%hu : %hu", address, data);
+        fputs((char* restrict)buf, fp_aux);
     }
 
     fclose(fp);

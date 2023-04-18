@@ -10,9 +10,8 @@
 #include <stdint.h>
 
 #include "bsp_motors.h"
-#include "tim.h"
-#include "gpio.h"
 #include "utils.h"
+#include "main.h"
 
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -40,6 +39,9 @@ typedef struct motor {
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
+
+extern TIM_HandleTypeDef htim1;
+
 static motor_t left_motor = {
     .black_pwm = {
         .htim = &htim1,

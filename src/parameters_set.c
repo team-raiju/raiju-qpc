@@ -1,21 +1,20 @@
-#include "parameters_set.h"
-#include "bsp_eeprom.h"
-#include "utils.h"
-#include "distance_service.h"
-#include "adc_service.h"
 #include "qpc.h"
-#include "bsp.h"
 
-static param_error_t set_validate_en_distance_sensors(sumo_parameters_t *params, uint16_t new_data)
-{
+#include "adc_service.h"
+#include "bsp.h"
+#include "bsp_eeprom.h"
+#include "distance_service.h"
+#include "parameters_set.h"
+#include "utils.h"
+
+static param_error_t set_validate_en_distance_sensors(sumo_parameters_t* params, uint16_t new_data) {
     params->enabled_distance_sensors = new_data;
     distance_service_set_mask(params->enabled_distance_sensors);
     BSP_eeprom_write(EN_DIST_SENSOR_ADDR, params->enabled_distance_sensors);
     return PARAM_OK;
 }
 
-static param_error_t set_validate_en_line_sensors(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_en_line_sensors(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 0, 255)) {
         params->enabled_line_sensors = new_data;
         adc_line_set_mask(params->enabled_line_sensors);
@@ -25,8 +24,7 @@ static param_error_t set_validate_en_line_sensors(sumo_parameters_t *params, uin
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_star_speed(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_star_speed(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 20, 100)) {
         params->star_speed = new_data;
         BSP_eeprom_write(STAR_SPEED_ADDR, params->star_speed);
@@ -35,8 +33,7 @@ static param_error_t set_validate_star_speed(sumo_parameters_t *params, uint16_t
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_max_speed(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_max_speed(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 20, 100)) {
         params->max_speed = new_data;
         BSP_eeprom_write(MAX_SPEED_ADDR, params->max_speed);
@@ -45,8 +42,7 @@ static param_error_t set_validate_max_speed(sumo_parameters_t *params, uint16_t 
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_reverse_speed(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_reverse_speed(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 40, 100)) {
         params->reverse_speed = new_data;
         BSP_eeprom_write(REVERSE_SPEED_ADDR, params->reverse_speed);
@@ -55,8 +51,7 @@ static param_error_t set_validate_reverse_speed(sumo_parameters_t *params, uint1
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_reverse_time_ms(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_reverse_time_ms(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 30, 1000)) {
         params->reverse_time_ms = new_data;
         BSP_eeprom_write(REVERSE_TIME_MS_ADDR, params->reverse_time_ms);
@@ -65,8 +60,7 @@ static param_error_t set_validate_reverse_time_ms(sumo_parameters_t *params, uin
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_line_seen_turn_angle(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_line_seen_turn_angle(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 10, 255)) {
         params->line_seen_turn_angle = new_data;
         BSP_eeprom_write(LINE_TURN_ANGLE_ADDR, params->line_seen_turn_angle);
@@ -75,8 +69,7 @@ static param_error_t set_validate_line_seen_turn_angle(sumo_parameters_t *params
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_turn_180_right_time_ms(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_turn_180_right_time_ms(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 30, 1000)) {
         params->turn_180_right_time_ms = new_data;
         BSP_eeprom_write(TURN_180_RIGHT_TIME_ADDR, params->turn_180_right_time_ms);
@@ -85,8 +78,7 @@ static param_error_t set_validate_turn_180_right_time_ms(sumo_parameters_t *para
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_turn_180_left_time_ms(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_turn_180_left_time_ms(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 30, 1000)) {
         params->turn_180_left_time_ms = new_data;
         BSP_eeprom_write(TURN_180_LEFT_TIME_ADDR, params->turn_180_left_time_ms);
@@ -95,8 +87,7 @@ static param_error_t set_validate_turn_180_left_time_ms(sumo_parameters_t *param
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_step_wait_time_ms(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_step_wait_time_ms(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 100, 10000)) {
         params->step_wait_time_ms = new_data;
         BSP_eeprom_write(STEP_WAIT_TIME_MS_ADDR, params->step_wait_time_ms);
@@ -105,8 +96,7 @@ static param_error_t set_validate_step_wait_time_ms(sumo_parameters_t *params, u
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_step_advance_time_ms(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_step_advance_time_ms(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 10, 1000)) {
         params->step_advance_time_ms = new_data;
         BSP_eeprom_write(STEP_ADVANCE_TIME_MS_ADDR, params->step_advance_time_ms);
@@ -115,8 +105,7 @@ static param_error_t set_validate_step_advance_time_ms(sumo_parameters_t *params
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_time_ms_to_cross_at_60_vel(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_time_ms_to_cross_at_60_vel(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 100, 5000)) {
         params->time_ms_to_cross_at_60_vel = new_data;
         BSP_eeprom_write(TIME_MS_TO_CROSS_AT_60_ADDR, params->time_ms_to_cross_at_60_vel);
@@ -125,8 +114,7 @@ static param_error_t set_validate_time_ms_to_cross_at_60_vel(sumo_parameters_t *
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_is_stucked_timeout_ms(sumo_parameters_t *params, uint16_t new_data)
-{
+static param_error_t set_validate_is_stucked_timeout_ms(sumo_parameters_t* params, uint16_t new_data) {
     if (IS_BETWEEN(new_data, 100, 20000)) {
         params->is_stucked_timeout_ms = new_data;
         BSP_eeprom_write(TIMEOUT_IS_STUCKED, params->is_stucked_timeout_ms);
@@ -135,18 +123,16 @@ static param_error_t set_validate_is_stucked_timeout_ms(sumo_parameters_t *param
     return PARAM_ERROR;
 }
 
-static param_error_t set_validate_attack_when_near(uint16_t new_data)
-{
+static param_error_t set_validate_attack_when_near(uint16_t new_data) {
     if (IS_BETWEEN(new_data, 0, 1)) {
-        QEvt evt = { .sig = BLE_ATTACK_NEAR_SIG };
+        QEvt evt = {.sig = BLE_ATTACK_NEAR_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         /* Param OK is never return because the variable is not set here */
     }
     return PARAM_ERROR;
 }
 
-param_error_t set_validade_new_param_uint16_t(ble_data_header_t header, sumo_parameters_t *params, uint16_t new_data)
-{
+param_error_t set_validade_new_param_uint16_t(ble_data_header_t header, sumo_parameters_t* params, uint16_t new_data) {
     switch (header) {
     case BLE_DATA_HDR_EN_DISTANCE_SENSORS:
         return set_validate_en_distance_sensors(params, new_data);

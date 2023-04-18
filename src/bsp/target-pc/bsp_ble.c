@@ -1,17 +1,17 @@
 /***************************************************************************************************
  * INCLUDES
  **************************************************************************************************/
-#include <stdlib.h>
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include "bsp_uart.h"
 #include "bsp_ble.h"
+#include "bsp_uart.h"
 #include "utils.h"
 
 #ifdef Q_SPY
-#include "qs_defines.h"
 #include "bsp.h"
+#include "qs_defines.h"
 #endif
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -28,8 +28,8 @@
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-static void uart_callback(void *arg);
-static void uart_error_callback(void *arg);
+static void uart_callback(void* arg);
+static void uart_error_callback(void* arg);
 static bsp_uart_ble_callback_t external_callback;
 static bool ble_running;
 
@@ -40,8 +40,7 @@ static bool ble_running;
 /***************************************************************************************************
  * LOCAL FUNCTIONS
  **************************************************************************************************/
-static void uart_callback(void *arg)
-{
+static void uart_callback(void* arg) {
     if (!ble_running) {
         return;
     }
@@ -52,7 +51,7 @@ static void uart_callback(void *arg)
     printf("BLE Callback = ");
 
     for (size_t i = 0; i < sizeof(ble_dma_data); i++) {
-        ble_dma_data[i] = *(((uint8_t *)(arg)) + i);
+        ble_dma_data[i] = *(((uint8_t*)(arg)) + i);
         printf("0x%02x, ", ble_dma_data[i]);
     }
 
@@ -63,8 +62,7 @@ static void uart_callback(void *arg)
     }
 }
 
-void uart_error_callback(void *arg)
-{
+void uart_error_callback(void* arg) {
     (void)arg;
 }
 
@@ -72,28 +70,24 @@ void uart_error_callback(void *arg)
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void bsp_ble_init()
-{
+void bsp_ble_init() {
     printf("BLE Service Init\r\n");
     BSP_UART_Register_Callback(UART_NUM_3, uart_callback);
     BSP_UART_Register_Error_Callback(UART_NUM_3, uart_error_callback);
     ble_running = false;
 }
 
-void bsp_ble_start(void)
-{
+void bsp_ble_start(void) {
     if (!ble_running) {
         ble_running = true;
     }
 }
 
-void bsp_ble_stop(void)
-{
+void bsp_ble_stop(void) {
     ble_running = false;
 }
 
-void bsp_ble_transmit(uint8_t *data, uint8_t size)
-{
+void bsp_ble_transmit(uint8_t* data, uint8_t size) {
     uint8_t size_to_send = min(size, BLE_MAX_PACKET_SIZE);
 
     printf("BLE Transmit Size = %d; Data:", size_to_send);
@@ -108,7 +102,6 @@ void bsp_ble_transmit(uint8_t *data, uint8_t size)
     QS_END()
 }
 
-void bsp_ble_register_callback(bsp_uart_ble_callback_t callback_function)
-{
+void bsp_ble_register_callback(bsp_uart_ble_callback_t callback_function) {
     external_callback = callback_function;
 }

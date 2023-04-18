@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include "qpc.h"
-#include "bsp.h"
 
+#include "qpc.h"
+
+#include "bsp.h"
 #include "bsp_buzzer.h"
 
 #ifdef Q_SPY
@@ -14,13 +15,11 @@ typedef enum {
 } buzzer_codes_t;
 #endif
 
-void BSP_buzzerInit(void)
-{
+void BSP_buzzerInit(void) {
     printf("Buzzer init \r\n");
 }
 
-void BSP_buzzerStart()
-{
+void BSP_buzzerStart() {
     printf("Buzzer Start \r\n");
     QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
     QS_U8(1, QS_BUZZER_ID);
@@ -30,8 +29,7 @@ void BSP_buzzerStart()
     QS_END()
 }
 
-void BSP_buzzerStop()
-{
+void BSP_buzzerStop() {
     printf("Buzzer Stop \r\n");
     QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
     QS_U8(1, QS_BUZZER_ID);
@@ -41,8 +39,7 @@ void BSP_buzzerStop()
     QS_END()
 }
 
-void BSP_buzzerSetPwmDutyCycle(uint8_t duty_cycle)
-{
+void BSP_buzzerSetPwmDutyCycle(uint8_t duty_cycle) {
     printf("Buzzer Duty Cycle %d\r\n", duty_cycle);
     QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
     QS_U8(1, QS_BUZZER_ID);
@@ -52,8 +49,7 @@ void BSP_buzzerSetPwmDutyCycle(uint8_t duty_cycle)
     QS_END()
 }
 
-void BSP_buzzerSetFrequency(uint16_t frequency_hz)
-{
+void BSP_buzzerSetFrequency(uint16_t frequency_hz) {
     printf("Buzzer frequency_hz %d\r\n", frequency_hz);
 
     QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)

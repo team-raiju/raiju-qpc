@@ -1,25 +1,25 @@
 /**
-  ******************************************************************************
-  * @file    EEPROM_Emulation/src/eeprom.c 
-  * @author  MCD Application Team
-  * @brief   This file provides all the EEPROM emulation firmware functions.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2016 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    EEPROM_Emulation/src/eeprom.c
+ * @author  MCD Application Team
+ * @brief   This file provides all the EEPROM emulation firmware functions.
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2016 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
+ *
+ ******************************************************************************
+ */
 
 /** @addtogroup EEPROM_Emulation
-  * @{
-  */
+ * @{
+ */
 
 /* Includes ------------------------------------------------------------------*/
 #include "eeprom.h"
@@ -45,14 +45,13 @@ static uint16_t EE_PageTransfer(uint16_t VirtAddress, uint16_t Data);
 static uint16_t EE_VerifyPageFullyErased(uint32_t Address);
 
 /**
-  * @brief  Restore the pages to a known good state in case of page's status
-  *   corruption after a power loss.
-  * @param  None.
-  * @retval - Flash error code: on write Flash error
-  *         - FLASH_COMPLETE: on success
-  */
-uint16_t EE_Init(void)
-{
+ * @brief  Restore the pages to a known good state in case of page's status
+ *   corruption after a power loss.
+ * @param  None.
+ * @retval - Flash error code: on write Flash error
+ *         - FLASH_COMPLETE: on success
+ */
+uint16_t EE_Init(void) {
     uint16_t pagestatus0 = 6, pagestatus1 = 6;
     uint16_t varidx = 0;
     uint16_t eepromstatus = 0, readstatus = 0;
@@ -62,9 +61,9 @@ uint16_t EE_Init(void)
     FLASH_EraseInitTypeDef s_eraseinit;
 
     /* Get Page0 status */
-    pagestatus0 = (*(__IO uint16_t *)PAGE0_BASE_ADDRESS);
+    pagestatus0 = (*(__IO uint16_t*)PAGE0_BASE_ADDRESS);
     /* Get Page1 status */
-    pagestatus1 = (*(__IO uint16_t *)PAGE1_BASE_ADDRESS);
+    pagestatus1 = (*(__IO uint16_t*)PAGE1_BASE_ADDRESS);
 
     /* Fill EraseInit structure*/
     s_eraseinit.TypeErase = FLASH_TYPEERASE_PAGES;
@@ -116,7 +115,7 @@ uint16_t EE_Init(void)
         {
             /* Transfer data from Page1 to Page0 */
             for (varidx = 0; varidx < EEPROM_NB_OF_VAR; varidx++) {
-                if ((*(__IO uint16_t *)(PAGE0_BASE_ADDRESS + 6)) == VirtAddVarTab[varidx]) {
+                if ((*(__IO uint16_t*)(PAGE0_BASE_ADDRESS + 6)) == VirtAddVarTab[varidx]) {
                     x = varidx;
                 }
                 if (varidx != x) {
@@ -206,7 +205,7 @@ uint16_t EE_Init(void)
         {
             /* Transfer data from Page0 to Page1 */
             for (varidx = 0; varidx < EEPROM_NB_OF_VAR; varidx++) {
-                if ((*(__IO uint16_t *)(PAGE1_BASE_ADDRESS + 6)) == VirtAddVarTab[varidx]) {
+                if ((*(__IO uint16_t*)(PAGE1_BASE_ADDRESS + 6)) == VirtAddVarTab[varidx]) {
                     x = varidx;
                 }
                 if (varidx != x) {
@@ -257,24 +256,23 @@ uint16_t EE_Init(void)
 }
 
 /**
-  * @brief  Verify if specified page is fully erased.
-  * @param  Address: page address
-  *   This parameter can be one of the following values:
-  *     @arg PAGE0_BASE_ADDRESS: Page0 base address
-  *     @arg PAGE1_BASE_ADDRESS: Page1 base address
-  * @retval page fully erased status:
-  *           - 0: if Page not erased
-  *           - 1: if Page erased
-  */
-uint16_t EE_VerifyPageFullyErased(uint32_t Address)
-{
+ * @brief  Verify if specified page is fully erased.
+ * @param  Address: page address
+ *   This parameter can be one of the following values:
+ *     @arg PAGE0_BASE_ADDRESS: Page0 base address
+ *     @arg PAGE1_BASE_ADDRESS: Page1 base address
+ * @retval page fully erased status:
+ *           - 0: if Page not erased
+ *           - 1: if Page erased
+ */
+uint16_t EE_VerifyPageFullyErased(uint32_t Address) {
     uint32_t readstatus = 1;
     uint16_t addressvalue = 0x5555;
 
     /* Check each active page address starting from end */
     while (Address <= PAGE0_END_ADDRESS) {
         /* Get the current location content to be compared with virtual address */
-        addressvalue = (*(__IO uint16_t *)Address);
+        addressvalue = (*(__IO uint16_t*)Address);
 
         /* Compare the read address with the virtual address */
         if (addressvalue != ERASED) {
@@ -292,17 +290,16 @@ uint16_t EE_VerifyPageFullyErased(uint32_t Address)
 }
 
 /**
-  * @brief  Returns the last stored variable data, if found, which correspond to
-  *   the passed virtual address
-  * @param  VirtAddress: Variable virtual address
-  * @param  Data: Global variable contains the read variable value
-  * @retval Success or error status:
-  *           - 0: if variable was found
-  *           - 1: if the variable was not found
-  *           - NO_VALID_PAGE: if no valid page was found.
-  */
-uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t *Data)
-{
+ * @brief  Returns the last stored variable data, if found, which correspond to
+ *   the passed virtual address
+ * @param  VirtAddress: Variable virtual address
+ * @param  Data: Global variable contains the read variable value
+ * @retval Success or error status:
+ *           - 0: if variable was found
+ *           - 1: if the variable was not found
+ *           - NO_VALID_PAGE: if no valid page was found.
+ */
+uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t* Data) {
     uint16_t validpage = PAGE0;
     uint16_t addressvalue = 0x5555, readstatus = 1;
     uint32_t address = EEPROM_START_ADDRESS, PageStartAddress = EEPROM_START_ADDRESS;
@@ -324,12 +321,12 @@ uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t *Data)
     /* Check each active page address starting from end */
     while (address > (PageStartAddress + 2)) {
         /* Get the current location content to be compared with virtual address */
-        addressvalue = (*(__IO uint16_t *)address);
+        addressvalue = (*(__IO uint16_t*)address);
 
         /* Compare the read address with the virtual address */
         if (addressvalue == VirtAddress) {
             /* Get content of Address-2 which is variable value */
-            *Data = (*(__IO uint16_t *)(address - 2));
+            *Data = (*(__IO uint16_t*)(address - 2));
 
             /* In case variable value is read, reset readstatus flag */
             readstatus = 0;
@@ -346,17 +343,16 @@ uint16_t EE_ReadVariable(uint16_t VirtAddress, uint16_t *Data)
 }
 
 /**
-  * @brief  Writes/upadtes variable data in EEPROM.
-  * @param  VirtAddress: Variable virtual address
-  * @param  Data: 16 bit data to be written
-  * @retval Success or error status:
-  *           - FLASH_COMPLETE: on success
-  *           - PAGE_FULL: if valid page is full
-  *           - NO_VALID_PAGE: if no valid page was found
-  *           - Flash error code: on write Flash error
-  */
-uint16_t EE_WriteVariable(uint16_t VirtAddress, uint16_t Data)
-{
+ * @brief  Writes/upadtes variable data in EEPROM.
+ * @param  VirtAddress: Variable virtual address
+ * @param  Data: 16 bit data to be written
+ * @retval Success or error status:
+ *           - FLASH_COMPLETE: on success
+ *           - PAGE_FULL: if valid page is full
+ *           - NO_VALID_PAGE: if no valid page was found
+ *           - Flash error code: on write Flash error
+ */
+uint16_t EE_WriteVariable(uint16_t VirtAddress, uint16_t Data) {
     uint16_t Status = 0;
 
     /* Write the variable virtual address and value in the EEPROM */
@@ -373,13 +369,12 @@ uint16_t EE_WriteVariable(uint16_t VirtAddress, uint16_t Data)
 }
 
 /**
-  * @brief  Erases PAGE and PAGE1 and writes VALID_PAGE header to PAGE
-  * @param  None
-  * @retval Status of the last operation (Flash write or erase) done during
-  *         EEPROM formating
-  */
-static HAL_StatusTypeDef EE_Format(void)
-{
+ * @brief  Erases PAGE and PAGE1 and writes VALID_PAGE header to PAGE
+ * @param  None
+ * @retval Status of the last operation (Flash write or erase) done during
+ *         EEPROM formating
+ */
+static HAL_StatusTypeDef EE_Format(void) {
     HAL_StatusTypeDef flashstatus = HAL_OK;
     uint32_t page_error = 0;
     FLASH_EraseInitTypeDef s_eraseinit;
@@ -416,23 +411,22 @@ static HAL_StatusTypeDef EE_Format(void)
 }
 
 /**
-  * @brief  Find valid Page for write or read operation
-  * @param  Operation: operation to achieve on the valid page.
-  *   This parameter can be one of the following values:
-  *     @arg READ_FROM_VALID_PAGE: read operation from valid page
-  *     @arg WRITE_IN_VALID_PAGE: write operation from valid page
-  * @retval Valid page number (PAGE or PAGE1) or NO_VALID_PAGE in case
-  *   of no valid page was found
-  */
-static uint16_t EE_FindValidPage(uint8_t Operation)
-{
+ * @brief  Find valid Page for write or read operation
+ * @param  Operation: operation to achieve on the valid page.
+ *   This parameter can be one of the following values:
+ *     @arg READ_FROM_VALID_PAGE: read operation from valid page
+ *     @arg WRITE_IN_VALID_PAGE: write operation from valid page
+ * @retval Valid page number (PAGE or PAGE1) or NO_VALID_PAGE in case
+ *   of no valid page was found
+ */
+static uint16_t EE_FindValidPage(uint8_t Operation) {
     uint16_t pagestatus0 = 6, pagestatus1 = 6;
 
     /* Get Page0 actual status */
-    pagestatus0 = (*(__IO uint16_t *)PAGE0_BASE_ADDRESS);
+    pagestatus0 = (*(__IO uint16_t*)PAGE0_BASE_ADDRESS);
 
     /* Get Page1 actual status */
-    pagestatus1 = (*(__IO uint16_t *)PAGE1_BASE_ADDRESS);
+    pagestatus1 = (*(__IO uint16_t*)PAGE1_BASE_ADDRESS);
 
     /* Write or read operation */
     switch (Operation) {
@@ -470,17 +464,16 @@ static uint16_t EE_FindValidPage(uint8_t Operation)
 }
 
 /**
-  * @brief  Verify if active page is full and Writes variable in EEPROM.
-  * @param  VirtAddress: 16 bit virtual address of the variable
-  * @param  Data: 16 bit data to be written as variable value
-  * @retval Success or error status:
-  *           - FLASH_COMPLETE: on success
-  *           - PAGE_FULL: if valid page is full
-  *           - NO_VALID_PAGE: if no valid page was found
-  *           - Flash error code: on write Flash error
-  */
-static uint16_t EE_VerifyPageFullWriteVariable(uint16_t VirtAddress, uint16_t Data)
-{
+ * @brief  Verify if active page is full and Writes variable in EEPROM.
+ * @param  VirtAddress: 16 bit virtual address of the variable
+ * @param  Data: 16 bit data to be written as variable value
+ * @retval Success or error status:
+ *           - FLASH_COMPLETE: on success
+ *           - PAGE_FULL: if valid page is full
+ *           - NO_VALID_PAGE: if no valid page was found
+ *           - Flash error code: on write Flash error
+ */
+static uint16_t EE_VerifyPageFullWriteVariable(uint16_t VirtAddress, uint16_t Data) {
     HAL_StatusTypeDef flashstatus = HAL_OK;
     uint16_t validpage = PAGE0;
     uint32_t address = EEPROM_START_ADDRESS, pageendaddress = EEPROM_START_ADDRESS + PAGE_SIZE;
@@ -502,7 +495,7 @@ static uint16_t EE_VerifyPageFullWriteVariable(uint16_t VirtAddress, uint16_t Da
     /* Check each active page address starting from begining */
     while (address < pageendaddress) {
         /* Verify if address and address+2 contents are 0xFFFFFFFF */
-        if ((*(__IO uint32_t *)address) == 0xFFFFFFFF) {
+        if ((*(__IO uint32_t*)address) == 0xFFFFFFFF) {
             /* Set variable data */
             flashstatus = HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, address, Data);
             /* If program operation was failed, a Flash error code is returned */
@@ -524,18 +517,17 @@ static uint16_t EE_VerifyPageFullWriteVariable(uint16_t VirtAddress, uint16_t Da
 }
 
 /**
-  * @brief  Transfers last updated variables data from the full Page to
-  *   an empty one.
-  * @param  VirtAddress: 16 bit virtual address of the variable
-  * @param  Data: 16 bit data to be written as variable value
-  * @retval Success or error status:
-  *           - FLASH_COMPLETE: on success
-  *           - PAGE_FULL: if valid page is full
-  *           - NO_VALID_PAGE: if no valid page was found
-  *           - Flash error code: on write Flash error
-  */
-static uint16_t EE_PageTransfer(uint16_t VirtAddress, uint16_t Data)
-{
+ * @brief  Transfers last updated variables data from the full Page to
+ *   an empty one.
+ * @param  VirtAddress: 16 bit virtual address of the variable
+ * @param  Data: 16 bit data to be written as variable value
+ * @retval Success or error status:
+ *           - FLASH_COMPLETE: on success
+ *           - PAGE_FULL: if valid page is full
+ *           - NO_VALID_PAGE: if no valid page was found
+ *           - Flash error code: on write Flash error
+ */
+static uint16_t EE_PageTransfer(uint16_t VirtAddress, uint16_t Data) {
     HAL_StatusTypeDef flashstatus = HAL_OK;
     uint32_t newpageaddress = EEPROM_START_ADDRESS;
     uint32_t oldpageid = 0;
@@ -620,7 +612,7 @@ static uint16_t EE_PageTransfer(uint16_t VirtAddress, uint16_t Data)
 }
 
 /**
-  * @}
-  */
+ * @}
+ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

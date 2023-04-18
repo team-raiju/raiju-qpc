@@ -5,11 +5,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "bsp_gpio.h"
-#include "gpio.h"
 #include "bsp_gpio_mapping.h"
+#include "main.h"
 
 #include "qpc.h"
+
 #include "qk_port.h"
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -79,11 +81,10 @@ static uint8_t gpio_dist_sensor_ports[BOARD_NUM_DIST_SENSORS] = {
 /***************************************************************************************************
  * LOCAL FUNCTIONS
  **************************************************************************************************/
-static uint16_t BSP_GPIO_Pin_Mapping(io_pin_t io_pin)
-{
-    uint16_t hardware_pin_num[] = { GPIO_PIN_0,  GPIO_PIN_1,  GPIO_PIN_2,  GPIO_PIN_3, GPIO_PIN_4,  GPIO_PIN_5,
-                                    GPIO_PIN_6,  GPIO_PIN_7,  GPIO_PIN_8,  GPIO_PIN_9, GPIO_PIN_10, GPIO_PIN_11,
-                                    GPIO_PIN_12, GPIO_PIN_13, GPIO_PIN_14, GPIO_PIN_15 };
+static uint16_t BSP_GPIO_Pin_Mapping(io_pin_t io_pin) {
+    uint16_t hardware_pin_num[] = {GPIO_PIN_0,  GPIO_PIN_1,  GPIO_PIN_2,  GPIO_PIN_3, GPIO_PIN_4,  GPIO_PIN_5,
+                                   GPIO_PIN_6,  GPIO_PIN_7,  GPIO_PIN_8,  GPIO_PIN_9, GPIO_PIN_10, GPIO_PIN_11,
+                                   GPIO_PIN_12, GPIO_PIN_13, GPIO_PIN_14, GPIO_PIN_15};
 
     if (io_pin < sizeof(hardware_pin_num) / sizeof(uint16_t)) {
         return hardware_pin_num[io_pin];
@@ -92,24 +93,22 @@ static uint16_t BSP_GPIO_Pin_Mapping(io_pin_t io_pin)
     return GPIO_PIN_0;
 }
 
-static GPIO_TypeDef *BSP_GPIO_Port_Mapping(io_port_t io_port)
-{
-    GPIO_TypeDef *hardware_port_num[] = {
-        GPIOA, //IO_PORTA
-        GPIOB, //IO_PORTB
-        GPIOC, //IO_PORTC
-        GPIOD, //IO_PORTD
+static GPIO_TypeDef* BSP_GPIO_Port_Mapping(io_port_t io_port) {
+    GPIO_TypeDef* hardware_port_num[] = {
+        GPIOA, // IO_PORTA
+        GPIOB, // IO_PORTB
+        GPIOC, // IO_PORTC
+        GPIOD, // IO_PORTD
     };
 
-    if (io_port < sizeof(hardware_port_num) / sizeof(GPIO_TypeDef *)) {
+    if (io_port < sizeof(hardware_port_num) / sizeof(GPIO_TypeDef*)) {
         return hardware_port_num[io_port];
     }
 
     return GPIOA;
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     QK_ISR_ENTRY();
 
     // Button
@@ -151,34 +150,28 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
-io_level_t BSP_GPIO_Read_Pin(io_port_t port, io_pin_t gpio_pin)
-{
+io_level_t BSP_GPIO_Read_Pin(io_port_t port, io_pin_t gpio_pin) {
     return (io_level_t)HAL_GPIO_ReadPin(BSP_GPIO_Port_Mapping(port), BSP_GPIO_Pin_Mapping(gpio_pin));
 }
 
-void BSP_GPIO_Write_Pin(io_port_t port, io_pin_t gpio_pin, io_level_t level)
-{
+void BSP_GPIO_Write_Pin(io_port_t port, io_pin_t gpio_pin, io_level_t level) {
     HAL_GPIO_WritePin(BSP_GPIO_Port_Mapping(port), BSP_GPIO_Pin_Mapping(gpio_pin), level);
 }
 
-void BSP_GPIO_Toggle_Pin(io_port_t port, io_pin_t gpio_pin)
-{
+void BSP_GPIO_Toggle_Pin(io_port_t port, io_pin_t gpio_pin) {
     HAL_GPIO_TogglePin(BSP_GPIO_Port_Mapping(port), BSP_GPIO_Pin_Mapping(gpio_pin));
 }
 
-void BSP_GPIO_Register_Distance_Callback(bsp_gpio_dist_callback_t callback_function)
-{
+void BSP_GPIO_Register_Distance_Callback(bsp_gpio_dist_callback_t callback_function) {
     dist_callback_function = callback_function;
 }
 
-void BSP_GPIO_Register_Button_Callback(bsp_button_callback_t callback_function)
-{
+void BSP_GPIO_Register_Button_Callback(bsp_button_callback_t callback_function) {
     button_callback_function = callback_function;
 }
 
 #if defined(RADIO_MODE_PPM)
-void BSP_GPIO_Register_PPM_Callback(bsp_gpio_ppm_callback_t callback_function)
-{
+void BSP_GPIO_Register_PPM_Callback(bsp_gpio_ppm_callback_t callback_function) {
     ppm_callback_function = callback_function;
 }
 #endif

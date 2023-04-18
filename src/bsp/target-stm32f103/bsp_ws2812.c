@@ -2,20 +2,18 @@
  * INCLUDES
  **************************************************************************************************/
 #include <stdbool.h>
+
 #include "bsp_ws2812.h"
 #include "main.h"
-#include "gpio.h"
-#include "dma.h"
-#include "tim.h"
 
 #include "qpc.h"
-#include "qk_port.h"
 
+#include "qk_port.h"
 
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-#define WS2812_PACKET_SIZE    24
+#define WS2812_PACKET_SIZE 24
 #define WS2812_MAX_LED_AMOUNT 16
 
 #define WS2812_PWM_SIZE (24 * 16)
@@ -35,6 +33,7 @@ static uint32_t color_to_bits(uint8_t r, uint8_t g, uint8_t b);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
+extern TIM_HandleTypeDef htim2;
 
 uint32_t led_data[WS2812_MAX_LED_AMOUNT];
 uint16_t pwm_data[WS2812_PWM_SIZE];
@@ -46,8 +45,7 @@ uint16_t pwm_data[WS2812_PWM_SIZE];
 /***************************************************************************************************
  * LOCAL FUNCTIONS
  **************************************************************************************************/
-static uint32_t color_to_bits(uint8_t r, uint8_t g, uint8_t b)
-{
+static uint32_t color_to_bits(uint8_t r, uint8_t g, uint8_t b) {
     uint32_t bits = 0;
 
     // blue
@@ -74,8 +72,7 @@ static uint32_t color_to_bits(uint8_t r, uint8_t g, uint8_t b)
     return bits;
 }
 
-void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
-{
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim) {
     QK_ISR_ENTRY();
     if (htim->Instance == TIM2) {
         HAL_TIM_PWM_Stop_DMA(htim, TIM_CHANNEL_1);
@@ -87,13 +84,11 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void BSP_ws2812_init()
-{
+void BSP_ws2812_init() {
     MX_TIM2_Init(); // Led Stripe Timer
 }
 
-void BSP_ws2812_set(uint8_t num, uint8_t r, uint8_t g, uint8_t b)
-{
+void BSP_ws2812_set(uint8_t num, uint8_t r, uint8_t g, uint8_t b) {
     if (num >= WS2812_MAX_LED_AMOUNT) {
         return;
     }
@@ -101,8 +96,7 @@ void BSP_ws2812_set(uint8_t num, uint8_t r, uint8_t g, uint8_t b)
     led_data[num] = color_to_bits(r, g, b);
 }
 
-void BSP_ws2812_send()
-{
+void BSP_ws2812_send() {
     for (uint8_t i = 0; i < WS2812_MAX_LED_AMOUNT; i++) {
         for (int8_t j = (WS2812_PACKET_SIZE - 1); j >= 0; j--) {
             if (led_data[i] & (1 << j)) {
@@ -113,5 +107,5 @@ void BSP_ws2812_send()
         }
     }
 
-    HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)pwm_data, WS2812_PWM_SIZE);
+    HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t*)pwm_data, WS2812_PWM_SIZE);
 }

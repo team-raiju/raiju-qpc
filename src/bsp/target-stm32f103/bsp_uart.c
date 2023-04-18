@@ -1,15 +1,19 @@
 #include <stdlib.h>
-#include "usart.h"
+
 #include "bsp_uart.h"
+#include "main.h"
 
 #include "qpc.h"
+
 #include "qk_port.h"
 
 static bsp_uart_callback_t uart_custom_callbacks[MAX_UART_NUM];
 static bsp_uart_callback_t uart_custom_error_callbacks[MAX_UART_NUM];
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
+extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart4;
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef* huart) {
     QK_ISR_ENTRY();
 
     if (huart->Instance == huart3.Instance) {
@@ -25,8 +29,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     QK_ISR_EXIT();
 }
 
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
+void HAL_UART_ErrorCallback(UART_HandleTypeDef* huart) {
     QK_ISR_ENTRY();
 
     if (huart->Instance == huart3.Instance) {
@@ -42,8 +45,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
     QK_ISR_EXIT();
 }
 
-void BSP_UART_Register_Callback(uart_num_t uart_num, bsp_uart_callback_t callback_function)
-{
+void BSP_UART_Register_Callback(uart_num_t uart_num, bsp_uart_callback_t callback_function) {
     if (uart_num >= MAX_UART_NUM) {
         return;
     }
@@ -51,8 +53,7 @@ void BSP_UART_Register_Callback(uart_num_t uart_num, bsp_uart_callback_t callbac
     uart_custom_callbacks[uart_num] = callback_function;
 }
 
-void BSP_UART_Register_Error_Callback(uart_num_t uart_num, bsp_uart_callback_t callback_function)
-{
+void BSP_UART_Register_Error_Callback(uart_num_t uart_num, bsp_uart_callback_t callback_function) {
     if (uart_num >= MAX_UART_NUM) {
         return;
     }

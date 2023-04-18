@@ -1,15 +1,14 @@
 #include "app.h"
-#include "driving_service.h"
-#include "distance_service.h"
-#include "led_service.h"
 #include "adc_service.h"
+#include "ble_service.h"
 #include "button.h"
 #include "buzzer_service.h"
+#include "distance_service.h"
+#include "driving_service.h"
+#include "led_service.h"
 #include "radio_service.h"
-#include "ble_service.h"
 
-void APP_init()
-{
+void APP_init() {
     distance_service_init();
     driving_init();
     led_stripe_init();

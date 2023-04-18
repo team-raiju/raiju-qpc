@@ -3,10 +3,10 @@
  **************************************************************************************************/
 
 #include "qpc.h"
-#include "bsp.h"
 
-#include "distance_service.h"
+#include "bsp.h"
 #include "bsp_gpio.h"
+#include "distance_service.h"
 
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -48,8 +48,7 @@ static uint8_t sensor_num_to_position[NUM_OF_DIST_SENSORS] = {
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state)
-{
+static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state) {
     if (sensor_num > (NUM_OF_DIST_SENSORS - 1)) {
         return;
     }
@@ -61,7 +60,7 @@ static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state)
 
     bool dist_sensor_enable = distance_sensor_mask & (1 << sensor_position);
     if (dist_sensor_enable) {
-        QEvt evt = { .sig = DIST_SENSOR_CHANGE_SIG };
+        QEvt evt = {.sig = DIST_SENSOR_CHANGE_SIG};
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 }
@@ -70,13 +69,11 @@ static void sensor_data_interrupt(uint8_t sensor_num, io_level_t state)
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void distance_service_init()
-{
+void distance_service_init() {
     BSP_GPIO_Register_Distance_Callback(sensor_data_interrupt);
 }
 
-bool distance_is_active(dist_sensor_t position)
-{
+bool distance_is_active(dist_sensor_t position) {
     if (position > NUM_OF_DIST_SENSORS) {
         return 0;
     }
@@ -86,8 +83,7 @@ bool distance_is_active(dist_sensor_t position)
     return dist_sensor_is_active[position] & dist_sensor_enable;
 }
 
-uint16_t distance_get_all_active()
-{
+uint16_t distance_get_all_active() {
     uint16_t mask = 0;
     for (int i = 0; i < NUM_OF_DIST_SENSORS; i++) {
         if (distance_is_active(i)) {
@@ -98,8 +94,7 @@ uint16_t distance_get_all_active()
     return mask;
 }
 
-bool distance_none_active()
-{
+bool distance_none_active() {
     for (int i = 0; i < NUM_OF_DIST_SENSORS; i++) {
         if (distance_is_active(i)) {
             return false;
@@ -109,7 +104,6 @@ bool distance_none_active()
     return true;
 }
 
-void distance_service_set_mask(uint16_t mask)
-{
+void distance_service_set_mask(uint16_t mask) {
     distance_sensor_mask = mask;
 }

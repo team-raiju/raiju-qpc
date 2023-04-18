@@ -1,13 +1,16 @@
 /***************************************************************************************************
  * INCLUDES
  **************************************************************************************************/
-#include <string.h>
 #include <stdbool.h>
+#include <string.h>
+
 #include "custom_strategy.h"
+
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
 #define STRATEGY_MAX_STEPS 7
+
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -25,9 +28,9 @@ static uint8_t current_step = 0;
 
 // If type of movement is front or back, the value represents centimeters to move
 // If type of movement is turn the value represents degrees to turn
-static uint8_t cust_strategy_movements[STRATEGY_MAX_STEPS] = { 110, 50, 110, 75, 80 };
+static uint8_t cust_strategy_movements[STRATEGY_MAX_STEPS] = {110, 50, 110, 75, 80};
 
-static movement_t type_of_movements[STRATEGY_MAX_STEPS] = { MOVE_LEFT, MOVE_BACK, MOVE_RIGHT, MOVE_FRONT, MOVE_LEFT };
+static movement_t type_of_movements[STRATEGY_MAX_STEPS] = {MOVE_LEFT, MOVE_BACK, MOVE_RIGHT, MOVE_FRONT, MOVE_LEFT};
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -41,28 +44,23 @@ static movement_t type_of_movements[STRATEGY_MAX_STEPS] = { MOVE_LEFT, MOVE_BACK
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 
-void cust_strategy_reset()
-{
+void cust_strategy_reset() {
     current_step = 0;
 }
 
-void cust_strategy_increase_step()
-{
+void cust_strategy_increase_step() {
     current_step++;
 }
 
-uint8_t cust_strategy_num_steps()
-{
+uint8_t cust_strategy_num_steps() {
     return num_of_steps;
 }
 
-uint8_t cust_strategy_current_step()
-{
+uint8_t cust_strategy_current_step() {
     return current_step;
 }
 
-movement_t cust_strategy_move_type(uint8_t step)
-{
+movement_t cust_strategy_move_type(uint8_t step) {
     if (step >= STRATEGY_MAX_STEPS) {
         return MOVE_FRONT;
     }
@@ -70,8 +68,7 @@ movement_t cust_strategy_move_type(uint8_t step)
     return type_of_movements[step];
 }
 
-uint8_t cust_strategy_move(uint8_t step)
-{
+uint8_t cust_strategy_move(uint8_t step) {
     if (step >= STRATEGY_MAX_STEPS) {
         return 10;
     }
@@ -79,8 +76,7 @@ uint8_t cust_strategy_move(uint8_t step)
     return cust_strategy_movements[step];
 }
 
-int8_t cust_strategy_update_from_ble(uint8_t *strategy_data, uint8_t size)
-{
+int8_t cust_strategy_update_from_ble(uint8_t* strategy_data, uint8_t size) {
     if (size != STRATEGY_MAX_STEPS + 2) {
         return -1;
     }

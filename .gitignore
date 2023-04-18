@@ -3,9 +3,13 @@ build_spy/*
 
 .vscode/
 
--g
+src/sumo_hsm.c
+src/main.c
+cube/
+!cube/*.ioc
+
+
 .jlink-flash
-.cube
 
 # Created by https://www.gitignore.io/api/visualstudiocode,c
 

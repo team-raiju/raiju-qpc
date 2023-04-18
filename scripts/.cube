@@ -1,0 +1,7 @@
+config load cube/raiju.ioc
+SetCopyLibrary "copy only"
+project couplefilesbyip 0
+project toolchain Makefile
+project setCustomFWPath /usr/share/STM32CubeF1
+project generate
+exit
