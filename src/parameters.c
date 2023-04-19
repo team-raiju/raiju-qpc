@@ -64,7 +64,7 @@ typedef union {
         uint8_t line_seen_turn_angle;
         uint16_t turn_180_right_time_ms;
         uint16_t turn_180_left_time_ms;
-        uint16_t star_full_speed_time_ms;
+        uint8_t star_full_speed_time_ms;
 
         uint8_t empty[1];
     } __attribute__((packed, scalar_storage_order("big-endian")));
