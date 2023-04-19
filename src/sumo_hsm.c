@@ -966,13 +966,13 @@ static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me) {
     } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
         drive(100,100);
     } else if (distance_is_active(DIST_SENSOR_FR)) {
-        drive(30,-30);
+        drive(20,-20);
     } else if (distance_is_active(DIST_SENSOR_FL)) {
-        drive(-30,30);
+        drive(-20,20);
     } else if (distance_is_active(DIST_SENSOR_DR)) {
-        drive(50,-50);
+        drive(40,-40);
     } else if (distance_is_active(DIST_SENSOR_DL)) {
-        drive(-50,50);
+        drive(-40,40);
     } else if (distance_is_active(DIST_SENSOR_R)) {
         drive(80,-80);
     } else if (distance_is_active(DIST_SENSOR_L)) {
@@ -993,13 +993,13 @@ static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me) {
         drive(0,0);
         return false;
     } else if (distance_is_active(DIST_SENSOR_FR)) {
-        drive(30,-30);
+        drive(20,-20);
     } else if (distance_is_active(DIST_SENSOR_FL)) {
-        drive(-30,30);
+        drive(-20,20);
     } else if (distance_is_active(DIST_SENSOR_DR)) {
-        drive(50,-50);
+        drive(40,-40);
     } else if (distance_is_active(DIST_SENSOR_DL)) {
-        drive(-50,50);
+        drive(-40,40);
     } else if (distance_is_active(DIST_SENSOR_R)) {
         drive(80,-80);
     } else if (distance_is_active(DIST_SENSOR_L)) {
@@ -5260,7 +5260,7 @@ static QState SumoHSM_StarStrategy_Stuck_e(SumoHSM * const me) {
     uint16_t move_time_ms;
 
     if (me->stuck_counter >= 2){
-        drive(-100,-20);
+        drive(-100,-40);
         move_time_ms = get_time_to_move_ms(60, 100, &parameters);
         me->stuck_counter = 0;
     } else {
@@ -5660,7 +5660,7 @@ static QState SumoHSM_StepsStrategy_Stuck_e(SumoHSM * const me) {
     uint16_t move_time_ms;
 
     if (me->stuck_counter >= 2){
-        drive(-100,-20);
+        drive(-100,-40);
         move_time_ms = get_time_to_move_ms(60, 100, &parameters);
         me->stuck_counter = 0;
     } else {

@@ -49,13 +49,13 @@ if (distance_is_active(DIST_SENSOR_F)){
 } else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(100,100);
 } else if (distance_is_active(DIST_SENSOR_FR)) {
-    drive(30,-30);
+    drive(20,-20);
 } else if (distance_is_active(DIST_SENSOR_FL)) {
-    drive(-30,30);
+    drive(-20,20);
 } else if (distance_is_active(DIST_SENSOR_DR)) {
-    drive(50,-50);
+    drive(40,-40);
 } else if (distance_is_active(DIST_SENSOR_DL)) {
-    drive(-50,50);
+    drive(-40,40);
 } else if (distance_is_active(DIST_SENSOR_R)) {
     drive(80,-80);
 } else if (distance_is_active(DIST_SENSOR_L)) {
@@ -75,13 +75,13 @@ if (distance_is_active(DIST_SENSOR_F)&amp;&amp;
     drive(0,0);
     return false;
 } else if (distance_is_active(DIST_SENSOR_FR)) {
-    drive(30,-30);
+    drive(20,-20);
 } else if (distance_is_active(DIST_SENSOR_FL)) {
-    drive(-30,30);
+    drive(-20,20);
 } else if (distance_is_active(DIST_SENSOR_DR)) {
-    drive(50,-50);
+    drive(40,-40);
 } else if (distance_is_active(DIST_SENSOR_DL)) {
-    drive(-50,50);
+    drive(-40,40);
 } else if (distance_is_active(DIST_SENSOR_R)) {
     drive(80,-80);
 } else if (distance_is_active(DIST_SENSOR_L)) {
@@ -2289,7 +2289,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
       <entry>uint16_t move_time_ms;
 
 if (me-&gt;stuck_counter &gt;= 2){
-    drive(-100,-20);
+    drive(-100,-40);
     move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
     me-&gt;stuck_counter = 0;
 } else {
@@ -2525,7 +2525,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
       <entry>uint16_t move_time_ms;
 
 if (me-&gt;stuck_counter &gt;= 2){
-    drive(-100,-20);
+    drive(-100,-40);
     move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
     me-&gt;stuck_counter = 0;
 } else {
