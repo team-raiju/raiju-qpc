@@ -514,6 +514,15 @@ static QMState const SumoHSM_CalibStarSpeed_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
+static QState SumoHSM_CalibTurnSensors  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_CalibTurnSensors_e(SumoHSM * const me);
+static QMState const SumoHSM_CalibTurnSensors_s = {
+    QM_STATE_NULL, /* superstate (top) */
+    Q_STATE_CAST(&SumoHSM_CalibTurnSensors),
+    Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_e),
+    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_NULL  /* no initial tran. */
+};
 
 /* submachine ${AOs::SumoHSM::SM::LineFrontSubmachine} */
 static QState SumoHSM_LineFrontSubmachine  (SumoHSM * const me, QEvt const * const e);
@@ -1061,6 +1070,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_LineB_RC);
     QS_FUN_DICTIONARY(&SumoHSM_LineF_RC);
     QS_FUN_DICTIONARY(&SumoHSM_CalibStarSpeed);
+    QS_FUN_DICTIONARY(&SumoHSM_CalibTurnSensors);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnLeft);
@@ -2050,6 +2060,21 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                         {
                             Q_ACTION_CAST(&SumoHSM_CalibWait_x), /* exit */
                             Q_ACTION_CAST(&SumoHSM_CalibSensors_e), /* entry */
+                            Q_ACTION_NULL /* zero terminator */
+                        }
+                    };
+                    status_ = QM_TRAN(&tatbl_);
+                }
+                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[calib_mode_5]} */
+                else if (parameters.calib_mode == 5) {
+                    static struct {
+                        QMState const *target;
+                        QActionHandler act[3];
+                    } const tatbl_ = { /* tran-action table */
+                        &SumoHSM_CalibTurnSensors_s, /* target state */
+                        {
+                            Q_ACTION_CAST(&SumoHSM_CalibWait_x), /* exit */
+                            Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_e), /* entry */
                             Q_ACTION_NULL /* zero terminator */
                         }
                     };
@@ -3683,6 +3708,73 @@ static QState SumoHSM_CalibStarSpeed(SumoHSM * const me, QEvt const * const e) {
                 &SumoHSM_CalibStop_s, /* target state */
                 {
                     Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::CalibTurnSensors} ....................................*/
+/*${AOs::SumoHSM::SM::CalibTurnSensors} */
+static QState SumoHSM_CalibTurnSensors_e(SumoHSM * const me) {
+    if (distance_is_active(DIST_SENSOR_F)){
+        drive(0,0);
+    } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
+        drive(0,0);
+    } else if (distance_is_active(DIST_SENSOR_FR)) {
+        drive(20,-20);
+    } else if (distance_is_active(DIST_SENSOR_FL)) {
+        drive(-20,20);
+    } else if (distance_is_active(DIST_SENSOR_DR)) {
+        drive(40,-40);
+    } else if (distance_is_active(DIST_SENSOR_DL)) {
+        drive(-40,40);
+    } else if (distance_is_active(DIST_SENSOR_R)) {
+        drive(80,-80);
+    } else if (distance_is_active(DIST_SENSOR_L)) {
+        drive(-80,80);
+    } else {
+       drive(0,0);
+    }
+    (void)me; /* unused parameter */
+    return QM_ENTRY(&SumoHSM_CalibTurnSensors_s);
+}
+/*${AOs::SumoHSM::SM::CalibTurnSensors} */
+static QState SumoHSM_CalibTurnSensors(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::CalibTurnSensors::CHANGE_STATE_EVT} */
+        case CHANGE_STATE_EVT_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibStop_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibTurnSensors::DIST_SENSOR_CHANGE} */
+        case DIST_SENSOR_CHANGE_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibTurnSensors_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
