@@ -64,8 +64,9 @@ typedef union {
         uint8_t line_seen_turn_angle;
         uint16_t turn_180_right_time_ms;
         uint16_t turn_180_left_time_ms;
+        uint16_t star_full_speed_time_ms;
 
-        uint8_t empty[2];
+        uint8_t empty[1];
     } __attribute__((packed, scalar_storage_order("big-endian")));
 
 } ble_transmit_packet_0_t;
@@ -159,6 +160,7 @@ static sumo_parameters_t init_parameters_default = {
     .enabled_distance_sensors = 0b001111111,
     .enabled_line_sensors = 0b001111,
     .star_speed = 50,
+    .star_full_speed_time_ms = 50,
     .max_speed = 100,
     .reverse_speed = 100,
     .reverse_time_ms = 140,
@@ -215,6 +217,7 @@ void parameters_init(sumo_parameters_t *params)
 
     read_and_update_parameter_8_bit(STAR_SPEED_ADDR, &temp_params.star_speed);
     read_and_update_parameter_8_bit(MAX_SPEED_ADDR, &temp_params.max_speed);
+    read_and_update_parameter_8_bit(STAR_FULL_SPEED_TIME_MS_ADDR, &temp_params.star_full_speed_time_ms);
 
     read_and_update_parameter_8_bit(REVERSE_SPEED_ADDR, &temp_params.reverse_speed);
     read_and_update_parameter_16_bit(REVERSE_TIME_MS_ADDR, &temp_params.reverse_time_ms);
@@ -227,7 +230,7 @@ void parameters_init(sumo_parameters_t *params)
     read_and_update_parameter_16_bit(TURN_180_LEFT_TIME_ADDR, &temp_params.turn_180_left_time_ms);
     read_and_update_parameter_16_bit(TIME_MS_TO_CROSS_AT_100_ADDR, &temp_params.time_ms_to_cross_at_max_vel);
 
-    read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED, &temp_params.is_stucked_timeout_ms);
+    read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED_ADDR, &temp_params.is_stucked_timeout_ms);
 
     *params = temp_params;
 
@@ -249,6 +252,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num)
         packet_0.en_dist_sensors = params.enabled_distance_sensors;
         packet_0.en_line_sensors = params.enabled_line_sensors;
         packet_0.star_speed = params.star_speed;
+        packet_0.star_full_speed_time_ms = params.star_full_speed_time_ms;
         packet_0.max_speed = params.max_speed;
         packet_0.reverse_speed = params.reverse_speed;
         packet_0.reverse_time_ms = params.reverse_time_ms;
@@ -433,7 +437,7 @@ void parameters_set_calib_mode_led(sumo_parameters_t *params)
 
 uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, sumo_parameters_t *params)
 {
-    double turn_angle_dividers[] = { 12.00, 6.00, 4.00, 3.00, 2.40, 2.00, 1.71, 1.50, 1.33, 1.20, 1.09, 1.00};
+    double turn_angle_dividers[] = { 12.00, 6.00, 4.00, 3.00, 2.40, 2.00, 1.71, 1.50, 1.33, 1.20, 1.09, 1.00 };
 
     // Find experimentally
     // double turn_angle_dividers[] = {
@@ -478,31 +482,30 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
 
 uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params)
 {
-
     double distance_dividers[] = { 8, 4, 2.67, 2, 1.6, 1.33, 1.14, 1 };
 
     // Find experimentally
-    // double distance_dividers[] = { 
-    //     6.00, // time cross 1/8 arena = 16.875cm
-    //     5.00, // time cross 2/8 arena = 33.750cm
-    //     3.00, // time cross 3/8 arena = 50.625cm
-    //     2.00, // time cross 4/8 arena = 67.500cm
-    //     1.60, // time cross 5/8 arena = 84.375cm
-    //     1.33, // time cross 6/8 arena = 101.25cm
-    //     1.14, // time cross 7/8 arena = 118.125cm
-    //     1.00  // time cross complete arena (155 - 20) = 135cm
+    // double distance_dividers[] = {
+    //     6.00, // time cross 1/8 arena = 16.75cm
+    //     5.00, // time cross 2/8 arena = 33.50cm
+    //     3.00, // time cross 3/8 arena = 50.25cm
+    //     2.00, // time cross 4/8 arena = 67.00cm
+    //     1.60, // time cross 5/8 arena = 83.75cm
+    //     1.33, // time cross 6/8 arena = 100.50cm
+    //     1.14, // time cross 7/8 arena = 117.25cm
+    //     1.00  // time cross complete arena (154 - 20) = 134cm
     // };
 
     uint8_t index;
-    if (distance_cm >= 135) {
+    if (distance_cm >= 134) {
         index = 7;
     } else if (distance_cm < 17) {
         index = 0;
     } else {
-        index = round((distance_cm / 16.875) - 1);
+        index = round((distance_cm / 16.75) - 1);
     }
 
-    double distance_multiplicator = distance_cm / (16.875 * (index + 1));
+    double distance_multiplicator = distance_cm / (16.75 * (index + 1));
     double battery_multiplicator = 1 / adc_get_pwr_bat_percent();
     double speed_multiplicator = REFERENCE_SPEED / (double) speed;
 

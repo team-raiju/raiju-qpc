@@ -16,6 +16,7 @@ typedef struct sumo_parameters {
 
     uint8_t star_speed; /* Velocity to look for opponents whiles not seeing */
     uint8_t max_speed;  /* Max possible speed. Current UNUSED */
+    uint8_t star_full_speed_time_ms; /* Time that motors will be on max speed when making star */
 
     uint8_t reverse_speed;        /* When seeing line, absolute value of speed that will reverse the motor - default 100*/
     uint16_t reverse_time_ms;     /* When seeing line, time that motor will be reversing at 100% */
@@ -63,6 +64,7 @@ typedef enum {
     BLE_DATA_HDR_TIME_MS_TO_CROSS_AT_MAX_VEL,
     BLE_DATA_HDR_IS_STUCKED_TIMEOUT,
     BLE_DATA_HDR_ATTACK_WHEN_NEAR,
+    BLE_DATA_HDR_STAR_FULL_SPEED_TIME_MS,
     BLE_DATA_MAX_HDR
 } ble_data_header_t;
 
