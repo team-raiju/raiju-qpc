@@ -516,12 +516,38 @@ static QMState const SumoHSM_CalibStarSpeed_s = {
 };
 static QState SumoHSM_CalibTurnSensors  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_CalibTurnSensors_e(SumoHSM * const me);
+static QState SumoHSM_CalibTurnSensors_x(SumoHSM * const me);
 static QMState const SumoHSM_CalibTurnSensors_s = {
     QM_STATE_NULL, /* superstate (top) */
     Q_STATE_CAST(&SumoHSM_CalibTurnSensors),
     Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_e),
-    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_x),
     Q_ACTION_NULL  /* no initial tran. */
+};
+static QState SumoHSM_CalibStuck  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_CalibStuck_e(SumoHSM * const me);
+static QState SumoHSM_CalibStuck_x(SumoHSM * const me);
+static QMState const SumoHSM_CalibStuck_s = {
+    QM_STATE_NULL, /* superstate (top) */
+    Q_STATE_CAST(&SumoHSM_CalibStuck),
+    Q_ACTION_CAST(&SumoHSM_CalibStuck_e),
+    Q_ACTION_CAST(&SumoHSM_CalibStuck_x),
+    Q_ACTION_NULL  /* no initial tran. */
+};
+static QState SumoHSM_LineBackCalibStuck  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_LineBackCalibStuck_e(SumoHSM * const me);
+static QState SumoHSM_LineBackCalibStuck_XP1(SumoHSM * const me);
+static QState SumoHSM_LineBackCalibStuck_STOP(SumoHSM * const me);
+static struct SM_LineBackSubmachine const SumoHSM_LineBackCalibStuck_s = {
+    {
+        QM_STATE_NULL, /* superstate (top) */
+        Q_STATE_CAST(&SumoHSM_LineBackCalibStuck),
+        Q_ACTION_CAST(&SumoHSM_LineBackCalibStuck_e),
+        Q_ACTION_NULL, /* no exit action */
+        Q_ACTION_NULL  /* no initial tran. */
+    }
+    ,Q_ACTION_CAST(&SumoHSM_LineBackCalibStuck_XP1)
+    ,Q_ACTION_CAST(&SumoHSM_LineBackCalibStuck_STOP)
 };
 
 /* submachine ${AOs::SumoHSM::SM::LineFrontSubmachine} */
@@ -1071,6 +1097,8 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_LineF_RC);
     QS_FUN_DICTIONARY(&SumoHSM_CalibStarSpeed);
     QS_FUN_DICTIONARY(&SumoHSM_CalibTurnSensors);
+    QS_FUN_DICTIONARY(&SumoHSM_CalibStuck);
+    QS_FUN_DICTIONARY(&SumoHSM_LineBackCalibStuck);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnLeft);
@@ -1903,6 +1931,7 @@ static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
     ble_service_send_string("state:CALIB");
     radio_service_en_radio_data_sig(true);
+    me->stuck_counter = 0;
     return QM_ENTRY(&SumoHSM_CalibWait_s);
 }
 /*${AOs::SumoHSM::SM::CalibWait} */
@@ -3725,6 +3754,7 @@ static QState SumoHSM_CalibStarSpeed(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibTurnSensors} ....................................*/
 /*${AOs::SumoHSM::SM::CalibTurnSensors} */
 static QState SumoHSM_CalibTurnSensors_e(SumoHSM * const me) {
+    bool seeing = true;
     if (distance_is_active(DIST_SENSOR_F)){
         drive(0,0);
     } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
@@ -3742,10 +3772,22 @@ static QState SumoHSM_CalibTurnSensors_e(SumoHSM * const me) {
     } else if (distance_is_active(DIST_SENSOR_L)) {
         drive(-80,80);
     } else {
+       seeing = false;
        drive(0,0);
     }
-    (void)me; /* unused parameter */
+
+    if (seeing) {
+        QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * parameters.is_stucked_timeout_ms);
+    } else {
+        QTimeEvt_disarm(&me->timeEvtStuck);
+    }
+
     return QM_ENTRY(&SumoHSM_CalibTurnSensors_s);
+}
+/*${AOs::SumoHSM::SM::CalibTurnSensors} */
+static QState SumoHSM_CalibTurnSensors_x(SumoHSM * const me) {
+    QTimeEvt_disarm(&me->timeEvtStuck);
+    return QM_EXIT(&SumoHSM_CalibTurnSensors_s);
 }
 /*${AOs::SumoHSM::SM::CalibTurnSensors} */
 static QState SumoHSM_CalibTurnSensors(SumoHSM * const me, QEvt const * const e) {
@@ -3755,10 +3797,11 @@ static QState SumoHSM_CalibTurnSensors(SumoHSM * const me, QEvt const * const e)
         case CHANGE_STATE_EVT_SIG: {
             static struct {
                 QMState const *target;
-                QActionHandler act[2];
+                QActionHandler act[3];
             } const tatbl_ = { /* tran-action table */
                 &SumoHSM_CalibStop_s, /* target state */
                 {
+                    Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_x), /* exit */
                     Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
@@ -3770,11 +3813,28 @@ static QState SumoHSM_CalibTurnSensors(SumoHSM * const me, QEvt const * const e)
         case DIST_SENSOR_CHANGE_SIG: {
             static struct {
                 QMState const *target;
-                QActionHandler act[2];
+                QActionHandler act[3];
             } const tatbl_ = { /* tran-action table */
                 &SumoHSM_CalibTurnSensors_s, /* target state */
                 {
+                    Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_x), /* exit */
                     Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibTurnSensors::STUCK} */
+        case STUCK_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[3];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibStuck_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_CalibStuck_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
@@ -3786,6 +3846,148 @@ static QState SumoHSM_CalibTurnSensors(SumoHSM * const me, QEvt const * const e)
             break;
         }
     }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::CalibStuck} ..........................................*/
+/*${AOs::SumoHSM::SM::CalibStuck} */
+static QState SumoHSM_CalibStuck_e(SumoHSM * const me) {
+    uint16_t move_time_ms;
+
+    if (me->stuck_counter >= 2){
+        drive(-100,-40);
+        move_time_ms = get_time_to_move_ms(60, 100, &parameters);
+        me->stuck_counter = 0;
+    } else {
+        drive(-100,-100);
+        move_time_ms = get_time_to_move_ms(40, 100, &parameters);
+        me->stuck_counter++;
+    }
+
+
+    QTimeEvt_rearm(&me->timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);
+    return QM_ENTRY(&SumoHSM_CalibStuck_s);
+}
+/*${AOs::SumoHSM::SM::CalibStuck} */
+static QState SumoHSM_CalibStuck_x(SumoHSM * const me) {
+    QTimeEvt_disarm(&me->timeEvtStuckEnd);
+    return QM_EXIT(&SumoHSM_CalibStuck_s);
+}
+/*${AOs::SumoHSM::SM::CalibStuck} */
+static QState SumoHSM_CalibStuck(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::CalibStuck::STUCK_END} */
+        case STUCK_END_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[3];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibTurnSensors_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibStuck_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibStuck::LINE_CHANGED_BL, LINE_CHANGED_BR} */
+        case LINE_CHANGED_BL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_BR_SIG: {
+            /*${AOs::SumoHSM::SM::CalibStuck::LINE_CHANGED_BL,~::[white]} */
+            if (adc_line_is_white(LINE_BL) || adc_line_is_white(LINE_BR)) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[3];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_LineBackSubmachine_s, /* target submachine */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_CalibStuck_x), /* exit */
+                        Q_ACTION_CAST(&SumoHSM_LineBackCalibStuck_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            else {
+                status_ = QM_UNHANDLED();
+            }
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibStuck::CHANGE_STATE_EVT} */
+        case CHANGE_STATE_EVT_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[3];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibStop_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibStuck_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::LineBackCalibStuck} ..................................*/
+/*${AOs::SumoHSM::SM::LineBackCalibStuck} */
+static QState SumoHSM_LineBackCalibStuck_e(SumoHSM * const me) {
+    me->sub_LineBackSubmachine = &SumoHSM_LineBackCalibStuck_s; /* attach submachine */
+    return SumoHSM_LineBackSubmachine_e(me); /* enter submachine */
+}
+/*${AOs::SumoHSM::SM::LineBackCalibStuck} */
+static QState SumoHSM_LineBackCalibStuck_XP1(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_CalibTurnSensors_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_LineBackSubmachine_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::LineBackCalibStuck} */
+static QState SumoHSM_LineBackCalibStuck_STOP(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_CalibStop_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_LineBackSubmachine_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::LineBackCalibStuck} */
+static QState SumoHSM_LineBackCalibStuck(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    (void)me; /* unused parameter */
     return status_;
 }
 
