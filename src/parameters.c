@@ -20,7 +20,7 @@
  **************************************************************************************************/
 
 #define NUM_OF_STRATEGIES     3
-#define NUM_OF_PRE_STRATEGIES 9
+#define NUM_OF_PRE_STRATEGIES 11
 #define NUM_OF_CALIB_MODES    6
 
 #define ARENA_LENGHT_CM   154.0f
@@ -138,8 +138,7 @@ static color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
 };
 
 static color_name_t pre_strategy_colors[NUM_OF_PRE_STRATEGIES] = {
-    COLOR_BLACK, COLOR_GREEN, COLOR_BLUE, COLOR_BLUE, COLOR_ORANGE, COLOR_ORANGE, COLOR_PINK, COLOR_PINK, COLOR_PURPLE,
-    // COLOR_WHITE,
+    COLOR_BLACK, COLOR_GREEN, COLOR_BLUE, COLOR_BLUE, COLOR_ORANGE, COLOR_ORANGE, COLOR_PINK, COLOR_PINK, COLOR_PURPLE, COLOR_PURPLE, COLOR_WHITE
     // COLOR_YELLOW,
 };
 
