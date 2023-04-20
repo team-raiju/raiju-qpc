@@ -2444,7 +2444,7 @@ uint16_t turn_time_ms = get_time_to_turn_ms(130, 100, SIDE_RIGHT, &amp;parameter
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../11">
-       <tran_glyph conn="224,57,3,2,-2,8,-131,8">
+       <tran_glyph conn="224,57,3,2,-2,9,-131,7">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
