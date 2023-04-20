@@ -1684,7 +1684,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         case DIST_SENSOR_CHANGE_SIG: {
             parameters_report(parameters, 2);
             /*${AOs::SumoHSM::SM::RCWait::DIST_SENSOR_CHAN~::[attack_when_near]} */
-            if (parameters.attack_when_near && distance_is_active(DIST_SENSOR_F)) {
+            if (parameters.attack_when_near && (distance_is_active(DIST_SENSOR_F) || distance_is_active(DIST_SENSOR_DR) || distance_is_active(DIST_SENSOR_DL))) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
@@ -1996,7 +1996,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         case DIST_SENSOR_CHANGE_SIG: {
             parameters_report(parameters, 2);
             /*${AOs::SumoHSM::SM::AutoWait::DIST_SENSOR_CHAN~::[attack_when_near]} */
-            if (parameters.attack_when_near && distance_is_active(DIST_SENSOR_F)) {
+            if (parameters.attack_when_near && (distance_is_active(DIST_SENSOR_F) || distance_is_active(DIST_SENSOR_DR) || distance_is_active(DIST_SENSOR_DL))) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
