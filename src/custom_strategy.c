@@ -67,12 +67,20 @@ movement_t cust_strategy_move_type(uint8_t step)
         return MOVE_FRONT;
     }
 
+    if (step >= num_of_steps){
+        return MOVE_FRONT;
+    }
+
     return type_of_movements[step];
 }
 
 uint8_t cust_strategy_move(uint8_t step)
 {
     if (step >= STRATEGY_MAX_STEPS) {
+        return 10;
+    }
+
+    if (step >= num_of_steps){
         return 10;
     }
 

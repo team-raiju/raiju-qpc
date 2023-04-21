@@ -549,6 +549,15 @@ static struct SM_LineBackSubmachine const SumoHSM_LineBackCalibStuck_s = {
     ,Q_ACTION_CAST(&SumoHSM_LineBackCalibStuck_XP1)
     ,Q_ACTION_CAST(&SumoHSM_LineBackCalibStuck_STOP)
 };
+static QState SumoHSM_CalibFrontAt100_stop  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_CalibFrontAt100_stop_e(SumoHSM * const me);
+static QMState const SumoHSM_CalibFrontAt100_stop_s = {
+    QM_STATE_NULL, /* superstate (top) */
+    Q_STATE_CAST(&SumoHSM_CalibFrontAt100_stop),
+    Q_ACTION_CAST(&SumoHSM_CalibFrontAt100_stop_e),
+    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_NULL  /* no initial tran. */
+};
 
 /* submachine ${AOs::SumoHSM::SM::LineFrontSubmachine} */
 static QState SumoHSM_LineFrontSubmachine  (SumoHSM * const me, QEvt const * const e);
@@ -1191,6 +1200,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_CalibTurnSensors);
     QS_FUN_DICTIONARY(&SumoHSM_CalibStuck);
     QS_FUN_DICTIONARY(&SumoHSM_LineBackCalibStuck);
+    QS_FUN_DICTIONARY(&SumoHSM_CalibFrontAt100_stop);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnLeft);
@@ -1393,6 +1403,7 @@ static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     radio_service_en_radio_data_sig(true);
     QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
     ble_service_send_string("state:RC");
+    set_reference_voltage();
     return QM_ENTRY(&SumoHSM_RCWait_s);
 }
 /*${AOs::SumoHSM::SM::RCWait} */
@@ -1628,6 +1639,7 @@ static QState SumoHSM_RCWait(SumoHSM * const me, QEvt const * const e) {
         case CHANGE_PRE_STRATEGY_EVT_SIG: {
             parameters_update_pre_strategy(&parameters, (parameters.pre_strategy + 1));
             parameters_set_pre_strategy_led(&parameters);
+            set_reference_voltage();
             status_ = QM_HANDLED();
             break;
         }
@@ -1740,6 +1752,7 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     me->stuck_counter = 0;
     parameters.attack_when_near = false;
     start_module_enable();
+    set_reference_voltage();
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
 /*${AOs::SumoHSM::SM::AutoWait} */
@@ -1947,6 +1960,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         case CHANGE_PRE_STRATEGY_EVT_SIG: {
             parameters_update_pre_strategy(&parameters, (parameters.pre_strategy + 1));
             parameters_set_pre_strategy_led(&parameters);
+            set_reference_voltage();
             status_ = QM_HANDLED();
             break;
         }
@@ -2096,6 +2110,7 @@ static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     ble_service_send_string("state:CALIB");
     radio_service_en_radio_data_sig(true);
     me->stuck_counter = 0;
+    set_reference_voltage();
     return QM_ENTRY(&SumoHSM_CalibWait_s);
 }
 /*${AOs::SumoHSM::SM::CalibWait} */
@@ -2372,9 +2387,9 @@ static QState SumoHSM_CalibFrontAt100(SumoHSM * const me, QEvt const * const e) 
                 QMState const *target;
                 QActionHandler act[2];
             } const tatbl_ = { /* tran-action table */
-                &SumoHSM_CalibStop_s, /* target state */
+                &SumoHSM_CalibFrontAt100_stop_s, /* target state */
                 {
-                    Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                    Q_ACTION_CAST(&SumoHSM_CalibFrontAt100_stop_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
@@ -4152,6 +4167,40 @@ static QState SumoHSM_LineBackCalibStuck(SumoHSM * const me, QEvt const * const 
         }
     }
     (void)me; /* unused parameter */
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::CalibFrontAt100_stop} ................................*/
+/*${AOs::SumoHSM::SM::CalibFrontAt100_stop} */
+static QState SumoHSM_CalibFrontAt100_stop_e(SumoHSM * const me) {
+    QTimeEvt_rearm(&me->timeEvt,  BSP_TICKS_PER_MILISSEC * 3000);
+    drive(0, 0);
+    return QM_ENTRY(&SumoHSM_CalibFrontAt100_stop_s);
+}
+/*${AOs::SumoHSM::SM::CalibFrontAt100_stop} */
+static QState SumoHSM_CalibFrontAt100_stop(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::CalibFrontAt100_~::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibStop_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
     return status_;
 }
 

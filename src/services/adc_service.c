@@ -283,13 +283,13 @@ uint16_t adc_get_pwr_bat_mv()
 double adc_get_pwr_bat_percent(void) 
 {
     // Impossible battery values
-    if (pwr_bat_voltage_mv > 51000 || pwr_bat_voltage_mv < 33000){
+    if (pwr_bat_voltage_mv >= 48000 || pwr_bat_voltage_mv < 33000){
         return 1;
     }
 
     // 12S
     if (pwr_bat_voltage_mv > 43000) {
-        double max_voltage = min(50400.0, PWR_BATTERY_MAX_MEASURE_MV);
+        double max_voltage = 48000.0;
         return pwr_bat_voltage_mv / max_voltage;
     }
 

@@ -68,6 +68,7 @@ typedef enum {
     BLE_DATA_MAX_HDR
 } ble_data_header_t;
 
+void set_reference_voltage();
 void parameters_report(sumo_parameters_t params, uint8_t config_num);
 void parameters_init(sumo_parameters_t *params);
 param_error_t parameters_update_from_ble(sumo_parameters_t *params, uint8_t *last_data);

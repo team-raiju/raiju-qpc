@@ -127,7 +127,7 @@ static param_error_t set_validate_step_advance_time_ms(sumo_parameters_t *params
 
 static param_error_t set_validate_time_ms_to_cross_at_max_vel(sumo_parameters_t *params, uint16_t new_data)
 {
-    if (IS_BETWEEN(new_data, 100, 5000)) {
+    if (IS_BETWEEN(new_data, 10, 700)) {
         params->time_ms_to_cross_at_max_vel = new_data;
         BSP_eeprom_write(TIME_MS_TO_CROSS_AT_100_ADDR, params->time_ms_to_cross_at_max_vel);
         return PARAM_OK;

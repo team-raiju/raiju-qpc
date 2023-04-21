@@ -130,6 +130,7 @@ static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t *updat
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
+static double battery_multiplicator = 1.0;
 
 static color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
     COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE,
@@ -434,9 +435,14 @@ void parameters_set_calib_mode_led(sumo_parameters_t *params)
     led_stripe_send();
 }
 
+void set_reference_voltage() {
+    battery_multiplicator = 1 / adc_get_pwr_bat_percent();
+    battery_multiplicator = constrain(battery_multiplicator, 0.9, 1.0);
+}
+
 uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, sumo_parameters_t *params)
 {
-    double turn_angle_dividers[] = { 12.00, 6.00, 4.00, 3.00, 2.40, 2.00, 1.71, 1.50, 1.33, 1.20, 1.09, 1.00 };
+    double turn_angle_dividers[] = { 2, 1.36, 1.2, 1};
 
     // Find experimentally
     // double turn_angle_dividers[] = {
@@ -456,16 +462,16 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
 
     uint8_t index;
     if (degrees >= 180) {
-        index = 11;
-    } else if (degrees < 15) {
+        index = 3;
+    } else if (degrees < 45) {
         index = 0;
     } else {
-        index = round((degrees / 15.0) - 1);
+        index = round((degrees / 45.0) - 1);
     }
 
-    double angle_multiplicator = degrees / (15.0 * (index + 1));
+    double angle_multiplicator = degrees / (45.0 * (index + 1));
     double speed_multiplicator = REFERENCE_TURN_SPEED / (double) turn_speed;
-    double battery_multiplicator = 1 / adc_get_pwr_bat_percent();
+
     uint16_t turn_time_ms;
 
     if (side == SIDE_LEFT) {
@@ -481,7 +487,7 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
 
 uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params)
 {
-    double distance_dividers[] = { 8, 4, 2.67, 2, 1.6, 1.33, 1.14, 1 };
+    double distance_dividers[] = { 3.2, 1.875, 1.30, 1 };
 
     // Find experimentally
     // double distance_dividers[] = {
@@ -497,15 +503,14 @@ uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameter
 
     uint8_t index;
     if (distance_cm >= 134) {
-        index = 7;
+        index = 3;
     } else if (distance_cm < 17) {
         index = 0;
     } else {
-        index = round((distance_cm / 16.75) - 1);
+        index = round((distance_cm / 33.5) - 1);
     }
 
-    double distance_multiplicator = distance_cm / (16.75 * (index + 1));
-    double battery_multiplicator = 1 / adc_get_pwr_bat_percent();
+    double distance_multiplicator = distance_cm / (33.5 * (index + 1));
     double speed_multiplicator = REFERENCE_SPEED / (double) speed;
 
     double reference_move_time_ms = params->time_ms_to_cross_at_max_vel / distance_dividers[index];
