@@ -5941,8 +5941,8 @@ static QState SumoHSM_PreStrategy_PreStrategy_9_sub4_e(SumoHSM * const me) {
 static QState SumoHSM_PreStrategy_PreStrategy_9_sub4(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TRIG1} */
-        case TRIG1_SIG: {
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT} */
+        case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];
@@ -6042,8 +6042,8 @@ static QState SumoHSM_PreStrategy_PreStrategy_9_sub5_e(SumoHSM * const me) {
 static QState SumoHSM_PreStrategy_PreStrategy_9_sub5(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TRIG1} */
-        case TRIG1_SIG: {
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT} */
+        case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];
