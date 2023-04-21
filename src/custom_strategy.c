@@ -25,7 +25,7 @@ static uint8_t current_step = 0;
 
 // If type of movement is front or back, the value represents centimeters to move
 // If type of movement is turn the value represents degrees to turn
-static uint8_t cust_strategy_movements[STRATEGY_MAX_STEPS] = { 110, 50, 110, 75, 80 };
+static uint8_t cust_strategy_movements[STRATEGY_MAX_STEPS] = { 50, 60, 70, 85, 65 };
 
 static movement_t type_of_movements[STRATEGY_MAX_STEPS] = { MOVE_LEFT, MOVE_BACK, MOVE_RIGHT, MOVE_FRONT, MOVE_LEFT };
 
