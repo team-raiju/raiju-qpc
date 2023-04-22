@@ -4074,7 +4074,7 @@ static QState SumoHSM_CalibStuck_e(SumoHSM * const me) {
     uint16_t move_time_ms;
 
     if (me->stuck_counter >= 2){
-        drive(-100,-40);
+        drive(-100,-35);
         move_time_ms = get_time_to_move_ms(60, 100, &parameters);
         me->stuck_counter = 0;
     } else {
@@ -6313,7 +6313,7 @@ static QState SumoHSM_StarStrategy_Stuck_e(SumoHSM * const me) {
     uint16_t move_time_ms;
 
     if (me->stuck_counter >= 2){
-        drive(-100,-40);
+        drive(-100,-35);
         move_time_ms = get_time_to_move_ms(60, 100, &parameters);
         me->stuck_counter = 0;
     } else {
@@ -6713,7 +6713,7 @@ static QState SumoHSM_StepsStrategy_Stuck_e(SumoHSM * const me) {
     uint16_t move_time_ms;
 
     if (me->stuck_counter >= 2){
-        drive(-100,-40);
+        drive(-100,-35);
         move_time_ms = get_time_to_move_ms(60, 100, &parameters);
         me->stuck_counter = 0;
     } else {

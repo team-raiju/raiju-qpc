@@ -168,8 +168,8 @@ static sumo_parameters_t init_parameters_default = {
     .turn_180_right_time_ms = 75,
     .turn_180_left_time_ms = 75,
     .step_wait_time_ms = 1500,
-    .step_advance_time_ms = 150,
-    .time_ms_to_cross_at_max_vel = 200,
+    .step_advance_time_ms = 60,
+    .time_ms_to_cross_at_max_vel = 210,
     .is_stucked_timeout_ms = 2000,
     .attack_when_near = 0,
 };
@@ -442,23 +442,8 @@ void set_reference_voltage() {
 
 uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, sumo_parameters_t *params)
 {
+    // Find experimentally. turn 45, 90, 135, 180
     double turn_angle_dividers[] = { 2, 1.36, 1.2, 1};
-
-    // Find experimentally
-    // double turn_angle_dividers[] = {
-    //     7.90,  // time to turn 15 degrees
-    //     4.30,  // time to turn 30 degrees
-    //     3.10,  // time to turn 45 degrees
-    //     2.40,  // time to turn 60 degrees
-    //     2.00,  // time to turn 75 degrees
-    //     1.70,  // time to turn 90 degrees
-    //     1.50,  // time to turn 105 degrees
-    //     1.30,  // time to turn 120 degrees
-    //     1.25, // time to turn 135 degrees
-    //     1.14, // time to turn 150 degrees
-    //     1.06, // time to turn 165 degrees
-    //     1.00,  // time to turn 180 degrees
-    // };
 
     uint8_t index;
     if (degrees >= 180) {
@@ -488,19 +473,8 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
 
 uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params)
 {
+    // Find experimentally. Move 33.5cm, 67cm, 100.5, 134cm
     double distance_dividers[] = { 3.2, 1.875, 1.30, 1 };
-
-    // Find experimentally
-    // double distance_dividers[] = {
-    //     6.00, // time cross 1/8 arena = 16.75cm
-    //     5.00, // time cross 2/8 arena = 33.50cm
-    //     3.00, // time cross 3/8 arena = 50.25cm
-    //     2.00, // time cross 4/8 arena = 67.00cm
-    //     1.60, // time cross 5/8 arena = 83.75cm
-    //     1.33, // time cross 6/8 arena = 100.50cm
-    //     1.14, // time cross 7/8 arena = 117.25cm
-    //     1.00  // time cross complete arena (154 - 20) = 134cm
-    // };
 
     uint8_t index;
     if (distance_cm >= 134) {

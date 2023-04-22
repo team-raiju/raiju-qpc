@@ -1558,7 +1558,7 @@ if (seeing) {
      <entry>uint16_t move_time_ms;
 
 if (me-&gt;stuck_counter &gt;= 2){
-    drive(-100,-40);
+    drive(-100,-35);
     move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
     me-&gt;stuck_counter = 0;
 } else {
@@ -2685,7 +2685,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
       <entry>uint16_t move_time_ms;
 
 if (me-&gt;stuck_counter &gt;= 2){
-    drive(-100,-40);
+    drive(-100,-35);
     move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
     me-&gt;stuck_counter = 0;
 } else {
@@ -2921,7 +2921,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
       <entry>uint16_t move_time_ms;
 
 if (me-&gt;stuck_counter &gt;= 2){
-    drive(-100,-40);
+    drive(-100,-35);
     move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
     me-&gt;stuck_counter = 0;
 } else {
