@@ -2429,7 +2429,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_sub2}-->
      <state name="PreStrategy_9_sub2">
       <entry brief="turn_left">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(170, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(210, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../48">
