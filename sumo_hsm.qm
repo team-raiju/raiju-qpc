@@ -1864,7 +1864,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP11}-->
      <epseg name="EP11" target="../33">
-      <epseg_glyph conn="280,2,0,0,3,0,3">
+      <epseg_glyph conn="280,2,0,0,6">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
@@ -2126,7 +2126,7 @@ if (current_step &gt;= cust_strategy_num_steps() - 1){
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5}-->
      <state name="PreStrategy_5">
       <entry brief="turn_left">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(36, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../27">
@@ -2141,7 +2141,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub1}-->
      <state name="PreStrategy_5_sub1">
       <entry brief="go_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(55, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../28">
@@ -2250,7 +2250,7 @@ uint16_t turn_time_ms = get_time_to_turn_ms(20, 100, SIDE_RIGHT, &amp;parameters
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="152,50,3,2,10,24,-71,21">
+       <tran_glyph conn="152,50,3,2,10,30,-71,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -2265,7 +2265,7 @@ uint16_t turn_time_ms = get_time_to_turn_ms(20, 100, SIDE_LEFT, &amp;parameters)
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="176,50,3,2,10,24,-95,21">
+       <tran_glyph conn="176,50,3,2,10,30,-95,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -2291,15 +2291,15 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub5}-->
      <state name="PreStrategy_5_sub5">
       <entry brief="turn_right">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="128,66,3,2,9,8,-46,21">
+      <tran trig="TIMEOUT" target="../../63">
+       <tran_glyph conn="128,66,3,0,10,4">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="128,60,18,8">
+      <state_glyph node="128,60,18,7">
        <entry box="1,2,14,2"/>
       </state_glyph>
      </state>
@@ -2505,7 +2505,7 @@ uint16_t turn_time_ms = get_time_to_turn_ms(30, 100, SIDE_RIGHT, &amp;parameters
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="200,74,3,2,-109,21">
+       <tran_glyph conn="200,74,3,2,-27,6,-82,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -2705,6 +2705,21 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
       </tran>
       <state_glyph node="248,75,18,8">
        <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub6}-->
+     <state name="PreStrategy_5_sub6">
+      <entry brief="left_break">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../12">
+       <tran_glyph conn="128,76,3,2,-37,19">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="128,70,19,8">
+       <entry box="1,2,13,3"/>
       </state_glyph>
      </state>
      <submachine_diagram size="304,94">
