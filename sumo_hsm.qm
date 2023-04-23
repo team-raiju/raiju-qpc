@@ -1871,11 +1871,11 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
       <!--${AOs::SumoHSM::SM::PreStrategy::LINE_CHANGED_FL,~::[white]}-->
       <choice target="../.." cpref="../../13">
        <guard brief="white">adc_line_is_white(LINE_FL) || adc_line_is_white(LINE_FR)</guard>
-       <choice_glyph conn="29,63,4,2,17,127,15">
+       <choice_glyph conn="22,63,4,2,17,134,15">
         <action box="1,0,10,2"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="2,63,3,-1,27">
+      <tran_glyph conn="2,63,3,-1,20">
        <action box="0,-2,21,5"/>
       </tran_glyph>
      </tran>
@@ -1885,7 +1885,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 10);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../11">
-       <tran_glyph conn="8,20,3,2,-2,40,85,35">
+       <tran_glyph conn="8,20,3,2,-2,38,85,37">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -1900,12 +1900,12 @@ uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_RIGHT, &amp;parameters
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../21">
-       <tran_glyph conn="80,18,3,0,9,8">
+       <tran_glyph conn="80,17,3,0,9,5">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="80,10,18,12">
-       <entry box="1,2,15,3"/>
+      <state_glyph node="80,10,18,9">
+       <entry box="1,2,14,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4}-->
@@ -1928,12 +1928,12 @@ uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_LEFT, &amp;parameters)
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../23">
-       <tran_glyph conn="56,19,3,0,13,7">
+       <tran_glyph conn="56,17,3,0,13,5">
         <action box="0,-2,16,4"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="56,10,18,12">
-       <entry box="1,2,16,4"/>
+      <state_glyph node="56,10,18,9">
+       <entry box="1,2,16,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_sub2}-->
@@ -1942,12 +1942,12 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
 uint16_t turn_time_ms = get_time_to_turn_ms(100, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../11">
-       <tran_glyph conn="80,50,3,2,11,45">
+      <tran trig="TIMEOUT" target="../../55">
+       <tran_glyph conn="80,41,3,0,9,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="80,42,18,12">
+      <state_glyph node="80,34,18,10">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
@@ -1958,11 +1958,11 @@ uint16_t move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../20">
-       <tran_glyph conn="80,34,3,0,10,8">
+       <tran_glyph conn="80,30,3,0,10,4">
         <action box="0,-2,17,6"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="80,26,18,12">
+      <state_glyph node="80,22,18,10">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
@@ -1972,12 +1972,12 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
 uint16_t turn_time_ms = get_time_to_turn_ms(100, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../11">
-       <tran_glyph conn="56,50,3,2,11,10,24,35">
+      <tran trig="TIMEOUT" target="../../54">
+       <tran_glyph conn="56,42,3,0,13,5">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="56,42,18,12">
+      <state_glyph node="56,35,18,9">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
@@ -1988,11 +1988,11 @@ uint16_t move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../22">
-       <tran_glyph conn="56,34,3,0,13,8">
+       <tran_glyph conn="56,30,3,0,13,5">
         <action box="0,-2,19,6"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="56,26,18,12">
+      <state_glyph node="56,22,18,10">
        <entry box="1,2,15,4"/>
       </state_glyph>
      </state>
@@ -2082,7 +2082,7 @@ if (current_step &gt;= cust_strategy_num_steps() - 1){
       </tran>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::TIMEOUT_2}-->
       <tran trig="TIMEOUT_2" target="../.." cpref="../../11">
-       <tran_glyph conn="32,33,3,2,-2,27,61,35">
+       <tran_glyph conn="32,33,3,2,-2,55,61,7">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -2283,7 +2283,7 @@ uint16_t move_time_ms = get_time_to_move_ms(20, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../11">
-       <tran_glyph conn="104,34,3,2,8,26,-21,35">
+       <tran_glyph conn="104,34,3,2,8,40,-21,21">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -2298,7 +2298,7 @@ uint16_t move_time_ms = get_time_to_move_ms(15, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../11">
-       <tran_glyph conn="32,54,3,2,8,6,51,35">
+       <tran_glyph conn="32,54,3,2,8,26,51,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -2529,6 +2529,36 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
       </tran>
       <state_glyph node="224,68,18,8">
        <entry box="1,2,14,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_sub3}-->
+     <state name="PreStrategy_2_sub3">
+      <entry brief="turn_left_break">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../11">
+       <tran_glyph conn="56,53,3,2,13,5,22,37">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="56,47,18,8">
+       <entry box="1,2,17,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_sub3}-->
+     <state name="PreStrategy_3_sub3">
+      <entry brief="turn_right_break">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_RIGHT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../11">
+       <tran_glyph conn="80,53,3,2,11,42">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="80,47,17,8">
+       <entry box="1,2,16,4"/>
       </state_glyph>
      </state>
      <submachine_diagram size="304,94">
