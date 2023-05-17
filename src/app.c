@@ -7,6 +7,7 @@
 #include "buzzer_service.h"
 #include "radio_service.h"
 #include "ble_service.h"
+#include "bsp_timer_input.h"
 
 void APP_init()
 {
@@ -15,6 +16,7 @@ void APP_init()
     led_stripe_init();
     adc_service_init();
     button_init();
+    bsp_timer_5_init();
     buzzer_service_init();
     radio_service_init();
     ble_service_init();
