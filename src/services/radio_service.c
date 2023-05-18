@@ -8,9 +8,7 @@
 #include "radio_service.h"
 #include "utils.h"
 
-#if defined(RADIO_MODE_PPM)
-#include "bsp_ppm.h"
-#elif defined(RADIO_MODE_UART)
+#if defined(RADIO_MODE_UART)
 #include "bsp_uart_radio.h"
 #elif defined(RADIO_MODE_UART_CRSF)
 #include "bsp_uart_crsf.h"
@@ -32,11 +30,7 @@
  **************************************************************************************************/
 static void radio_dispatch_events(void);
 
-#if defined(RADIO_MODE_PPM)
-static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val);
-#elif defined(RADIO_MODE_UART) || (RADIO_MODE_UART_CRSF)
 static void radio_data_interrupt_uart(uint16_t *ch_data, uint8_t ch_amount);
-#endif
 
 /***************************************************************************************************
  * LOCAL VARIABLES
@@ -52,51 +46,6 @@ static bool radio_data_sig_enable = true;
 /***************************************************************************************************
  * LOCAL FUNCTIONS
  **************************************************************************************************/
-
-#if defined(RADIO_MODE_PPM)
-
-static void radio_dispatch_events()
-{
-    if (radio_data_sig_enable) {
-        QEvt evt = { .sig = RADIO_DATA_SIG };
-        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-    }
-
-    if (radio_data[RADIO_CH3] > 75 && last_radio_data[RADIO_CH3] <= 75) {
-        QEvt evt = { .sig = CHANGE_STATE_EVT_SIG };
-        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-    }
-
-    if (radio_data[RADIO_CH4] > 75 && last_radio_data[RADIO_CH4] <= 75) {
-        QEvt evt = { .sig = CHANGE_STRATEGY_EVT_SIG };
-        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-    }
-
-    if (radio_data[RADIO_CH3] < -75 && last_radio_data[RADIO_CH3] > -75) {
-        QEvt evt = { .sig = CHANGE_PRE_STRATEGY_EVT_SIG };
-        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-    }
-}
-
-static void radio_data_interrupt_ppm(uint8_t ppm_num, uint16_t ppm_val)
-{
-    if (ppm_num >= NUM_OF_RADIO_CHANNELS) {
-        return;
-    }
-
-    ppm_val = constrain(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS);
-
-    int8_t current_data = map(ppm_val, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS, CHANNEL_MIN_VAL, CHANNEL_MAX_VAL);
-
-    radio_data[ppm_num] = (current_data + last_radio_data[ppm_num] * 10) / 11.0;
-
-    radio_dispatch_events();
-
-    last_radio_data[ppm_num] = radio_data[ppm_num];
-}
-
-#elif defined(RADIO_MODE_UART) || (RADIO_MODE_UART_CRSF)
-
 static void radio_dispatch_events()
 {
     if (radio_data_sig_enable) {
@@ -143,7 +92,6 @@ static void radio_data_interrupt_uart(uint16_t *ch_data, uint8_t ch_amount)
     }
 }
 
-#endif
 
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
@@ -151,10 +99,7 @@ static void radio_data_interrupt_uart(uint16_t *ch_data, uint8_t ch_amount)
 
 void radio_service_init()
 {
-#if defined(RADIO_MODE_PPM)
-    bsp_ppm_init();
-    bsp_ppm_register_callback(radio_data_interrupt_ppm);
-#elif defined(RADIO_MODE_UART)
+#if defined(RADIO_MODE_UART)
     bsp_uart_radio_init();
     bsp_uart_radio_register_callback(radio_data_interrupt_uart);
     bsp_uart_radio_start();
@@ -167,9 +112,7 @@ void radio_service_init()
 
 void radio_service_enable()
 {
-#if defined(RADIO_MODE_PPM)
-    bsp_ppm_start();
-#elif defined(RADIO_MODE_UART)
+#if defined(RADIO_MODE_UART)
     bsp_uart_radio_start();
 #elif defined(RADIO_MODE_UART_CRSF)
     bsp_uart_crsf_start();
@@ -178,9 +121,7 @@ void radio_service_enable()
 
 void radio_service_disable()
 {
-#if defined(RADIO_MODE_PPM)
-    bsp_ppm_stop();
-#elif defined(RADIO_MODE_UART)
+#if defined(RADIO_MODE_UART)
     bsp_uart_radio_stop();
 #elif defined(RADIO_MODE_UART_CRSF)
     bsp_uart_crsf_stop();

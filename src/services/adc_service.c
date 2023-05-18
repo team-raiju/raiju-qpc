@@ -54,7 +54,6 @@ static void adc_data_interrupt(uint32_t *out_data);
 static void gen_line_events(void);
 static void gen_ctrl_battery_events(void);
 static void gen_pwr_battery_events(void);
-static void gen_start_module_events(void);
 
 /***************************************************************************************************
  * LOCAL VARIABLES
