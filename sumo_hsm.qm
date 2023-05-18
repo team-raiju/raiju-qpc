@@ -194,6 +194,7 @@ if (me-&gt;buzzerCount &lt; 15){
     QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
     bsp_ble_start();
     adc_service_start_callback();
+    start_module_enable();
     if (adc_get_low_pwr_bat()){
         led_stripe_set_all_color(COLOR_RED);
     } else if (adc_get_low_ctrl_bat()){
@@ -627,7 +628,17 @@ if (parameters.attack_when_near){
        <action box="0,-2,23,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="35,50,36,51">
+     <!--${AOs::SumoHSM::SM::AutoWait::START_MODULE_TEST}-->
+     <tran trig="START_MODULE_TEST">
+      <action>// Blink whole led strip
+// PLay buzzer
+buzzer_start();
+QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);</action>
+      <tran_glyph conn="35,60,3,-1,13">
+       <action box="0,-2,21,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="35,47,36,54">
       <entry box="1,2,35,8"/>
      </state_glyph>
     </state>
@@ -1067,7 +1078,7 @@ start_module_disable();</entry>
     <smstate name="ble2" submachine="../40">
      <!--${AOs::SumoHSM::SM::ble2::XP1}-->
      <xpseg xpref="../../40/0" target="../../3">
-      <xpseg_glyph conn="25,58,1,3,8,2,2">
+      <xpseg_glyph conn="25,58,1,3,10">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -3267,7 +3278,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(STUCK_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STUCK_END_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_ATTACK_NEAR_SIG,  (void *)0);
-
+    QS_SIG_DICTIONARY(START_MODULE_TEST_SIG,  (void *)0);
 }
 
 #endif</text>
@@ -3355,6 +3366,7 @@ enum SumoHSMSignals {
     STUCK_SIG,
     STUCK_END_SIG,
     BLE_ATTACK_NEAR_SIG,
+    START_MODULE_TEST_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 

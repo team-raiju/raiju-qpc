@@ -1506,6 +1506,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
                 QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
                 bsp_ble_start();
                 adc_service_start_callback();
+                start_module_enable();
                 if (adc_get_low_pwr_bat()){
                     led_stripe_set_all_color(COLOR_RED);
                 } else if (adc_get_low_ctrl_bat()){
@@ -2216,12 +2217,20 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
+        /*${AOs::SumoHSM::SM::AutoWait::START_MODULE_TEST} */
+        case START_MODULE_TEST_SIG: {
+            // Blink whole led strip
+            // PLay buzzer
+            buzzer_start();
+            QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 200);
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
-    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -7388,7 +7397,7 @@ void sumoHSM_update_qs_dict(){
     QS_SIG_DICTIONARY(STUCK_SIG,  (void *)0);
     QS_SIG_DICTIONARY(STUCK_END_SIG,  (void *)0);
     QS_SIG_DICTIONARY(BLE_ATTACK_NEAR_SIG,  (void *)0);
-
+    QS_SIG_DICTIONARY(START_MODULE_TEST_SIG,  (void *)0);
 }
 
 #endif

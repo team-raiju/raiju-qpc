@@ -79,6 +79,7 @@ enum SumoHSMSignals {
     STUCK_SIG,
     STUCK_END_SIG,
     BLE_ATTACK_NEAR_SIG,
+    START_MODULE_TEST_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 
