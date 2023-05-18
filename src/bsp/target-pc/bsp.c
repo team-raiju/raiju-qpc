@@ -47,6 +47,7 @@
 
 #include "bsp_uart_fake.h"
 #include "bsp_uart.h"
+#include "fake_start_module.h"
 
 #ifdef Q_SPY
 
@@ -114,11 +115,11 @@ void QS_onCommand(uint8_t cmdId, uint32_t param1, uint32_t param2, uint32_t para
 {
     switch (cmdId) {
     case 0: {
-        ADC_Fake_Start_Module(true);
+        fake_start_module_key_2();
         break;
     }
     case 1: {
-        ADC_Fake_Start_Module(false);
+        fake_start_module_key_3();
         break;
     }
 
@@ -162,6 +163,7 @@ void QS_onCommand(uint8_t cmdId, uint32_t param1, uint32_t param2, uint32_t para
     }
 
     case 5: {
+        fake_start_module_key_1();
         break;
     }
 
