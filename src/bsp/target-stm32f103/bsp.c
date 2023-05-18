@@ -88,8 +88,10 @@ Q_NORETURN Q_onAssert(char const *const module, int_t const loc)
     driving_disable();
     buzzer_start();
 
-    while (1)
-        ;
-
-    // NVIC_SystemReset();
+    uint32_t timeout = 10000000;
+    while (timeout > 0) {
+        timeout--;
+    }
+    
+    NVIC_SystemReset();
 }

@@ -7,6 +7,7 @@
 
 #include "adc_service.h"
 #include "bsp_adc_dma.h"
+#include "utils.h"
 
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -23,7 +24,11 @@
 #define CTRL_BAT_VOLTAGE_MULTIPLIER ((CTRL_BAT_VOLTAGE_DIV_R1 + CTRL_BAT_VOLTAGE_DIV_R2) / CTRL_BAT_VOLTAGE_DIV_R2)
 #define CTRL_BAT_POSITION_IN_ADC    0
 
-#define PWR_BATTERY_THRESHOLD_MV   38000.0
+#define PWR_BATTERY_THRESHOLD_12S_MV   45600.0
+#define PWR_BATTERY_THRESHOLD_10S_MV   38000.0
+
+#define PWR_BATTERY_THRESHOLD_MV   PWR_BATTERY_THRESHOLD_12S_MV
+
 #define PWR_BAT_VOLTAGE_DIV_R1     330.0
 #define PWR_BAT_VOLTAGE_DIV_R2     23.5
 #define PWR_BAT_VOLTAGE_MULTIPLIER ((PWR_BAT_VOLTAGE_DIV_R1 + PWR_BAT_VOLTAGE_DIV_R2) / PWR_BAT_VOLTAGE_DIV_R2)
@@ -33,6 +38,7 @@
 #define START_MODULE_HIGH            3000
 #define START_MODULE_POSITION_IN_ADC 4
 
+#define PWR_BATTERY_MAX_MEASURE_MV   ADC_MAX_VOLTAGE_MV * PWR_BAT_VOLTAGE_MULTIPLIER
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -272,6 +278,27 @@ bool adc_get_low_pwr_bat()
 uint16_t adc_get_pwr_bat_mv()
 {
     return (uint16_t)pwr_bat_voltage_mv;
+}
+
+double adc_get_pwr_bat_percent(void) 
+{
+    // Impossible battery values
+    if (pwr_bat_voltage_mv >= 48000 || pwr_bat_voltage_mv < 33000){
+        return 1;
+    }
+
+    // 12S
+    if (pwr_bat_voltage_mv > 43000) {
+        double max_voltage = 48000.0;
+        return pwr_bat_voltage_mv / max_voltage;
+    }
+
+    // 10S
+    if (pwr_bat_voltage_mv > 33000) {
+        return pwr_bat_voltage_mv / 42000.0; 
+    }
+
+    return 1;
 }
 
 void adc_line_set_mask(uint8_t mask)

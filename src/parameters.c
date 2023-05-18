@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "parameters.h"
 #include "parameters_set.h"
 #include "ble_service.h"
@@ -19,14 +20,14 @@
  **************************************************************************************************/
 
 #define NUM_OF_STRATEGIES     3
-#define NUM_OF_PRE_STRATEGIES 9
-#define NUM_OF_CALIB_MODES    5
+#define NUM_OF_PRE_STRATEGIES 12
+#define NUM_OF_CALIB_MODES    6
 
 #define ARENA_LENGHT_CM   154.0f
 #define SUMO_LENGHT_CM    20.0f
 #define REFERENCE_DIST_CM (ARENA_LENGHT_CM - SUMO_LENGHT_CM)
 
-#define REFERENCE_SPEED 60.0f
+#define REFERENCE_SPEED 100.0f
 
 #define REFERENCE_TURN_SPEED 100.0f
 
@@ -63,8 +64,9 @@ typedef union {
         uint8_t line_seen_turn_angle;
         uint16_t turn_180_right_time_ms;
         uint16_t turn_180_left_time_ms;
+        uint8_t star_full_speed_time_ms;
 
-        uint8_t empty[2];
+        uint8_t empty[1];
     } __attribute__((packed, scalar_storage_order("big-endian")));
 
 } ble_transmit_packet_0_t;
@@ -77,7 +79,7 @@ typedef union {
 
         uint16_t step_wait_time_ms;
         uint16_t step_advance_time_ms;
-        uint16_t time_ms_to_cross_at_60_vel;
+        uint16_t time_ms_to_cross_at_max_vel;
         uint16_t is_stucked_timeout_ms;
 
         uint8_t attack_when_near;
@@ -128,6 +130,7 @@ static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t *updat
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
+static double battery_multiplicator = 1.0;
 
 static color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
     COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE,
@@ -136,13 +139,13 @@ static color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
 };
 
 static color_name_t pre_strategy_colors[NUM_OF_PRE_STRATEGIES] = {
-    COLOR_BLACK, COLOR_GREEN, COLOR_BLUE, COLOR_BLUE, COLOR_ORANGE, COLOR_ORANGE, COLOR_PINK, COLOR_PINK, COLOR_PURPLE,
-    // COLOR_WHITE,
+    COLOR_BLACK, COLOR_GREEN, COLOR_BLUE, COLOR_BLUE, COLOR_ORANGE, COLOR_ORANGE, 
+    COLOR_PINK, COLOR_PINK, COLOR_PURPLE, COLOR_PURPLE, COLOR_WHITE, COLOR_WHITE
     // COLOR_YELLOW,
 };
 
 static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
-    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_PURPLE,
+    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_PURPLE, COLOR_RED,
 };
 
 // static const char * strategy_names[] = {
@@ -157,16 +160,17 @@ static sumo_parameters_t init_parameters_default = {
     .calib_mode = 0,
     .enabled_distance_sensors = 0b001111111,
     .enabled_line_sensors = 0b001111,
-    .star_speed = 50,
+    .star_speed = 40,
+    .star_full_speed_time_ms = 40,
     .max_speed = 100,
     .reverse_speed = 100,
     .reverse_time_ms = 140,
-    .line_seen_turn_angle = 120,
-    .turn_180_right_time_ms = 95,
-    .turn_180_left_time_ms = 95,
+    .line_seen_turn_angle = 135,
+    .turn_180_right_time_ms = 75,
+    .turn_180_left_time_ms = 75,
     .step_wait_time_ms = 1500,
-    .step_advance_time_ms = 150,
-    .time_ms_to_cross_at_60_vel = 600,
+    .step_advance_time_ms = 60,
+    .time_ms_to_cross_at_max_vel = 210,
     .is_stucked_timeout_ms = 2000,
     .attack_when_near = 0,
 };
@@ -214,6 +218,7 @@ void parameters_init(sumo_parameters_t *params)
 
     read_and_update_parameter_8_bit(STAR_SPEED_ADDR, &temp_params.star_speed);
     read_and_update_parameter_8_bit(MAX_SPEED_ADDR, &temp_params.max_speed);
+    read_and_update_parameter_8_bit(STAR_FULL_SPEED_TIME_MS_ADDR, &temp_params.star_full_speed_time_ms);
 
     read_and_update_parameter_8_bit(REVERSE_SPEED_ADDR, &temp_params.reverse_speed);
     read_and_update_parameter_16_bit(REVERSE_TIME_MS_ADDR, &temp_params.reverse_time_ms);
@@ -224,9 +229,9 @@ void parameters_init(sumo_parameters_t *params)
 
     read_and_update_parameter_16_bit(TURN_180_RIGHT_TIME_ADDR, &temp_params.turn_180_right_time_ms);
     read_and_update_parameter_16_bit(TURN_180_LEFT_TIME_ADDR, &temp_params.turn_180_left_time_ms);
-    read_and_update_parameter_16_bit(TIME_MS_TO_CROSS_AT_60_ADDR, &temp_params.time_ms_to_cross_at_60_vel);
+    read_and_update_parameter_16_bit(TIME_MS_TO_CROSS_AT_100_ADDR, &temp_params.time_ms_to_cross_at_max_vel);
 
-    read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED, &temp_params.is_stucked_timeout_ms);
+    read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED_ADDR, &temp_params.is_stucked_timeout_ms);
 
     *params = temp_params;
 
@@ -248,6 +253,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num)
         packet_0.en_dist_sensors = params.enabled_distance_sensors;
         packet_0.en_line_sensors = params.enabled_line_sensors;
         packet_0.star_speed = params.star_speed;
+        packet_0.star_full_speed_time_ms = params.star_full_speed_time_ms;
         packet_0.max_speed = params.max_speed;
         packet_0.reverse_speed = params.reverse_speed;
         packet_0.reverse_time_ms = params.reverse_time_ms;
@@ -263,7 +269,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num)
         packet_1.header = 1;
         packet_1.step_wait_time_ms = params.step_wait_time_ms;
         packet_1.step_advance_time_ms = params.step_advance_time_ms;
-        packet_1.time_ms_to_cross_at_60_vel = params.time_ms_to_cross_at_60_vel;
+        packet_1.time_ms_to_cross_at_max_vel = params.time_ms_to_cross_at_max_vel;
         packet_1.is_stucked_timeout_ms = params.is_stucked_timeout_ms;
         packet_1.attack_when_near = params.attack_when_near;
         memcpy(buffer, packet_1._raw, BLE_PACKET_TRANSMIT_SIZE);
@@ -430,30 +436,62 @@ void parameters_set_calib_mode_led(sumo_parameters_t *params)
     led_stripe_send();
 }
 
+void set_reference_voltage() {
+    battery_multiplicator = 1 / adc_get_pwr_bat_percent();
+    battery_multiplicator = constrain(battery_multiplicator, 0.9, 1.0);
+}
+
 uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, sumo_parameters_t *params)
 {
-    // TODO: Account for non linear effects on multiplicators
-    double angle_multiplicator = degrees / 180.0;
-    double speed_multiplicator = turn_speed / REFERENCE_TURN_SPEED;
+    // Find experimentally. turn 45, 90, 135, 180
+    double turn_angle_dividers[] = { 2, 1.36, 1.2, 1};
+
+    uint8_t index;
+    if (degrees >= 180) {
+        index = 3;
+    } else if (degrees < 45) {
+        index = 0;
+    } else {
+        index = round((degrees / 45.0) - 1);
+    }
+
+    double angle_multiplicator = degrees / (45.0 * (index + 1));
+    double speed_multiplicator = REFERENCE_TURN_SPEED / (double) turn_speed;
 
     uint16_t turn_time_ms;
 
     if (side == SIDE_LEFT) {
-        turn_time_ms = (angle_multiplicator * params->turn_180_left_time_ms) * speed_multiplicator;
+        double reference_turn_time = params->turn_180_left_time_ms / turn_angle_dividers[index];
+        turn_time_ms = (angle_multiplicator * reference_turn_time) * speed_multiplicator * battery_multiplicator;
     } else {
-        turn_time_ms = (angle_multiplicator * params->turn_180_right_time_ms) * speed_multiplicator;
+        double reference_turn_time = params->turn_180_right_time_ms / turn_angle_dividers[index];
+        turn_time_ms = (angle_multiplicator * reference_turn_time) * speed_multiplicator * battery_multiplicator;
     }
 
+    turn_time_ms = constrain(turn_time_ms, 1, 7000);
     return turn_time_ms;
 }
 
 uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params)
 {
-    double reference_speed_cm_per_ms = REFERENCE_DIST_CM / (double)params->time_ms_to_cross_at_60_vel;
-    double speed_multiplicator = speed / REFERENCE_SPEED;
+    // Find experimentally. Move 33.5cm, 67cm, 100.5, 134cm
+    double distance_dividers[] = { 3.2, 1.875, 1.30, 1 };
 
-    // TODO: Account for non linear effects on speed multiplicator
-    uint16_t move_time_ms = distance_cm / (reference_speed_cm_per_ms * speed_multiplicator);
+    uint8_t index;
+    if (distance_cm >= 134) {
+        index = 3;
+    } else if (distance_cm < 17) {
+        index = 0;
+    } else {
+        index = round((distance_cm / 33.5) - 1);
+    }
+
+    double distance_multiplicator = distance_cm / (33.5 * (index + 1));
+    double speed_multiplicator = REFERENCE_SPEED / (double) speed;
+
+    double reference_move_time_ms = params->time_ms_to_cross_at_max_vel / distance_dividers[index];
+    uint16_t move_time_ms = (distance_multiplicator * reference_move_time_ms) * speed_multiplicator * battery_multiplicator;
+    move_time_ms = constrain(move_time_ms, 1, 7000);
 
     return move_time_ms;
 }

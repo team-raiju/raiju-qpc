@@ -42,7 +42,7 @@
 
 /* a very simple Board Support Package (BSP) -------------------------------*/
 enum {
-    BSP_TICKS_PER_SEC = 100
+    BSP_TICKS_PER_SEC = 1000
 }; /* number of clock ticks in a second */
 
 typedef enum {
