@@ -123,6 +123,7 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed)
 #if (START_MODULE_TYPE == JSUMO_START_MODULE)
 static void tim_capture_interrupt(uint16_t time_diff)
 {
+    Q_UNUSED_PAR(time_diff);
     if (current_edge == BSP_TIM_RISING_EDGE) {
         gen_start_module_events(KEY_2);
         current_edge = BSP_TIM_FALLING_EDGE;
