@@ -631,7 +631,7 @@ if (parameters.attack_when_near){
      </tran>
      <!--${AOs::SumoHSM::SM::AutoWait::START_MODULE_TEST}-->
      <tran trig="START_MODULE_TEST" target="../../38" cpref="../../45/0">
-      <tran_glyph conn="35,61,5,1,-10,0,-1">
+      <tran_glyph conn="35,61,5,1,-11">
        <action box="0,-2,21,2"/>
       </tran_glyph>
      </tran>
@@ -3231,7 +3231,7 @@ buzzer_stop();</exit>
      <state name="led_black_1">
       <entry>buzzer_start();
 led_stripe_set_all_color(COLOR_BLACK);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 100);</entry>
       <!--${AOs::SumoHSM::SM::TestStartModule::led_black_1::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../5">
        <tran_glyph conn="30,15,3,3,-2,8,2">
@@ -3245,7 +3245,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50);</entry>
      <!--${AOs::SumoHSM::SM::TestStartModule::led_red}-->
      <state name="led_red">
       <entry>led_stripe_set_all_color(COLOR_RED);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 100);</entry>
       <!--${AOs::SumoHSM::SM::TestStartModule::led_red::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../6">
        <tran_glyph conn="30,25,3,3,-2,8,2">
@@ -3260,7 +3260,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50);</entry>
      <state name="led_black_2">
       <entry>buzzer_stop();
 led_stripe_set_all_color(COLOR_BLACK);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 100);</entry>
       <!--${AOs::SumoHSM::SM::TestStartModule::led_black_2::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../7">
        <tran_glyph conn="30,35,3,3,-2,8,2">
@@ -3274,7 +3274,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50);</entry>
      <!--${AOs::SumoHSM::SM::TestStartModule::led_blue}-->
      <state name="led_blue">
       <entry>led_stripe_set_all_color(COLOR_BLUE);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 100);</entry>
       <!--${AOs::SumoHSM::SM::TestStartModule::led_blue::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../8">
        <tran_glyph conn="30,46,3,3,-2,7,2">
@@ -3288,10 +3288,10 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50);</entry>
      <!--${AOs::SumoHSM::SM::TestStartModule::led_black}-->
      <state name="led_black">
       <entry>led_stripe_set_all_color(COLOR_BLACK);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 100);</entry>
       <!--${AOs::SumoHSM::SM::TestStartModule::led_black::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../2">
-       <tran_glyph conn="52,55,1,1,30,0,-2">
+       <tran_glyph conn="52,55,1,1,28">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>

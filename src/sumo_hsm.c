@@ -7573,7 +7573,7 @@ static QState SumoHSM_TestStartModule_EP1_ep(SumoHSM * const me) {
 static QState SumoHSM_TestStartModule_led_black_1_e(SumoHSM * const me) {
     buzzer_start();
     led_stripe_set_all_color(COLOR_BLACK);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 50);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
     return QM_ENTRY(&SumoHSM_TestStartModule_led_black_1_s);
 }
 /*${AOs::SumoHSM::SM::TestStartModule::led_black_1} */
@@ -7607,7 +7607,7 @@ static QState SumoHSM_TestStartModule_led_black_1(SumoHSM * const me, QEvt const
 /*${AOs::SumoHSM::SM::TestStartModule::led_red} */
 static QState SumoHSM_TestStartModule_led_red_e(SumoHSM * const me) {
     led_stripe_set_all_color(COLOR_RED);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 50);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
     return QM_ENTRY(&SumoHSM_TestStartModule_led_red_s);
 }
 /*${AOs::SumoHSM::SM::TestStartModule::led_red} */
@@ -7642,7 +7642,7 @@ static QState SumoHSM_TestStartModule_led_red(SumoHSM * const me, QEvt const * c
 static QState SumoHSM_TestStartModule_led_black_2_e(SumoHSM * const me) {
     buzzer_stop();
     led_stripe_set_all_color(COLOR_BLACK);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 50);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
     return QM_ENTRY(&SumoHSM_TestStartModule_led_black_2_s);
 }
 /*${AOs::SumoHSM::SM::TestStartModule::led_black_2} */
@@ -7676,7 +7676,7 @@ static QState SumoHSM_TestStartModule_led_black_2(SumoHSM * const me, QEvt const
 /*${AOs::SumoHSM::SM::TestStartModule::led_blue} */
 static QState SumoHSM_TestStartModule_led_blue_e(SumoHSM * const me) {
     led_stripe_set_all_color(COLOR_BLUE);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 50);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
     return QM_ENTRY(&SumoHSM_TestStartModule_led_blue_s);
 }
 /*${AOs::SumoHSM::SM::TestStartModule::led_blue} */
@@ -7710,7 +7710,7 @@ static QState SumoHSM_TestStartModule_led_blue(SumoHSM * const me, QEvt const * 
 /*${AOs::SumoHSM::SM::TestStartModule::led_black} */
 static QState SumoHSM_TestStartModule_led_black_e(SumoHSM * const me) {
     led_stripe_set_all_color(COLOR_BLACK);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 50);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
     return QM_ENTRY(&SumoHSM_TestStartModule_led_black_s);
 }
 /*${AOs::SumoHSM::SM::TestStartModule::led_black} */
