@@ -78,7 +78,8 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed);
 #if (START_MODULE_TYPE == JSUMO_START_MODULE)
 static bsp_tim_capture_edge_t current_edge = BSP_TIM_RISING_EDGE;
 # else
-static uint8_t command_bits[7];
+/* command_bits can have up to 7 bits, but we are only interested in the first 2 */
+static uint8_t command_bits[2];
 static bool packet_started = false;
 static uint8_t counter = 0;
 static uint32_t time_from_last_evt = MIN_TIME_UNITS_BETWEEN_EVENTS;
@@ -110,7 +111,7 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed)
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         break;
     }
-    case KEY_POWER: {
+    case KEY_4: {
         QEvt evt = { .sig = CHANGE_STATE_EVT_SIG };
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         break;
@@ -134,8 +135,8 @@ static void tim_capture_interrupt(uint16_t time_diff)
 
     bsp_tim_set_capture_level(current_edge);
 }
-
 #else
+
 static void tim_capture_interrupt(uint16_t time_diff)
 {
     time_from_last_evt += time_diff;
@@ -158,7 +159,7 @@ static void tim_capture_interrupt(uint16_t time_diff)
 
         counter++;
 
-        if (counter >= 7) {
+        if (counter >= sizeof(command_bits)) {
             packet_started = false;
             uint8_t command = 0;
             for (uint8_t i = 0; i < sizeof(command_bits); i++) {
