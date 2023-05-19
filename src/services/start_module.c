@@ -12,6 +12,10 @@
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
+#define JSUMO_START_MODULE      0
+#define IR_RECEIVER             1
+#define START_MODULE_TYPE       IR_RECEIVER      /* JSUMO_START_MODULE or IR_RECEIVER */
+
 /* Microseconds per unit of time_diff */
 #define TIME_DIFF_UNITS_US 10
 
@@ -71,12 +75,15 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-
+#if (START_MODULE_TYPE == JSUMO_START_MODULE)
+static bsp_tim_capture_edge_t current_edge = BSP_TIM_RISING_EDGE;
+# else
 static uint8_t command_bits[7];
 static bool packet_started = false;
 static uint8_t counter = 0;
 static uint32_t time_from_last_evt = MIN_TIME_UNITS_BETWEEN_EVENTS;
-
+static bsp_tim_capture_edge_t current_edge = BSP_TIM_FALLING_EDGE;
+#endif
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -113,6 +120,21 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed)
     }
 }
 
+#if (START_MODULE_TYPE == JSUMO_START_MODULE)
+static void tim_capture_interrupt(uint16_t time_diff)
+{
+    if (current_edge == BSP_TIM_RISING_EDGE) {
+        gen_start_module_events(KEY_2);
+        current_edge = BSP_TIM_FALLING_EDGE;
+    } else {
+        gen_start_module_events(KEY_3);
+        current_edge = BSP_TIM_RISING_EDGE;
+    }
+
+    bsp_tim_set_capture_level(current_edge);
+}
+
+#else
 static void tim_capture_interrupt(uint16_t time_diff)
 {
     time_from_last_evt += time_diff;
@@ -150,12 +172,15 @@ static void tim_capture_interrupt(uint16_t time_diff)
     }
 }
 
+#endif
+
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
 void start_module_init_capture(void)
 {
     bsp_tim_input_capture_init();
+    bsp_tim_set_capture_level(current_edge);
     bsp_tim_capture_register_callback(tim_capture_interrupt);
 }
 

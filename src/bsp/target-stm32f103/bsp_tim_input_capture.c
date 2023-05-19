@@ -70,3 +70,12 @@ void bsp_tim_input_capture_stop()
 void bsp_tim_capture_register_callback(bsp_tim_capture_callback callback_function){
     capture_callback = callback_function;
 }
+
+void bsp_tim_set_capture_level(bsp_tim_capture_edge_t edge)
+{
+    if (edge == BSP_TIM_RISING_EDGE) {
+        __HAL_TIM_SET_CAPTUREPOLARITY(TIM_INSTANCE, TIM_CHANNEL, TIM_INPUTCHANNELPOLARITY_RISING);
+    } else {
+        __HAL_TIM_SET_CAPTUREPOLARITY(TIM_INSTANCE, TIM_CHANNEL, TIM_INPUTCHANNELPOLARITY_FALLING);
+    }
+}
