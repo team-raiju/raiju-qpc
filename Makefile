@@ -1,4 +1,4 @@
-include config_substitute.mk
+include config.mk
 
 PROJECT     := sumo_hsm
 
@@ -149,7 +149,7 @@ ASFLAGS = $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
 
 CFLAGS = -c $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
 	-ffunction-sections -fdata-sections \
-	-O0 $(INCLUDES) $(DEFINES) -DNDEBUG
+	-O0 $(INCLUDES) $(DEFINES) -DNDEBUG -DQ_NASSERT
 
 CPPFLAGS = -c $(ARM_CPU) $(ARM_FPU) $(FLOAT_ABI) -mthumb -Wall \
 	-ffunction-sections -fdata-sections -fno-rtti -fno-exceptions \
@@ -177,7 +177,7 @@ else # default Debug configuration ..........................................
 BIN_DIR := build
 
 DEFINES += -D$(DEVICE_DEF) \
-	-DUSE_HAL_DRIVER -D$(PROJECT_DEFS)
+	-DUSE_HAL_DRIVER -D$(PROJECT_DEFS) -DQ_NASSERT
 
 ASFLAGS = -g $(ARM_CPU) $(ARM_FPU) $(ASM_CPU) $(ASM_FPU)
 
