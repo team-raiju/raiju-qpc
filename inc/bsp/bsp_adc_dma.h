@@ -3,10 +3,10 @@
 
 #include <stdint.h>
 
-#define ADC_DMA_CHANNELS 7
+#define ADC_DMA_CHANNELS 6
 #define READINGS_PER_ADC 32
 
-#define ADC_DMA_BUFFER_SIZE      ADC_DMA_CHANNELS *READINGS_PER_ADC
+#define ADC_DMA_BUFFER_SIZE      ADC_DMA_CHANNELS * READINGS_PER_ADC
 #define ADC_DMA_HALF_BUFFER_SIZE (ADC_DMA_BUFFER_SIZE / 2)
 
 /* When using 12MHz as ADC clock source */

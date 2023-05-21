@@ -1,20 +1,17 @@
 /***************************************************************************************************
  * INCLUDES
  **************************************************************************************************/
-
-#include <stdio.h>
-#include "bsp_gpio_mapping.h"
-#include "bsp_gpio.h"
-#include "bsp_ppm.h"
-
-#include "bsp_ppm_fake.h"
-#include "utils.h"
-#ifdef RADIO_MODE_PPM
-
+#include <stdbool.h>
+#include "tim.h"
+#include "gpio.h"
+#include "bsp_tim_input_capture.h"
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
+#define TIM_NUMBER     TIM5
+#define TIM_CHANNEL    TIM_CHANNEL_3
 
+#define TIM_INSTANCE   (&htim5)
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -26,8 +23,8 @@
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-static bsp_ppm_callback_t external_callback;
-static bool enabled;
+static bsp_tim_capture_callback capture_callback = NULL;
+static uint16_t last_counter = 0;
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -36,44 +33,49 @@ static bool enabled;
  * LOCAL FUNCTIONS
  **************************************************************************************************/
 
-void fake_ppm_exti_callback(uint8_t ppm_num, uint8_t value)
-{
-    if (!enabled) {
-        return;
-    }
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
+    if (htim->Instance == TIM_NUMBER) {
 
-    if (ppm_num < BOARD_NUM_OF_PPMS) {
-        uint16_t ppm = map(value, 0, 255, PPM_MIN_VALUE_MS, PPM_MAX_VALUE_MS);
+        uint16_t current_counter = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_3);
+        uint16_t diff = current_counter - last_counter;
+        last_counter = current_counter;
 
-        external_callback(ppm_num, ppm);
+        if(capture_callback != NULL){
+            capture_callback(diff);
+        }
     }
 }
 
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
  **************************************************************************************************/
-
-void bsp_ppm_init()
+void bsp_tim_input_capture_init()
 {
-    printf("BSP PPM INIT\r\n");
-    enabled = true;
+    MX_TIM5_Init();
+    bsp_tim_input_capture_start();
 }
 
-void bsp_ppm_start()
+void bsp_tim_input_capture_start()
 {
-    printf("BSP PPM START\r\n");
-    enabled = true;
+    HAL_TIM_Base_Start(TIM_INSTANCE);
+    HAL_TIM_IC_Start_IT(TIM_INSTANCE, TIM_CHANNEL);
+    __HAL_TIM_SET_COUNTER(TIM_INSTANCE, 0);
 }
 
-void bsp_ppm_stop()
+void bsp_tim_input_capture_stop()
 {
-    printf("BSP PPM STOP\r\n");
-    enabled = false;
+    HAL_TIM_Base_Stop_IT(TIM_INSTANCE);
 }
 
-void bsp_ppm_register_callback(bsp_ppm_callback_t callback_function)
-{
-    external_callback = callback_function;
+void bsp_tim_capture_register_callback(bsp_tim_capture_callback callback_function){
+    capture_callback = callback_function;
 }
 
-#endif
+void bsp_tim_set_capture_level(bsp_tim_capture_edge_t edge)
+{
+    if (edge == BSP_TIM_RISING_EDGE) {
+        __HAL_TIM_SET_CAPTUREPOLARITY(TIM_INSTANCE, TIM_CHANNEL, TIM_INPUTCHANNELPOLARITY_RISING);
+    } else {
+        __HAL_TIM_SET_CAPTUREPOLARITY(TIM_INSTANCE, TIM_CHANNEL, TIM_INPUTCHANNELPOLARITY_FALLING);
+    }
+}

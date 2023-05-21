@@ -29,25 +29,6 @@
 static bsp_gpio_dist_callback_t dist_callback_function = NULL;
 static bsp_button_callback_t button_callback_function = NULL;
 
-#if defined(RADIO_MODE_PPM)
-
-static bsp_gpio_ppm_callback_t ppm_callback_function = NULL;
-static uint8_t gpio_ppm_pins[BOARD_NUM_OF_PPMS] = {
-    GPIO_PPM_1_PIN,
-    GPIO_PPM_2_PIN,
-    GPIO_PPM_3_PIN,
-    GPIO_PPM_4_PIN,
-};
-
-static uint8_t gpio_ppm_ports[BOARD_NUM_OF_PPMS] = {
-    GPIO_PPM_1_PORT,
-    GPIO_PPM_2_PORT,
-    GPIO_PPM_3_PORT,
-    GPIO_PPM_4_PORT,
-};
-
-#endif
-
 static uint8_t gpio_dist_sensor_pins[BOARD_NUM_DIST_SENSORS] = {
     GPIO_DIST_SENSOR_1_PIN, /* HARDWARE SILK DIST 1 */
     GPIO_DIST_SENSOR_2_PIN, /* HARDWARE SILK DIST 2 */
@@ -131,20 +112,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         }
     }
 
-#if defined(RADIO_MODE_PPM)
-    // PPMS
-    for (int i = 0; i < BOARD_NUM_OF_PPMS; i++) {
-        if (GPIO_Pin == BSP_GPIO_Pin_Mapping(gpio_ppm_pins[i])) {
-            if (ppm_callback_function != NULL) {
-                io_level_t state = BSP_GPIO_Read_Pin(gpio_ppm_ports[i], gpio_ppm_pins[i]);
-                ppm_callback_function(i, state);
-            }
-            return;
-        }
-    }
-
-#endif
-
     QK_ISR_EXIT();
 }
 
@@ -175,10 +142,3 @@ void BSP_GPIO_Register_Button_Callback(bsp_button_callback_t callback_function)
 {
     button_callback_function = callback_function;
 }
-
-#if defined(RADIO_MODE_PPM)
-void BSP_GPIO_Register_PPM_Callback(bsp_gpio_ppm_callback_t callback_function)
-{
-    ppm_callback_function = callback_function;
-}
-#endif

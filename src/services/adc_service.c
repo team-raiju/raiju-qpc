@@ -32,11 +32,7 @@
 #define PWR_BAT_VOLTAGE_DIV_R1     330.0
 #define PWR_BAT_VOLTAGE_DIV_R2     23.5
 #define PWR_BAT_VOLTAGE_MULTIPLIER ((PWR_BAT_VOLTAGE_DIV_R1 + PWR_BAT_VOLTAGE_DIV_R2) / PWR_BAT_VOLTAGE_DIV_R2)
-#define PWR_BAT_POSITION_IN_ADC    6
-
-#define START_MODULE_LOW             250
-#define START_MODULE_HIGH            3000
-#define START_MODULE_POSITION_IN_ADC 4
+#define PWR_BAT_POSITION_IN_ADC    4
 
 #define PWR_BATTERY_MAX_MEASURE_MV   ADC_MAX_VOLTAGE_MV * PWR_BAT_VOLTAGE_MULTIPLIER
 /***************************************************************************************************
@@ -58,8 +54,6 @@ static void adc_data_interrupt(uint32_t *out_data);
 static void gen_line_events(void);
 static void gen_ctrl_battery_events(void);
 static void gen_pwr_battery_events(void);
-static void start_module_value_update(uint16_t start_module_raw);
-static void gen_start_module_events(void);
 
 /***************************************************************************************************
  * LOCAL VARIABLES
@@ -85,14 +79,6 @@ static volatile uint32_t last_adc_raw[NUM_OF_LINE_SENSORS];
 /***************************************************************************************************
  * LOCAL FUNCTIONS
  **************************************************************************************************/
-
-static void start_module_value_update(uint16_t start_module_raw)
-{
-    start_module_adc = start_module_raw;
-    gen_start_module_events();
-    start_module_adc_last = start_module_adc;
-}
-
 static void ctrl_battery_value_update(uint16_t bat_raw_adc)
 {
     double measured_voltage = (bat_raw_adc / ADC_MAX_VALUE) * ADC_MAX_VOLTAGE_MV;
@@ -127,17 +113,6 @@ static void gen_pwr_battery_events()
 {
     if (pwr_bat_voltage_mv_last > PWR_BATTERY_THRESHOLD_MV && pwr_bat_voltage_mv <= PWR_BATTERY_THRESHOLD_MV) {
         QEvt evt = { .sig = LOW_BATTERY_SIG };
-        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-    }
-}
-
-static void gen_start_module_events()
-{
-    if (start_module_adc >= START_MODULE_HIGH && start_module_adc_last < START_MODULE_HIGH) {
-        QEvt evt = { .sig = START_SIG };
-        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
-    } else if (start_module_adc <= START_MODULE_LOW && start_module_adc_last > START_MODULE_LOW) {
-        QEvt evt = { .sig = STOP_SIG };
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 }
@@ -211,7 +186,6 @@ static void adc_data_interrupt(uint32_t *out_data)
 
     line_sensor_update(aux_readings);
 
-    start_module_value_update(aux_readings[START_MODULE_POSITION_IN_ADC]);
     ctrl_battery_value_update(aux_readings[CTRL_BAT_POSITION_IN_ADC]);
     pwr_battery_value_update(aux_readings[PWR_BAT_POSITION_IN_ADC]);
 }

@@ -146,6 +146,7 @@ def custom_qview_init(qview):
         "start" : PhotoImage(file=HOME_DIR + "/img/button_start.png"),
         "idle_button" : PhotoImage(file=HOME_DIR + "/img/button_idle.png"),
         "stop_button" : PhotoImage(file=HOME_DIR + "/img/button_stop.png"),
+        "arm_module" : PhotoImage(file=HOME_DIR + "/img/button_1.png"),
         "buzzer_off" : PhotoImage(file=HOME_DIR + "/img/buzzer_off.png"),
         "buzzer_on" : PhotoImage(file=HOME_DIR + "/img/buzzer_on.png"),
     }
@@ -158,12 +159,14 @@ def custom_qview_init(qview):
         "button" : qview_base.canvas.create_image(50, 570, image=image_dict["button"]), 
         "start" : qview_base.canvas.create_image(450, 570, image=image_dict["start"]), 
         "stop_button" : qview_base.canvas.create_image(550, 570, image=image_dict["stop_button"]), 
+        "arm_module" : qview_base.canvas.create_image(350, 570, image=image_dict["arm_module"]), 
     }
 
     # Buttons
     qview_base.canvas.tag_bind(canvas_dict["button"], "<ButtonPress>",  button_command)
     qview_base.canvas.tag_bind(canvas_dict["start"], "<ButtonPress>", start_command)
     qview_base.canvas.tag_bind(canvas_dict["stop_button"], "<ButtonPress>", stop_command)
+    qview_base.canvas.tag_bind(canvas_dict["arm_module"], "<ButtonPress>", arm_module_command)
 
     led_stripe_init(qview_base)
 
@@ -324,6 +327,9 @@ def start_command(*args):
 
 def stop_command(*args):
     qview_base.command(1, 0)
+
+def arm_module_command(*args):
+    qview_base.command(5, 0)
 
 def button_command(*args):
     qview_base.command(2, 0)

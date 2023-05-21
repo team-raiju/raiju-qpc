@@ -7,6 +7,7 @@
 #include "buzzer_service.h"
 #include "radio_service.h"
 #include "ble_service.h"
+#include "start_module.h"
 
 void APP_init()
 {
@@ -18,4 +19,5 @@ void APP_init()
     buzzer_service_init();
     radio_service_init();
     ble_service_init();
+    start_module_init_capture();
 }
