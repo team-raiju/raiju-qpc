@@ -206,6 +206,13 @@ me-&gt;buzzerCount += 1;</action>
        <action box="0,-2,32,2"/>
       </tran_glyph>
      </tran>
+     <!--${AOs::SumoHSM::SM::Idle::BUTTON}-->
+     <tran trig="BUTTON">
+      <action brief="start_module_change_type()">start_module_change_type();</action>
+      <tran_glyph conn="41,31,3,-1,14">
+       <action box="0,-2,28,2"/>
+      </tran_glyph>
+     </tran>
      <state_glyph node="41,1,43,43">
       <entry box="1,2,24,6"/>
       <exit box="1,8,38,4"/>
@@ -1011,7 +1018,7 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
 start_module_disable();</entry>
      <!--${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../3">
-      <tran_glyph conn="6,241,3,3,-4,-146,33">
+      <tran_glyph conn="6,241,3,3,-4,-144,33">
        <action box="1,-1,23,2"/>
       </tran_glyph>
      </tran>

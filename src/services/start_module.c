@@ -70,21 +70,26 @@ typedef enum {
  **************************************************************************************************/
 
 static void tim_capture_interrupt(uint16_t time_diff);
+static void tim_capture_interrupt_jsumo(uint16_t time_diff);
 static void gen_start_module_events(sirc_cmd_codes_t key_pressed);
 
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
+/* Variable for Jsumo module */
 #if (START_MODULE_TYPE == JSUMO_START_MODULE)
 static bsp_tim_capture_edge_t current_edge = BSP_TIM_RISING_EDGE;
-# else
+#else
+static bsp_tim_capture_edge_t current_edge = BSP_TIM_FALLING_EDGE;
+#endif
+
+/* Variables for Generic IR module */
 /* command_bits can have up to 7 bits, but we are only interested in the first 2 */
 static uint8_t command_bits[2];
 static bool packet_started = false;
 static uint8_t counter = 0;
 static uint32_t time_from_last_evt = MIN_TIME_UNITS_BETWEEN_EVENTS;
-static bsp_tim_capture_edge_t current_edge = BSP_TIM_FALLING_EDGE;
-#endif
+
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -121,8 +126,7 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed)
     }
 }
 
-#if (START_MODULE_TYPE == JSUMO_START_MODULE)
-static void tim_capture_interrupt(uint16_t time_diff)
+static void tim_capture_interrupt_jsumo(uint16_t time_diff)
 {
     Q_UNUSED_PAR(time_diff);
     if (current_edge == BSP_TIM_RISING_EDGE) {
@@ -135,7 +139,6 @@ static void tim_capture_interrupt(uint16_t time_diff)
 
     bsp_tim_set_capture_level(current_edge);
 }
-#else
 
 static void tim_capture_interrupt(uint16_t time_diff)
 {
@@ -174,7 +177,6 @@ static void tim_capture_interrupt(uint16_t time_diff)
     }
 }
 
-#endif
 
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
@@ -183,7 +185,12 @@ void start_module_init_capture(void)
 {
     bsp_tim_input_capture_init();
     bsp_tim_set_capture_level(current_edge);
+    #if (START_MODULE_TYPE == JSUMO_START_MODULE)
+    bsp_tim_capture_register_callback(tim_capture_interrupt_jsumo);
+    #else
     bsp_tim_capture_register_callback(tim_capture_interrupt);
+    #endif
+
 }
 
 void start_module_disable(void)
@@ -194,4 +201,16 @@ void start_module_disable(void)
 void start_module_enable(void)
 {
     BSP_GPIO_Write_Pin(GPIO_START_MODULE_EN_PORT, GPIO_START_MODULE_EN_PIN, IO_HIGH);
+}
+
+void start_module_change_type(void){
+    #if (START_MODULE_TYPE == JSUMO_START_MODULE)
+    current_edge = BSP_TIM_FALLING_EDGE;
+    bsp_tim_set_capture_level(current_edge);
+    bsp_tim_capture_register_callback(tim_capture_interrupt);
+    #else
+    current_edge = BSP_TIM_RISING_EDGE;
+    bsp_tim_set_capture_level(current_edge);
+    bsp_tim_capture_register_callback(tim_capture_interrupt_jsumo);
+    #endif
 }
