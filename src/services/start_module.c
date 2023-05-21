@@ -122,8 +122,10 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed)
         break;
     }
     case KEY_4: {
-        QEvt evt = { .sig = CHANGE_STATE_EVT_SIG };
-        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+        if (!module_armed){
+            QEvt evt = { .sig = CHANGE_STATE_EVT_SIG };
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+        }
         break;
     }
     default:
