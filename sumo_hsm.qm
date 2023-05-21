@@ -208,7 +208,7 @@ me-&gt;buzzerCount += 1;</action>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::BUTTON}-->
      <tran trig="BUTTON">
-      <action brief="start_module_change_type()">start_module_change_type();</action>
+      <action brief="start_module_change_request()">start_module_change_request();</action>
       <tran_glyph conn="41,31,3,-1,14">
        <action box="0,-2,28,2"/>
       </tran_glyph>

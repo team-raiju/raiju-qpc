@@ -79,8 +79,10 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed);
 /* Variable for Jsumo module */
 #if (START_MODULE_TYPE == JSUMO_START_MODULE)
 static bsp_tim_capture_edge_t current_edge = BSP_TIM_RISING_EDGE;
+static bool module_armed = true;
 #else
 static bsp_tim_capture_edge_t current_edge = BSP_TIM_FALLING_EDGE;
+static bool module_armed = false;
 #endif
 
 /* Variables for Generic IR module */
@@ -89,7 +91,7 @@ static uint8_t command_bits[2];
 static bool packet_started = false;
 static uint8_t counter = 0;
 static uint32_t time_from_last_evt = MIN_TIME_UNITS_BETWEEN_EVENTS;
-
+static uint8_t number_of_change_req;
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -104,11 +106,14 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed)
     case KEY_1: {
         QEvt evt = { .sig = START_MODULE_TEST_SIG };
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+        module_armed = true;
         break;
     }
     case KEY_2: {
-        QEvt evt = { .sig = START_SIG };
-        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+        if (module_armed){
+            QEvt evt = { .sig = START_SIG };
+            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+        }
         break;
     }
     case KEY_3: {
@@ -203,14 +208,21 @@ void start_module_enable(void)
     BSP_GPIO_Write_Pin(GPIO_START_MODULE_EN_PORT, GPIO_START_MODULE_EN_PIN, IO_HIGH);
 }
 
-void start_module_change_type(void){
-    #if (START_MODULE_TYPE == JSUMO_START_MODULE)
-    current_edge = BSP_TIM_FALLING_EDGE;
-    bsp_tim_set_capture_level(current_edge);
-    bsp_tim_capture_register_callback(tim_capture_interrupt);
-    #else
-    current_edge = BSP_TIM_RISING_EDGE;
-    bsp_tim_set_capture_level(current_edge);
-    bsp_tim_capture_register_callback(tim_capture_interrupt_jsumo);
-    #endif
+void start_module_change_request(void){
+    /* Only change IR when there are 3 requests */
+    if (number_of_change_req >= 5){
+        #if (START_MODULE_TYPE == JSUMO_START_MODULE)
+        module_armed = false;
+        current_edge = BSP_TIM_FALLING_EDGE;
+        bsp_tim_set_capture_level(current_edge);
+        bsp_tim_capture_register_callback(tim_capture_interrupt);
+        #else
+        current_edge = BSP_TIM_RISING_EDGE;
+        module_armed = true;
+        bsp_tim_set_capture_level(current_edge);
+        bsp_tim_capture_register_callback(tim_capture_interrupt_jsumo);
+        #endif
+    } else {
+        number_of_change_req++;
+    }
 }

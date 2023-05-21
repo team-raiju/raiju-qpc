@@ -1605,7 +1605,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::Idle::BUTTON} */
         case BUTTON_SIG: {
-            start_module_change_type();
+            start_module_change_request();
             status_ = QM_HANDLED();
             break;
         }
