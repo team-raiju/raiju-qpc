@@ -12,10 +12,6 @@
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-#define JSUMO_START_MODULE      0
-#define IR_RECEIVER             1
-#define START_MODULE_TYPE       IR_RECEIVER      /* JSUMO_START_MODULE or IR_RECEIVER */
-
 /* Microseconds per unit of time_diff */
 #define TIME_DIFF_UNITS_US 10
 
@@ -65,6 +61,11 @@ typedef enum {
     KEY_ENTER = 0x0B
 } sirc_cmd_codes_t;
 
+typedef enum {
+    JSUMO,
+    IR_RECEIVER,
+} start_module_t;
+
 /***************************************************************************************************
  * LOCAL FUNCTION PROTOTYPES
  **************************************************************************************************/
@@ -76,16 +77,11 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed);
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-/* Variable for Jsumo module */
-#if (START_MODULE_TYPE == JSUMO_START_MODULE)
-static bsp_tim_capture_edge_t current_edge = BSP_TIM_RISING_EDGE;
-static bool module_armed = true;
-#else
-static bsp_tim_capture_edge_t current_edge = BSP_TIM_FALLING_EDGE;
-static bool module_armed = false;
-#endif
+static start_module_t start_module_type = IR_RECEIVER;
 
-/* Variables for Generic IR module */
+static bsp_tim_capture_edge_t current_edge;
+static bool module_armed;
+
 /* command_bits can have up to 7 bits, but we are only interested in the first 2 */
 static uint8_t command_bits[2];
 static bool packet_started = false;
@@ -113,6 +109,10 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed)
         if (module_armed){
             QEvt evt = { .sig = START_SIG };
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+        }
+
+        if (start_module_type == IR_RECEIVER) {
+            module_armed = false;
         }
         break;
     }
@@ -184,6 +184,20 @@ static void tim_capture_interrupt(uint16_t time_diff)
     }
 }
 
+static void set_jsumo_module(){
+    current_edge = BSP_TIM_RISING_EDGE;
+    module_armed = true;
+    bsp_tim_set_capture_level(current_edge);
+    bsp_tim_capture_register_callback(tim_capture_interrupt_jsumo);
+}
+
+static void set_ir_receiver_module(){
+    module_armed = false;
+    current_edge = BSP_TIM_FALLING_EDGE;
+    bsp_tim_set_capture_level(current_edge);
+    bsp_tim_capture_register_callback(tim_capture_interrupt);
+}
+
 
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
@@ -191,13 +205,11 @@ static void tim_capture_interrupt(uint16_t time_diff)
 void start_module_init_capture(void)
 {
     bsp_tim_input_capture_init();
-    bsp_tim_set_capture_level(current_edge);
-    #if (START_MODULE_TYPE == JSUMO_START_MODULE)
-    bsp_tim_capture_register_callback(tim_capture_interrupt_jsumo);
-    #else
-    bsp_tim_capture_register_callback(tim_capture_interrupt);
-    #endif
-
+    if (start_module_type == JSUMO) {
+        set_jsumo_module();
+    } else {
+        set_ir_receiver_module();
+    }
 }
 
 void start_module_disable(void)
@@ -211,19 +223,15 @@ void start_module_enable(void)
 }
 
 void start_module_change_request(void){
-    /* Only change IR when there are 3 requests */
+    /* Only change IR when there are 5 requests */
     if (number_of_change_req >= 5){
-        #if (START_MODULE_TYPE == JSUMO_START_MODULE)
-        module_armed = false;
-        current_edge = BSP_TIM_FALLING_EDGE;
-        bsp_tim_set_capture_level(current_edge);
-        bsp_tim_capture_register_callback(tim_capture_interrupt);
-        #else
-        current_edge = BSP_TIM_RISING_EDGE;
-        module_armed = true;
-        bsp_tim_set_capture_level(current_edge);
-        bsp_tim_capture_register_callback(tim_capture_interrupt_jsumo);
-        #endif
+        if (start_module_type == JSUMO) {
+            start_module_type = IR_RECEIVER;
+            set_ir_receiver_module();
+        } else {
+            start_module_type = JSUMO;
+            set_jsumo_module();
+        }
     } else {
         number_of_change_req++;
     }
