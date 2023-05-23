@@ -1274,13 +1274,13 @@ led_stripe_set_all_color(COLOR_RED);</exit>
     <smstate name="LineFStar" submachine="../39">
      <!--${AOs::SumoHSM::SM::LineFStar::STOP_XP}-->
      <xpseg xpref="../../39/1" target="../../9">
-      <xpseg_glyph conn="24,173,2,0,60">
+      <xpseg_glyph conn="23,173,2,0,2,1,58">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::LineFStar::XP1}-->
      <xpseg xpref="../../39/0" target="../../22">
-      <xpseg_glyph conn="25,166,0,2,-11">
+      <xpseg_glyph conn="24,166,0,2,-2,1,-9">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1344,13 +1344,13 @@ led_stripe_set_all_color(COLOR_RED);</exit>
     <smstate name="StepsFL" submachine="../39">
      <!--${AOs::SumoHSM::SM::StepsFL::XP1}-->
      <xpseg xpref="../../39/0" target="../../25">
-      <xpseg_glyph conn="65,165,0,2,-10">
+      <xpseg_glyph conn="64,165,0,2,-2,1,-8">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::StepsFL::STOP_XP}-->
      <xpseg xpref="../../39/1" target="../../9">
-      <xpseg_glyph conn="64,172,2,0,61">
+      <xpseg_glyph conn="63,172,2,0,2,1,59">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1504,13 +1504,13 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, reverse_time);</entry>
     <smstate name="LineF_RC" submachine="../39">
      <!--${AOs::SumoHSM::SM::LineF_RC::XP1}-->
      <xpseg xpref="../../39/0" target="../../28">
-      <xpseg_glyph conn="170,191,0,1,-26,-2">
+      <xpseg_glyph conn="169,191,0,1,-26,-1">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::LineF_RC::STOP_XP}-->
      <xpseg xpref="../../39/1" target="../../28">
-      <xpseg_glyph conn="169,197,2,1,2,6,-36,-7">
+      <xpseg_glyph conn="168,197,2,1,2,7,-36,-7">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1696,7 +1696,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      </xp>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::XP-STOP_XP}-->
      <xp name="STOP_XP">
-      <xp_glyph point="65,63,2">
+      <xp_glyph point="65,80,2">
        <name box="1,-2,10,2"/>
       </xp_glyph>
      </xp>
@@ -1708,7 +1708,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      </initial>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::STOP, CHANGE_STATE_EVT}-->
      <tran trig="STOP, CHANGE_STATE_EVT" target=".." cpref="../1">
-      <tran_glyph conn="83,56,1,2,-18,6">
+      <tran_glyph conn="90,72,1,2,-25,7">
        <action box="-21,-3,25,4"/>
       </tran_glyph>
      </tran>
@@ -1724,20 +1724,48 @@ if (adc_line_is_white(LINE_FL)){
     QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, reverse_time);
 }</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../5">
-       <tran_glyph conn="7,25,3,0,9,7">
+      <tran trig="TIMEOUT">
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT::[distance_none_active()]}-->
+       <choice target="../../../5">
+        <guard brief="distance_none_active()">distance_none_active()</guard>
+        <choice_glyph conn="17,32,4,0,12">
+         <action box="1,4,19,3"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT::[else]}-->
+       <choice target="../../.." cpref="../../../0">
+        <guard brief="else">else</guard>
+        <choice_glyph conn="17,32,5,0,55,-29">
+         <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="7,25,3,-1,10,7">
         <action box="0,-2,16,4"/>
        </tran_glyph>
       </tran>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT_2}-->
-      <tran trig="TIMEOUT_2" target="../../6">
-       <tran_glyph conn="7,21,3,0,38,11">
+      <tran trig="TIMEOUT_2">
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT_2::[distance_none_active()]}-->
+       <choice target="../../../6">
+        <guard brief="distance_none_active()">distance_none_active()</guard>
+        <choice_glyph conn="45,38,4,0,6">
+         <action box="1,1,19,3"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT_2::[else]}-->
+       <choice target="../../.." cpref="../../../0">
+        <guard brief="else">else</guard>
+        <choice_glyph conn="45,38,5,0,27,-35">
+         <action box="2,-2,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="7,21,3,-1,38,17">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
       <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../.." cpref="../../0">
-       <tran_glyph conn="7,16,3,0,52,-8,13,-5">
+       <tran_glyph conn="7,16,3,0,65,-13">
         <action box="0,-2,19,5"/>
        </tran_glyph>
       </tran>
@@ -1753,17 +1781,17 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
       <exit>drive(0,0);</exit>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../0">
-       <tran_glyph conn="10,44,3,0,62,-41">
+       <tran_glyph conn="11,56,3,0,61,-53">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::DIST_SENSOR_CHANGE}-->
       <tran trig="DIST_SENSOR_CHANGE" target="../.." cpref="../../0">
-       <tran_glyph conn="10,48,3,0,62,-45">
+       <tran_glyph conn="11,60,3,0,61,-57">
         <action box="0,-2,23,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="10,32,21,22">
+      <state_glyph node="11,44,21,22">
        <entry box="1,2,10,2"/>
        <exit box="1,4,18,4"/>
       </state_glyph>
@@ -1776,22 +1804,22 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
       <exit>drive(0,0);</exit>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../0">
-       <tran_glyph conn="38,45,3,0,34,-42">
+       <tran_glyph conn="38,57,3,0,34,-54">
         <action box="0,-3,10,2"/>
        </tran_glyph>
       </tran>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::DIST_SENSOR_CHANGE}-->
       <tran trig="DIST_SENSOR_CHANGE" target="../.." cpref="../../0">
-       <tran_glyph conn="38,51,3,0,34,-48">
+       <tran_glyph conn="38,63,3,0,34,-60">
         <action box="0,-2,23,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="38,32,21,22">
+      <state_glyph node="38,44,21,22">
        <entry box="1,2,10,2"/>
        <exit box="1,4,18,4"/>
       </state_glyph>
      </state>
-     <submachine_diagram size="81,61">
+     <submachine_diagram size="88,78">
       <entry box="1,2,6,2"/>
       <exit box="1,4,6,2"/>
      </submachine_diagram>
