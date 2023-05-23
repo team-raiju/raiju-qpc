@@ -1687,7 +1687,8 @@ drive(0, 0);</entry>
      <entry>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+drive(0, 0);</exit>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::XP-XP1}-->
      <xp name="XP1">
       <xp_glyph point="72,2,0">
@@ -2999,7 +3000,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, advance_time);</entry>
      <!--${AOs::SumoHSM::SM::LineBackSubmachi~::STOP, CHANGE_STATE_EVT}-->
      <tran trig="STOP, CHANGE_STATE_EVT" target=".." cpref="../1">
       <tran_glyph conn="2,26,3,2,41,5">
-       <action box="0,-2,10,2"/>
+       <action box="0,-2,29,5"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::LineBackSubmachi~::TIMEOUT}-->

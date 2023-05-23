@@ -4577,6 +4577,7 @@ static QState SumoHSM_LineFrontSubmachine_e(SumoHSM * const me) {
 static QState SumoHSM_LineFrontSubmachine_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->timeEvt_2);
+    drive(0, 0);
     return QM_SM_EXIT(&me->sub_LineFrontSubmachine->super);
 }
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::initial} */
