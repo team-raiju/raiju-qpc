@@ -1770,8 +1770,8 @@ if (adc_line_is_white(LINE_FL)){
 uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::TIMEOUT, DIST_SENSOR_CHANGE}-->
-      <tran trig="TIMEOUT, DIST_SENSOR_CHANGE" target="../.." cpref="../../0">
-       <tran_glyph conn="11,56,3,0,61,-53">
+      <tran trig="TIMEOUT, DIST_SENSOR_CHANGE" target="../../7">
+       <tran_glyph conn="11,56,3,0,19,17">
         <action box="0,-2,22,6"/>
        </tran_glyph>
       </tran>
@@ -1799,8 +1799,8 @@ uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <exit>drive(0,0);</exit>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::TIMEOUT, DIST_SENSOR_CHANGE}-->
-      <tran trig="TIMEOUT, DIST_SENSOR_CHANGE" target="../.." cpref="../../0">
-       <tran_glyph conn="38,60,3,0,34,-57">
+      <tran trig="TIMEOUT, DIST_SENSOR_CHANGE" target="../../8">
+       <tran_glyph conn="38,60,3,0,19,13">
         <action box="0,-2,21,6"/>
        </tran_glyph>
       </tran>
@@ -1825,8 +1825,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRightBreak}-->
      <state name="LineTurnRightBreak">
       <entry brief="turn left">drive(-100, 100);
-uint8_t break_turn_angle = 20;
-uint16_t turn_time_ms = get_time_to_turn_ms(break_turn_angle, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = 15;
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRightBre~::TIMEOUT, DIST_SENSOR_CHANGE}-->
       <tran trig="TIMEOUT, DIST_SENSOR_CHANGE">
@@ -1855,8 +1854,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeftBreak}-->
      <state name="LineTurnLeftBreak">
       <entry brief="turn right">drive(100, -100);
-uint8_t break_turn_angle = 20;
-uint16_t turn_time_ms = get_time_to_turn_ms(break_turn_angle, 100, SIDE_RIGHT, &amp;parameters);
+uint16_t turn_time_ms = 15;
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeftBrea~::TIMEOUT, DIST_SENSOR_CHANGE}-->
       <tran trig="TIMEOUT, DIST_SENSOR_CHANGE">

@@ -12,7 +12,9 @@
   <item id="AOs::SumoHSM::SM">-574,0,1104,659</item>
   <item id="AOs::SumoHSM::SM::LineBackSubmachine">0,0,640,480</item>
   <item id="AOs::SumoHSM::SM::PreStrategy">-110,0,640,480</item>
-  <item id="AOs::SumoHSM::SM::LineFrontSubmachine">0,0,1010,662,*</item>
+  <item id="AOs::SumoHSM::SM::LineFrontSubmachine">0,0,955,662,*</item>
+  <item id="AOs::SumoHSM::SM::StarStrategy">370,182,640,480</item>
+  <item id="AOs::SumoHSM::SM::StepsStrategy">370,0,640,480</item>
  </group>
  <group name="search">
   <item name="options">2032128</item>
