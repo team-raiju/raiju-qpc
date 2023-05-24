@@ -2726,7 +2726,6 @@ static QState SumoHSM_RC_0_1(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::RC_0_1::RADIO_DATA} */
         case RADIO_DATA_SIG: {
-            QTimeEvt_disarm(&me->timerFailSafe);
             int coord_x = radio_service_get_channel(RADIO_CH1);
             int coord_y = radio_service_get_channel(RADIO_CH2);
 
@@ -2735,7 +2734,7 @@ static QState SumoHSM_RC_0_1(SumoHSM * const me, QEvt const * const e) {
 
             drive(mot1, mot2);
 
-            QTimeEvt_armX(&me->timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
+            QTimeEvt_rearm(&me->timerFailSafe, 1 * BSP_TICKS_PER_SEC);
 
             status_ = QM_HANDLED();
             break;
@@ -3878,7 +3877,6 @@ static QState SumoHSM_RC_2(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::RC_2::RADIO_DATA} */
         case RADIO_DATA_SIG: {
-            QTimeEvt_disarm(&me->timerFailSafe);
             int coord_x = radio_service_get_channel(RADIO_CH1);
             int coord_y = radio_service_get_channel(RADIO_CH2);
 
@@ -3898,7 +3896,7 @@ static QState SumoHSM_RC_2(SumoHSM * const me, QEvt const * const e) {
 
 
 
-            QTimeEvt_armX(&me->timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
+            QTimeEvt_rearm(&me->timerFailSafe, 1 * BSP_TICKS_PER_SEC);
             status_ = QM_HANDLED();
             break;
         }
@@ -3926,14 +3924,6 @@ static QState SumoHSM_RC_2(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::RC_2::LINE_CHANGED_FL, LINE_CHANGED_FR} */
         case LINE_CHANGED_FL_SIG: /* intentionally fall through */
         case LINE_CHANGED_FR_SIG: {
-            if (parameters.strategy > 0){
-                if (adc_line_is_white(LINE_FL)){
-                    drive(-100, -100);
-                } else if (adc_line_is_white(LINE_FR)){
-                    drive(-100, -100);
-                }
-
-            }
             /*${AOs::SumoHSM::SM::RC_2::LINE_CHANGED_FL,~::[white]} */
             if (adc_line_is_white(LINE_FL) || adc_line_is_white(LINE_FR)) {
                 static struct {
@@ -6860,6 +6850,8 @@ static QState SumoHSM_StarStrategy_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvtStuckEnd);
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->timeEvt_2);
+    QTimeEvt_disarm(&me->buzzerStopTimer);
+    buzzer_stop();
     return QM_SM_EXIT(&me->sub_StarStrategy->super);
 }
 /*${AOs::SumoHSM::SM::StarStrategy::initial} */
@@ -7196,6 +7188,8 @@ static QState SumoHSM_StepsStrategy_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt_2);
     QTimeEvt_disarm(&me->timeEvtStuck);
     QTimeEvt_disarm(&me->timeEvtStuckEnd);
+    QTimeEvt_disarm(&me->buzzerStopTimer);
+    buzzer_stop();
     return QM_SM_EXIT(&me->sub_StepsStrategy->super);
 }
 /*${AOs::SumoHSM::SM::StepsStrategy::initial} */

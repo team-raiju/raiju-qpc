@@ -883,8 +883,7 @@ drive(100, 100);</entry>
      <entry>board_led_off();</entry>
      <!--${AOs::SumoHSM::SM::RC_0_1::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
-      <action>QTimeEvt_disarm(&amp;me-&gt;timerFailSafe);
-int coord_x = radio_service_get_channel(RADIO_CH1);
+      <action>int coord_x = radio_service_get_channel(RADIO_CH1);
 int coord_y = radio_service_get_channel(RADIO_CH2);
 
 int mot1 = coord_y + coord_x;
@@ -892,7 +891,7 @@ int mot2 = coord_y - coord_x;
 
 drive(mot1, mot2);
 
-QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
+QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);
 </action>
       <tran_glyph conn="114,135,3,-1,12">
        <action box="0,-2,10,2"/>
@@ -937,7 +936,7 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
       <choice target="../../../30">
        <guard brief="strategy_1 &amp;&amp; white">parameters.strategy == 1 &amp;&amp; (adc_line_is_white(LINE_FL) || adc_line_is_white(LINE_FR))</guard>
        <choice_glyph conn="129,176,4,0,16">
-        <action box="-6,-8,8,2"/>
+        <action box="-8,7,9,3"/>
        </choice_glyph>
       </choice>
       <tran_glyph conn="114,153,3,-1,17,18,-2,5">
@@ -1361,8 +1360,7 @@ led_stripe_set_all_color(COLOR_RED);</exit>
      <entry>board_led_off();</entry>
      <!--${AOs::SumoHSM::SM::RC_2::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
-      <action>QTimeEvt_disarm(&amp;me-&gt;timerFailSafe);
-int coord_x = radio_service_get_channel(RADIO_CH1);
+      <action>int coord_x = radio_service_get_channel(RADIO_CH1);
 int coord_y = radio_service_get_channel(RADIO_CH2);
 
 int mot1 = coord_y + coord_x;
@@ -1381,7 +1379,7 @@ if (coord_y &gt;= 60) {
 
 
 
-QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);</action>
+QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);</action>
       <tran_glyph conn="143,135,3,-1,12">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -1401,14 +1399,6 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::RC_2::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR">
-      <action>if (parameters.strategy &gt; 0){
-    if (adc_line_is_white(LINE_FL)){
-        drive(-100, -100);
-    } else if (adc_line_is_white(LINE_FR)){
-        drive(-100, -100);
-    }
-
-}</action>
       <!--${AOs::SumoHSM::SM::RC_2::LINE_CHANGED_FL,~::[white]}-->
       <choice target="../../../32">
        <guard brief="white">adc_line_is_white(LINE_FL) || adc_line_is_white(LINE_FR)</guard>
@@ -2824,7 +2814,9 @@ me-&gt;stuck_counter = 0;</entry>
      <exit brief="DisableTimers">QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
+buzzer_stop();</exit>
      <!--${AOs::SumoHSM::SM::StarStrategy::XP-STOP_XP}-->
      <xp name="STOP_XP">
       <xp_glyph point="2,67,3">
@@ -3028,7 +3020,9 @@ me-&gt;stuck_counter = 0;</entry>
      <exit brief="disarm_timers">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
-QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);</exit>
+QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);
+QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
+buzzer_stop();</exit>
      <!--${AOs::SumoHSM::SM::StepsStrategy::XP-LINE_BACK}-->
      <xp name="LINE_BACK">
       <xp_glyph point="81,57,2">
