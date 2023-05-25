@@ -1349,7 +1349,7 @@ led_stripe_set_all_color(COLOR_RED);</exit>
      </xpseg>
      <!--${AOs::SumoHSM::SM::StepsFL::STOP_XP}-->
      <xpseg xpref="../../39/1" target="../../9">
-      <xpseg_glyph conn="64,172,2,0,2,0,59">
+      <xpseg_glyph conn="64,172,2,0,61">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1713,7 +1713,9 @@ if (adc_line_is_white(LINE_FL)){
     QTimeEvt_rearm(&amp;me-&gt;timeEvt, reverse_time);
 } else {
     QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, reverse_time);
-}</entry>
+}
+
+led_stripe_set_all_color(COLOR_YELLOW);</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT}-->
       <tran trig="TIMEOUT">
        <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT::[distance_none_active()]}-->
@@ -1768,7 +1770,8 @@ if (adc_line_is_white(LINE_FL)){
      <state name="LineTurnRight">
       <entry brief="turn right">drive(100, -100);
 uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+led_stripe_set_all_color(COLOR_PINK);</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::TIMEOUT, DIST_SENSOR_CHANGE}-->
       <tran trig="TIMEOUT, DIST_SENSOR_CHANGE" target="../../7">
        <tran_glyph conn="11,56,3,0,19,17">
@@ -1796,7 +1799,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <state name="LineTurnLeft">
       <entry brief="turn left">drive(-100, 100);
 uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_LEFT, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+led_stripe_set_all_color(COLOR_PINK);</entry>
       <exit>drive(0,0);</exit>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::TIMEOUT, DIST_SENSOR_CHANGE}-->
       <tran trig="TIMEOUT, DIST_SENSOR_CHANGE" target="../../8">
@@ -2880,7 +2884,8 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtBle);</exit>
     <submachine name="StarStrategy">
      <entry brief="PlayBuzzer">buzzer_start();
 QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
-me-&gt;stuck_counter = 0;</entry>
+me-&gt;stuck_counter = 0;
+led_stripe_set_all_color(COLOR_ORANGE);</entry>
      <exit brief="DisableTimers">QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
@@ -3082,7 +3087,7 @@ if (!adc_line_is_white(LINE_FL) &amp;&amp; !adc_line_is_white(LINE_FR)){
     movement_time_ms = BSP_TICKS_PER_MILISSEC * 50;
 }
 
-
+led_stripe_set_all_color(COLOR_BLUE);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, movement_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::LineBackSubmachi~::LineBack_state1::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../5">
@@ -3151,7 +3156,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, movement_time_ms);</entry>
     <submachine name="StepsStrategy">
      <entry brief="play_buzzer">buzzer_start();
 QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
-me-&gt;stuck_counter = 0;</entry>
+me-&gt;stuck_counter = 0;
+led_stripe_set_all_color(COLOR_ORANGE);</entry>
      <exit brief="disarm_timers">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);

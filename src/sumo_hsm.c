@@ -4664,6 +4664,8 @@ static QState SumoHSM_LineFrontSubmachine_LineGoBack_e(SumoHSM * const me) {
     } else {
         QTimeEvt_rearm(&me->timeEvt_2, reverse_time);
     }
+
+    led_stripe_set_all_color(COLOR_YELLOW);
     return QM_ENTRY(&SumoHSM_LineFrontSubmachine_LineGoBack_s);
 }
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack} */
@@ -4752,6 +4754,7 @@ static QState SumoHSM_LineFrontSubmachine_LineTurnRight_e(SumoHSM * const me) {
     drive(100, -100);
     uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+    led_stripe_set_all_color(COLOR_PINK);
     return QM_ENTRY(&SumoHSM_LineFrontSubmachine_LineTurnRight_s);
 }
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight} */
@@ -4812,6 +4815,7 @@ static QState SumoHSM_LineFrontSubmachine_LineTurnLeft_e(SumoHSM * const me) {
     drive(-100, 100);
     uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_LEFT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+    led_stripe_set_all_color(COLOR_PINK);
     return QM_ENTRY(&SumoHSM_LineFrontSubmachine_LineTurnLeft_s);
 }
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft} */
@@ -6999,6 +7003,7 @@ static QState SumoHSM_StarStrategy_e(SumoHSM * const me) {
     buzzer_start();
     QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
     me->stuck_counter = 0;
+    led_stripe_set_all_color(COLOR_ORANGE);
     return QM_ENTRY(&SumoHSM_StarStrategy_s);
 }
 /*${AOs::SumoHSM::SM::StarStrategy} */
@@ -7331,7 +7336,7 @@ static QState SumoHSM_LineBackSubmachine_LineBack_state1_e(SumoHSM * const me) {
         movement_time_ms = BSP_TICKS_PER_MILISSEC * 50;
     }
 
-
+    led_stripe_set_all_color(COLOR_BLUE);
     QTimeEvt_rearm(&me->timeEvt, movement_time_ms);
     return QM_ENTRY(&SumoHSM_LineBackSubmachine_LineBack_state1_s);
 }
@@ -7446,6 +7451,7 @@ static QState SumoHSM_StepsStrategy_e(SumoHSM * const me) {
     buzzer_start();
     QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
     me->stuck_counter = 0;
+    led_stripe_set_all_color(COLOR_ORANGE);
     return QM_ENTRY(&SumoHSM_StepsStrategy_s);
 }
 /*${AOs::SumoHSM::SM::StepsStrategy} */
