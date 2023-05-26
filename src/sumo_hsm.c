@@ -666,30 +666,32 @@ static QState SumoHSM_PreStrategy_EP9_ep(SumoHSM * const me);
 static QState SumoHSM_PreStrategy_EP11_ep(SumoHSM * const me);
 static QState SumoHSM_PreStrategy_EP12_ep(SumoHSM * const me);
 static QState SumoHSM_PreStrategy_EP13_ep(SumoHSM * const me);
-static QState SumoHSM_PreStrategy_PreStrategy_0  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_0_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_0_s = {
+static QState SumoHSM_PreStrategy_EP14_ep(SumoHSM * const me);
+static QState SumoHSM_PreStrategy_EP15_ep(SumoHSM * const me);
+static QState SumoHSM_PreStrategy_PreStrategy_None  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_None_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_None_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_0),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_0_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_None),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_None_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_3  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_3_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_3_s = {
+static QState SumoHSM_PreStrategy_PreStrategy__DiagRight  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy__DiagRight_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy__DiagRight_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_3),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_3_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy__DiagRight),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy__DiagRight_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_2  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_2_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_2_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_DiagLeft  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_DiagLeft_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_DiagLeft_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_2),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_2_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_DiagLeft),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DiagLeft_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
@@ -729,21 +731,21 @@ static QMState const SumoHSM_PreStrategy_PreStrategy_2_sub1_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_1  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_1_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_1_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_Custom  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_Custom_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_Custom_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_1),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_1_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_Custom),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_Custom_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_4  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_4_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_4_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_OmaeLeft  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_OmaeLeft_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_OmaeLeft_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_4),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_4_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_OmaeLeft),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_OmaeLeft_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
@@ -765,21 +767,21 @@ static QMState const SumoHSM_PreStrategy_PreStrategy_4_sub2_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_7  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_7_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_7_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_ArcRight  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_ArcRight_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_ArcRight_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_7),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_7_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_ArcRight),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_ArcRight_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_6  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_6_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_6_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_ArcLeft  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_ArcLeft_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_ArcLeft_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_6),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_6_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_ArcLeft),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_ArcLeft_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
@@ -801,12 +803,12 @@ static QMState const SumoHSM_PreStrategy_PreStrategy_7_sub1_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_12  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_12_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_12_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_15  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_15_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_15_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_12),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_12_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_15),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_15_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
@@ -864,12 +866,12 @@ static QMState const SumoHSM_PreStrategy_PreStrategy_4_sub3_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_8  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_8_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_8_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_ZigZagLeft  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_ZigZagLeft_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_ZigZagLeft_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_8),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_8_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_ZigZagLeft),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_ZigZagLeft_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
@@ -909,12 +911,12 @@ static QMState const SumoHSM_PreStrategy_PreStrategy_8_sub3_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_9  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_9_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_9_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_ZigZagRight  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_ZigZagRight_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_ZigZagRight_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_9),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_9_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_ZigZagRight),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_ZigZagRight_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
@@ -1008,14 +1010,14 @@ static QMState const SumoHSM_PreStrategy_PreStrategy_3_sub3_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_10  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_10_e(SumoHSM * const me);
-static QState SumoHSM_PreStrategy_PreStrategy_10_x(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_10_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_DefenseLeft  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_DefenseLeft_e(SumoHSM * const me);
+static QState SumoHSM_PreStrategy_PreStrategy_DefenseLeft_x(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_DefenseLeft_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_10),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_e),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_x),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_e),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_x),
     Q_ACTION_NULL  /* no initial tran. */
 };
 static QState SumoHSM_PreStrategy_PreStrategy_10_sub1  (SumoHSM * const me, QEvt const * const e);
@@ -1073,12 +1075,12 @@ static QMState const SumoHSM_PreStrategy_PreStrategy_4_sub6_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_13  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_13_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_13_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_14  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_14_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_14_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_13),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_13_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_14),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_14_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
@@ -1091,12 +1093,12 @@ static QMState const SumoHSM_PreStrategy_PreStrategy_13_sub1_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-static QState SumoHSM_PreStrategy_PreStrategy_5  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_PreStrategy_PreStrategy_5_e(SumoHSM * const me);
-static QMState const SumoHSM_PreStrategy_PreStrategy_5_s = {
+static QState SumoHSM_PreStrategy_PreStrategy_OmaeRight  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_OmaeRight_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_OmaeRight_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_5),
-    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_5_e),
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_OmaeRight),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_OmaeRight_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
@@ -1187,6 +1189,33 @@ static QMState const SumoHSM_PreStrategy_PreStrategy_11_sub5_s = {
     &SumoHSM_PreStrategy_s, /* superstate */
     Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_11_sub5),
     Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_11_sub5_e),
+    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_NULL  /* no initial tran. */
+};
+static QState SumoHSM_PreStrategy_PreStrategy_Deceive  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_Deceive_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_Deceive_s = {
+    &SumoHSM_PreStrategy_s, /* superstate */
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_Deceive),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_Deceive_e),
+    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_NULL  /* no initial tran. */
+};
+static QState SumoHSM_PreStrategy_PreStrategy_12_sub1  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_12_sub1_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_12_sub1_s = {
+    &SumoHSM_PreStrategy_s, /* superstate */
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_12_sub1),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_12_sub1_e),
+    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_NULL  /* no initial tran. */
+};
+static QState SumoHSM_PreStrategy_PreStrategy_12_sub2  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategy_PreStrategy_12_sub2_e(SumoHSM * const me);
+static QMState const SumoHSM_PreStrategy_PreStrategy_12_sub2_s = {
+    &SumoHSM_PreStrategy_s, /* superstate */
+    Q_STATE_CAST(&SumoHSM_PreStrategy_PreStrategy_12_sub2),
+    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_12_sub2_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
@@ -1544,34 +1573,34 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnLeft);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnRightBreak);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnLeftBreak);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_0);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_3);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_2);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_None);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy__DiagRight);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_DiagLeft);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_3_sub2);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_3_sub1);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_2_sub2);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_2_sub1);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_1);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_4);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_Custom);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_OmaeLeft);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_4_sub1);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_4_sub2);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_7);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_6);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_ArcRight);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_ArcLeft);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_6_sub1);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_7_sub1);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_12);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_15);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_6_sub2);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_7_sub2);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_4_sub4);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_4_sub5);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_1_sub1);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_4_sub3);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_8);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_ZigZagLeft);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_8_sub1);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_8_sub2);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_8_sub4);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_8_sub3);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_9);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_ZigZagRight);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_9_sub1);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_9_sub2);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_9_sub3);
@@ -1582,16 +1611,16 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_9_sub6);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_2_sub3);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_3_sub3);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_10);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_10_sub1);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_10_sub2);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_10_sub3);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_10_sub4);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_10_sub5);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_4_sub6);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_13);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_14);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_13_sub1);
-    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_5);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_OmaeRight);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_5_sub3);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_5_sub1);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_5_sub2);
@@ -1602,6 +1631,9 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_11_sub3);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_11_sub4);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_11_sub5);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_Deceive);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_12_sub1);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategy_PreStrategy_12_sub2);
     QS_FUN_DICTIONARY(&SumoHSM_StarStrategy_StarFullSpeed);
     QS_FUN_DICTIONARY(&SumoHSM_StarStrategy_Stuck);
     QS_FUN_DICTIONARY(&SumoHSM_StarStrategy_SearchAndAttack);
@@ -2385,6 +2417,38 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
                         Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
                         Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
                         Q_ACTION_CAST(&SumoHSM_PreStrategy_EP13_ep), /* EP */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN_EP(&tatbl_);
+            }
+            /*${AOs::SumoHSM::SM::AutoWait::START::[14]} */
+            else if (parameters.pre_strategy == 14) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[4];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_PreStrategy_s, /* target submachine */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
+                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
+                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP14_ep), /* EP */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN_EP(&tatbl_);
+            }
+            /*${AOs::SumoHSM::SM::AutoWait::START::[15]} */
+            else if (parameters.pre_strategy == 15) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[4];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_PreStrategy_s, /* target submachine */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
+                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
+                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP15_ep), /* EP */
                         Q_ACTION_NULL /* zero terminator */
                     }
                 };
@@ -5184,9 +5248,9 @@ static QState SumoHSM_PreStrategy_EP0_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_0_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_None_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_0_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_None_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5198,9 +5262,9 @@ static QState SumoHSM_PreStrategy_EP1_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_1_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_Custom_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_1_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_Custom_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5212,9 +5276,9 @@ static QState SumoHSM_PreStrategy_EP2_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_2_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_DiagLeft_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_2_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DiagLeft_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5226,9 +5290,9 @@ static QState SumoHSM_PreStrategy_EP3_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_3_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy__DiagRight_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_3_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy__DiagRight_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5240,9 +5304,9 @@ static QState SumoHSM_PreStrategy_EP4_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_4_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_OmaeLeft_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_4_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_OmaeLeft_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5254,9 +5318,9 @@ static QState SumoHSM_PreStrategy_EP5_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_5_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_OmaeRight_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_5_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_OmaeRight_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5268,9 +5332,9 @@ static QState SumoHSM_PreStrategy_EP6_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_6_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_ArcLeft_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_6_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_ArcLeft_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5282,9 +5346,9 @@ static QState SumoHSM_PreStrategy_EP7_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_7_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_ArcRight_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_7_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_ArcRight_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5296,9 +5360,9 @@ static QState SumoHSM_PreStrategy_EP10_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_10_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_DefenseLeft_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5310,9 +5374,9 @@ static QState SumoHSM_PreStrategy_EP8_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_8_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_ZigZagLeft_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_8_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_ZigZagLeft_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5324,9 +5388,9 @@ static QState SumoHSM_PreStrategy_EP9_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_9_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_ZigZagRight_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_9_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_ZigZagRight_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5338,9 +5402,9 @@ static QState SumoHSM_PreStrategy_EP11_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_10_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_DefenseLeft_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5352,9 +5416,9 @@ static QState SumoHSM_PreStrategy_EP12_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_12_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_Deceive_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_12_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_Deceive_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5366,27 +5430,55 @@ static QState SumoHSM_PreStrategy_EP13_ep(SumoHSM * const me) {
         QMState const *target;
         QActionHandler act[2];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_PreStrategy_13_s, /* target state */
+        &SumoHSM_PreStrategy_PreStrategy_Deceive_s, /* target state */
         {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_13_e), /* entry */
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_Deceive_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    return QM_TRAN_EP(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::PreStrategy::EP-EP14} */
+static QState SumoHSM_PreStrategy_EP14_ep(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[2];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_PreStrategy_PreStrategy_14_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_14_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    return QM_TRAN_EP(&tatbl_);
+}
+/*${AOs::SumoHSM::SM::PreStrategy::EP-EP15} */
+static QState SumoHSM_PreStrategy_EP15_ep(SumoHSM * const me) {
+    static struct {
+        QMState const *target;
+        QActionHandler act[2];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_PreStrategy_PreStrategy_15_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_15_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
     return QM_TRAN_EP(&tatbl_);
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0} ..........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0} */
-static QState SumoHSM_PreStrategy_PreStrategy_0_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_None} .......................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_None} */
+static QState SumoHSM_PreStrategy_PreStrategy_None_e(SumoHSM * const me) {
     drive(100,100);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 10);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_0_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_None_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0} */
-static QState SumoHSM_PreStrategy_PreStrategy_0(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_None} */
+static QState SumoHSM_PreStrategy_PreStrategy_None(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_None::TIMEOUT} */
         case TIMEOUT_SIG: {
             static QMTranActTable const tatbl_ = { /* tran-action table */
                 &SumoHSM_PreStrategy_s, /* target submachine */
@@ -5405,19 +5497,19 @@ static QState SumoHSM_PreStrategy_PreStrategy_0(SumoHSM * const me, QEvt const *
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3} ..........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3} */
-static QState SumoHSM_PreStrategy_PreStrategy_3_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy__DiagRight} .................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy__DiagRight} */
+static QState SumoHSM_PreStrategy_PreStrategy__DiagRight_e(SumoHSM * const me) {
     drive(100,-100);
     uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_RIGHT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_3_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy__DiagRight_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3} */
-static QState SumoHSM_PreStrategy_PreStrategy_3(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy__DiagRight} */
+static QState SumoHSM_PreStrategy_PreStrategy__DiagRight(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy__Dia~::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -5440,19 +5532,19 @@ static QState SumoHSM_PreStrategy_PreStrategy_3(SumoHSM * const me, QEvt const *
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2} ..........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2} */
-static QState SumoHSM_PreStrategy_PreStrategy_2_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DiagLeft} ...................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DiagLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_DiagLeft_e(SumoHSM * const me) {
     drive(-100,100);
     uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_LEFT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_2_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_DiagLeft_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2} */
-static QState SumoHSM_PreStrategy_PreStrategy_2(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DiagLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_DiagLeft(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Diag~::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -5615,9 +5707,9 @@ static QState SumoHSM_PreStrategy_PreStrategy_2_sub1(SumoHSM * const me, QEvt co
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1} ..........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1} */
-static QState SumoHSM_PreStrategy_PreStrategy_1_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Custom} .....................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Custom} */
+static QState SumoHSM_PreStrategy_PreStrategy_Custom_e(SumoHSM * const me) {
     cust_strategy_reset();
     uint8_t current_step = cust_strategy_current_step();
     movement_t first_step = cust_strategy_move_type(current_step);
@@ -5653,13 +5745,13 @@ static QState SumoHSM_PreStrategy_PreStrategy_1_e(SumoHSM * const me) {
     }
 
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_1_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_Custom_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1} */
-static QState SumoHSM_PreStrategy_PreStrategy_1(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Custom} */
+static QState SumoHSM_PreStrategy_PreStrategy_Custom(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::TIMEOUT} */
         case TIMEOUT_SIG: {
             cust_strategy_increase_step();
             uint8_t current_step = cust_strategy_current_step();
@@ -5705,7 +5797,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_1(SumoHSM * const me, QEvt const *
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::TIMEOUT_2} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::TIMEOUT_2} */
         case TIMEOUT_2_SIG: {
             static QMTranActTable const tatbl_ = { /* tran-action table */
                 &SumoHSM_PreStrategy_s, /* target submachine */
@@ -5716,7 +5808,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_1(SumoHSM * const me, QEvt const *
             status_ = QM_TRAN_XP(me->sub_PreStrategy->XP1, &tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::LINE_CHANGED_BL, LINE_CHANGED_BR} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::LINE_CHANGED_BL, LINE_CHANGED_BR} */
         case LINE_CHANGED_BL_SIG: /* intentionally fall through */
         case LINE_CHANGED_BR_SIG: {
             static struct {
@@ -5740,19 +5832,19 @@ static QState SumoHSM_PreStrategy_PreStrategy_1(SumoHSM * const me, QEvt const *
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4} ..........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4} */
-static QState SumoHSM_PreStrategy_PreStrategy_4_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_OmaeLeft} ...................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_OmaeLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_OmaeLeft_e(SumoHSM * const me) {
     drive(-100,100);
     uint16_t turn_time_ms = get_time_to_turn_ms(36, 100, SIDE_LEFT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_4_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_OmaeLeft_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4} */
-static QState SumoHSM_PreStrategy_PreStrategy_4(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_OmaeLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_OmaeLeft(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Omae~::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -5845,19 +5937,19 @@ static QState SumoHSM_PreStrategy_PreStrategy_4_sub2(SumoHSM * const me, QEvt co
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7} ..........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7} */
-static QState SumoHSM_PreStrategy_PreStrategy_7_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcRight} ...................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcRight} */
+static QState SumoHSM_PreStrategy_PreStrategy_ArcRight_e(SumoHSM * const me) {
     drive(100,-100);
     uint16_t turn_time_ms = get_time_to_turn_ms(75, 100, SIDE_RIGHT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_7_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_ArcRight_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7} */
-static QState SumoHSM_PreStrategy_PreStrategy_7(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcRight} */
+static QState SumoHSM_PreStrategy_PreStrategy_ArcRight(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcR~::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -5880,19 +5972,19 @@ static QState SumoHSM_PreStrategy_PreStrategy_7(SumoHSM * const me, QEvt const *
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6} ..........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6} */
-static QState SumoHSM_PreStrategy_PreStrategy_6_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcLeft} ....................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_ArcLeft_e(SumoHSM * const me) {
     drive(-100,100);
     uint16_t turn_time_ms = get_time_to_turn_ms(75, 100, SIDE_LEFT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_6_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_ArcLeft_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6} */
-static QState SumoHSM_PreStrategy_PreStrategy_6(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_ArcLeft(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcL~::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -5985,19 +6077,19 @@ static QState SumoHSM_PreStrategy_PreStrategy_7_sub1(SumoHSM * const me, QEvt co
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12} .........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12} */
-static QState SumoHSM_PreStrategy_PreStrategy_12_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_15} .........................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_15} */
+static QState SumoHSM_PreStrategy_PreStrategy_15_e(SumoHSM * const me) {
     drive(-100,100);
     uint16_t turn_time_ms = get_time_to_turn_ms(180, 100, SIDE_LEFT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_12_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_15_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12} */
-static QState SumoHSM_PreStrategy_PreStrategy_12(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_15} */
+static QState SumoHSM_PreStrategy_PreStrategy_15(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_15::TIMEOUT} */
         case TIMEOUT_SIG: {
             static QMTranActTable const tatbl_ = { /* tran-action table */
                 &SumoHSM_PreStrategy_s, /* target submachine */
@@ -6214,19 +6306,19 @@ static QState SumoHSM_PreStrategy_PreStrategy_4_sub3(SumoHSM * const me, QEvt co
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8} ..........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8} */
-static QState SumoHSM_PreStrategy_PreStrategy_8_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZagLeft} .................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZagLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_ZigZagLeft_e(SumoHSM * const me) {
     drive(-100,100);
     uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_LEFT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_8_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_ZigZagLeft_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8} */
-static QState SumoHSM_PreStrategy_PreStrategy_8(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZagLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_ZigZagLeft(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZ~::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -6389,19 +6481,19 @@ static QState SumoHSM_PreStrategy_PreStrategy_8_sub3(SumoHSM * const me, QEvt co
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9} ..........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9} */
-static QState SumoHSM_PreStrategy_PreStrategy_9_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZagRight} ................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZagRight} */
+static QState SumoHSM_PreStrategy_PreStrategy_ZigZagRight_e(SumoHSM * const me) {
     drive(100,-100);
     uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_RIGHT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_9_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_ZigZagRight_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9} */
-static QState SumoHSM_PreStrategy_PreStrategy_9(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZagRight} */
+static QState SumoHSM_PreStrategy_PreStrategy_ZigZagRight(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZ~::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -6758,9 +6850,9 @@ static QState SumoHSM_PreStrategy_PreStrategy_3_sub3(SumoHSM * const me, QEvt co
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10} .........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10} */
-static QState SumoHSM_PreStrategy_PreStrategy_10_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DefenseLeft} ................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DefenseLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_DefenseLeft_e(SumoHSM * const me) {
     bool seeing;
     seeing = SumoHSM_CheckDistAndMoveDefense(me);
 
@@ -6783,35 +6875,35 @@ static QState SumoHSM_PreStrategy_PreStrategy_10_e(SumoHSM * const me) {
         uint32_t small_step_wait = 1200 * BSP_TICKS_PER_MILISSEC;
         QTimeEvt_rearm(&me->timeEvt_2, small_step_wait);
     }
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_10_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10} */
-static QState SumoHSM_PreStrategy_PreStrategy_10_x(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DefenseLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_DefenseLeft_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->timeEvt_2);
-    return QM_EXIT(&SumoHSM_PreStrategy_PreStrategy_10_s);
+    return QM_EXIT(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10} */
-static QState SumoHSM_PreStrategy_PreStrategy_10(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DefenseLeft} */
+static QState SumoHSM_PreStrategy_PreStrategy_DefenseLeft(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10::DIST_SENSOR_CHANGE} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Defe~::DIST_SENSOR_CHANGE} */
         case DIST_SENSOR_CHANGE_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[3];
             } const tatbl_ = { /* tran-action table */
-                &SumoHSM_PreStrategy_PreStrategy_10_s, /* target state */
+                &SumoHSM_PreStrategy_PreStrategy_DefenseLeft_s, /* target state */
                 {
-                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_x), /* exit */
-                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_e), /* entry */
+                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
             status_ = QM_TRAN(&tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10::TIMEOUT_2} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Defe~::TIMEOUT_2} */
         case TIMEOUT_2_SIG: {
             static struct {
                 QMState const *target;
@@ -6819,7 +6911,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_10(SumoHSM * const me, QEvt const 
             } const tatbl_ = { /* tran-action table */
                 &SumoHSM_PreStrategy_PreStrategy_10_sub1_s, /* target state */
                 {
-                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_x), /* exit */
                     Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_sub1_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
@@ -6827,9 +6919,9 @@ static QState SumoHSM_PreStrategy_PreStrategy_10(SumoHSM * const me, QEvt const 
             status_ = QM_TRAN(&tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Defe~::TIMEOUT} */
         case TIMEOUT_SIG: {
-            /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10::TIMEOUT::[pre_strategy==10]} */
+            /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Defe~::TIMEOUT::[ps==10]} */
             if (parameters.pre_strategy == 10) {
                 static struct {
                     QMState const *target;
@@ -6837,14 +6929,14 @@ static QState SumoHSM_PreStrategy_PreStrategy_10(SumoHSM * const me, QEvt const 
                 } const tatbl_ = { /* tran-action table */
                     &SumoHSM_PreStrategy_PreStrategy_10_sub2_s, /* target state */
                     {
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_x), /* exit */
+                        Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_x), /* exit */
                         Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_sub2_e), /* entry */
                         Q_ACTION_NULL /* zero terminator */
                     }
                 };
                 status_ = QM_TRAN(&tatbl_);
             }
-            /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10::TIMEOUT::[else]} */
+            /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Defe~::TIMEOUT::[else]} */
             else {
                 static struct {
                     QMState const *target;
@@ -6852,7 +6944,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_10(SumoHSM * const me, QEvt const 
                 } const tatbl_ = { /* tran-action table */
                     &SumoHSM_PreStrategy_PreStrategy_11_sub2_s, /* target state */
                     {
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_x), /* exit */
+                        Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_x), /* exit */
                         Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_11_sub2_e), /* entry */
                         Q_ACTION_NULL /* zero terminator */
                     }
@@ -6893,10 +6985,10 @@ static QState SumoHSM_PreStrategy_PreStrategy_10_sub1(SumoHSM * const me, QEvt c
                 QMState const *target;
                 QActionHandler act[3];
             } const tatbl_ = { /* tran-action table */
-                &SumoHSM_PreStrategy_PreStrategy_10_s, /* target state */
+                &SumoHSM_PreStrategy_PreStrategy_DefenseLeft_s, /* target state */
                 {
                     Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_sub1_x), /* exit */
-                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_e), /* entry */
+                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_DefenseLeft_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
@@ -7078,18 +7170,18 @@ static QState SumoHSM_PreStrategy_PreStrategy_4_sub6(SumoHSM * const me, QEvt co
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_13} .........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_13} */
-static QState SumoHSM_PreStrategy_PreStrategy_13_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_14} .........................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_14} */
+static QState SumoHSM_PreStrategy_PreStrategy_14_e(SumoHSM * const me) {
     drive(-40,-40);
     (void)me; /* unused parameter */
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_13_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_14_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_13} */
-static QState SumoHSM_PreStrategy_PreStrategy_13(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_14} */
+static QState SumoHSM_PreStrategy_PreStrategy_14(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_13::LINE_CHANGED_BL, LINE_CHANGED_BR} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_14::LINE_CHANGED_BL, LINE_CHANGED_BR} */
         case LINE_CHANGED_BL_SIG: /* intentionally fall through */
         case LINE_CHANGED_BR_SIG: {
             static struct {
@@ -7144,19 +7236,19 @@ static QState SumoHSM_PreStrategy_PreStrategy_13_sub1(SumoHSM * const me, QEvt c
     return status_;
 }
 
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5} ..........................*/
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5} */
-static QState SumoHSM_PreStrategy_PreStrategy_5_e(SumoHSM * const me) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_OmaeRight} ..................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_OmaeRight} */
+static QState SumoHSM_PreStrategy_PreStrategy_OmaeRight_e(SumoHSM * const me) {
     drive(100,-100);
     uint16_t turn_time_ms = get_time_to_turn_ms(36, 100, SIDE_RIGHT, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_5_s);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_OmaeRight_s);
 }
-/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5} */
-static QState SumoHSM_PreStrategy_PreStrategy_5(SumoHSM * const me, QEvt const * const e) {
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_OmaeRight} */
+static QState SumoHSM_PreStrategy_PreStrategy_OmaeRight(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5::TIMEOUT} */
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Omae~::TIMEOUT} */
         case TIMEOUT_SIG: {
             static struct {
                 QMState const *target;
@@ -7511,6 +7603,144 @@ static QState SumoHSM_PreStrategy_PreStrategy_11_sub5(SumoHSM * const me, QEvt c
                 }
             };
             status_ = QM_TRAN_XP(me->sub_PreStrategy->XP1, &tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Deceive} ....................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Deceive} */
+static QState SumoHSM_PreStrategy_PreStrategy_Deceive_e(SumoHSM * const me) {
+    drive(100,100);
+    uint16_t move_time_ms = get_time_to_move_ms(50, 100, &parameters);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_Deceive_s);
+}
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Deceive} */
+static QState SumoHSM_PreStrategy_PreStrategy_Deceive(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Dece~::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_PreStrategy_PreStrategy_12_sub1_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_12_sub1_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_sub1} ....................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_sub1} */
+static QState SumoHSM_PreStrategy_PreStrategy_12_sub1_e(SumoHSM * const me) {
+    drive(-100,-100);
+    uint16_t move_time_ms = get_time_to_move_ms(70, 100, &parameters);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_12_sub1_s);
+}
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_sub1} */
+static QState SumoHSM_PreStrategy_PreStrategy_12_sub1(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_PreStrategy_PreStrategy_12_sub2_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_12_sub2_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::LINE_CHANGED_BL, LINE_CHANGED_BR} */
+        case LINE_CHANGED_BL_SIG: /* intentionally fall through */
+        case LINE_CHANGED_BR_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_PreStrategy_PreStrategy_13_sub1_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_13_sub1_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_sub2} ....................*/
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_sub2} */
+static QState SumoHSM_PreStrategy_PreStrategy_12_sub2_e(SumoHSM * const me) {
+    drive(100,100);
+    uint16_t move_time_ms = get_time_to_move_ms(20, 100, &parameters);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);
+    return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_12_sub2_s);
+}
+/*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_sub2} */
+static QState SumoHSM_PreStrategy_PreStrategy_12_sub2(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::TIMEOUT::[ps==12]} */
+            if (parameters.pre_strategy == 12) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[2];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_PreStrategy_PreStrategy_10_sub2_s, /* target state */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_10_sub2_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::TIMEOUT::[else]} */
+            else {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[2];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_PreStrategy_PreStrategy_11_sub2_s, /* target state */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_PreStrategy_PreStrategy_11_sub2_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
             break;
         }
         default: {

@@ -20,7 +20,7 @@
  **************************************************************************************************/
 
 #define NUM_OF_STRATEGIES     3
-#define NUM_OF_PRE_STRATEGIES 14
+#define NUM_OF_PRE_STRATEGIES 16
 #define NUM_OF_CALIB_MODES    6
 
 #define ARENA_LENGHT_CM   154.0f
@@ -142,7 +142,7 @@ static color_name_t pre_strategy_colors[] = { COLOR_GREEN, COLOR_BLUE,   COLOR_O
                                               COLOR_WHITE, COLOR_PURPLE, COLOR_YELLOW };
 
 static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
-    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_PURPLE, COLOR_RED,
+    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_PURPLE, COLOR_YELLOW,
 };
 
 // static const char * strategy_names[] = {
@@ -392,18 +392,18 @@ void parameters_set_pre_strategy_led(sumo_parameters_t *params)
         return;
     }
     /* Invalid param */
-    if (params->pre_strategy >= (3 * colors_arr_size) - 1 ){
+    if (params->pre_strategy >= (3 * colors_arr_size)){
         led_stripe_prepare_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
         led_stripe_send();
         return;
     }
 
-    /* First Half Led color and other half first color of "pre_strategy_colors" array */
+    /* First Half Led RED and other half first color of "pre_strategy_colors" array */
     if (params->pre_strategy >= 2 * colors_arr_size) {
-        index = (params->pre_strategy - 2 * colors_arr_size) + 1;
+        index = (params->pre_strategy - 2 * colors_arr_size);
         led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3),
                                        pre_strategy_colors[index]);
-        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), pre_strategy_colors[0]);
+        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_RED);
         led_stripe_send();
         return;
     }
@@ -418,30 +418,6 @@ void parameters_set_pre_strategy_led(sumo_parameters_t *params)
     } else {
         led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4),
                                        pre_strategy_colors[index]);
-    }
-
-    led_stripe_send();
-}
-
-void parameters_set_pre_and_strategy_leds(sumo_parameters_t *params)
-{
-    if (params->strategy < NUM_OF_STRATEGIES) {
-        led_stripe_prepare_range_color(0, (LED_STRIPE_NUM / 2), strategy_colors[params->strategy]);
-    } else {
-        led_stripe_prepare_range_color(0, (LED_STRIPE_NUM / 2), COLOR_BLACK);
-    }
-
-    if (params->pre_strategy < NUM_OF_PRE_STRATEGIES) {
-        if (params->pre_strategy % 2 == 0) {
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3),
-                                           pre_strategy_colors[params->pre_strategy]);
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_BLACK);
-        } else {
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4),
-                                           pre_strategy_colors[params->pre_strategy]);
-        }
-    } else {
-        led_stripe_prepare_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
     }
 
     led_stripe_send();
