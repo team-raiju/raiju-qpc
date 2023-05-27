@@ -8595,7 +8595,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_WaitDraw_e(SumoHSM * const me) {
     seeing = SumoHSM_CheckDistAndMoveDefense(me);
 
     if (distance_is_active(DIST_SENSOR_F)){
-        drive(100, 100);
+        drive(-100,100);
         QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 5);
     }
 

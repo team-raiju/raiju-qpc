@@ -3423,7 +3423,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
 seeing = SumoHSM_CheckDistAndMoveDefense(me);
 
 if (distance_is_active(DIST_SENSOR_F)){
-    drive(100, 100);
+    drive(-100,100);
     QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 5);
 }
 
