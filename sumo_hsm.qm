@@ -108,16 +108,23 @@ me-&gt;buzzerCount = 0U;</action>
     </initial>
     <!--${AOs::SumoHSM::SM::Idle}-->
     <state name="Idle">
-     <entry>board_led_off();
-driving_disable();
-drive(0,0);
-QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
+     <entry brief="entry">if (parameters.current_state != STATE_IDLE){
+    start_module_enable();
+    driving_enable();
+    QTimeEvt_armX(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 10, 0);
+} else {
 
-if (adc_get_low_pwr_bat()){
-    led_stripe_set_all_color(COLOR_RED);
-} else if (adc_get_low_ctrl_bat()){
-    led_stripe_set_all_color(COLOR_ORANGE);
+    board_led_off();
+    driving_disable();
+    drive(0,0);
+    QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+    QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
+
+    if (adc_get_low_pwr_bat()){
+        led_stripe_set_all_color(COLOR_RED);
+    } else if (adc_get_low_ctrl_bat()){
+        led_stripe_set_all_color(COLOR_ORANGE);
+    }
 }</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
@@ -216,6 +223,26 @@ me-&gt;buzzerCount += 1;</action>
        <action box="0,-2,28,2"/>
       </tran_glyph>
      </tran>
+     <!--${AOs::SumoHSM::SM::Idle::STUCK}-->
+     <tran trig="STUCK">
+      <!--${AOs::SumoHSM::SM::Idle::STUCK::[runnig]}-->
+      <choice target="../../../22">
+       <guard brief="runnig">parameters.current_state == AUTO_RUNNING</guard>
+       <choice_glyph conn="94,130,5,0,-57,4">
+        <action box="-14,-3,10,2"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::Idle::STUCK::[rc]}-->
+      <choice target="../../../28">
+       <guard brief="rc">parameters.current_state == RC_RUNNING</guard>
+       <choice_glyph conn="94,130,5,3,16,-10,28,10,5">
+        <action box="9,-3,5,2"/>
+       </choice_glyph>
+      </choice>
+      <tran_glyph conn="84,38,1,-1,10,92">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
      <state_glyph node="41,1,43,43">
       <entry box="1,2,24,6"/>
       <exit box="1,8,38,4"/>
@@ -240,7 +267,8 @@ me-&gt;step_counter = 0;</entry>
       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30]}-->
       <choice>
        <guard brief="|ch1| or |ch2|&gt; 30">(abs(radio_service_get_channel(RADIO_CH1)) &gt; 30) || (abs(radio_service_get_channel(RADIO_CH2)) &gt; 30)</guard>
-       <action brief="en_motors()">driving_enable();</action>
+       <action brief="en_motors()">driving_enable();
+BSP_eeprom_write(EE_CURRENT_STATE_ADDR, RC_RUNNING);</action>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[0]}-->
        <choice target="../../../../10" cpref="../../../../40/0">
         <guard brief="0">parameters.pre_strategy == 0</guard>
@@ -465,7 +493,8 @@ parameters_report(parameters, 2);</action>
       <!--${AOs::SumoHSM::SM::RCWait::DIST_SENSOR_CHAN~::[attack_when_near]}-->
       <choice target="../../../21">
        <guard brief="attack_when_near">parameters.attack_when_near &amp;&amp; (distance_is_active(DIST_SENSOR_F) || distance_is_active(DIST_SENSOR_DR) || distance_is_active(DIST_SENSOR_DL))</guard>
-       <action brief="driving_enable();">driving_enable();</action>
+       <action brief="driving_enable();">driving_enable();
+BSP_eeprom_write(EE_CURRENT_STATE_ADDR, RC_RUNNING);</action>
        <choice_glyph conn="109,72,4,0,22">
         <action box="-4,-5,17,5"/>
        </choice_glyph>
@@ -513,7 +542,8 @@ set_reference_voltage();</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
       <action>driving_enable();
-radio_service_disable();</action>
+radio_service_disable();
+BSP_eeprom_write(EE_CURRENT_STATE_ADDR, AUTO_RUNNING);</action>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_0]}-->
       <choice target="../../../8" cpref="../../../40/0">
        <guard brief="ps_0">parameters.pre_strategy == 0</guard>
@@ -721,7 +751,8 @@ parameters_report(parameters, 2);</action>
       <choice target="../../../8" cpref="../../../40/0">
        <guard brief="attack_when_near">parameters.attack_when_near &amp;&amp; (distance_is_active(DIST_SENSOR_F) || distance_is_active(DIST_SENSOR_DR) || distance_is_active(DIST_SENSOR_DL))</guard>
        <action brief="driving_enable">driving_enable();
-radio_service_disable();</action>
+radio_service_disable();
+BSP_eeprom_write(EE_CURRENT_STATE_ADDR, AUTO_RUNNING);</action>
        <choice_glyph conn="19,85,5,0,-4,26,10,2">
         <action box="-3,2,14,7"/>
        </choice_glyph>
@@ -1019,6 +1050,7 @@ QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);
       <!--${AOs::SumoHSM::SM::RC_0_1::CHANGE_STATE_EVT::[|ch1|and|ch2|<10]}-->
       <choice target="../../../2">
        <guard brief="|ch1| and |ch2|&lt; 10">(abs(radio_service_get_channel(RADIO_CH1)) &lt; 10) &amp;&amp; (abs(radio_service_get_channel(RADIO_CH2)) &lt; 10)</guard>
+       <action brief="save">BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</action>
        <choice_glyph conn="173,114,4,1,-55,-9">
         <action box="-14,4,16,4"/>
        </choice_glyph>
@@ -1131,7 +1163,8 @@ led_stripe_set_all_color(COLOR_BLACK);
 ble_service_send_string(&quot;state:AUTOEND&quot;);
 buzzer_start();
 QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
-start_module_disable();</entry>
+start_module_disable();
+BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</entry>
      <!--${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../3">
       <tran_glyph conn="6,241,3,3,-4,-144,33">
@@ -1506,6 +1539,7 @@ QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);</action>
       <!--${AOs::SumoHSM::SM::RC_2::CHANGE_STATE_EVT::[|ch1|and|ch2|<10]}-->
       <choice target="../../../2">
        <guard brief="|ch1| and |ch2|&lt; 10">(abs(radio_service_get_channel(RADIO_CH1)) &lt; 10) &amp;&amp; (abs(radio_service_get_channel(RADIO_CH2)) &lt; 10)</guard>
+       <action brief="e">BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</action>
        <choice_glyph conn="188,115,4,1,-41,-24">
         <action box="-12,-44,16,4"/>
        </choice_glyph>

@@ -46,6 +46,8 @@ typedef union {
 
 } ble_update_param_packet_t;
 
+
+
 typedef union {
     uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
     struct {
@@ -170,6 +172,7 @@ static sumo_parameters_t init_parameters_default = {
     .time_ms_to_cross_at_max_vel = 210,
     .is_stucked_timeout_ms = 1800,
     .attack_when_near = 0,
+    .current_state = STATE_IDLE,
 };
 
 /***************************************************************************************************
@@ -229,6 +232,8 @@ void parameters_init(sumo_parameters_t *params)
     read_and_update_parameter_16_bit(TIME_MS_TO_CROSS_AT_100_ADDR, &temp_params.time_ms_to_cross_at_max_vel);
 
     read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED_ADDR, &temp_params.is_stucked_timeout_ms);
+
+    read_and_update_parameter_8_bit(EE_CURRENT_STATE_ADDR, &temp_params.current_state);
 
     *params = temp_params;
 
