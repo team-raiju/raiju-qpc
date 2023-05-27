@@ -2656,7 +2656,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_sub1}-->
      <state name="PreStrategy_8_sub1">
       <entry brief="motor_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(50, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(65, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../49">
@@ -2671,7 +2671,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_sub2}-->
      <state name="PreStrategy_8_sub2">
       <entry brief="turn_right">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(170, 100, SIDE_RIGHT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(130, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../51">
@@ -2686,7 +2686,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_sub4}-->
      <state name="PreStrategy_8_sub4">
       <entry brief="motor_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(93, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(105, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../58">
@@ -2731,7 +2731,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_sub1}-->
      <state name="PreStrategy_9_sub1">
       <entry brief="motor_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(50, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(65, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../54">
@@ -2776,7 +2776,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_sub4}-->
      <state name="PreStrategy_9_sub4">
       <entry brief="motor_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(93, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(100, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../59">
@@ -2806,7 +2806,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_sub5}-->
      <state name="PreStrategy_8_sub5">
       <entry brief="motor_left">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(100, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(110, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../57">
@@ -2965,7 +2965,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub2}-->
      <state name="PreStrategy_10_sub2">
       <entry brief="left">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../66">
@@ -2980,7 +2980,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub3}-->
      <state name="PreStrategy_10_sub3">
       <entry brief="front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(40, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(70, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../67">
@@ -2995,7 +2995,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub4}-->
      <state name="PreStrategy_10_sub4">
       <entry brief="right">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(100, 100, SIDE_RIGHT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(115, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../68">
@@ -3173,7 +3173,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_sub2}-->
      <state name="PreStrategy_11_sub2">
       <entry brief="right">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_RIGHT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../80">
@@ -3188,7 +3188,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_sub3}-->
      <state name="PreStrategy_11_sub3">
       <entry brief="front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(40, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(70, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../81">
@@ -3203,7 +3203,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_sub4}-->
      <state name="PreStrategy_11_sub4">
       <entry brief="left">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(100, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(115, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../82">
@@ -3233,7 +3233,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Deceive}-->
      <state name="PreStrategy_Deceive">
       <entry brief="go_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(50, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(80, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Dece~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../84">
@@ -3248,7 +3248,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_sub1}-->
      <state name="PreStrategy_12_sub1">
       <entry brief="go_back">drive(-100,-100);
-uint16_t move_time_ms = get_time_to_move_ms(70, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(100, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../85">
@@ -3568,7 +3568,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_sub1}-->
      <state name="PreStrategy_19_sub1">
       <entry brief="back">drive(-100,-100);
-uint16_t move_time_ms = get_time_to_move_ms(65, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(55, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_s~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../102">

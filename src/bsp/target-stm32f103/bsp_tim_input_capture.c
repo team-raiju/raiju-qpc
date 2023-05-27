@@ -8,10 +8,10 @@
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-#define TIM_NUMBER     TIM5
-#define TIM_CHANNEL    TIM_CHANNEL_3
+#define TIM_NUMBER     TIM4
+#define TIM_CHANNEL    TIM_CHANNEL_1
 
-#define TIM_INSTANCE   (&htim5)
+#define TIM_INSTANCE   (&htim4)
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -36,7 +36,7 @@ static uint16_t last_counter = 0;
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
     if (htim->Instance == TIM_NUMBER) {
 
-        uint16_t current_counter = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_3);
+        uint16_t current_counter = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL);
         uint16_t diff = current_counter - last_counter;
         last_counter = current_counter;
 
@@ -51,7 +51,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef* htim) {
  **************************************************************************************************/
 void bsp_tim_input_capture_init()
 {
-    MX_TIM5_Init();
+    MX_TIM4_Init();
     bsp_tim_input_capture_start();
 }
 
