@@ -1394,13 +1394,13 @@ led_stripe_set_all_color(COLOR_RED);</exit>
     <smstate name="StepsAuto" submachine="../44">
      <!--${AOs::SumoHSM::SM::StepsAuto::LINE_FRONT}-->
      <xpseg xpref="../../44/1" target="../../27">
-      <xpseg_glyph conn="61,155,2,0,10">
+      <xpseg_glyph conn="58,155,2,0,2,3,8">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::StepsAuto::LINE_BACK}-->
      <xpseg xpref="../../44/0" target="../../26">
-      <xpseg_glyph conn="76,155,2,0,10">
+      <xpseg_glyph conn="70,155,2,0,2,6,8">
        <action box="0,1,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -3864,23 +3864,35 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
      <state name="Stuck">
       <entry>uint16_t move_time_ms;
 
-if (me-&gt;stuck_counter &gt;= 2){
-    drive(-100,-35);
+if (me-&gt;stuck_counter &gt;= 1){
+    drive(-100,-40);
     move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
-    me-&gt;stuck_counter = 0;
 } else {
     drive(-100,-100);
-    move_time_ms = get_time_to_move_ms(40, 100, &amp;parameters);
-    me-&gt;stuck_counter++;
+    move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
 }
 
-
+me-&gt;stuck_counter++;
 QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);</exit>
       <!--${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END}-->
-      <tran trig="STUCK_END" target="../../11">
-       <tran_glyph conn="101,25,2,0,5">
-        <action box="1,2,10,2"/>
+      <tran trig="STUCK_END">
+       <!--${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END::[stuck<=1]}-->
+       <choice target="../../../11">
+        <guard brief="stuck &lt;= 1">me-&gt;stuck_counter &lt;= 1</guard>
+        <choice_glyph conn="122,26,4,1,10,-7">
+         <action box="-9,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END::[else]}-->
+       <choice target="../../../12">
+        <guard brief="else">else</guard>
+        <choice_glyph conn="122,26,4,3,10,6">
+         <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="114,21,1,-1,8,5">
+        <action box="0,-3,10,2"/>
        </tran_glyph>
       </tran>
       <state_glyph node="91,11,23,14">
@@ -3921,7 +3933,26 @@ if (seeing) {
        <exit box="1,4,6,2"/>
       </state_glyph>
      </state>
-     <submachine_diagram size="117,55">
+     <!--${AOs::SumoHSM::SM::StepsStrategy::StuckTurn}-->
+     <state name="StuckTurn">
+      <entry>uint16_t turn_time_ms;
+
+drive(-100,100);
+turn_time_ms = get_time_to_turn_ms(60, 100, SIDE_LEFT, &amp;parameters);
+me-&gt;stuck_counter = 0;
+
+QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::StepsStrategy::StuckTurn::STUCK_END}-->
+      <tran trig="STUCK_END" target="../../11">
+       <tran_glyph conn="128,42,3,1,-13">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="128,31,23,13">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <submachine_diagram size="155,55">
       <entry box="1,2,23,3"/>
       <exit box="1,5,19,2"/>
      </submachine_diagram>
