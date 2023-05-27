@@ -168,7 +168,7 @@ static sumo_parameters_t init_parameters_default = {
     .step_wait_time_ms = 1500,
     .step_advance_time_ms = 60,
     .time_ms_to_cross_at_max_vel = 210,
-    .is_stucked_timeout_ms = 2000,
+    .is_stucked_timeout_ms = 1800,
     .attack_when_near = 0,
 };
 
