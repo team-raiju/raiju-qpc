@@ -20,7 +20,7 @@
  **************************************************************************************************/
 
 #define NUM_OF_STRATEGIES     3
-#define NUM_OF_PRE_STRATEGIES 18
+#define NUM_OF_PRE_STRATEGIES 19
 #define NUM_OF_CALIB_MODES    6
 
 #define ARENA_LENGHT_CM   154.0f
