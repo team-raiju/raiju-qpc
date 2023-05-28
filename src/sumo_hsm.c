@@ -9619,6 +9619,7 @@ static QState SumoHSM_StepsStrategy_e(SumoHSM * const me) {
     QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
     me->stuck_counter = 0;
     led_stripe_set_all_color(COLOR_ORANGE);
+    me->step_counter = 0;
     return QM_ENTRY(&SumoHSM_StepsStrategy_s);
 }
 /*${AOs::SumoHSM::SM::StepsStrategy} */
@@ -9804,8 +9805,20 @@ static QState SumoHSM_StepsStrategy_SearchAndAttack(SumoHSM * const me, QEvt con
 /*${AOs::SumoHSM::SM::StepsStrategy::StepAdvance} ..........................*/
 /*${AOs::SumoHSM::SM::StepsStrategy::StepAdvance} */
 static QState SumoHSM_StepsStrategy_StepAdvance_e(SumoHSM * const me) {
-    drive(100,100);
-    uint32_t small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
+    uint32_t small_step_advance_time;
+    if (parameters.strategy  == 2) {
+
+        if (me->step_counter % 2 == 0){
+            drive(100,100);
+        } else {
+            drive(-100,-100);
+        }
+        small_step_advance_time = 12 * BSP_TICKS_PER_MILISSEC;
+        me->step_counter++;
+    } else {
+        drive(100,100);
+        small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
+    }
     QTimeEvt_rearm(&me->timeEvt_2, small_step_advance_time);
     return QM_ENTRY(&SumoHSM_StepsStrategy_StepAdvance_s);
 }

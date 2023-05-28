@@ -3997,7 +3997,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, movement_time_ms);</entry>
      <entry brief="play_buzzer">buzzer_start();
 QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
 me-&gt;stuck_counter = 0;
-led_stripe_set_all_color(COLOR_ORANGE);</entry>
+led_stripe_set_all_color(COLOR_ORANGE);
+me-&gt;step_counter = 0;</entry>
      <exit brief="disarm_timers">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
@@ -4114,8 +4115,20 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
      </state>
      <!--${AOs::SumoHSM::SM::StepsStrategy::StepAdvance}-->
      <state name="StepAdvance">
-      <entry>drive(100,100);
-uint32_t small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
+      <entry>uint32_t small_step_advance_time;
+if (parameters.strategy  == 2) {
+
+    if (me-&gt;step_counter % 2 == 0){
+        drive(100,100);
+    } else {
+        drive(-100,-100);
+    }
+    small_step_advance_time = 12 * BSP_TICKS_PER_MILISSEC;
+    me-&gt;step_counter++;
+} else {
+    drive(100,100);
+    small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
+}
 QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
       <!--${AOs::SumoHSM::SM::StepsStrategy::StepAdvance::TIMEOUT_2, DIST_SENSOR_CHANGE}-->
