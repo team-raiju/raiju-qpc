@@ -34,6 +34,8 @@ typedef struct sumo_parameters {
 
     uint8_t attack_when_near; /* Bool indicating if the robot must start auto when seeing near */
 
+    uint8_t current_state;
+
 } sumo_parameters_t;
 
 typedef enum {
@@ -45,6 +47,12 @@ typedef enum {
     PARAM_OK,
     PARAM_ERROR,
 } param_error_t;
+
+typedef enum {
+    STATE_IDLE,
+    RC_RUNNING,
+    AUTO_RUNNING
+} state_modes_t;
 
 typedef enum {
     BLE_DATA_HDR_STRATEGY_AND_PRE,

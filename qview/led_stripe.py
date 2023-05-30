@@ -26,6 +26,28 @@ def led_stripe_init(qview_led_stripe):
 
 
 
+def color_adjust(color):
+    # Modification to match hardware led color
+    new_color = color
+    if (color == '#7f0000'):
+        new_color = '#ff0000'
+    elif (color == '#00ff00'):
+        new_color = '#ff0000'
+    elif (color == '#0000ff'):
+        new_color = '#ff0000'
+    elif (color == '#7f007f'):
+        new_color = '#c42be2'
+    elif (color == '#7f7f00'):
+        new_color = '#ffff00'
+    elif (color == '#64c800'):
+        new_color = '#ff6f00'
+    elif (color == '#3f3f3f'):
+        new_color = '#ffffff'
+    elif (color == '#00c864'):
+        new_color = '#fc2a70'
+
+    return new_color
+
 
 def led_stripe_set(qview_led_stripe, num, r, g, b):
 
@@ -35,25 +57,9 @@ def led_stripe_set(qview_led_stripe, num, r, g, b):
 
     color = '#' + r_string + g_string + b_string
 
-    # Modification to match hardware led color
-    if (color == '#7f0000'):
-        color = '#ff0000'
-    elif (color == '#00ff00'):
-        color = '#ff0000'
-    elif (color == '#0000ff'):
-        color = '#ff0000'
-    elif (color == '#7f007f'):
-        color = '#c42be2'
-    elif (color == '#7f7f00'):
-        color = '#ffff00'
-    elif (color == '#64c800'):
-        color = '#ff6f00'
-    elif (color == '#3f3f3f'):
-        color = '#ffffff'
-    elif (color == '#00c864'):
-        color = '#fc2a70'
+    adjusted_color = color_adjust(color)
 
-    qview_led_stripe.canvas.itemconfig(led_stripe_array[num], fill = color)
+    qview_led_stripe.canvas.itemconfig(led_stripe_array[num], fill = adjusted_color)
 
 def led_stripe_set_all(qview_led_stripe, r, g, b):
 
@@ -62,8 +68,10 @@ def led_stripe_set_all(qview_led_stripe, r, g, b):
     b_string = "{:02x}".format(b)
 
     color = '#' + r_string + g_string + b_string
+    adjusted_color = color_adjust(color)
+
     for led in led_stripe_array:
-        qview_led_stripe.canvas.itemconfig(led, fill = color)
+        qview_led_stripe.canvas.itemconfig(led, fill = adjusted_color)
     
 def led_stripe_set_half(qview_led_stripe, is_left, r, g, b):
 
@@ -72,10 +80,11 @@ def led_stripe_set_half(qview_led_stripe, is_left, r, g, b):
     b_string = "{:02x}".format(b)
 
     color = '#' + r_string + g_string + b_string
+    adjusted_color = color_adjust(color)
 
     if (is_left == True):
         for led in led_stripe_array[0:8]:
-            qview_led_stripe.canvas.itemconfig(led, fill = color)
+            qview_led_stripe.canvas.itemconfig(led, fill = adjusted_color)
     else:
         for led in led_stripe_array[8:16]:
-            qview_led_stripe.canvas.itemconfig(led, fill = color)
+            qview_led_stripe.canvas.itemconfig(led, fill = adjusted_color)

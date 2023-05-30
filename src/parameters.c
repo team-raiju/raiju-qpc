@@ -20,7 +20,7 @@
  **************************************************************************************************/
 
 #define NUM_OF_STRATEGIES     3
-#define NUM_OF_PRE_STRATEGIES 12
+#define NUM_OF_PRE_STRATEGIES 20
 #define NUM_OF_CALIB_MODES    6
 
 #define ARENA_LENGHT_CM   154.0f
@@ -45,6 +45,8 @@ typedef union {
     };
 
 } ble_update_param_packet_t;
+
+
 
 typedef union {
     uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
@@ -138,14 +140,11 @@ static color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
     // COLOR_YELLOW,
 };
 
-static color_name_t pre_strategy_colors[NUM_OF_PRE_STRATEGIES] = {
-    COLOR_BLACK, COLOR_GREEN, COLOR_BLUE, COLOR_BLUE, COLOR_ORANGE, COLOR_ORANGE, 
-    COLOR_PINK, COLOR_PINK, COLOR_PURPLE, COLOR_PURPLE, COLOR_WHITE, COLOR_WHITE
-    // COLOR_YELLOW,
-};
+static color_name_t pre_strategy_colors[] = { COLOR_GREEN, COLOR_BLUE,   COLOR_ORANGE, COLOR_PINK,
+                                              COLOR_WHITE, COLOR_PURPLE, COLOR_YELLOW };
 
 static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
-    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_PURPLE, COLOR_RED,
+    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_PURPLE, COLOR_YELLOW,
 };
 
 // static const char * strategy_names[] = {
@@ -171,8 +170,9 @@ static sumo_parameters_t init_parameters_default = {
     .step_wait_time_ms = 1500,
     .step_advance_time_ms = 60,
     .time_ms_to_cross_at_max_vel = 210,
-    .is_stucked_timeout_ms = 2000,
+    .is_stucked_timeout_ms = 1800,
     .attack_when_near = 0,
+    .current_state = STATE_IDLE,
 };
 
 /***************************************************************************************************
@@ -232,6 +232,8 @@ void parameters_init(sumo_parameters_t *params)
     read_and_update_parameter_16_bit(TIME_MS_TO_CROSS_AT_100_ADDR, &temp_params.time_ms_to_cross_at_max_vel);
 
     read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED_ADDR, &temp_params.is_stucked_timeout_ms);
+
+    read_and_update_parameter_8_bit(EE_CURRENT_STATE_ADDR, &temp_params.current_state);
 
     *params = temp_params;
 
@@ -385,41 +387,42 @@ void parameters_set_strategy_led(sumo_parameters_t *params)
 
 void parameters_set_pre_strategy_led(sumo_parameters_t *params)
 {
-    if (params->pre_strategy < NUM_OF_PRE_STRATEGIES) {
-        if (params->pre_strategy % 2 == 0) {
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3),
-                                           pre_strategy_colors[params->pre_strategy]);
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_BLACK);
-        } else {
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4),
-                                           pre_strategy_colors[params->pre_strategy]);
-        }
-    } else {
+    uint8_t index;
+    uint8_t colors_arr_size = sizeof(pre_strategy_colors)/ sizeof(color_name_t);
+
+    /* Invalid param */
+    if (params->pre_strategy >= NUM_OF_PRE_STRATEGIES) {
         led_stripe_prepare_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
+        led_stripe_send();
+        return;
+    }
+    /* Invalid param */
+    if (params->pre_strategy >= (3 * colors_arr_size)){
+        led_stripe_prepare_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
+        led_stripe_send();
+        return;
     }
 
-    led_stripe_send();
-}
-
-void parameters_set_pre_and_strategy_leds(sumo_parameters_t *params)
-{
-    if (params->strategy < NUM_OF_STRATEGIES) {
-        led_stripe_prepare_range_color(0, (LED_STRIPE_NUM / 2), strategy_colors[params->strategy]);
-    } else {
-        led_stripe_prepare_range_color(0, (LED_STRIPE_NUM / 2), COLOR_BLACK);
+    /* First Half Led RED and other half first color of "pre_strategy_colors" array */
+    if (params->pre_strategy >= 2 * colors_arr_size) {
+        index = (params->pre_strategy - 2 * colors_arr_size);
+        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3),
+                                       pre_strategy_colors[index]);
+        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_RED);
+        led_stripe_send();
+        return;
     }
 
-    if (params->pre_strategy < NUM_OF_PRE_STRATEGIES) {
-        if (params->pre_strategy % 2 == 0) {
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3),
-                                           pre_strategy_colors[params->pre_strategy]);
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_BLACK);
-        } else {
-            led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4),
-                                           pre_strategy_colors[params->pre_strategy]);
-        }
+    /* For even number half black and half other color */
+    /* For odd number all same color*/
+    index = params->pre_strategy / 2;
+    if (params->pre_strategy % 2 == 0) {
+        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3),
+                                       pre_strategy_colors[index]);
+        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_BLACK);
     } else {
-        led_stripe_prepare_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
+        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4),
+                                       pre_strategy_colors[index]);
     }
 
     led_stripe_send();
@@ -436,7 +439,8 @@ void parameters_set_calib_mode_led(sumo_parameters_t *params)
     led_stripe_send();
 }
 
-void set_reference_voltage() {
+void set_reference_voltage()
+{
     battery_multiplicator = 1 / adc_get_pwr_bat_percent();
     battery_multiplicator = constrain(battery_multiplicator, 0.9, 1.0);
 }
@@ -444,7 +448,7 @@ void set_reference_voltage() {
 uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, sumo_parameters_t *params)
 {
     // Find experimentally. turn 45, 90, 135, 180
-    double turn_angle_dividers[] = { 2, 1.36, 1.2, 1};
+    double turn_angle_dividers[] = { 2, 1.36, 1.2, 1 };
 
     uint8_t index;
     if (degrees >= 180) {
@@ -456,7 +460,7 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
     }
 
     double angle_multiplicator = degrees / (45.0 * (index + 1));
-    double speed_multiplicator = REFERENCE_TURN_SPEED / (double) turn_speed;
+    double speed_multiplicator = REFERENCE_TURN_SPEED / (double)turn_speed;
 
     uint16_t turn_time_ms;
 
@@ -487,7 +491,7 @@ uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameter
     }
 
     double distance_multiplicator = distance_cm / (33.5 * (index + 1));
-    double speed_multiplicator = REFERENCE_SPEED / (double) speed;
+    double speed_multiplicator = REFERENCE_SPEED / (double)speed;
 
     double reference_move_time_ms = params->time_ms_to_cross_at_max_vel / distance_dividers[index];
     uint16_t move_time_ms = (distance_multiplicator * reference_move_time_ms) * speed_multiplicator * battery_multiplicator;

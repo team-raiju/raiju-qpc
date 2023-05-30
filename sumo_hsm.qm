@@ -17,7 +17,8 @@ QTimeEvt_ctorX(&amp;me-&gt;timerFailSafe, &amp;me-&gt;super.super, FAILSAFE_SIG,
 QTimeEvt_ctorX(&amp;me-&gt;timeEvtStuck, &amp;me-&gt;super.super, STUCK_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;timeEvtStuckEnd, &amp;me-&gt;super.super, STUCK_END_SIG, 0U);
 me-&gt;ble_counter = 0;
-me-&gt;stuck_counter = 0;</code>
+me-&gt;stuck_counter = 0;
+me-&gt;step_counter = 0;</code>
   </operation>
   <!--${AOs::SumoHSM}-->
   <class name="SumoHSM" superclass="qpc::QMActive">
@@ -41,6 +42,8 @@ me-&gt;stuck_counter = 0;</code>
    <attribute name="ble_counter" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::stuck_counter}-->
    <attribute name="stuck_counter" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::SumoHSM::step_counter}-->
+   <attribute name="step_counter" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::SumoHSM::CheckDistAndMove}-->
    <operation name="CheckDistAndMove" type="uint8_t" visibility="0x02" properties="0x00">
     <code>(void)me;
@@ -105,16 +108,23 @@ me-&gt;buzzerCount = 0U;</action>
     </initial>
     <!--${AOs::SumoHSM::SM::Idle}-->
     <state name="Idle">
-     <entry>board_led_off();
-driving_disable();
-drive(0,0);
-QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
+     <entry brief="entry">if (parameters.current_state != STATE_IDLE){
+    start_module_enable();
+    driving_enable();
+    QTimeEvt_armX(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 10, 0);
+} else {
 
-if (adc_get_low_pwr_bat()){
-    led_stripe_set_all_color(COLOR_RED);
-} else if (adc_get_low_ctrl_bat()){
-    led_stripe_set_all_color(COLOR_ORANGE);
+    board_led_off();
+    driving_disable();
+    drive(0,0);
+    QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+    QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
+
+    if (adc_get_low_pwr_bat()){
+        led_stripe_set_all_color(COLOR_RED);
+    } else if (adc_get_low_ctrl_bat()){
+        led_stripe_set_all_color(COLOR_ORANGE);
+    }
 }</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
@@ -213,6 +223,26 @@ me-&gt;buzzerCount += 1;</action>
        <action box="0,-2,28,2"/>
       </tran_glyph>
      </tran>
+     <!--${AOs::SumoHSM::SM::Idle::STUCK}-->
+     <tran trig="STUCK">
+      <!--${AOs::SumoHSM::SM::Idle::STUCK::[runnig]}-->
+      <choice target="../../../22">
+       <guard brief="runnig">parameters.current_state == AUTO_RUNNING</guard>
+       <choice_glyph conn="94,130,5,0,-57,4">
+        <action box="-14,-3,10,2"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::Idle::STUCK::[rc]}-->
+      <choice target="../../../28">
+       <guard brief="rc">parameters.current_state == RC_RUNNING</guard>
+       <choice_glyph conn="94,130,5,3,16,-10,28,10,5">
+        <action box="9,-3,5,2"/>
+       </choice_glyph>
+      </choice>
+      <tran_glyph conn="84,38,1,-1,10,92">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
      <state_glyph node="41,1,43,43">
       <entry box="1,2,24,6"/>
       <exit box="1,8,38,4"/>
@@ -229,96 +259,154 @@ parameters.attack_when_near = false;
 radio_service_en_radio_data_sig(true);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
 ble_service_send_string(&quot;state:RC&quot;);
-set_reference_voltage();</entry>
+set_reference_voltage();
+me-&gt;step_counter = 0;</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30]}-->
       <choice>
        <guard brief="|ch1| or |ch2|&gt; 30">(abs(radio_service_get_channel(RADIO_CH1)) &gt; 30) || (abs(radio_service_get_channel(RADIO_CH2)) &gt; 30)</guard>
-       <action brief="en_motors()">driving_enable();</action>
+       <action brief="en_motors()">driving_enable();
+BSP_eeprom_write(EE_CURRENT_STATE_ADDR, RC_RUNNING);</action>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[0]}-->
        <choice target="../../../../10" cpref="../../../../40/0">
         <guard brief="0">parameters.pre_strategy == 0</guard>
-        <choice_glyph conn="125,89,5,0,1,10">
+        <choice_glyph conn="125,89,4,0,10">
          <action box="1,-3,6,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[1]}-->
        <choice target="../../../../10" cpref="../../../../40/1">
         <guard brief="1">parameters.pre_strategy == 1</guard>
-        <choice_glyph conn="125,89,5,0,4,10">
+        <choice_glyph conn="125,89,5,0,2,10">
          <action box="4,-3,4,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[2]}-->
        <choice target="../../../../10" cpref="../../../../40/2">
         <guard brief="2">parameters.pre_strategy == 2</guard>
-        <choice_glyph conn="125,89,5,0,8,10">
+        <choice_glyph conn="125,89,5,0,4,10">
          <action box="8,-3,4,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[3]}-->
        <choice target="../../../../10" cpref="../../../../40/3">
         <guard brief="3">parameters.pre_strategy == 3</guard>
-        <choice_glyph conn="125,89,5,0,11,10">
+        <choice_glyph conn="125,89,5,0,6,10">
          <action box="12,-3,4,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[4]}-->
        <choice target="../../../../10" cpref="../../../../40/4">
         <guard brief="4">parameters.pre_strategy == 4</guard>
-        <choice_glyph conn="125,89,5,0,15,10">
+        <choice_glyph conn="125,89,5,0,8,10">
          <action box="16,-3,4,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[5]}-->
        <choice target="../../../../10" cpref="../../../../40/5">
         <guard brief="5">parameters.pre_strategy == 5</guard>
-        <choice_glyph conn="125,89,5,0,18,10">
+        <choice_glyph conn="125,89,5,0,10,10">
          <action box="19,-3,4,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[6]}-->
        <choice target="../../../../10" cpref="../../../../40/6">
         <guard brief="6">parameters.pre_strategy == 6</guard>
-        <choice_glyph conn="125,89,5,0,22,10">
+        <choice_glyph conn="125,89,5,0,13,10">
          <action box="22,-3,4,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[7]}-->
        <choice target="../../../../10" cpref="../../../../40/7">
         <guard brief="7">parameters.pre_strategy == 7</guard>
-        <choice_glyph conn="125,89,5,0,26,10">
+        <choice_glyph conn="125,89,5,0,15,10">
          <action box="25,-3,4,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[8]}-->
        <choice target="../../../../10" cpref="../../../../40/9">
         <guard brief="8">parameters.pre_strategy == 8</guard>
-        <choice_glyph conn="125,89,5,0,29,10">
+        <choice_glyph conn="125,89,5,0,17,10">
          <action box="28,-3,4,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[9]}-->
        <choice target="../../../../10" cpref="../../../../40/10">
         <guard brief="9">parameters.pre_strategy == 9</guard>
-        <choice_glyph conn="125,89,5,0,33,10">
+        <choice_glyph conn="125,89,5,0,19,10">
          <action box="32,-3,4,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[10]}-->
        <choice target="../../../../10" cpref="../../../../40/8">
         <guard brief="10">parameters.pre_strategy == 10</guard>
-        <choice_glyph conn="125,89,5,0,37,10">
+        <choice_glyph conn="125,89,5,0,21,10">
          <action box="36,-3,4,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[11]}-->
        <choice target="../../../../10" cpref="../../../../40/11">
         <guard brief="11">parameters.pre_strategy == 11</guard>
-        <choice_glyph conn="125,89,5,0,40,10">
-         <action box="40,-3,5,2"/>
+        <choice_glyph conn="125,89,5,0,24,10">
+         <action box="40,-3,4,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[12]}-->
+       <choice target="../../../../10" cpref="../../../../40/12">
+        <guard brief="12">parameters.pre_strategy == 12</guard>
+        <choice_glyph conn="125,89,5,0,26,10">
+         <action box="26,1,10,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[13]}-->
+       <choice target="../../../../10" cpref="../../../../40/13">
+        <guard brief="13">parameters.pre_strategy == 13</guard>
+        <choice_glyph conn="125,89,5,0,27,10">
+         <action box="30,3,10,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[14]}-->
+       <choice target="../../../../10" cpref="../../../../40/14">
+        <guard brief="14">parameters.pre_strategy == 14</guard>
+        <choice_glyph conn="125,89,5,0,29,10">
+         <action box="30,1,4,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[15]}-->
+       <choice target="../../../../10" cpref="../../../../40/15">
+        <guard brief="15">parameters.pre_strategy == 15</guard>
+        <choice_glyph conn="125,89,5,0,31,10">
+         <action box="33,1,4,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[16]}-->
+       <choice target="../../../../10" cpref="../../../../40/16">
+        <guard brief="16">parameters.pre_strategy == 16</guard>
+        <choice_glyph conn="125,89,5,0,33,10">
+         <action box="37,0,4,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[17]}-->
+       <choice target="../../../../10" cpref="../../../../40/17">
+        <guard brief="17">parameters.pre_strategy == 17</guard>
+        <choice_glyph conn="125,89,5,0,35,10">
+         <action box="41,0,4,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[18]}-->
+       <choice target="../../../../10" cpref="../../../../40/18">
+        <guard brief="18">parameters.pre_strategy == 18</guard>
+        <choice_glyph conn="125,89,5,0,38,10">
+         <action box="41,3,5,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA::[|ch1|or|ch2|>30~::[19]}-->
+       <choice target="../../../../10" cpref="../../../../40/19">
+        <guard brief="19">parameters.pre_strategy == 19</guard>
+        <choice_glyph conn="125,89,5,0,41,10">
+         <action box="41,6,4,3"/>
         </choice_glyph>
        </choice>
        <choice_glyph conn="125,82,4,-1,7">
@@ -405,7 +493,8 @@ parameters_report(parameters, 2);</action>
       <!--${AOs::SumoHSM::SM::RCWait::DIST_SENSOR_CHAN~::[attack_when_near]}-->
       <choice target="../../../21">
        <guard brief="attack_when_near">parameters.attack_when_near &amp;&amp; (distance_is_active(DIST_SENSOR_F) || distance_is_active(DIST_SENSOR_DR) || distance_is_active(DIST_SENSOR_DL))</guard>
-       <action brief="driving_enable();">driving_enable();</action>
+       <action brief="driving_enable();">driving_enable();
+BSP_eeprom_write(EE_CURRENT_STATE_ADDR, RC_RUNNING);</action>
        <choice_glyph conn="109,72,4,0,22">
         <action box="-4,-5,17,5"/>
        </choice_glyph>
@@ -445,6 +534,7 @@ parameters_set_strategy_led(&amp;parameters);
 parameters_set_pre_strategy_led(&amp;parameters);
 radio_service_en_radio_data_sig(false);
 me-&gt;stuck_counter = 0;
+me-&gt;step_counter = 0;
 parameters.attack_when_near = false;
 start_module_enable();
 set_reference_voltage();</entry>
@@ -452,89 +542,146 @@ set_reference_voltage();</entry>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
       <action>driving_enable();
-radio_service_disable();</action>
+radio_service_disable();
+BSP_eeprom_write(EE_CURRENT_STATE_ADDR, AUTO_RUNNING);</action>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_0]}-->
       <choice target="../../../8" cpref="../../../40/0">
        <guard brief="ps_0">parameters.pre_strategy == 0</guard>
-       <choice_glyph conn="52,107,5,0,-26,6">
+       <choice_glyph conn="52,107,5,0,-27,6">
         <action box="-29,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_1]}-->
       <choice target="../../../8" cpref="../../../40/1">
        <guard brief="ps_1">parameters.pre_strategy == 1</guard>
-       <choice_glyph conn="52,107,5,0,-22,6">
+       <choice_glyph conn="52,107,5,0,-25,6">
         <action box="-23,-3,7,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_2]}-->
       <choice target="../../../8" cpref="../../../40/2">
        <guard brief="ps_2">parameters.pre_strategy == 2</guard>
-       <choice_glyph conn="52,107,5,0,-17,6">
+       <choice_glyph conn="52,107,5,0,-22,6">
         <action box="-18,-3,7,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_3]}-->
       <choice target="../../../8" cpref="../../../40/3">
        <guard brief="ps_3">parameters.pre_strategy == 3</guard>
-       <choice_glyph conn="52,107,5,0,-13,6">
+       <choice_glyph conn="52,107,5,0,-19,6">
         <action box="-12,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_4]}-->
       <choice target="../../../8" cpref="../../../40/4">
        <guard brief="ps_4">parameters.pre_strategy == 4</guard>
-       <choice_glyph conn="52,107,5,0,-8,6">
+       <choice_glyph conn="52,107,5,0,-16,6">
         <action box="-6,-3,5,3"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_5]}-->
       <choice target="../../../8" cpref="../../../40/5">
        <guard brief="ps_5">parameters.pre_strategy == 5</guard>
-       <choice_glyph conn="52,107,5,0,-4,6">
+       <choice_glyph conn="52,107,5,0,-14,6">
         <action box="0,-3,5,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_6]}-->
       <choice target="../../../8" cpref="../../../40/6">
        <guard brief="ps_6">parameters.pre_strategy == 6</guard>
-       <choice_glyph conn="52,107,5,0,1,6">
+       <choice_glyph conn="52,107,5,0,-11,6">
         <action box="5,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_7]}-->
       <choice target="../../../8" cpref="../../../40/7">
        <guard brief="ps_7">parameters.pre_strategy == 7</guard>
-       <choice_glyph conn="52,107,5,0,5,6">
+       <choice_glyph conn="52,107,5,0,-8,6">
         <action box="10,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_8]}-->
       <choice target="../../../8" cpref="../../../40/9">
        <guard brief="ps_8">parameters.pre_strategy == 8</guard>
-       <choice_glyph conn="52,107,5,0,10,6">
+       <choice_glyph conn="52,107,5,0,-6,6">
         <action box="15,-3,6,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_9]}-->
       <choice target="../../../8" cpref="../../../40/10">
        <guard brief="ps_9">parameters.pre_strategy == 9</guard>
-       <choice_glyph conn="52,107,5,0,14,6">
+       <choice_glyph conn="52,107,4,0,4,-3,2">
         <action box="20,-3,10,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_10]}-->
       <choice target="../../../8" cpref="../../../40/8">
        <guard brief="ps_10">parameters.pre_strategy == 10</guard>
-       <choice_glyph conn="52,107,5,0,19,6">
+       <choice_glyph conn="52,107,4,0,6">
         <action box="25,-3,7,2"/>
        </choice_glyph>
       </choice>
       <!--${AOs::SumoHSM::SM::AutoWait::START::[ps_11]}-->
       <choice target="../../../8" cpref="../../../40/11">
        <guard brief="ps_11">parameters.pre_strategy == 11</guard>
-       <choice_glyph conn="52,107,5,0,23,6">
+       <choice_glyph conn="52,107,5,0,3,6">
         <action box="31,-3,7,2"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::AutoWait::START::[12]}-->
+      <choice target="../../../8" cpref="../../../40/12">
+       <guard brief="12">parameters.pre_strategy == 12</guard>
+       <choice_glyph conn="52,107,5,0,5,6">
+        <action box="6,0,4,3"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::AutoWait::START::[13]}-->
+      <choice target="../../../8" cpref="../../../40/13">
+       <guard brief="13">parameters.pre_strategy == 13</guard>
+       <choice_glyph conn="52,107,5,0,7,6">
+        <action box="9,0,10,2"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::AutoWait::START::[14]}-->
+      <choice target="../../../8" cpref="../../../40/14">
+       <guard brief="14">parameters.pre_strategy == 14</guard>
+       <choice_glyph conn="52,107,5,0,9,6">
+        <action box="14,0,4,2"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::AutoWait::START::[15]}-->
+      <choice target="../../../8" cpref="../../../40/15">
+       <guard brief="15">parameters.pre_strategy == 15</guard>
+       <choice_glyph conn="52,107,5,0,12,6">
+        <action box="18,0,4,2"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::AutoWait::START::[16]}-->
+      <choice target="../../../8" cpref="../../../40/16">
+       <guard brief="16">parameters.pre_strategy == 16</guard>
+       <choice_glyph conn="52,107,5,0,15,6">
+        <action box="21,0,4,2"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::AutoWait::START::[17]}-->
+      <choice target="../../../8" cpref="../../../40/17">
+       <guard brief="17">parameters.pre_strategy == 17</guard>
+       <choice_glyph conn="52,107,5,0,17,6">
+        <action box="24,0,4,2"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::AutoWait::START::[18]}-->
+      <choice target="../../../8" cpref="../../../40/18">
+       <guard brief="18">parameters.pre_strategy == 18</guard>
+       <choice_glyph conn="52,107,5,0,20,6">
+        <action box="24,2,4,2"/>
+       </choice_glyph>
+      </choice>
+      <!--${AOs::SumoHSM::SM::AutoWait::START::[19]}-->
+      <choice target="../../../8" cpref="../../../40/19">
+       <guard brief="19">parameters.pre_strategy == 19</guard>
+       <choice_glyph conn="52,107,5,0,24,6">
+        <action box="27,2,4,2"/>
        </choice_glyph>
       </choice>
       <tran_glyph conn="35,99,3,-1,17,8">
@@ -604,8 +751,9 @@ parameters_report(parameters, 2);</action>
       <choice target="../../../8" cpref="../../../40/0">
        <guard brief="attack_when_near">parameters.attack_when_near &amp;&amp; (distance_is_active(DIST_SENSOR_F) || distance_is_active(DIST_SENSOR_DR) || distance_is_active(DIST_SENSOR_DL))</guard>
        <action brief="driving_enable">driving_enable();
-radio_service_disable();</action>
-       <choice_glyph conn="19,85,5,0,-4,26,11,2">
+radio_service_disable();
+BSP_eeprom_write(EE_CURRENT_STATE_ADDR, AUTO_RUNNING);</action>
+       <choice_glyph conn="19,85,5,0,-4,26,10,2">
         <action box="-3,2,14,7"/>
        </choice_glyph>
       </choice>
@@ -883,8 +1031,7 @@ drive(100, 100);</entry>
      <entry>board_led_off();</entry>
      <!--${AOs::SumoHSM::SM::RC_0_1::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
-      <action>QTimeEvt_disarm(&amp;me-&gt;timerFailSafe);
-int coord_x = radio_service_get_channel(RADIO_CH1);
+      <action>int coord_x = radio_service_get_channel(RADIO_CH1);
 int coord_y = radio_service_get_channel(RADIO_CH2);
 
 int mot1 = coord_y + coord_x;
@@ -892,7 +1039,7 @@ int mot2 = coord_y - coord_x;
 
 drive(mot1, mot2);
 
-QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
+QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);
 </action>
       <tran_glyph conn="114,135,3,-1,12">
        <action box="0,-2,10,2"/>
@@ -903,6 +1050,7 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
       <!--${AOs::SumoHSM::SM::RC_0_1::CHANGE_STATE_EVT::[|ch1|and|ch2|<10]}-->
       <choice target="../../../2">
        <guard brief="|ch1| and |ch2|&lt; 10">(abs(radio_service_get_channel(RADIO_CH1)) &lt; 10) &amp;&amp; (abs(radio_service_get_channel(RADIO_CH2)) &lt; 10)</guard>
+       <action brief="save">BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</action>
        <choice_glyph conn="173,114,4,1,-55,-9">
         <action box="-14,4,16,4"/>
        </choice_glyph>
@@ -937,7 +1085,7 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
       <choice target="../../../30">
        <guard brief="strategy_1 &amp;&amp; white">parameters.strategy == 1 &amp;&amp; (adc_line_is_white(LINE_FL) || adc_line_is_white(LINE_FR))</guard>
        <choice_glyph conn="129,176,4,0,16">
-        <action box="-6,-8,8,2"/>
+        <action box="-8,7,9,3"/>
        </choice_glyph>
       </choice>
       <tran_glyph conn="114,153,3,-1,17,18,-2,5">
@@ -951,7 +1099,7 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
     <!--${AOs::SumoHSM::SM::pre_strategy}-->
     <smstate name="pre_strategy" submachine="../40">
      <!--${AOs::SumoHSM::SM::pre_strategy::XP1}-->
-     <xpseg xpref="../../40/12">
+     <xpseg xpref="../../40/20">
       <!--${AOs::SumoHSM::SM::pre_strategy::XP1::[strategy_0]}-->
       <choice target="../../../22">
        <guard brief="strategy_0">parameters.strategy == 0</guard>
@@ -973,18 +1121,18 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
         <action box="15,0,10,2"/>
        </choice_glyph>
       </choice>
-      <xpseg_glyph conn="40,123,2,-1,2,12,3">
+      <xpseg_glyph conn="33,123,2,-1,2,19,3">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::pre_strategy::STOP_XP}-->
-     <xpseg xpref="../../40/13" target="../../9">
-      <xpseg_glyph conn="23,118,3,3,-18,108,-1,12,2">
+     <xpseg xpref="../../40/21" target="../../9">
+      <xpseg_glyph conn="23,117,3,3,-18,109,-1,12,2">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::pre_strategy::F_LINE}-->
-     <xpseg xpref="../../40/14">
+     <xpseg xpref="../../40/22">
       <!--${AOs::SumoHSM::SM::pre_strategy::F_LINE::[else]}-->
       <choice target="../../../27">
        <guard brief="else">else</guard>
@@ -999,7 +1147,7 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);
         <action box="-86,-3,10,2"/>
        </choice_glyph>
       </choice>
-      <xpseg_glyph conn="52,123,2,-1,2,49,61">
+      <xpseg_glyph conn="41,123,2,-1,2,60,61">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1015,7 +1163,8 @@ led_stripe_set_all_color(COLOR_BLACK);
 ble_service_send_string(&quot;state:AUTOEND&quot;);
 buzzer_start();
 QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
-start_module_disable();</entry>
+start_module_disable();
+BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</entry>
      <!--${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../3">
       <tran_glyph conn="6,241,3,3,-4,-144,33">
@@ -1036,7 +1185,7 @@ start_module_disable();</entry>
     <!--${AOs::SumoHSM::SM::pre_strategy_rc}-->
     <smstate name="pre_strategy_rc" submachine="../40">
      <!--${AOs::SumoHSM::SM::pre_strategy_rc::XP1}-->
-     <xpseg xpref="../../40/12">
+     <xpseg xpref="../../40/20">
       <!--${AOs::SumoHSM::SM::pre_strategy_rc::XP1::[else]}-->
       <choice target="../../../7">
        <guard brief="else">else</guard>
@@ -1051,19 +1200,19 @@ start_module_disable();</entry>
         <action box="1,0,10,2"/>
        </choice_glyph>
       </choice>
-      <xpseg_glyph conn="136,107,2,-1,2,3,2">
+      <xpseg_glyph conn="131,107,2,-1,2,8,2">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::pre_strategy_rc::STOP_XP}-->
-     <xpseg xpref="../../40/13" target="../../7">
-      <xpseg_glyph conn="123,103,3,0,-4,22">
+     <xpseg xpref="../../40/21" target="../../7">
+      <xpseg_glyph conn="123,102,3,0,-4,23">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::pre_strategy_rc::F_LINE}-->
-     <xpseg xpref="../../40/14" target="../../32">
-      <xpseg_glyph conn="146,107,2,2,2,50,93,-36,-5">
+     <xpseg xpref="../../40/22" target="../../32">
+      <xpseg_glyph conn="138,107,2,2,2,58,93,-36,-5">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1239,7 +1388,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, attack_timeout);</entry>
 led_stripe_set_all_color(COLOR_RED);</exit>
      <!--${AOs::SumoHSM::SM::RCAutomaticStart::TIMEOUT}-->
      <tran trig="TIMEOUT" target="../../10" cpref="../../40/0">
-      <tran_glyph conn="99,105,3,0,15,-8,12,2">
+      <tran_glyph conn="99,105,3,0,15,-8,11,2">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -1258,13 +1407,13 @@ led_stripe_set_all_color(COLOR_RED);</exit>
      </xpseg>
      <!--${AOs::SumoHSM::SM::StarAuto::LINE_FRONT}-->
      <xpseg xpref="../../42/1" target="../../23">
-      <xpseg_glyph conn="22,155,2,0,11">
+      <xpseg_glyph conn="21,155,2,0,2,1,9">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::StarAuto::LINE_BACK}-->
      <xpseg xpref="../../42/2" target="../../24">
-      <xpseg_glyph conn="35,155,2,0,11">
+      <xpseg_glyph conn="31,155,2,0,2,4,9">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1280,7 +1429,7 @@ led_stripe_set_all_color(COLOR_RED);</exit>
      </xpseg>
      <!--${AOs::SumoHSM::SM::LineFStar::XP1}-->
      <xpseg xpref="../../39/0" target="../../22">
-      <xpseg_glyph conn="25,166,0,2,-11">
+      <xpseg_glyph conn="24,166,0,2,-2,1,-9">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1290,13 +1439,13 @@ led_stripe_set_all_color(COLOR_RED);</exit>
     <smstate name="LineBStar" submachine="../43">
      <!--${AOs::SumoHSM::SM::LineBStar::XP1}-->
      <xpseg xpref="../../43/0" target="../../22">
-      <xpseg_glyph conn="38,166,0,2,-11">
+      <xpseg_glyph conn="37,166,0,2,-2,1,-9">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::LineBStar::STOP_XP}-->
      <xpseg xpref="../../43/1" target="../../9">
-      <xpseg_glyph conn="38,173,2,0,60">
+      <xpseg_glyph conn="37,173,2,0,2,1,58">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1306,13 +1455,13 @@ led_stripe_set_all_color(COLOR_RED);</exit>
     <smstate name="StepsAuto" submachine="../44">
      <!--${AOs::SumoHSM::SM::StepsAuto::LINE_FRONT}-->
      <xpseg xpref="../../44/1" target="../../27">
-      <xpseg_glyph conn="61,155,2,0,10">
+      <xpseg_glyph conn="58,155,2,0,2,3,8">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::StepsAuto::LINE_BACK}-->
      <xpseg xpref="../../44/0" target="../../26">
-      <xpseg_glyph conn="76,155,2,0,10">
+      <xpseg_glyph conn="70,155,2,0,2,6,8">
        <action box="0,1,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1328,13 +1477,13 @@ led_stripe_set_all_color(COLOR_RED);</exit>
     <smstate name="StepsBL" submachine="../43">
      <!--${AOs::SumoHSM::SM::StepsBL::XP1}-->
      <xpseg xpref="../../43/0" target="../../25">
-      <xpseg_glyph conn="82,165,0,2,-10">
+      <xpseg_glyph conn="81,165,0,2,-2,1,-8">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::StepsBL::STOP_XP}-->
      <xpseg xpref="../../43/1" target="../../9">
-      <xpseg_glyph conn="82,172,2,0,61">
+      <xpseg_glyph conn="81,172,2,0,2,1,59">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1344,7 +1493,7 @@ led_stripe_set_all_color(COLOR_RED);</exit>
     <smstate name="StepsFL" submachine="../39">
      <!--${AOs::SumoHSM::SM::StepsFL::XP1}-->
      <xpseg xpref="../../39/0" target="../../25">
-      <xpseg_glyph conn="65,165,0,2,-10">
+      <xpseg_glyph conn="64,165,0,2,-2,1,-8">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1361,8 +1510,7 @@ led_stripe_set_all_color(COLOR_RED);</exit>
      <entry>board_led_off();</entry>
      <!--${AOs::SumoHSM::SM::RC_2::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
-      <action>QTimeEvt_disarm(&amp;me-&gt;timerFailSafe);
-int coord_x = radio_service_get_channel(RADIO_CH1);
+      <action>int coord_x = radio_service_get_channel(RADIO_CH1);
 int coord_y = radio_service_get_channel(RADIO_CH2);
 
 int mot1 = coord_y + coord_x;
@@ -1381,7 +1529,7 @@ if (coord_y &gt;= 60) {
 
 
 
-QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);</action>
+QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);</action>
       <tran_glyph conn="143,135,3,-1,12">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -1391,6 +1539,7 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);</action>
       <!--${AOs::SumoHSM::SM::RC_2::CHANGE_STATE_EVT::[|ch1|and|ch2|<10]}-->
       <choice target="../../../2">
        <guard brief="|ch1| and |ch2|&lt; 10">(abs(radio_service_get_channel(RADIO_CH1)) &lt; 10) &amp;&amp; (abs(radio_service_get_channel(RADIO_CH2)) &lt; 10)</guard>
+       <action brief="e">BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</action>
        <choice_glyph conn="188,115,4,1,-41,-24">
         <action box="-12,-44,16,4"/>
        </choice_glyph>
@@ -1401,14 +1550,6 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::RC_2::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR">
-      <action>if (parameters.strategy &gt; 0){
-    if (adc_line_is_white(LINE_FL)){
-        drive(-100, -100);
-    } else if (adc_line_is_white(LINE_FR)){
-        drive(-100, -100);
-    }
-
-}</action>
       <!--${AOs::SumoHSM::SM::RC_2::LINE_CHANGED_FL,~::[white]}-->
       <choice target="../../../32">
        <guard brief="white">adc_line_is_white(LINE_FL) || adc_line_is_white(LINE_FR)</guard>
@@ -1442,7 +1583,7 @@ QTimeEvt_armX(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC, 0);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::RC_2::CHANGE_PRE_STRATEGY_EVT}-->
      <tran trig="CHANGE_PRE_STRATEGY_EVT" target="../../10" cpref="../../40/2">
-      <tran_glyph conn="168,134,1,0,16,-40,-51,5">
+      <tran_glyph conn="168,134,1,0,16,-40,-55,5">
        <action box="-7,-2,25,2"/>
       </tran_glyph>
      </tran>
@@ -1488,13 +1629,13 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, reverse_time);</entry>
     <smstate name="LineB_RC" submachine="../43">
      <!--${AOs::SumoHSM::SM::LineB_RC::XP1}-->
      <xpseg xpref="../../43/0" target="../../28">
-      <xpseg_glyph conn="155,178,0,2,-11">
+      <xpseg_glyph conn="154,178,0,2,-2,1,-9">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::LineB_RC::STOP_XP}-->
      <xpseg xpref="../../43/1" target="../../28">
-      <xpseg_glyph conn="155,184,2,2,3,7,-20">
+      <xpseg_glyph conn="153,184,2,2,3,9,-20">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1504,13 +1645,13 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, reverse_time);</entry>
     <smstate name="LineF_RC" submachine="../39">
      <!--${AOs::SumoHSM::SM::LineF_RC::XP1}-->
      <xpseg xpref="../../39/0" target="../../28">
-      <xpseg_glyph conn="170,191,0,1,-26,-2">
+      <xpseg_glyph conn="169,191,0,1,-26,-1">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::LineF_RC::STOP_XP}-->
      <xpseg xpref="../../39/1" target="../../28">
-      <xpseg_glyph conn="169,197,2,1,2,6,-36,-7">
+      <xpseg_glyph conn="170,197,2,1,2,5,-36,-7">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1640,13 +1781,13 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_m
     <smstate name="LineBackCalibStuck" submachine="../43">
      <!--${AOs::SumoHSM::SM::LineBackCalibStu~::XP1}-->
      <xpseg xpref="../../43/0" target="../../34">
-      <xpseg_glyph conn="402,125,0,1,-3,12,-26,-5">
+      <xpseg_glyph conn="400,125,0,1,-3,14,-26,-5">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
      <!--${AOs::SumoHSM::SM::LineBackCalibStu~::STOP_XP}-->
      <xpseg xpref="../../43/1" target="../../19">
-      <xpseg_glyph conn="401,133,2,0,4">
+      <xpseg_glyph conn="399,133,2,0,2,2,2">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1676,7 +1817,7 @@ drive(0, 0);</entry>
      </xpseg>
      <!--${AOs::SumoHSM::SM::state1::START}-->
      <xpseg xpref="../../45/1" target="../../8" cpref="../../40/0">
-      <xpseg_glyph conn="8,68,2,0,43,18,2">
+      <xpseg_glyph conn="8,68,2,0,43,17,2">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1687,7 +1828,8 @@ drive(0, 0);</entry>
      <entry>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+drive(0, 0);</exit>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::XP-XP1}-->
      <xp name="XP1">
       <xp_glyph point="72,2,0">
@@ -1696,7 +1838,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      </xp>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::XP-STOP_XP}-->
      <xp name="STOP_XP">
-      <xp_glyph point="65,63,2">
+      <xp_glyph point="74,96,2">
        <name box="1,-2,10,2"/>
       </xp_glyph>
      </xp>
@@ -1708,8 +1850,8 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      </initial>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::STOP, CHANGE_STATE_EVT}-->
      <tran trig="STOP, CHANGE_STATE_EVT" target=".." cpref="../1">
-      <tran_glyph conn="83,56,1,2,-18,6">
-       <action box="-21,-3,25,4"/>
+      <tran_glyph conn="90,90,1,2,-16,5">
+       <action box="-15,-2,17,5"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack}-->
@@ -1722,22 +1864,52 @@ if (adc_line_is_white(LINE_FL)){
     QTimeEvt_rearm(&amp;me-&gt;timeEvt, reverse_time);
 } else {
     QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, reverse_time);
-}</entry>
+}
+
+led_stripe_set_all_color(COLOR_YELLOW);</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../5">
-       <tran_glyph conn="7,25,3,0,9,7">
+      <tran trig="TIMEOUT">
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT::[distance_none_active()]}-->
+       <choice target="../../../5">
+        <guard brief="distance_none_active()">distance_none_active()</guard>
+        <choice_glyph conn="17,32,4,0,12">
+         <action box="1,4,19,3"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT::[else]}-->
+       <choice target="../../.." cpref="../../../0">
+        <guard brief="else">else</guard>
+        <choice_glyph conn="17,32,5,0,55,-29">
+         <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="7,25,3,-1,10,7">
         <action box="0,-2,16,4"/>
        </tran_glyph>
       </tran>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT_2}-->
-      <tran trig="TIMEOUT_2" target="../../6">
-       <tran_glyph conn="7,21,3,0,38,11">
+      <tran trig="TIMEOUT_2">
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT_2::[distance_none_active()]}-->
+       <choice target="../../../6">
+        <guard brief="distance_none_active()">distance_none_active()</guard>
+        <choice_glyph conn="45,38,4,0,6">
+         <action box="1,1,19,3"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::TIMEOUT_2::[else]}-->
+       <choice target="../../.." cpref="../../../0">
+        <guard brief="else">else</guard>
+        <choice_glyph conn="45,38,5,0,27,-35">
+         <action box="2,-2,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="7,21,3,-1,38,17">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
       <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../.." cpref="../../0">
-       <tran_glyph conn="7,16,3,0,52,-8,13,-5">
+       <tran_glyph conn="7,16,3,0,65,-13">
         <action box="0,-2,19,5"/>
        </tran_glyph>
       </tran>
@@ -1749,49 +1921,121 @@ if (adc_line_is_white(LINE_FL)){
      <state name="LineTurnRight">
       <entry brief="turn right">drive(100, -100);
 uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <exit>drive(0,0);</exit>
-      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../0">
-       <tran_glyph conn="10,44,3,0,62,-41">
-        <action box="0,-2,10,2"/>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+led_stripe_set_all_color(COLOR_PINK);</entry>
+      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::TIMEOUT, DIST_SENSOR_CHANGE}-->
+      <tran trig="TIMEOUT, DIST_SENSOR_CHANGE" target="../../7">
+       <tran_glyph conn="11,56,3,0,19,17">
+        <action box="0,-2,22,6"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::DIST_SENSOR_CHANGE}-->
-      <tran trig="DIST_SENSOR_CHANGE" target="../.." cpref="../../0">
-       <tran_glyph conn="10,48,3,0,62,-45">
-        <action box="0,-2,23,2"/>
+      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::LINE_CHANGED_FL, LINE_CHANGED_FR~}-->
+      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR, LINE_CHANGED_BL, LINE_CHANGED_BR">
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::LINE_CHANGED_FL,~::[white]}-->
+       <choice target="../../../7">
+        <guard brief="white">(adc_line_get_all() != 0)</guard>
+        <choice_glyph conn="22,69,4,0,4">
+         <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="11,63,3,-1,11,6">
+        <action box="0,-2,12,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="10,32,21,22">
+      <state_glyph node="11,44,21,22">
        <entry box="1,2,10,2"/>
-       <exit box="1,4,18,4"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft}-->
      <state name="LineTurnLeft">
       <entry brief="turn left">drive(-100, 100);
 uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_LEFT, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+led_stripe_set_all_color(COLOR_PINK);</entry>
       <exit>drive(0,0);</exit>
-      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../0">
-       <tran_glyph conn="38,45,3,0,34,-42">
-        <action box="0,-3,10,2"/>
+      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::TIMEOUT, DIST_SENSOR_CHANGE}-->
+      <tran trig="TIMEOUT, DIST_SENSOR_CHANGE" target="../../8">
+       <tran_glyph conn="38,60,3,0,19,13">
+        <action box="0,-2,21,6"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::DIST_SENSOR_CHANGE}-->
-      <tran trig="DIST_SENSOR_CHANGE" target="../.." cpref="../../0">
-       <tran_glyph conn="38,51,3,0,34,-48">
-        <action box="0,-2,23,2"/>
+      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::LINE_CHANGED_FL, LINE_CHANGED_FR~}-->
+      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR, LINE_CHANGED_BL, LINE_CHANGED_BR">
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::LINE_CHANGED_FL,~::[white]}-->
+       <choice target="../../../8">
+        <guard brief="white">(adc_line_get_all() != 0)</guard>
+        <choice_glyph conn="47,68,4,0,5">
+         <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="38,64,3,-1,9,4">
+        <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="38,32,21,22">
+      <state_glyph node="38,44,21,22">
        <entry box="1,2,10,2"/>
        <exit box="1,4,18,4"/>
       </state_glyph>
      </state>
-     <submachine_diagram size="81,61">
+     <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRightBreak}-->
+     <state name="LineTurnRightBreak">
+      <entry brief="turn left">drive(-100, 100);
+uint16_t turn_time_ms = 15;
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRightBre~::TIMEOUT, DIST_SENSOR_CHANGE}-->
+      <tran trig="TIMEOUT, DIST_SENSOR_CHANGE">
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRightBre~::TIMEOUT, DIST_SE~::[white]}-->
+       <choice target="../..">
+        <guard brief="white">(adc_line_get_all() != 0)</guard>
+        <choice_glyph conn="6,78,5,3,5">
+         <action box="-1,-4,5,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRightBre~::TIMEOUT, DIST_SE~::[else]}-->
+       <choice target="../../.." cpref="../../../0">
+        <guard>else</guard>
+        <choice_glyph conn="6,78,5,0,-3,15,69,-90">
+         <action box="-1,13,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="11,82,3,-1,-5,-4">
+        <action box="0,-2,20,5"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="11,73,20,16">
+       <entry box="1,2,13,4"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeftBreak}-->
+     <state name="LineTurnLeftBreak">
+      <entry brief="turn right">drive(100, -100);
+uint16_t turn_time_ms = 15;
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeftBrea~::TIMEOUT, DIST_SENSOR_CHANGE}-->
+      <tran trig="TIMEOUT, DIST_SENSOR_CHANGE">
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeftBrea~::TIMEOUT, DIST_SE~::[white]}-->
+       <choice target="../..">
+        <guard brief="white">(adc_line_get_all() != 0)</guard>
+        <choice_glyph conn="63,81,4,1,-3,-4">
+         <action box="-3,-6,10,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeftBrea~::TIMEOUT, DIST_SE~::[else]}-->
+       <choice target="../../.." cpref="../../../0">
+        <guard>else</guard>
+        <choice_glyph conn="63,81,5,0,9,-78">
+         <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="38,85,3,-1,25,-4">
+        <action box="0,-2,22,6"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="38,73,21,16">
+       <entry box="1,2,10,2"/>
+      </state_glyph>
+     </state>
+     <submachine_diagram size="88,94">
       <entry box="1,2,6,2"/>
       <exit box="1,4,6,2"/>
      </submachine_diagram>
@@ -1804,92 +2048,148 @@ led_stripe_set_all_color(COLOR_RED);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP0}-->
-     <epseg name="EP0" target="../17">
+     <epseg name="EP0" target="../25">
       <epseg_glyph conn="19,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP1}-->
-     <epseg name="EP1" target="../25">
+     <epseg name="EP1" target="../32">
       <epseg_glyph conn="41,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP2}-->
-     <epseg name="EP2" target="../20">
+     <epseg name="EP2" target="../27">
       <epseg_glyph conn="65,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP3}-->
-     <epseg name="EP3" target="../18">
+     <epseg name="EP3" target="../26">
       <epseg_glyph conn="89,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP4}-->
-     <epseg name="EP4" target="../19">
+     <epseg name="EP4" target="../33">
       <epseg_glyph conn="113,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP5}-->
-     <epseg name="EP5" target="../26">
+     <epseg name="EP5" target="../72">
       <epseg_glyph conn="137,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP6}-->
-     <epseg name="EP6" target="../30">
+     <epseg name="EP6" target="../37">
       <epseg_glyph conn="161,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP7}-->
-     <epseg name="EP7" target="../29">
+     <epseg name="EP7" target="../36">
       <epseg_glyph conn="185,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP10}-->
-     <epseg name="EP10" target="../57">
-      <epseg_glyph conn="257,2,0,0,18">
+     <epseg name="EP10" target="../63">
+      <epseg_glyph conn="257,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP8}-->
-     <epseg name="EP8" target="../41">
-      <epseg_glyph conn="208,2,0,0,5">
+     <epseg name="EP8" target="../47">
+      <epseg_glyph conn="208,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP9}-->
-     <epseg name="EP9" target="../46">
-      <epseg_glyph conn="232,2,0,0,5">
+     <epseg name="EP9" target="../52">
+      <epseg_glyph conn="232,2,0,0,8">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP11}-->
-     <epseg name="EP11" target="../33">
-      <epseg_glyph conn="280,2,0,0,6">
+     <epseg name="EP11" target="../63">
+      <epseg_glyph conn="281,2,0,0,3,-20,5">
+       <name box="1,-2,10,2"/>
+       <action box="1,0,10,2"/>
+      </epseg_glyph>
+     </epseg>
+     <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP12}-->
+     <epseg name="EP12" target="../83">
+      <epseg_glyph conn="304,2,0,0,6">
+       <name box="1,-2,10,2"/>
+       <action box="1,0,10,2"/>
+      </epseg_glyph>
+     </epseg>
+     <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP13}-->
+     <epseg name="EP13" target="../83">
+      <epseg_glyph conn="322,2,0,0,4,-12,2">
+       <name box="1,-2,10,2"/>
+       <action box="1,0,10,2"/>
+      </epseg_glyph>
+     </epseg>
+     <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP14}-->
+     <epseg name="EP14" target="../70">
+      <epseg_glyph conn="340,2,0,0,6">
+       <name box="1,-2,10,2"/>
+       <action box="1,0,10,2"/>
+      </epseg_glyph>
+     </epseg>
+     <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP15}-->
+     <epseg name="EP15" target="../40">
+      <epseg_glyph conn="363,2,0,0,6">
+       <name box="1,-2,10,2"/>
+       <action box="1,0,10,2"/>
+      </epseg_glyph>
+     </epseg>
+     <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP16}-->
+     <epseg name="EP16" target="../86">
+      <epseg_glyph conn="386,2,0,0,6">
+       <name box="1,-2,10,2"/>
+       <action box="1,0,10,2"/>
+      </epseg_glyph>
+     </epseg>
+     <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP17}-->
+     <epseg name="EP17" target="../95">
+      <epseg_glyph conn="409,2,0,0,6">
+       <name box="1,-2,10,2"/>
+       <action box="1,0,10,2"/>
+      </epseg_glyph>
+     </epseg>
+     <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP18}-->
+     <epseg name="EP18" target="../96">
+      <epseg_glyph conn="434,2,0,0,6">
+       <name box="1,-2,10,2"/>
+       <action box="1,0,10,2"/>
+      </epseg_glyph>
+     </epseg>
+     <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP19}-->
+     <epseg name="EP19" target="../100">
+      <epseg_glyph conn="465,2,0,0,6">
        <name box="1,-2,10,2"/>
        <action box="1,0,10,2"/>
       </epseg_glyph>
      </epseg>
      <!--${AOs::SumoHSM::SM::PreStrategy::XP-XP1}-->
      <xp name="XP1">
-      <xp_glyph point="91,96,2">
+      <xp_glyph point="91,124,2">
        <name box="1,-2,10,2"/>
       </xp_glyph>
      </xp>
@@ -1901,12 +2201,12 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      </xp>
      <!--${AOs::SumoHSM::SM::PreStrategy::XP-F_LINE}-->
      <xp name="F_LINE">
-      <xp_glyph point="156,96,2">
+      <xp_glyph point="164,124,2">
        <name box="1,-2,10,2"/>
       </xp_glyph>
      </xp>
      <!--${AOs::SumoHSM::SM::PreStrategy::STOP}-->
-     <tran trig="STOP" target=".." cpref="../13">
+     <tran trig="STOP" target=".." cpref="../21">
       <tran_glyph conn="2,45,3,3,3,-6,-2">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -1914,135 +2214,122 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <!--${AOs::SumoHSM::SM::PreStrategy::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR">
       <!--${AOs::SumoHSM::SM::PreStrategy::LINE_CHANGED_FL,~::[white]}-->
-      <choice target="../.." cpref="../../14">
+      <choice target="../.." cpref="../../22">
        <guard brief="white">adc_line_is_white(LINE_FL) || adc_line_is_white(LINE_FR)</guard>
-       <choice_glyph conn="22,63,4,2,17,134,15">
+       <choice_glyph conn="156,119,5,2,8,4">
         <action box="1,0,10,2"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="2,63,3,-1,20">
-       <action box="0,-2,21,5"/>
+      <tran_glyph conn="134,124,2,-1,-5,22">
+       <action box="0,-8,21,5"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0}-->
-     <state name="PreStrategy_0">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_None}-->
+     <state name="PreStrategy_None">
       <entry brief="motor_on">drive(100,100);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 10);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_0::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="8,20,3,2,-2,38,85,37">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_None::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="8,20,3,2,22,95,61,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="8,10,18,44">
+      <state_glyph node="8,10,18,14">
        <entry box="1,2,14,4"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3}-->
-     <state name="PreStrategy_3">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy__DiagRight}-->
+     <state name="PreStrategy__DiagRight">
       <entry brief="turn_right">drive(100,-100);
 uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../22">
-       <tran_glyph conn="80,17,3,0,9,5">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy__Dia~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../29">
+       <tran_glyph conn="80,16,3,0,10,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="80,10,18,9">
+      <state_glyph node="80,10,18,8">
        <entry box="1,2,14,3"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4}-->
-     <state name="PreStrategy_4">
-      <entry brief="motor_back">drive(-40,-40);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
-      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../../38">
-       <tran_glyph conn="104,18,3,0,15,8">
-        <action box="0,-2,19,4"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="104,10,18,12">
-       <entry box="1,2,14,3"/>
-      </state_glyph>
-     </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2}-->
-     <state name="PreStrategy_2">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DiagLeft}-->
+     <state name="PreStrategy_DiagLeft">
       <entry brief="turn_left">drive(-100,100);
 uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../24">
-       <tran_glyph conn="56,17,3,0,13,5">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Diag~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../31">
+       <tran_glyph conn="56,16,3,0,12,6">
         <action box="0,-2,16,4"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="56,10,18,9">
+      <state_glyph node="56,10,18,8">
        <entry box="1,2,16,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_sub2}-->
      <state name="PreStrategy_3_sub2">
       <entry brief="turn_left">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(100, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(90, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../56">
-       <tran_glyph conn="80,41,3,0,9,6">
+      <tran trig="TIMEOUT" target="../../62">
+       <tran_glyph conn="80,40,3,0,10,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="80,34,18,10">
+      <state_glyph node="80,34,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_sub1}-->
      <state name="PreStrategy_3_sub1">
       <entry brief="motor_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(65, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../21">
-       <tran_glyph conn="80,30,3,0,10,4">
+      <tran trig="TIMEOUT" target="../../28">
+       <tran_glyph conn="80,28,3,0,10,6">
         <action box="0,-2,17,6"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="80,22,18,10">
+      <state_glyph node="80,22,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_sub2}-->
      <state name="PreStrategy_2_sub2">
       <entry brief="turn_right">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(100, 100, SIDE_RIGHT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(90, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../55">
-       <tran_glyph conn="56,42,3,0,13,5">
+      <tran trig="TIMEOUT" target="../../61">
+       <tran_glyph conn="56,40,3,0,12,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="56,35,18,9">
+      <state_glyph node="56,34,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_sub1}-->
      <state name="PreStrategy_2_sub1">
       <entry brief="motor_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(65, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../23">
-       <tran_glyph conn="56,30,3,0,13,5">
+      <tran trig="TIMEOUT" target="../../30">
+       <tran_glyph conn="56,28,3,0,12,6">
         <action box="0,-2,19,6"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="56,22,18,10">
+      <state_glyph node="56,22,18,8">
        <entry box="1,2,15,4"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1}-->
-     <state name="PreStrategy_1">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Custom}-->
+     <state name="PreStrategy_Custom">
       <entry brief="custom_strategy">cust_strategy_reset();
 uint8_t current_step = cust_strategy_current_step();
 movement_t first_step = cust_strategy_move_type(current_step);
@@ -2078,7 +2365,7 @@ switch (first_step) {
 }
 
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::TIMEOUT}-->
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::TIMEOUT}-->
       <tran trig="TIMEOUT">
        <action>cust_strategy_increase_step();
 uint8_t current_step = cust_strategy_current_step();
@@ -2125,74 +2412,74 @@ if (current_step &gt;= cust_strategy_num_steps() - 1){
         <action box="0,-2,12,2"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::TIMEOUT_2}-->
-      <tran trig="TIMEOUT_2" target="../.." cpref="../../12">
-       <tran_glyph conn="32,33,3,2,-2,55,61,7">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::TIMEOUT_2}-->
+      <tran trig="TIMEOUT_2" target="../.." cpref="../../20">
+       <tran_glyph conn="32,28,3,2,-2,87,61,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
-      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../../39">
-       <tran_glyph conn="32,42,3,0,15,6">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
+      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../../45">
+       <tran_glyph conn="32,33,3,0,15,13">
         <action box="0,-2,17,5"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="32,10,18,36">
+      <state_glyph node="32,10,18,32">
        <entry box="1,2,15,4"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5}-->
-     <state name="PreStrategy_5">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_OmaeLeft}-->
+     <state name="PreStrategy_OmaeLeft">
       <entry brief="turn_left">drive(-100,100);
 uint16_t turn_time_ms = get_time_to_turn_ms(36, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../27">
-       <tran_glyph conn="128,16,3,0,9,4">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Omae~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../34">
+       <tran_glyph conn="104,16,3,0,9,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="128,10,18,8">
+      <state_glyph node="104,10,18,8">
        <entry box="1,2,14,3"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub1}-->
-     <state name="PreStrategy_5_sub1">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_sub1}-->
+     <state name="PreStrategy_4_sub1">
       <entry brief="go_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(55, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(80, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../28">
-       <tran_glyph conn="128,26,3,0,9,5">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../35">
+       <tran_glyph conn="104,28,3,0,9,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="128,20,18,8">
+      <state_glyph node="104,22,18,8">
        <entry box="1,2,13,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub2}-->
-     <state name="PreStrategy_5_sub2">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_sub2}-->
+     <state name="PreStrategy_4_sub2">
       <entry brief="turn_right">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(70, 100, SIDE_RIGHT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(130, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../40">
-       <tran_glyph conn="128,37,3,0,9,4">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../46">
+       <tran_glyph conn="104,40,3,0,9,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="128,31,18,8">
+      <state_glyph node="104,34,18,8">
        <entry box="1,2,14,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7}-->
-     <state name="PreStrategy_7">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcRight}-->
+     <state name="PreStrategy_ArcRight">
       <entry brief="turn_right">drive(100,-100);
 uint16_t turn_time_ms = get_time_to_turn_ms(75, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../32">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcR~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../39">
        <tran_glyph conn="176,18,3,0,14,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
@@ -2201,13 +2488,13 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
        <entry box="1,2,15,3"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6}-->
-     <state name="PreStrategy_6">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcLeft}-->
+     <state name="PreStrategy_ArcLeft">
       <entry brief="turn_left">drive(-100,100);
 uint16_t turn_time_ms = get_time_to_turn_ms(75, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../31">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ArcL~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../38">
        <tran_glyph conn="152,19,3,0,10,7">
         <action box="0,-2,16,4"/>
        </tran_glyph>
@@ -2222,7 +2509,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
 uint16_t move_time_ms = get_time_to_move_ms(110, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../34">
+      <tran trig="TIMEOUT" target="../../41">
        <tran_glyph conn="152,34,3,0,10,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
@@ -2237,7 +2524,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
 uint16_t move_time_ms = get_time_to_move_ms(110, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../35">
+      <tran trig="TIMEOUT" target="../../42">
        <tran_glyph conn="176,34,3,0,11,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
@@ -2246,18 +2533,18 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
        <entry box="1,2,11,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11}-->
-     <state name="PreStrategy_11">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Turn180}-->
+     <state name="PreStrategy_Turn180">
       <entry brief="turn_left_180">drive(-100,100);
 uint16_t turn_time_ms = get_time_to_turn_ms(180, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="274,16,3,2,7,70,-190,9">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Turn~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="354,14,3,2,7,101,-270,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="274,8,18,12">
+      <state_glyph node="354,8,18,8">
        <entry box="1,2,15,3"/>
       </state_glyph>
      </state>
@@ -2267,8 +2554,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
 uint16_t turn_time_ms = get_time_to_turn_ms(20, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_6_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="152,50,3,2,10,30,-71,15">
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="152,50,3,2,10,65,-71,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -2282,8 +2569,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
 uint16_t turn_time_ms = get_time_to_turn_ms(20, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_7_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="176,50,3,2,10,30,-95,15">
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="176,50,3,2,10,65,-95,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -2291,49 +2578,34 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
        <entry box="1,2,14,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub4}-->
-     <state name="PreStrategy_5_sub4">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_sub4}-->
+     <state name="PreStrategy_4_sub4">
       <entry brief="go_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(50, 100, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../37">
-       <tran_glyph conn="128,56,3,0,9,4">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="128,50,18,8">
-       <entry box="1,2,13,2"/>
-      </state_glyph>
-     </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub5}-->
-     <state name="PreStrategy_5_sub5">
-      <entry brief="turn_right">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_RIGHT, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../63">
-       <tran_glyph conn="128,66,3,0,10,4">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="128,60,18,7">
-       <entry box="1,2,14,2"/>
-      </state_glyph>
-     </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_sub1}-->
-     <state name="PreStrategy_4_sub1">
-      <entry brief="go_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(20, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(70, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="104,34,3,2,8,40,-21,21">
+      <tran trig="TIMEOUT" target="../../44">
+       <tran_glyph conn="104,64,3,0,9,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="104,26,18,12">
+      <state_glyph node="104,58,18,8">
        <entry box="1,2,13,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_sub5}-->
+     <state name="PreStrategy_4_sub5">
+      <entry brief="turn_right">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(50, 100, SIDE_RIGHT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../69">
+       <tran_glyph conn="104,76,3,0,9,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="104,70,18,8">
+       <entry box="1,2,14,2"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1_sub1}-->
@@ -2342,87 +2614,87 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
 uint16_t move_time_ms = get_time_to_move_ms(15, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="32,54,3,2,8,26,51,15">
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="32,52,3,2,8,63,51,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="32,48,18,7">
+      <state_glyph node="32,46,18,8">
        <entry box="1,2,13,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub3}-->
-     <state name="PreStrategy_5_sub3">
-      <entry brief="turnLeft">drive(-100,100);
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_sub3}-->
+     <state name="PreStrategy_4_sub3">
+      <entry brief="turn_left">drive(-100,100);
 uint16_t turn_time_ms = get_time_to_turn_ms(30, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../36">
-       <tran_glyph conn="128,47,3,0,9,3">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../43">
+       <tran_glyph conn="104,52,3,0,9,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="128,41,18,7">
+      <state_glyph node="104,46,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8}-->
-     <state name="PreStrategy_8">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZagLeft}-->
+     <state name="PreStrategy_ZigZagLeft">
       <entry brief="turn_left">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../42">
-       <tran_glyph conn="200,13,3,0,14,4">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZ~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../48">
+       <tran_glyph conn="200,16,3,0,11,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="200,7,18,8">
+      <state_glyph node="200,10,18,8">
        <entry box="1,2,15,4"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_sub1}-->
      <state name="PreStrategy_8_sub1">
       <entry brief="motor_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(50, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(70, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../43">
-       <tran_glyph conn="200,23,3,0,11,4">
+      <tran trig="TIMEOUT" target="../../49">
+       <tran_glyph conn="200,28,3,0,11,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="200,17,18,8">
+      <state_glyph node="200,22,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_sub2}-->
      <state name="PreStrategy_8_sub2">
       <entry brief="turn_right">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(170, 100, SIDE_RIGHT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(230, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../45">
-       <tran_glyph conn="200,33,3,0,11,4">
+      <tran trig="TIMEOUT" target="../../51">
+       <tran_glyph conn="200,40,3,0,11,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="200,27,18,7">
+      <state_glyph node="200,34,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_sub4}-->
      <state name="PreStrategy_8_sub4">
       <entry brief="motor_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(93, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(95, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../52">
-       <tran_glyph conn="200,53,3,0,11,4">
+      <tran trig="TIMEOUT" target="../../58">
+       <tran_glyph conn="200,64,3,0,11,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="200,47,18,8">
+      <state_glyph node="200,58,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
@@ -2432,57 +2704,57 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
 uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../44">
-       <tran_glyph conn="200,43,3,0,11,4">
+      <tran trig="TIMEOUT" target="../../50">
+       <tran_glyph conn="200,52,3,0,11,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="200,37,18,7">
+      <state_glyph node="200,46,18,8">
        <entry box="1,2,13,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9}-->
-     <state name="PreStrategy_9">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZagRight}-->
+     <state name="PreStrategy_ZigZagRight">
       <entry brief="turn_right">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_RIGHT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../47">
-       <tran_glyph conn="224,13,3,0,14,4">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_ZigZ~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../53">
+       <tran_glyph conn="224,16,3,0,14,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="224,7,18,8">
+      <state_glyph node="224,10,18,8">
        <entry box="1,2,10,2"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_sub1}-->
      <state name="PreStrategy_9_sub1">
       <entry brief="motor_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(50, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(70, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../48">
-       <tran_glyph conn="224,23,3,0,14,4">
+      <tran trig="TIMEOUT" target="../../54">
+       <tran_glyph conn="224,28,3,0,14,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="224,17,18,8">
+      <state_glyph node="224,22,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_sub2}-->
      <state name="PreStrategy_9_sub2">
       <entry brief="turn_left">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(210, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(230, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../49">
-       <tran_glyph conn="224,33,3,0,14,4">
+      <tran trig="TIMEOUT" target="../../55">
+       <tran_glyph conn="224,40,3,0,14,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="224,27,18,7">
+      <state_glyph node="224,34,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
@@ -2492,27 +2764,27 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
 uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../50">
-       <tran_glyph conn="224,43,3,0,10,4">
+      <tran trig="TIMEOUT" target="../../56">
+       <tran_glyph conn="224,52,3,0,10,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="224,37,18,8">
+      <state_glyph node="224,46,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_sub4}-->
      <state name="PreStrategy_9_sub4">
       <entry brief="motor_front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(93, 100, &amp;parameters);
+uint16_t move_time_ms = get_time_to_move_ms(90, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../53">
-       <tran_glyph conn="224,54,3,0,11,3">
+      <tran trig="TIMEOUT" target="../../59">
+       <tran_glyph conn="224,65,3,0,11,5">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="224,47,18,8">
+      <state_glyph node="224,58,18,8">
        <entry box="1,2,14,2"/>
       </state_glyph>
      </state>
@@ -2522,27 +2794,27 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</ent
 uint16_t turn_time_ms = get_time_to_turn_ms(30, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="200,74,3,2,-27,6,-82,15">
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="200,88,3,2,-6,27,-103,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="200,68,18,8">
+      <state_glyph node="200,82,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_sub5}-->
      <state name="PreStrategy_8_sub5">
       <entry brief="motor_left">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(100, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(110, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_8_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../51">
-       <tran_glyph conn="200,63,3,0,10,5">
+      <tran trig="TIMEOUT" target="../../57">
+       <tran_glyph conn="200,76,3,0,11,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="200,57,18,8">
+      <state_glyph node="200,70,18,8">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
@@ -2552,13 +2824,13 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
 uint16_t turn_time_ms = get_time_to_turn_ms(100, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../54">
-       <tran_glyph conn="224,64,3,0,10,4">
+      <tran trig="TIMEOUT" target="../../60">
+       <tran_glyph conn="224,77,3,0,10,5">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="224,57,18,8">
-       <entry box="1,2,14,2"/>
+      <state_glyph node="224,70,18,8">
+       <entry box="1,2,13,2"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_sub6}-->
@@ -2567,54 +2839,628 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
 uint16_t turn_time_ms = get_time_to_turn_ms(30, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_9_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="224,75,3,2,-2,13,-131,7">
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="224,89,3,2,-2,26,-131,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="224,68,18,8">
+      <state_glyph node="224,82,18,8">
        <entry box="1,2,14,2"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_sub3}-->
      <state name="PreStrategy_2_sub3">
       <entry brief="turn_left_break">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_LEFT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(50, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="56,53,3,2,13,5,22,37">
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="56,52,3,2,12,63,23,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="56,47,18,8">
+      <state_glyph node="56,46,18,8">
        <entry box="1,2,17,2"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_sub3}-->
      <state name="PreStrategy_3_sub3">
       <entry brief="turn_right_break">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_RIGHT, &amp;parameters);
+uint16_t turn_time_ms = get_time_to_turn_ms(50, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_3_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="80,53,3,2,11,42">
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="80,53,3,2,11,70">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="80,47,17,8">
+      <state_glyph node="80,46,18,8">
        <entry box="1,2,16,4"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub1}-->
-     <state name="PreStrategy_10_sub1">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DefenseLeft}-->
+     <state name="PreStrategy_DefenseLeft">
       <entry brief="align">bool seeing;
 seeing = SumoHSM_CheckDistAndMoveDefense(me);
 
 if (distance_is_active(DIST_SENSOR_F)){
-    drive(0,0);
-    QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 10);
+    if (parameters.pre_strategy == 10){
+         drive(-100,100);
+    } else {
+        drive(100,-100);
+    }
+    QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 5);
 }
+
+if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
+    me-&gt;step_counter++;
+    if (me-&gt;step_counter &gt; 6){
+        QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 10);
+    }
+}
+
+if (seeing) {
+    QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+} else {
+    drive(0,0);
+    uint32_t small_step_wait = 1300 * BSP_TICKS_PER_MILISSEC;
+    QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_wait);
+}</entry>
+      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Defe~::DIST_SENSOR_CHANGE}-->
+      <tran trig="DIST_SENSOR_CHANGE" target="..">
+       <tran_glyph conn="266,15,1,0,7,-7,-9,2">
+        <action box="-3,-9,19,3"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Defe~::TIMEOUT_2}-->
+      <tran trig="TIMEOUT_2" target="../../64">
+       <tran_glyph conn="248,19,3,3,-2,7,2">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Defe~::TIMEOUT}-->
+      <tran trig="TIMEOUT">
+       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Defe~::TIMEOUT::[ps==10]}-->
+       <choice target="../../../65">
+        <guard brief="ps == 10">parameters.pre_strategy == 10</guard>
+        <choice_glyph conn="271,35,5,1,-2,8,-3">
+         <action box="-5,8,6,3"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Defe~::TIMEOUT::[else]}-->
+       <choice target="../../../79">
+        <guard brief="else">else</guard>
+        <choice_glyph conn="271,35,5,0,8,3">
+         <action box="3,-3,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="266,18,1,-1,5,17">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="248,10,18,10">
+       <entry box="1,2,6,2"/>
+       <exit box="1,4,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub1}-->
+     <state name="PreStrategy_10_sub1">
+      <entry brief="step_advance">drive(100,100);
+uint32_t small_step_advance_time = 15 * BSP_TICKS_PER_MILISSEC;
+QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
+      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT_2, DIST_SENSOR_CHANGE}-->
+      <tran trig="TIMEOUT_2, DIST_SENSOR_CHANGE" target="../../63">
+       <tran_glyph conn="248,32,3,3,-3,-18,3">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="248,24,18,11">
+       <entry box="1,2,14,2"/>
+       <exit box="1,4,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub2}-->
+     <state name="PreStrategy_10_sub2">
+      <entry brief="left">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../66">
+       <tran_glyph conn="248,44,3,0,11,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="248,38,18,8">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub3}-->
+     <state name="PreStrategy_10_sub3">
+      <entry brief="front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(70, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../67">
+       <tran_glyph conn="248,56,3,0,11,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="248,50,18,8">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub4}-->
+     <state name="PreStrategy_10_sub4">
+      <entry brief="right">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(115, 100, SIDE_RIGHT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../68">
+       <tran_glyph conn="248,68,3,0,12,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="248,62,18,8">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub5}-->
+     <state name="PreStrategy_10_sub5">
+      <entry brief="left_break">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="248,81,3,2,-2,34,-155,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="248,74,18,8">
+       <entry box="1,2,12,4"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_sub6}-->
+     <state name="PreStrategy_4_sub6">
+      <entry brief="left_break">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_4_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="103,88,3,2,-2,27,-10,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="103,82,19,8">
+       <entry box="1,2,13,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Back}-->
+     <state name="PreStrategy_Back">
+      <entry brief="motor_back">drive(-40,-40);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Back::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
+      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../../71">
+       <tran_glyph conn="330,14,3,0,14,6">
+        <action box="0,-2,19,4"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="330,8,18,8">
+       <entry box="1,2,14,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_13_sub1}-->
+     <state name="PreStrategy_13_sub1">
+      <entry brief="go_front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(20, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_13_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="330,26,3,2,-3,89,-236,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="330,20,18,8">
+       <entry box="1,2,13,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_OmaeRight}-->
+     <state name="PreStrategy_OmaeRight">
+      <entry brief="turn_right">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(36, 100, SIDE_RIGHT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Omae~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../74">
+       <tran_glyph conn="128,16,3,0,10,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="128,10,18,8">
+       <entry box="1,2,13,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub3}-->
+     <state name="PreStrategy_5_sub3">
+      <entry brief="turn_right">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(30, 100, SIDE_RIGHT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../76">
+       <tran_glyph conn="128,52,3,0,9,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="128,46,18,8">
+       <entry box="1,2,17,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub1}-->
+     <state name="PreStrategy_5_sub1">
+      <entry brief="go_front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(80, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../75">
+       <tran_glyph conn="128,28,3,0,9,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="128,22,18,8">
+       <entry box="1,2,13,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub2}-->
+     <state name="PreStrategy_5_sub2">
+      <entry brief="turn_left">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(70, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../73">
+       <tran_glyph conn="128,40,3,0,9,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="128,34,18,8">
+       <entry box="1,2,14,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub4}-->
+     <state name="PreStrategy_5_sub4">
+      <entry brief="go_front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(50, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../77">
+       <tran_glyph conn="128,64,3,0,9,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="128,58,18,8">
+       <entry box="1,2,13,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub5}-->
+     <state name="PreStrategy_5_sub5">
+      <entry brief="turn_left">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../78">
+       <tran_glyph conn="128,76,3,0,9,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="128,70,18,8">
+       <entry box="1,2,14,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub6}-->
+     <state name="PreStrategy_5_sub6">
+      <entry brief="right_break">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_RIGHT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="128,88,3,2,-2,27,-35,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="128,82,18,8">
+       <entry box="1,2,13,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_sub2}-->
+     <state name="PreStrategy_11_sub2">
+      <entry brief="right">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_RIGHT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../80">
+       <tran_glyph conn="272,44,3,0,11,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="272,38,18,8">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_sub3}-->
+     <state name="PreStrategy_11_sub3">
+      <entry brief="front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(70, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../81">
+       <tran_glyph conn="272,56,3,0,11,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="272,50,18,8">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_sub4}-->
+     <state name="PreStrategy_11_sub4">
+      <entry brief="left">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(115, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../82">
+       <tran_glyph conn="272,68,3,0,12,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="272,62,18,8">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_sub5}-->
+     <state name="PreStrategy_11_sub5">
+      <entry brief="right_break">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_RIGHT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_11_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="272,81,3,2,-2,34,-179,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="272,74,18,8">
+       <entry box="1,2,12,4"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Deceive}-->
+     <state name="PreStrategy_Deceive">
+      <entry brief="go_front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(80, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Dece~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../84">
+       <tran_glyph conn="296,14,3,0,11,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="296,8,18,8">
+       <entry box="1,2,13,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_sub1}-->
+     <state name="PreStrategy_12_sub1">
+      <entry brief="go_back">drive(-100,-100);
+uint16_t move_time_ms = get_time_to_move_ms(100, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../85">
+       <tran_glyph conn="296,26,3,0,10,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
+      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../../71">
+       <tran_glyph conn="314,24,1,3,16">
+        <action box="0,-2,12,4"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="296,20,18,8">
+       <entry box="1,2,11,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_sub2}-->
+     <state name="PreStrategy_12_sub2">
+      <entry brief="break_front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(20, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT">
+       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::TIMEOUT::[ps==12]}-->
+       <choice target="../../../65">
+        <guard brief="ps == 12">parameters.pre_strategy == 12</guard>
+        <choice_glyph conn="291,27,5,1,-23,14,-2">
+         <action box="-19,-3,8,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_12_s~::TIMEOUT::[else]}-->
+       <choice target="../../../79">
+        <guard brief="else">else</guard>
+        <choice_glyph conn="291,27,5,0,-8,11">
+         <action box="-7,1,5,3"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="296,38,3,-1,-5,-11">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="296,32,18,8">
+       <entry box="1,2,13,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Deceive2}-->
+     <state name="PreStrategy_Deceive2">
+      <entry brief="turn_left">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(29, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Dece~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../87">
+       <tran_glyph conn="378,14,3,0,13,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="378,8,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_sub1}-->
+     <state name="PreStrategy_16_sub1">
+      <entry brief="front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(85, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../88">
+       <tran_glyph conn="378,26,3,0,13,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="378,20,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_sub2}-->
+     <state name="PreStrategy_16_sub2">
+      <entry brief="back">drive(-100,-100);
+uint16_t move_time_ms = get_time_to_move_ms(100, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../89">
+       <tran_glyph conn="378,38,3,0,13,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_s~::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
+      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../../71">
+       <tran_glyph conn="378,39,3,1,-28,-14,-2">
+        <action box="-14,-2,11,5"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="378,32,18,8">
+       <entry box="1,2,11,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_sub3}-->
+     <state name="PreStrategy_16_sub3">
+      <entry brief="front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(20, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../90">
+       <tran_glyph conn="378,50,3,0,13,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="378,44,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_sub4}-->
+     <state name="PreStrategy_16_sub4">
+      <entry brief="turn_right">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(70, 100, SIDE_RIGHT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../91">
+       <tran_glyph conn="378,62,3,0,13,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="378,56,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_sub5}-->
+     <state name="PreStrategy_16_sub5">
+      <entry brief="turn_left">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(20, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../92">
+       <tran_glyph conn="378,74,3,0,13,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="378,68,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_sub6}-->
+     <state name="PreStrategy_16_sub6">
+      <entry brief="front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(90, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../93">
+       <tran_glyph conn="378,86,3,0,13,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="378,80,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_sub7}-->
+     <state name="PreStrategy_16_sub7">
+      <entry brief="turn_left">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(130, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../94">
+       <tran_glyph conn="378,98,3,0,13,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="378,92,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_sub8}-->
+     <state name="PreStrategy_16_sub8">
+      <entry brief="turn_right">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_RIGHT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_16_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="378,110,3,2,-17,5,-270,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="378,104,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Attack}-->
+     <state name="PreStrategy_Attack">
+      <entry brief="front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Atta~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="400,14,3,2,-1,105,-38,-4,-270,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="400,8,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_WaitDraw}-->
+     <state name="PreStrategy_WaitDraw">
+      <entry brief="align">bool seeing;
+seeing = SumoHSM_CheckDistAndMoveDefense(me);
+
+if (distance_is_active(DIST_SENSOR_F)){
+    drive(-100,100);
+    QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 5);
+}
+
 
 if (seeing) {
     QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
@@ -2625,122 +3471,176 @@ if (seeing) {
 }</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::DIST_SENSOR_CHANGE}-->
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Wait~::DIST_SENSOR_CHANGE}-->
       <tran trig="DIST_SENSOR_CHANGE" target="..">
-       <tran_glyph conn="266,26,1,1,9,-3,-9">
-        <action box="-3,-2,12,2"/>
+       <tran_glyph conn="442,13,1,0,7,-7,-9,2">
+        <action box="-3,-9,19,3"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT_2}-->
-      <tran trig="TIMEOUT_2" target="../../58">
-       <tran_glyph conn="248,28,3,3,-2,5,2">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Wait~::TIMEOUT_2}-->
+      <tran trig="TIMEOUT_2" target="../../97">
+       <tran_glyph conn="424,17,3,3,-2,9,2">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../59">
-       <tran_glyph conn="266,28,1,1,5,20,-5">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Wait~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../98">
+       <tran_glyph conn="442,16,1,1,4,25,-4">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="248,20,18,9">
+      <state_glyph node="424,8,18,10">
        <entry box="1,2,6,2"/>
        <exit box="1,4,6,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub2}-->
-     <state name="PreStrategy_10_sub2">
-      <entry brief="step_advance">drive(100,100);
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_18_sub1}-->
+     <state name="PreStrategy_18_sub1">
+      <entry brief="step_advance">me-&gt;step_counter++;
+if (me-&gt;step_counter &lt; 8){
+    drive(100,100);
+} else {
+    drive(-100,-100);
+    if (me-&gt;step_counter &gt; 12){
+        me-&gt;step_counter = 0;
+    }
+}
+
 uint32_t small_step_advance_time = 15 * BSP_TICKS_PER_MILISSEC;
 QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT_2, DIST_SENSOR_CHANGE}-->
-      <tran trig="TIMEOUT_2, DIST_SENSOR_CHANGE" target="../../57">
-       <tran_glyph conn="248,40,3,3,-3,-16,3">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_18_s~::TIMEOUT_2, DIST_SENSOR_CHANGE}-->
+      <tran trig="TIMEOUT_2, DIST_SENSOR_CHANGE" target="../../96">
+       <tran_glyph conn="424,30,3,3,-3,-16,3">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="248,31,18,10">
+      <state_glyph node="424,22,18,11">
        <entry box="1,2,14,2"/>
        <exit box="1,4,6,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub3}-->
-     <state name="PreStrategy_10_sub3">
-      <entry brief="left">drive(-100,100);
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_18_sub2}-->
+     <state name="PreStrategy_18_sub2">
+      <entry brief="turn_left">drive(-100,100);
 uint16_t turn_time_ms = get_time_to_turn_ms(35, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../60">
-       <tran_glyph conn="248,50,3,0,11,4">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_18_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../99">
+       <tran_glyph conn="424,42,3,0,13,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="248,44,18,8">
-       <entry box="1,2,6,2"/>
+      <state_glyph node="424,36,18,8">
+       <entry box="1,2,12,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub4}-->
-     <state name="PreStrategy_10_sub4">
-      <entry brief="front">drive(100,100);
-uint16_t move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_18_sub3}-->
+     <state name="PreStrategy_18_sub3">
+      <entry brief="go_front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(30, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../61">
-       <tran_glyph conn="248,60,3,0,11,5">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_18_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="424,54,3,2,-20,65,-43,-4,-270,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="248,54,18,8">
-       <entry box="1,2,6,2"/>
+      <state_glyph node="424,48,18,8">
+       <entry box="1,2,13,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub5}-->
-     <state name="PreStrategy_10_sub5">
-      <entry brief="right">drive(100,-100);
-uint16_t turn_time_ms = get_time_to_turn_ms(100, 100, SIDE_RIGHT, &amp;parameters);
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_CustomRight}-->
+     <state name="PreStrategy_CustomRight">
+      <entry brief="turn_right">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(47, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../../62">
-       <tran_glyph conn="248,71,3,0,12,4">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../101">
+       <tran_glyph conn="456,14,3,0,13,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="248,65,18,7">
-       <entry box="1,2,6,2"/>
+      <state_glyph node="456,8,18,8">
+       <entry box="1,2,15,3"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub6}-->
-     <state name="PreStrategy_10_sub6">
-      <entry brief="left_break">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_LEFT, &amp;parameters);
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_sub1}-->
+     <state name="PreStrategy_19_sub1">
+      <entry brief="back">drive(-100,-100);
+uint16_t move_time_ms = get_time_to_move_ms(55, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../102">
+       <tran_glyph conn="456,26,3,0,13,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="456,20,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_sub2}-->
+     <state name="PreStrategy_19_sub2">
+      <entry brief="turn_left">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(50, 100, SIDE_LEFT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="248,82,3,2,-2,4,-155,9">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../103">
+       <tran_glyph conn="456,38,3,0,13,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="248,75,18,8">
-       <entry box="1,2,6,2"/>
+      <state_glyph node="456,32,18,8">
+       <entry box="1,2,15,3"/>
       </state_glyph>
      </state>
-     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_sub6}-->
-     <state name="PreStrategy_5_sub6">
-      <entry brief="left_break">drive(-100,100);
-uint16_t turn_time_ms = get_time_to_turn_ms(40, 100, SIDE_LEFT, &amp;parameters);
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_sub3}-->
+     <state name="PreStrategy_19_sub3">
+      <entry brief="front">drive(100,100);
+uint16_t move_time_ms = get_time_to_move_ms(105, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../104">
+       <tran_glyph conn="456,50,3,0,13,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="456,44,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_sub4}-->
+     <state name="PreStrategy_19_sub4">
+      <entry brief="turn_right">drive(100,-100);
+uint16_t turn_time_ms = get_time_to_turn_ms(55, 100, SIDE_RIGHT, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
-      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_5_su~::TIMEOUT}-->
-      <tran trig="TIMEOUT" target="../.." cpref="../../12">
-       <tran_glyph conn="128,76,3,2,-37,19">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../105">
+       <tran_glyph conn="456,62,3,0,13,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="128,70,19,8">
-       <entry box="1,2,13,3"/>
+      <state_glyph node="456,56,18,8">
+       <entry box="1,2,15,3"/>
       </state_glyph>
      </state>
-     <submachine_diagram size="304,94">
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_sub5}-->
+     <state name="PreStrategy_19_sub5">
+      <entry brief="turn_left">drive(-100,100);
+uint16_t turn_time_ms = get_time_to_turn_ms(30, 100, SIDE_LEFT, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="456,74,3,2,-45,45,-50,-4,-270,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="456,68,18,8">
+       <entry box="1,2,15,3"/>
+      </state_glyph>
+     </state>
+     <submachine_diagram size="501,122">
       <entry box="1,2,22,4"/>
       <exit box="1,6,6,2"/>
      </submachine_diagram>
@@ -2791,11 +3691,14 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtBle);</exit>
     <submachine name="StarStrategy">
      <entry brief="PlayBuzzer">buzzer_start();
 QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
-me-&gt;stuck_counter = 0;</entry>
+me-&gt;stuck_counter = 0;
+led_stripe_set_all_color(COLOR_ORANGE);</entry>
      <exit brief="DisableTimers">QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
+QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
+QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
+buzzer_stop();</exit>
      <!--${AOs::SumoHSM::SM::StarStrategy::XP-STOP_XP}-->
      <xp name="STOP_XP">
       <xp_glyph point="2,67,3">
@@ -2893,23 +3796,35 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <state name="Stuck">
       <entry>uint16_t move_time_ms;
 
-if (me-&gt;stuck_counter &gt;= 2){
-    drive(-100,-35);
+if (me-&gt;stuck_counter &gt;= 1){
+    drive(-100,-40);
     move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
-    me-&gt;stuck_counter = 0;
 } else {
     drive(-100,-100);
-    move_time_ms = get_time_to_move_ms(40, 100, &amp;parameters);
-    me-&gt;stuck_counter++;
+    move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
 }
 
-
+me-&gt;stuck_counter++;
 QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);</exit>
       <!--${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END}-->
-      <tran trig="STUCK_END" target="../../10">
-       <tran_glyph conn="114,37,2,1,9,-13">
-        <action box="-11,6,10,2"/>
+      <tran trig="STUCK_END">
+       <!--${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END::[stuck<=1]}-->
+       <choice target="../../../10">
+        <guard brief="stuck &lt;= 1">me-&gt;stuck_counter &lt;= 1</guard>
+        <choice_glyph conn="120,53,5,1,-19">
+         <action box="-16,-3,12,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END::[else]}-->
+       <choice target="../../../11">
+        <guard brief="else">else</guard>
+        <choice_glyph conn="120,53,5,3,12">
+         <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="120,37,2,-1,16">
+        <action box="-8,-3,10,2"/>
        </tran_glyph>
       </tran>
       <state_glyph node="99,22,25,15">
@@ -2936,8 +3851,8 @@ if (seeing) {
       </tran>
       <!--${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack::STUCK}-->
       <tran trig="STUCK" target="../../9">
-       <tran_glyph conn="101,49,1,2,15,-12">
-        <action box="5,-2,10,2"/>
+       <tran_glyph conn="101,49,1,2,11,-12">
+        <action box="3,-2,10,2"/>
        </tran_glyph>
       </tran>
       <state_glyph node="76,42,25,15">
@@ -2945,16 +3860,34 @@ if (seeing) {
        <exit box="1,7,22,4"/>
       </state_glyph>
      </state>
-     <submachine_diagram size="149,71">
+     <!--${AOs::SumoHSM::SM::StarStrategy::StuckTurn}-->
+     <state name="StuckTurn">
+      <entry>uint16_t turn_time_ms;
+
+drive(-100,100);
+turn_time_ms = get_time_to_turn_ms(60, 100, SIDE_LEFT, &amp;parameters);
+me-&gt;stuck_counter = 0;
+
+QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);</exit>
+      <!--${AOs::SumoHSM::SM::StarStrategy::StuckTurn::STUCK_END}-->
+      <tran trig="STUCK_END" target="../../10">
+       <tran_glyph conn="132,56,3,1,-31">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="132,41,21,16">
+       <entry box="1,2,6,2"/>
+       <exit box="1,4,6,2"/>
+      </state_glyph>
+     </state>
+     <submachine_diagram size="188,71">
       <entry box="1,2,21,3"/>
       <exit box="1,5,19,2"/>
      </submachine_diagram>
     </submachine>
     <!--${AOs::SumoHSM::SM::LineBackSubmachine}-->
     <submachine name="LineBackSubmachine">
-     <entry brief="go_front">drive(100, 100);
-uint32_t advance_time = BSP_TICKS_PER_MILISSEC * 100;
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, advance_time);</entry>
      <exit brief="disarm_timer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::LineBackSubmachi~::XP-XP1}-->
      <xp name="XP1">
@@ -2964,42 +3897,114 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, advance_time);</entry>
      </xp>
      <!--${AOs::SumoHSM::SM::LineBackSubmachi~::XP-STOP_XP}-->
      <xp name="STOP_XP">
-      <xp_glyph point="43,32,2">
+      <xp_glyph point="43,69,2">
        <name box="1,-2,10,2"/>
       </xp_glyph>
      </xp>
+     <!--${AOs::SumoHSM::SM::LineBackSubmachi~::initial}-->
+     <initial target="../4">
+      <initial_glyph conn="23,12,5,0,-4,4">
+       <action box="0,-2,10,2"/>
+      </initial_glyph>
+     </initial>
      <!--${AOs::SumoHSM::SM::LineBackSubmachi~::STOP, CHANGE_STATE_EVT}-->
      <tran trig="STOP, CHANGE_STATE_EVT" target=".." cpref="../1">
-      <tran_glyph conn="2,26,3,2,41,5">
-       <action box="0,-2,10,2"/>
+      <tran_glyph conn="2,64,3,2,41,4">
+       <action box="0,-2,29,5"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::SumoHSM::SM::LineBackSubmachi~::TIMEOUT}-->
-     <tran trig="TIMEOUT" target=".." cpref="../0">
-      <tran_glyph conn="2,12,3,0,43,-9">
-       <action box="0,-2,10,2"/>
-      </tran_glyph>
-     </tran>
-     <!--${AOs::SumoHSM::SM::LineBackSubmachi~::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
-     <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR" target=".." cpref="../0">
-      <tran_glyph conn="2,17,3,0,43,-14">
-       <action box="0,-2,35,2"/>
-      </tran_glyph>
-     </tran>
-     <submachine_diagram size="62,30">
-      <entry box="1,2,14,2"/>
-      <exit box="1,4,19,3"/>
+     <!--${AOs::SumoHSM::SM::LineBackSubmachi~::LineBack_state1}-->
+     <state name="LineBack_state1">
+      <entry brief="go_front">uint32_t movement_time_ms;
+if (!adc_line_is_white(LINE_FL) &amp;&amp; !adc_line_is_white(LINE_FR)){
+    drive(100, 100);
+    movement_time_ms = BSP_TICKS_PER_MILISSEC * 80;
+} else if (adc_line_is_white(LINE_FL)){
+    drive(100, -100);
+    movement_time_ms = BSP_TICKS_PER_MILISSEC * 50;
+} else {
+    drive(-100, 100);
+    movement_time_ms = BSP_TICKS_PER_MILISSEC * 50;
+}
+
+led_stripe_set_all_color(COLOR_BLUE);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, movement_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::LineBackSubmachi~::LineBack_state1::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../../5">
+       <tran_glyph conn="7,23,3,0,31,11">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::LineBackSubmachi~::LineBack_state1::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
+      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../5">
+       <tran_glyph conn="7,26,3,0,18,8">
+        <action box="0,-2,35,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="7,16,34,13">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::LineBackSubmachi~::LineBack_state2}-->
+     <state name="LineBack_state2">
+      <entry>uint32_t movement_time_ms;
+if (!adc_line_is_white(LINE_FL) &amp;&amp; !adc_line_is_white(LINE_FR)){
+     if (adc_line_is_white(LINE_BL) || adc_line_is_white(LINE_BR)) {
+         drive(100, 100);
+     } else {
+         drive(0, 0);
+     }
+} else if (adc_line_is_white(LINE_FL)) {
+    drive(100, -100);
+} else if (adc_line_is_white(LINE_FR)) {
+    drive(-100, 100);
+} else {
+    drive(20, 20);
+}
+
+movement_time_ms = BSP_TICKS_PER_MILISSEC * 10;
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, movement_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::LineBackSubmachi~::LineBack_state2::TIMEOUT}-->
+      <tran trig="TIMEOUT">
+       <!--${AOs::SumoHSM::SM::LineBackSubmachi~::LineBack_state2::TIMEOUT::[white]}-->
+       <choice target="../..">
+        <guard brief="white">(adc_line_get_all() != 0)</guard>
+        <choice_glyph conn="57,40,5,1,-15">
+         <action box="-13,-3,10,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::LineBackSubmachi~::LineBack_state2::TIMEOUT::[else]}-->
+       <choice target="../../.." cpref="../../../0">
+        <guard>else</guard>
+        <choice_glyph conn="57,40,4,0,-19,-12,-18">
+         <action box="-10,-22,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="7,44,3,-1,50,-4">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="7,34,35,13">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <submachine_diagram size="70,67">
+      <exit box="1,2,19,3"/>
      </submachine_diagram>
     </submachine>
     <!--${AOs::SumoHSM::SM::StepsStrategy}-->
     <submachine name="StepsStrategy">
      <entry brief="play_buzzer">buzzer_start();
 QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
-me-&gt;stuck_counter = 0;</entry>
+me-&gt;stuck_counter = 0;
+led_stripe_set_all_color(COLOR_ORANGE);
+me-&gt;step_counter = 0;</entry>
      <exit brief="disarm_timers">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
-QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);</exit>
+QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);
+QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
+buzzer_stop();</exit>
      <!--${AOs::SumoHSM::SM::StepsStrategy::XP-LINE_BACK}-->
      <xp name="LINE_BACK">
       <xp_glyph point="81,57,2">
@@ -3110,8 +4115,20 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
      </state>
      <!--${AOs::SumoHSM::SM::StepsStrategy::StepAdvance}-->
      <state name="StepAdvance">
-      <entry>drive(100,100);
-uint32_t small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
+      <entry>uint32_t small_step_advance_time;
+if (parameters.strategy  == 2) {
+
+    if (me-&gt;step_counter % 2 == 0){
+        drive(100,100);
+    } else {
+        drive(-100,-100);
+    }
+    small_step_advance_time = 12 * BSP_TICKS_PER_MILISSEC;
+    me-&gt;step_counter++;
+} else {
+    drive(100,100);
+    small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
+}
 QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
       <!--${AOs::SumoHSM::SM::StepsStrategy::StepAdvance::TIMEOUT_2, DIST_SENSOR_CHANGE}-->
@@ -3129,23 +4146,35 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
      <state name="Stuck">
       <entry>uint16_t move_time_ms;
 
-if (me-&gt;stuck_counter &gt;= 2){
-    drive(-100,-35);
+if (me-&gt;stuck_counter &gt;= 1){
+    drive(-100,-40);
     move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
-    me-&gt;stuck_counter = 0;
 } else {
     drive(-100,-100);
-    move_time_ms = get_time_to_move_ms(40, 100, &amp;parameters);
-    me-&gt;stuck_counter++;
+    move_time_ms = get_time_to_move_ms(60, 100, &amp;parameters);
 }
 
-
+me-&gt;stuck_counter++;
 QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuckEnd);</exit>
       <!--${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END}-->
-      <tran trig="STUCK_END" target="../../11">
-       <tran_glyph conn="101,25,2,0,5">
-        <action box="1,2,10,2"/>
+      <tran trig="STUCK_END">
+       <!--${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END::[stuck<=1]}-->
+       <choice target="../../../11">
+        <guard brief="stuck &lt;= 1">me-&gt;stuck_counter &lt;= 1</guard>
+        <choice_glyph conn="122,26,4,1,10,-7">
+         <action box="-9,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END::[else]}-->
+       <choice target="../../../12">
+        <guard brief="else">else</guard>
+        <choice_glyph conn="122,26,4,3,10,6">
+         <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="114,21,1,-1,8,5">
+        <action box="0,-3,10,2"/>
        </tran_glyph>
       </tran>
       <state_glyph node="91,11,23,14">
@@ -3186,7 +4215,26 @@ if (seeing) {
        <exit box="1,4,6,2"/>
       </state_glyph>
      </state>
-     <submachine_diagram size="117,55">
+     <!--${AOs::SumoHSM::SM::StepsStrategy::StuckTurn}-->
+     <state name="StuckTurn">
+      <entry>uint16_t turn_time_ms;
+
+drive(-100,100);
+turn_time_ms = get_time_to_turn_ms(60, 100, SIDE_LEFT, &amp;parameters);
+me-&gt;stuck_counter = 0;
+
+QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::StepsStrategy::StuckTurn::STUCK_END}-->
+      <tran trig="STUCK_END" target="../../11">
+       <tran_glyph conn="128,42,3,1,-13">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="128,31,23,13">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <submachine_diagram size="155,55">
       <entry box="1,2,23,3"/>
       <exit box="1,5,19,2"/>
      </submachine_diagram>

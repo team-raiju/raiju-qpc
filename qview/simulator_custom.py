@@ -488,7 +488,7 @@ def reset_position_4():
     set_position(300, 200, 45)
 
 def reset_position_5():
-    set_position(300, 150, 90)
+    set_position(290, 106, 90)
 
 def line_sensor_changed():
     global last_line_sensor_state

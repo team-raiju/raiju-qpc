@@ -35,6 +35,9 @@ typedef enum eeprom_addresses {
 
     STAR_FULL_SPEED_TIME_MS_ADDR,
 
+    EE_CURRENT_STATE_ADDR,
+
+
 } eeprom_addresses_t;
 
 eeprom_result_t BSP_eeprom_init();
