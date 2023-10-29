@@ -53,6 +53,7 @@ typedef enum {
 #define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
 
 void BSP_init(void);
+uint32_t BSP_GetTick(void);
 
 /* define the event signals used in the application ------------------------*/
 enum SumoHSMSignals {

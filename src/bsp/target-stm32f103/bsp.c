@@ -10,6 +10,7 @@
 #include "driving_service.h"
 #include "buzzer_service.h"
 #include "bsp_eeprom.h"
+#include "bsp_i2c.h"
 
 __weak void SystemClock_Config(void);
 
@@ -34,6 +35,8 @@ void BSP_init(void)
 
     MX_GPIO_Init();
     MX_DMA_Init();
+
+    bsp_i2c_init(IO_I2C_1);
 
     HAL_Delay(20);
 
@@ -94,4 +97,9 @@ Q_NORETURN Q_onAssert(char const *const module, int_t const loc)
     }
     
     NVIC_SystemReset();
+}
+
+uint32_t BSP_GetTick(void)
+{
+    return HAL_GetTick();
 }
