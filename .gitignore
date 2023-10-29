@@ -30,7 +30,6 @@ build_spy/*
 
 # Libraries
 *.lib
-*.a
 *.la
 *.lo
 
