@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "name": "Raijin-C-Properties",
+            "includePath": [
+            ],
+            "defines": [
+            ],
+            "intelliSenseMode": "linux-gcc-arm",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}

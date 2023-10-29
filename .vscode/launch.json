@@ -1,0 +1,68 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Cortex Debug - STM32F103RF",
+	        "type": "cortex-debug",
+	        "request": "launch",
+	        "servertype": "stlink",
+	        "cwd": "${workspaceRoot}",
+	        "gdbPath": "${env:ARM_GCC_PATH}/arm-none-eabi-gdb",
+	        "executable": "${workspaceFolder}/build/STM32RFT6/raiju.elf",
+	        "device": "STM32F103RF",
+	        "v1": false,
+			"runToEntryPoint": "main",
+			"svdFile": "./STM32F103.svd"
+			// In cortex-debug extension current pre release version (1.11.2),
+            // Remove next line comments to enable liveWatch viewer 
+            // "liveWatch": {
+            //     "enabled": true,
+            //     "samplesPerSecond": 4
+            // }
+	    },
+		{
+			"name": "Cortex Debug - STM32F103RC",
+	        "type": "cortex-debug",
+	        "request": "launch",
+	        "servertype": "stlink",
+	        "cwd": "${workspaceRoot}",
+	        "gdbPath": "${env:ARM_GCC_PATH}/arm-none-eabi-gdb",
+	        "executable": "${workspaceFolder}/build/STM32RCT6/raiju.elf",
+	        "device": "STM32F103RC",
+	        "v1": false,
+			"runToEntryPoint": "main",
+			"svdFile": "./STM32F103.svd"
+			// In cortex-debug extension current pre release version (1.11.2),
+            // Remove next line comments to enable liveWatch viewer 
+            // "liveWatch": {
+            //     "enabled": true,
+            //     "samplesPerSecond": 4
+            // }
+	    },
+		{
+            "name": "C/C++: GCC Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/QSPY/raijin.elf",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb"
+        }
+	]
+}

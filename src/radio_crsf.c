@@ -284,12 +284,12 @@ static void reconfigure_uart(void) {
 crsf_packet_ret_t crsf_parse_byte(uint8_t inChar) {
     crsf_packet_ret_t ret = CRSF_PACKET;
 
-    if (SerialInPacketPtr >= sizeof(SerialInBuffer)) {
-        // we reached the maximum allowable packet length,
-        // so start again because shit fucked up hey.
-        SerialInPacketPtr = 0;
-        CRSFframeActive = 0;
-    }
+    // if (SerialInPacketPtr >= sizeof(SerialInBuffer)) {
+    //     // we reached the maximum allowable packet length,
+    //     // so start again because shit fucked up hey.
+    //     SerialInPacketPtr = 0;
+    //     CRSFframeActive = 0;
+    // }
 
     // store byte
     SerialInBuffer[SerialInPacketPtr++] = inChar;

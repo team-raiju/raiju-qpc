@@ -38,6 +38,7 @@
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
 #include "app.h"
+#include "imu_service.h"
 
 Q_DEFINE_THIS_FILE
 
@@ -63,6 +64,8 @@ int main() {
         Q_DIM(sumoHSM_queueSto), /* the length of the buffer */
         (void *)0, 0U,       /* private stack (not used) */
         (QEvt *)0);          /* initialization event (not used) */
+
+    imu_service_init();
 
     return QF_run(); /* let the framework run the application */
 }

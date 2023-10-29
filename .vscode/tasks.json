@@ -1,0 +1,60 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "type": "shell",
+            "label": "CubeProg: Flash project (SWD)",
+            "command": "${CUBE_PROGRAMMER_PATH}/STM32_Programmer_CLI",
+            "args": [
+                "--connect",
+                "port=swd",
+                "--write", "${command:cmake.launchTargetPath}",
+                "-v",
+                "-rst"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "CubeProg: Erase",
+            "command": "${CUBE_PROGRAMMER_PATH}/STM32_Programmer_CLI",
+            "args": [
+                "--connect",
+                "port=swd",
+                "-e", "all"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Prepare Cube Files",
+            "command": "${workspaceFolder}/scripts/prepare-cube.sh", 
+            "args": [
+                "${workspaceFolder}/cube/STM32G474RCT6",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "CubeProg: Flash project with USB (DFU)",
+            "command": "${workspaceFolder}/scripts/flash_with_usb.sh",
+            "args": [
+                "./build/STM32G474/raijin.bin"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        
+    ]
+}

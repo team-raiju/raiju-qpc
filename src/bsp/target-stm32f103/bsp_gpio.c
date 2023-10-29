@@ -125,7 +125,7 @@ io_level_t BSP_GPIO_Read_Pin(io_port_t port, io_pin_t gpio_pin)
 
 void BSP_GPIO_Write_Pin(io_port_t port, io_pin_t gpio_pin, io_level_t level)
 {
-    HAL_GPIO_WritePin(BSP_GPIO_Port_Mapping(port), BSP_GPIO_Pin_Mapping(gpio_pin), level);
+    HAL_GPIO_WritePin(BSP_GPIO_Port_Mapping(port), BSP_GPIO_Pin_Mapping(gpio_pin), (uint16_t)level);
 }
 
 void BSP_GPIO_Toggle_Pin(io_port_t port, io_pin_t gpio_pin)

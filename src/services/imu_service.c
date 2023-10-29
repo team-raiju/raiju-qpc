@@ -9,7 +9,7 @@
 #include "imu_service.h"
 #include "bsp.h"
 #include "bsp_gpio_mapping.h"
-// #include "motion_fx_cm0p.h"
+#include "motion_fx.h"
 #include "bsp_i2c.h"
 #include "lsm6dsr.h"
 #include "lsm6dsr_reg.h"
@@ -134,23 +134,23 @@ static float calculate_delta_time_s()
     return delta_time_s;
 }
 
-// static void update_sensor_fusion(axis_3x_data_t *gyro_in_dps, axis_3x_data_t *accel_in_g, MFX_output_t *data_out_fx,
-//                                  float delta_time_s)
-// {
-//     MFX_input_t data_in_fx;
-//     data_in_fx.acc[0] = accel_in_g->x;
-//     data_in_fx.acc[1] = accel_in_g->y;
-//     data_in_fx.acc[2] = accel_in_g->z;
+static void update_sensor_fusion(axis_3x_data_t *gyro_in_dps, axis_3x_data_t *accel_in_g, MFX_output_t *data_out_fx,
+                                 float delta_time_s)
+{
+    MFX_input_t data_in_fx;
+    data_in_fx.acc[0] = accel_in_g->x;
+    data_in_fx.acc[1] = accel_in_g->y;
+    data_in_fx.acc[2] = accel_in_g->z;
 
-//     data_in_fx.gyro[0] = gyro_in_dps->x;
-//     data_in_fx.gyro[1] = gyro_in_dps->y;
-//     data_in_fx.gyro[2] = gyro_in_dps->z;
+    data_in_fx.gyro[0] = gyro_in_dps->x;
+    data_in_fx.gyro[1] = gyro_in_dps->y;
+    data_in_fx.gyro[2] = gyro_in_dps->z;
 
-//     MotionFX_propagate(mfxstate, data_out_fx, &data_in_fx, &delta_time_s);
-//     MotionFX_update(mfxstate, data_out_fx, &data_in_fx, &delta_time_s, NULL);
-// }
+    MotionFX_propagate(mfxstate, data_out_fx, &data_in_fx, &delta_time_s);
+    MotionFX_update(mfxstate, data_out_fx, &data_in_fx, &delta_time_s, NULL);
+}
 
-int imu_sensor_init()
+static int imu_sensor_init()
 {
     lsm6dsr_io_ctx.Init = imu_init_peripheral;
     lsm6dsr_io_ctx.DeInit = imu_deinit_peripheral;
@@ -195,63 +195,63 @@ int imu_sensor_init()
     return 0;
 }
 
-// static int8_t sensor_fusion()
-// {
-//     LSM6DSR_Axes_t acceleration_mg;
-//     LSM6DSR_Axes_t angular_rate_mdps;
-//     axis_3x_data_t acceleration_g;
-//     axis_3x_data_t angular_rate_dps;
+static int8_t sensor_fusion()
+{
+    LSM6DSR_Axes_t acceleration_mg;
+    LSM6DSR_Axes_t angular_rate_mdps;
+    axis_3x_data_t acceleration_g;
+    axis_3x_data_t angular_rate_dps;
 
-//     /* Get raw data */
-//     if (LSM6DSR_ACC_GetAxes(&lsm6dsr_ctx, &acceleration_mg) != LSM6DSR_OK) {
-//         return -1;
-//     }
+    /* Get raw data */
+    if (LSM6DSR_ACC_GetAxes(&lsm6dsr_ctx, &acceleration_mg) != LSM6DSR_OK) {
+        return -1;
+    }
 
-//     if (LSM6DSR_GYRO_GetAxes(&lsm6dsr_ctx, &angular_rate_mdps) != LSM6DSR_OK) {
-//         return -1;
-//     }
+    if (LSM6DSR_GYRO_GetAxes(&lsm6dsr_ctx, &angular_rate_mdps) != LSM6DSR_OK) {
+        return -1;
+    }
 
-//     /* Transform to SI units */
-//     transform_mdps_to_dps(&angular_rate_mdps, &angular_rate_dps);
-//     transform_mg_to_g(&acceleration_mg, &acceleration_g);
-//     float delta_time = calculate_delta_time_s();
+    /* Transform to SI units */
+    transform_mdps_to_dps(&angular_rate_mdps, &angular_rate_dps);
+    transform_mg_to_g(&acceleration_mg, &acceleration_g);
+    float delta_time = calculate_delta_time_s();
 
-//     /* Run Sensor Fusion algorithm */
-//     MFX_output_t data_out_fx;
-//     update_sensor_fusion(&angular_rate_dps, &acceleration_g, &data_out_fx, delta_time);
+    /* Run Sensor Fusion algorithm */
+    MFX_output_t data_out_fx;
+    update_sensor_fusion(&angular_rate_dps, &acceleration_g, &data_out_fx, delta_time);
 
-//     angles.z = data_out_fx.rotation[0]; // yaw
-//     angles.x = data_out_fx.rotation[1]; // pitch
-//     angles.y = data_out_fx.rotation[2]; // row
+    angles.z = data_out_fx.rotation[0]; // yaw
+    angles.x = data_out_fx.rotation[1]; // pitch
+    angles.y = data_out_fx.rotation[2]; // row
 
-//     // printf("ANGLES: %ld, %ld, %ld\r\n", (int32_t) angles.x, (int32_t) angles.y, (int32_t) angles.z);
+    // printf("ANGLES: %ld, %ld, %ld\r\n", (int32_t) angles.x, (int32_t) angles.y, (int32_t) angles.z);
 
-//     return 0;
-// }
+    return 0;
+}
 
-// static int8_t imu_init_motion_fx()
-// {
-//     static MFX_knobs_t iKnobs;
+static int8_t imu_init_motion_fx()
+{
+    static MFX_knobs_t iKnobs;
 
-//     if (STATE_SIZE < MotionFX_GetStateSize()) {
-//         return -1;
-//     }
+    if (STATE_SIZE < MotionFX_GetStateSize()) {
+        return -1;
+    }
 
-//     /* Sensor Fusion API initialization function */
-//     MotionFX_initialize((MFXState_t *)mfxstate);
+    /* Sensor Fusion API initialization function */
+    MotionFX_initialize((MFXState_t *)mfxstate);
 
-//     /* Optional: Get version */
-//     MotionFX_GetLibVersion(lib_version);
+    /* Optional: Get version */
+    MotionFX_GetLibVersion(lib_version);
 
-//     /* Modify knobs settings & set the knobs */
-//     MotionFX_getKnobs(mfxstate, &iKnobs);
-//     MotionFX_setKnobs(mfxstate, &iKnobs);
+    /* Modify knobs settings & set the knobs */
+    MotionFX_getKnobs(mfxstate, &iKnobs);
+    MotionFX_setKnobs(mfxstate, &iKnobs);
 
-//     MotionFX_enable_9X(mfxstate, MFX_ENGINE_DISABLE);
-//     MotionFX_enable_6X(mfxstate, MFX_ENGINE_ENABLE);
+    MotionFX_enable_9X(mfxstate, MFX_ENGINE_DISABLE);
+    MotionFX_enable_6X(mfxstate, MFX_ENGINE_ENABLE);
 
-//     return 0;
-// }
+    return 0;
+}
 
 static QState ImuService_Initial(imu_ao_t *const me, void const *const par)
 {
@@ -268,18 +268,18 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
     switch (e->sig) {
     case Q_ENTRY_SIG: {
         imu_sensor_init();
-        // imu_init_motion_fx();
+        imu_init_motion_fx();
         QTimeEvt_armX(&me->timeEvt, 3000 * BSP_TICKS_PER_MILISSEC, 0);
         status_ = Q_HANDLED();
         break;
     }
 
-    // case IMU_POLL_SIG: {
-    //     sensor_fusion();
-    //     QTimeEvt_rearm(&me->timeEvt, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
-    //     status_ = Q_HANDLED();
-    //     break;
-    // }
+    case IMU_POLL_SIG: {
+        sensor_fusion();
+        QTimeEvt_rearm(&me->timeEvt, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
+        status_ = Q_HANDLED();
+        break;
+    }
 
     default: {
         status_ = Q_SUPER(&QHsm_top);
@@ -293,7 +293,7 @@ static void imu_service_ctor(void)
 {
     imu_ao_t *me = &imu_inst;
     QActive_ctor(&me->super, Q_STATE_CAST(&ImuService_Initial));
-    // QTimeEvt_ctorX(&me->timeEvt, &me->super, IMU_POLL_SIG, 0U);
+    QTimeEvt_ctorX(&me->timeEvt, &me->super, IMU_POLL_SIG, 0U);
 }
 
 /***************************************************************************************************
