@@ -8,7 +8,10 @@
   <item name="grid">3</item>
   <item name="backups">0</item>
  </group>
- <group name="windows"/>
+ <group name="windows">
+  <item id=".::inc::bsp.h">0,0,921,647,*</item>
+  <item id=".::src::sumo_hsm.c">325,347,596,300</item>
+ </group>
  <group name="search">
   <item name="options">2032128</item>
   <item name="replace">0</item>
