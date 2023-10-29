@@ -1,0 +1,40 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "STM32RFT6",
+            "inherits": "default",
+            "cacheVariables": {
+                "LINKER_SCRIPT_SRC": "${sourceDir}/cube/STM32F103RCT6/STM32F103RCTx_FLASH.ld",
+                "STM32_BUILD": "true",
+                "UC_NAME": "STM32RFT6"
+            }
+        },
+        {
+            "name": "STM32RCT6",
+            "inherits": "default",
+            "cacheVariables": {
+                "LINKER_SCRIPT_SRC": "${sourceDir}/cube/STM32F103RCT6/STM32F103RCTx_FLASH.ld",
+                "STM32_BUILD": "true",
+                "UC_NAME": "STM32RCT6"
+            }
+        },
+        {
+            "name": "QSPY",
+            "inherits": "default",
+            "cacheVariables": {
+                
+            }
+        }
+    ]
+}

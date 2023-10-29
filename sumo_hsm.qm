@@ -4443,40 +4443,6 @@ void sumoHSM_update_qs_dict(){
 
 #endif</text>
    </file>
-   <!--${.::src::main.c}-->
-   <file name="main.c">
-    <text>#include &quot;qpc.h&quot;    /* QP/C framework API */
-#include &quot;bsp.h&quot;    /* Board Support Package interface */
-#include &quot;app.h&quot;
-
-Q_DEFINE_THIS_FILE
-
-/* the main function -------------------------------------------------------*/
-int main() {
-    static QEvt const *sumoHSM_queueSto[10]; /* event queue buffer for SumoHSM */
-
-    QF_init();  /* initialize the framework */
-    BSP_init(); /* initialize the BSP */
-    sumo_parameters_init();
-    APP_init();
-
-    /* instantiate and start the SumoHSM active object */
-    SumoHSM_ctor(); /* in C you must explicitly call the SumoHSM constructor */
-    
-    #ifdef Q_SPY
-    sumoHSM_update_qs_dict();
-    #endif
-
-    QACTIVE_START(AO_SumoHSM, /* active object to start */
-        2U,                  /* priority of the active object */
-        sumoHSM_queueSto,     /* event queue buffer */
-        Q_DIM(sumoHSM_queueSto), /* the length of the buffer */
-        (void *)0, 0U,       /* private stack (not used) */
-        (QEvt *)0);          /* initialization event (not used) */
-
-    return QF_run(); /* let the framework run the application */
-}</text>
-   </file>
   </directory>
   <!--${.::inc}-->
   <directory name="inc">
@@ -4486,6 +4452,7 @@ int main() {
 #define BSP_H
 
 #include &quot;qpc.h&quot;
+#include &quot;signals.h&quot;
 
 /* a very simple Board Support Package (BSP) -------------------------------*/
 enum { 
@@ -4500,38 +4467,11 @@ typedef enum {
 #define BSP_TICKS_PER_MILISSEC (BSP_TICKS_PER_SEC/1000.0)
 
 void BSP_init(void);
-
-/* define the event signals used in the application ------------------------*/
-enum SumoHSMSignals {
-    TIMEOUT_SIG = Q_USER_SIG, /* offset the first signal by Q_USER_SIG */
-    TIMEOUT_2_SIG,
-    STOP_BUZZER_SIG,
-    START_SIG,
-    STOP_SIG,
-    CHANGE_STATE_EVT_SIG,
-    CHANGE_STRATEGY_EVT_SIG,
-    CHANGE_PRE_STRATEGY_EVT_SIG,
-    LINE_CHANGED_FL_SIG,
-    LINE_CHANGED_FR_SIG,
-    LINE_CHANGED_BL_SIG,
-    LINE_CHANGED_BR_SIG,
-    DIST_SENSOR_CHANGE_SIG,
-    RADIO_DATA_SIG,
-    BUTTON_SIG,
-    BLE_DATA_UPDATE_SIG,
-    BLE_DATA_REQUEST_SIG,
-    LOW_BATTERY_SIG,
-    TIMEOUT_SEND_BLE_SIG,
-    FAILSAFE_SIG,
-    STUCK_SIG,
-    STUCK_END_SIG,
-    BLE_ATTACK_NEAR_SIG,
-    START_MODULE_TEST_SIG,
-    MAX_SIG, /* keep last (the number of signals) */
-};
+uint32_t BSP_GetTick(void);
 
 /* active object(s) used in this application -------------------------------*/
 extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */
+extern QActive *const imu_service_AO;
 $declare${AOs::SumoHSM_ctor}
 
 void sumo_parameters_init(void);

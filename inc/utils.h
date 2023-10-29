@@ -29,7 +29,7 @@
 /**
  * @brief Checks if v is between a and b inclusive
  */
-#define IS_BETWEEN(x, a, b) ((x) >= (a) && (x) <= (b))
+#define IS_BETWEEN(x, a, b) (((x) >= (a)) && ((x) <= (b)))
 
 #define TWO_BYTES_TO_UINT16(b1, b2) ((b1 << 8) | (b2))
 

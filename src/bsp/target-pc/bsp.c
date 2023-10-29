@@ -57,6 +57,8 @@ static QSpyId const l_clock_tick = { QS_AP_ID };
 #endif
 
 uint8_t ble_data[20];
+static uint32_t ticks = 0;
+
 
 void BSP_init(void)
 {
@@ -84,6 +86,12 @@ void BSP_init(void)
 #endif
 }
 
+
+uint32_t BSP_GetTick()
+{
+    return ticks;
+}
+
 /* callback functions needed by the framework ------------------------------*/
 void QF_onStartup(void)
 {
@@ -97,6 +105,7 @@ void QF_onClockTick(void)
     QF_TICK_X(0U, (void *)0); /* QF clock tick processing for rate 0 */
 
 #ifdef Q_SPY
+    ticks++;
     QS_RX_INPUT(); /* handle the QS-RX input */
     QS_OUTPUT();   /* handle the QS output */
 #endif

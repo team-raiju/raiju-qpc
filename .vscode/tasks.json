@@ -1,0 +1,60 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "type": "shell",
+            "label": "CubeProg: Flash project (SWD)",
+            "command": "${CUBE_PROGRAMMER_PATH}/STM32_Programmer_CLI",
+            "args": [
+                "--connect",
+                "port=swd",
+                "--write", "${command:cmake.launchTargetPath}",
+                "-v",
+                "-rst"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "CubeProg: Erase",
+            "command": "${CUBE_PROGRAMMER_PATH}/STM32_Programmer_CLI",
+            "args": [
+                "--connect",
+                "port=swd",
+                "-e", "all"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Prepare Cube Files - F103RFT6",
+            "command": "${workspaceFolder}/scripts/prepare-cube.sh", 
+            "args": [
+                "${workspaceFolder}/cube/STM32F103RFT6",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Prepare Cube Files - F103RCT6",
+            "command": "${workspaceFolder}/scripts/prepare-cube.sh", 
+            "args": [
+                "${workspaceFolder}/cube/STM32F103RCT6",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
+        },
+        
+    ]
+}

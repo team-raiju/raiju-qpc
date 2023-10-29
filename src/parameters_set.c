@@ -16,7 +16,7 @@ static param_error_t set_validate_en_distance_sensors(sumo_parameters_t *params,
 
 static param_error_t set_validate_en_line_sensors(sumo_parameters_t *params, uint16_t new_data)
 {
-    if (IS_BETWEEN(new_data, 0, 255)) {
+    if (new_data <= 255) {
         params->enabled_line_sensors = new_data;
         adc_line_set_mask(params->enabled_line_sensors);
         BSP_eeprom_write(EN_LINE_SENSOR_ADDR, params->enabled_line_sensors);
@@ -147,7 +147,7 @@ static param_error_t set_validate_is_stucked_timeout_ms(sumo_parameters_t *param
 
 static param_error_t set_validate_attack_when_near(uint16_t new_data)
 {
-    if (IS_BETWEEN(new_data, 0, 1)) {
+    if (new_data <= 1) {
         QEvt evt = { .sig = BLE_ATTACK_NEAR_SIG };
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         /* Param OK is never return because the variable is not set here */
