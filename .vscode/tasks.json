@@ -33,10 +33,10 @@
         },
         {
             "type": "shell",
-            "label": "Prepare Cube Files",
+            "label": "Prepare Cube Files - F103RFT6",
             "command": "${workspaceFolder}/scripts/prepare-cube.sh", 
             "args": [
-                "${workspaceFolder}/cube/STM32G474RCT6",
+                "${workspaceFolder}/cube/STM32F103RFT6",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -45,10 +45,10 @@
         },
         {
             "type": "shell",
-            "label": "CubeProg: Flash project with USB (DFU)",
-            "command": "${workspaceFolder}/scripts/flash_with_usb.sh",
+            "label": "Prepare Cube Files - F103RCT6",
+            "command": "${workspaceFolder}/scripts/prepare-cube.sh", 
             "args": [
-                "./build/STM32G474/raijin.bin"
+                "${workspaceFolder}/cube/STM32F103RCT6",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
