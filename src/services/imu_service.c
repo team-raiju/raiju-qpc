@@ -80,7 +80,7 @@ static axis_3x_data_t angles = { 0.0, 0.0, 0.0 };
 static float ref_angle_z = 0.0;
 static float angle_z_raw;
 static float set_point = 0.0;
-static uint8_t base_speed = 0.0;
+static int8_t base_speed = 0.0;
 static float z_angle_variation = 0.0;
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -409,7 +409,7 @@ void imu_set_setpoint(float set_point_)
     set_point = set_point_;
 }
 
-void imu_set_base_speed(uint8_t base_speed_)
+void imu_set_base_speed(int8_t base_speed_)
 {
     base_speed = base_speed_;
 }
@@ -430,7 +430,7 @@ int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
     static float last_error = 0;
     float error = calc_error_degree(angles.z);
 
-    printf("angle: %f, setpoint = %f, error: %f\r\n", angles.z, set_point, error);
+    // printf("angle: %f, setpoint = %f, error: %f\r\n", angles.z, set_point, error);
 
     float derivative = 0;
 

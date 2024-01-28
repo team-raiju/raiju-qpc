@@ -37,6 +37,7 @@
 /*$endhead${.::src::sumo_hsm.c} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 #include <math.h>
 #include <stdlib.h>
+// #include <stdio.h>
 #include "qf_custom_defines.h"
 #include "qpc.h"    /* QP/C framework API */
 #include "bsp.h"    /* Board Support Package interface */
@@ -1711,7 +1712,7 @@ static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me) {
 static void SumoHSM_UpdateCustomStrategy(SumoHSM * const me) {
     uint8_t current_step = cust_strategy_current_step();
     if (current_step >= cust_strategy_num_steps()){
-        QEvt evt = { .sig = TIMEOUT_2_SIG };
+        QEvt evt = { .sig = EXIT_CUSTOM_SIG };
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     } else {
         movement_t step_type = cust_strategy_move_type(current_step);
@@ -1722,14 +1723,24 @@ static void SumoHSM_UpdateCustomStrategy(SumoHSM * const me) {
                 imu_set_setpoint(imu_get_setpoint());
                 imu_set_base_speed(100);
                 uint16_t movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
-                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+                if (movement_delay_ms > 0){
+                    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+                } else {
+                    QEvt evt = { .sig = EXIT_CUSTOM_SIG };
+                    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+                }
                 break;
             }
             case MOVE_BACK: {
                 imu_set_setpoint(imu_get_setpoint());
                 imu_set_base_speed(-100);
                 uint16_t movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
-                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+                if (movement_delay_ms > 0){
+                    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+                } else {
+                    QEvt evt = { .sig = EXIT_CUSTOM_SIG };
+                    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+                }
                 break;
             }
             case MOVE_TURN:
@@ -1737,7 +1748,7 @@ static void SumoHSM_UpdateCustomStrategy(SumoHSM * const me) {
                 imu_set_base_speed(0);
                 break;
             default: {
-                QEvt evt = { .sig = TIMEOUT_2_SIG };
+                QEvt evt = { .sig = EXIT_CUSTOM_SIG };
                 QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
                 break;
             }
@@ -6291,8 +6302,8 @@ static QState SumoHSM_PreStrategy_PreStrategy_Custom(SumoHSM * const me, QEvt co
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::TIMEOUT_2} */
-        case TIMEOUT_2_SIG: {
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::EXIT_CUSTOM} */
+        case EXIT_CUSTOM_SIG: {
             static QMTranActTable const tatbl_ = { /* tran-action table */
                 &SumoHSM_PreStrategy_s, /* target submachine */
                 {

@@ -20,14 +20,14 @@
  * LOCAL VARIABLES
  **************************************************************************************************/
 
-static uint8_t num_of_steps = 3;
+static uint8_t num_of_steps = 5;
 static uint8_t current_step = 0;
 
 // If type of movement is front or back, the value represents centimeters to move
 // If type of movement is left or right the value represents the set point degree
-static uint16_t cust_strategy_movements[STRATEGY_MAX_STEPS] = { 315, 55, 45 };
+static uint16_t cust_strategy_movements[STRATEGY_MAX_STEPS] = { 90, 30, 0, 50, 45 };
 
-static movement_t type_of_movements[STRATEGY_MAX_STEPS] = { MOVE_TURN, MOVE_FRONT, MOVE_TURN};
+static movement_t type_of_movements[STRATEGY_MAX_STEPS] = { MOVE_TURN, MOVE_BACK, MOVE_TURN, MOVE_FRONT, MOVE_TURN};
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
