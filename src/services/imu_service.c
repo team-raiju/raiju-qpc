@@ -38,7 +38,7 @@ Q_DEFINE_THIS_FILE
 #define RAD_90_DEGREES  M_PI_2
 #define RAD_360_DEGREES (2 * M_PI)
 
-#define NEAR_ANGLE_THRESHOLD_DEGREE 5.0f
+#define NEAR_ANGLE_THRESHOLD_DEGREE 8.0f
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
