@@ -1889,7 +1889,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
 /*${AOs::SumoHSM::SM::Idle} ................................................*/
 /*${AOs::SumoHSM::SM::Idle} */
 static QState SumoHSM_Idle_e(SumoHSM * const me) {
-    if (parameters.current_state != STATE_IDLE){
+    if (parameters.current_state == AUTO_RUNNING || parameters.current_state == RC_RUNNING){
         start_module_enable();
         driving_enable();
         QTimeEvt_armX(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 10, 0);
@@ -10244,7 +10244,6 @@ static QState SumoHSM_TestStartModule_led_black(SumoHSM * const me, QEvt const *
 /*$enddef${AOs::SumoHSM} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 #ifdef Q_SPY
-
 void sumoHSM_update_qs_dict(){
 
     QS_OBJ_DICTIONARY(&l_sumo_hsm);
@@ -10258,30 +10257,12 @@ void sumoHSM_update_qs_dict(){
     QS_OBJ_DICTIONARY(&l_sumo_hsm.timeEvtStuckEnd);
 
 
-    QS_SIG_DICTIONARY(TIMEOUT_SIG,     (void *)0);
-    QS_SIG_DICTIONARY(TIMEOUT_2_SIG, (void *)0);
-    QS_SIG_DICTIONARY(STOP_BUZZER_SIG,    (void *)0);
-    QS_SIG_DICTIONARY(START_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(CHANGE_STATE_EVT_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(CHANGE_STRATEGY_EVT_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(CHANGE_PRE_STRATEGY_EVT_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(STOP_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(LINE_CHANGED_FL_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(LINE_CHANGED_FR_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(LINE_CHANGED_BL_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(LINE_CHANGED_BR_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(DIST_SENSOR_CHANGE_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(RADIO_DATA_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(BUTTON_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(BLE_DATA_UPDATE_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(BLE_DATA_REQUEST_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(LOW_BATTERY_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(TIMEOUT_SEND_BLE_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(FAILSAFE_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(STUCK_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(STUCK_END_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(BLE_ATTACK_NEAR_SIG,  (void *)0);
-    QS_SIG_DICTIONARY(START_MODULE_TEST_SIG,  (void *)0);
+    for (int sig = Q_USER_SIG; sig < MAX_SIG; sig++)
+    {
+        QS_SIG_DICTIONARY(sig,         (void *)0);
+    }
+
+
 }
 
 #endif
