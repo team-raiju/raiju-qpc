@@ -6237,39 +6237,41 @@ static QState SumoHSM_PreStrategy_PreStrategy_2_sub1(SumoHSM * const me, QEvt co
 static QState SumoHSM_PreStrategy_PreStrategy_Custom_e(SumoHSM * const me) {
     cust_strategy_reset();
     uint8_t current_step = cust_strategy_current_step();
-    movement_t first_step = cust_strategy_move_type(current_step);
 
-    uint16_t movement_delay_ms;
-    uint16_t movement_parameter = cust_strategy_move(current_step);
-    switch (first_step) {
-        case MOVE_FRONT: {
-            drive(100,100);
-            movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
-            break;
-        }
-        case MOVE_BACK: {
-            drive(-100,-100);
-            movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
-            break;
-        }
-        case MOVE_LEFT: {
-            drive(-100,100);
-            movement_delay_ms = get_time_to_turn_ms(movement_parameter, 100, SIDE_LEFT, &parameters);
-            break;
-        }
-        case MOVE_RIGHT: {
-            drive(100,-100);
-            movement_delay_ms = get_time_to_turn_ms(movement_parameter, 100, SIDE_RIGHT, &parameters);
-            break;
-        }
-        default: {
-            drive(0,0);
-            movement_delay_ms = 10;
-            break;
+    if (current_step >= cust_strategy_num_steps()){
+        QEvt evt = { .sig = TIMEOUT_2_SIG };
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    } else {
+        movement_t first_step_type = cust_strategy_move_type(current_step);
+        uint16_t movement_parameter = cust_strategy_move(current_step);
+
+        switch (first_step_type) {
+            case MOVE_FRONT:{
+                imu_set_setpoint(imu_get_setpoint());
+                imu_set_base_speed(100);
+                uint16_t movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
+                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+                break;
+            }
+            case MOVE_BACK: {
+                imu_set_setpoint(imu_get_setpoint());
+                imu_set_base_speed(-100);
+                uint16_t movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
+                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+                break;
+            }
+            case MOVE_TURN:
+                imu_set_setpoint(movement_parameter);
+                imu_set_base_speed(0);
+                break;
+            default: {
+                QEvt evt = { .sig = TIMEOUT_2_SIG };
+                QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+                break;
+            }
         }
     }
 
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_Custom_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Custom} */
@@ -6278,45 +6280,44 @@ static QState SumoHSM_PreStrategy_PreStrategy_Custom(SumoHSM * const me, QEvt co
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::TIMEOUT} */
         case TIMEOUT_SIG: {
+            // Timeout occurs when parameter is front or back
+
             cust_strategy_increase_step();
             uint8_t current_step = cust_strategy_current_step();
-            movement_t step = cust_strategy_move_type(current_step);
-            uint16_t movement_delay_ms;
-            uint16_t movement_parameter = cust_strategy_move(current_step);
-            switch (step) {
-                case MOVE_FRONT: {
-                    drive(100,100);
-                    movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
-                    break;
-                }
-                case MOVE_BACK: {
-                    drive(-100,-100);
-                    movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
-                    break;
-                }
-                case MOVE_LEFT: {
-                    drive(-100,100);
-                    movement_delay_ms = get_time_to_turn_ms(movement_parameter, 100, SIDE_LEFT, &parameters);
-                    break;
-                }
-                case MOVE_RIGHT: {
-                    drive(100,-100);
-                    movement_delay_ms = get_time_to_turn_ms(movement_parameter, 100, SIDE_RIGHT, &parameters);
-                    break;
-                }
-                default: {
-                    drive(0,0);
-                    movement_delay_ms = 10;
-                    break;
-                }
-            }
 
-            if (current_step >= cust_strategy_num_steps() - 1){
-                QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+            if (current_step >= cust_strategy_num_steps()){
+                QEvt evt = { .sig = TIMEOUT_2_SIG };
+                QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
             } else {
-                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
-            }
+                movement_t step_type = cust_strategy_move_type(current_step);
+                uint16_t movement_parameter = cust_strategy_move(current_step);
 
+                switch (step_type) {
+                    case MOVE_FRONT:{
+                        imu_set_setpoint(imu_get_setpoint());
+                        imu_set_base_speed(100);
+                        uint16_t movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
+                        QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+                        break;
+                    }
+                    case MOVE_BACK: {
+                        imu_set_setpoint(imu_get_setpoint());
+                        imu_set_base_speed(-100);
+                        uint16_t movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
+                        QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+                        break;
+                    }
+                    case MOVE_TURN:
+                        imu_set_setpoint(movement_parameter);
+                        imu_set_base_speed(0);
+                        break;
+                    default: {
+                        QEvt evt = { .sig = TIMEOUT_2_SIG };
+                        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+                        break;
+                    }
+                }
+            }
 
 
             status_ = QM_HANDLED();
@@ -6347,6 +6348,67 @@ static QState SumoHSM_PreStrategy_PreStrategy_Custom(SumoHSM * const me, QEvt co
                 }
             };
             status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Cust~::IMU_UPDATED} */
+        case IMU_UPDATED_SIG: {
+            // if (move left or right) and near_set_point, change parameter
+
+            int8_t l_speed = 0;
+            int8_t r_speed = 0;
+
+            int8_t ret = imu_pid_process(&l_speed, &r_speed);
+
+            if (ret == 0){
+                drive(l_speed, r_speed);
+            }
+
+            uint8_t current_step = cust_strategy_current_step();
+            movement_t step_type = cust_strategy_move_type(current_step);
+
+            if (step_type == MOVE_TURN && near_set_point()) {
+
+                cust_strategy_increase_step();
+                current_step = cust_strategy_current_step();
+
+                if (current_step >= cust_strategy_num_steps()){
+                    QEvt evt = { .sig = TIMEOUT_2_SIG };
+                    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+                } else {
+                    step_type = cust_strategy_move_type(current_step);
+                    uint16_t movement_parameter = cust_strategy_move(current_step);
+
+                    switch (step_type) {
+                        case MOVE_FRONT:{
+                            imu_set_setpoint(imu_get_setpoint());
+                            imu_set_base_speed(100);
+                            uint16_t movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
+                            QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+                            break;
+                        }
+                        case MOVE_BACK: {
+                            imu_set_setpoint(imu_get_setpoint());
+                            imu_set_base_speed(-100);
+                            uint16_t movement_delay_ms = get_time_to_move_ms(movement_parameter, 100, &parameters);
+                            QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * movement_delay_ms);
+                            break;
+                        }
+                        case MOVE_TURN:
+                            imu_set_setpoint(movement_parameter);
+                            imu_set_base_speed(0);
+                            break;
+                        default: {
+                            QEvt evt = { .sig = TIMEOUT_2_SIG };
+                            QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+                            break;
+                        }
+                    }
+                }
+
+
+            }
+
+            status_ = QM_HANDLED();
             break;
         }
         default: {

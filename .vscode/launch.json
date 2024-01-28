@@ -43,7 +43,7 @@
             "name": "C/C++: GCC Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/QSPY/raijin.elf",
+            "program": "${workspaceFolder}/build/QSPY/raiju.elf",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
