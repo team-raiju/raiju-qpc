@@ -238,7 +238,10 @@ radio_service_en_radio_data_sig(true);
 QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/10, BSP_TICKS_PER_SEC/10);
 ble_service_send_string(&quot;state:RC&quot;);
 set_reference_voltage();
-me-&gt;step_counter = 0;</entry>
+me-&gt;step_counter = 0;
+
+QEvt evt_restart_imu = { .sig = IMU_RESTART_SIG };
+QHSM_DISPATCH(&amp;imu_service_AO-&gt;super, &amp;evt_restart_imu, SIMULATOR);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::RCWait::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
@@ -515,7 +518,10 @@ me-&gt;stuck_counter = 0;
 me-&gt;step_counter = 0;
 parameters.attack_when_near = false;
 start_module_enable();
-set_reference_voltage();</entry>
+set_reference_voltage();
+
+QEvt evt_restart_imu = { .sig = IMU_RESTART_SIG };
+QHSM_DISPATCH(&amp;imu_service_AO-&gt;super, &amp;evt_restart_imu, SIMULATOR);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::AutoWait::START}-->
      <tran trig="START">
@@ -801,7 +807,10 @@ QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
 ble_service_send_string(&quot;state:CALIB&quot;);
 radio_service_en_radio_data_sig(true);
 me-&gt;stuck_counter = 0;
-set_reference_voltage();</entry>
+set_reference_voltage();
+
+QEvt evt_restart_imu = { .sig = IMU_RESTART_SIG };
+QHSM_DISPATCH(&amp;imu_service_AO-&gt;super, &amp;evt_restart_imu, SIMULATOR);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
      <!--${AOs::SumoHSM::SM::CalibWait::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../1">
@@ -1029,7 +1038,7 @@ QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);
       <choice target="../../../2">
        <guard brief="|ch1| and |ch2|&lt; 10">(abs(radio_service_get_channel(RADIO_CH1)) &lt; 10) &amp;&amp; (abs(radio_service_get_channel(RADIO_CH2)) &lt; 10)</guard>
        <action brief="save">BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</action>
-       <choice_glyph conn="173,114,4,1,-55,-9">
+       <choice_glyph conn="173,114,4,1,-41,-9">
         <action box="-14,4,16,4"/>
        </choice_glyph>
       </choice>
@@ -1518,7 +1527,7 @@ QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);</action>
       <choice target="../../../2">
        <guard brief="|ch1| and |ch2|&lt; 10">(abs(radio_service_get_channel(RADIO_CH1)) &lt; 10) &amp;&amp; (abs(radio_service_get_channel(RADIO_CH2)) &lt; 10)</guard>
        <action brief="e">BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</action>
-       <choice_glyph conn="188,115,4,1,-41,-24">
+       <choice_glyph conn="188,115,4,1,-46,-24">
         <action box="-12,-44,16,4"/>
        </choice_glyph>
       </choice>
@@ -2022,7 +2031,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
     <submachine name="PreStrategy">
      <entry brief="Disable_timers">QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
-led_stripe_set_all_color(COLOR_RED);</entry>
+led_stripe_set_all_color(COLOR_RED);
+reset_imu_angle_z();</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <!--${AOs::SumoHSM::SM::PreStrategy::EP-EP0}-->
@@ -2233,8 +2243,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DiagLeft}-->
      <state name="PreStrategy_DiagLeft">
-      <entry brief="turn_left">reset_imu_angle_z();
-imu_set_setpoint(-45);
+      <entry brief="turn_left">imu_set_setpoint(315);
 imu_set_base_speed(0);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Diag~::IMU_UPDATED}-->
       <tran trig="IMU_UPDATED">
@@ -2249,7 +2258,7 @@ if (ret == 0){
        <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Diag~::IMU_UPDATED::[near_set_point]}-->
        <choice target="../../../31">
         <guard brief="near_set_point">near_set_point() == true</guard>
-        <choice_glyph conn="68,20,4,0,11">
+        <choice_glyph conn="68,20,4,0,9">
          <action box="-13,5,12,2"/>
         </choice_glyph>
        </choice>
@@ -2308,28 +2317,28 @@ if (ret == 0){
        <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_su~::IMU_UPDATED::[near_set_point]}-->
        <choice target="../../.." cpref="../../../20">
         <guard brief="near_set_point">near_set_point() == true</guard>
-        <choice_glyph conn="68,59,4,2,56,23,8">
+        <choice_glyph conn="68,56,4,2,56,23,11">
          <action box="-13,5,12,2"/>
         </choice_glyph>
        </choice>
-       <tran_glyph conn="56,59,3,-1,12">
+       <tran_glyph conn="56,56,3,-1,12">
         <action box="0,-2,13,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="56,49,18,12">
+      <state_glyph node="56,46,18,12">
        <entry box="1,2,12,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_sub1}-->
      <state name="PreStrategy_2_sub1">
-      <entry brief="motor_front">imu_set_setpoint(-45);
-imu_set_base_speed(30);
+      <entry brief="motor_front">imu_set_setpoint(315);
+imu_set_base_speed(100);
 
 //uint16_t move_time_ms = get_time_to_move_ms(65, 100, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 200);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 50);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../../30">
-       <tran_glyph conn="56,42,3,0,12,7">
+       <tran_glyph conn="56,40,3,0,12,6">
         <action box="0,-2,19,6"/>
        </tran_glyph>
       </tran>
@@ -2343,11 +2352,11 @@ int8_t ret = imu_pid_process(&amp;l_speed, &amp;r_speed);
 if (ret == 0){
     drive(l_speed, r_speed);
 }</action>
-       <tran_glyph conn="56,39,3,-1,12">
+       <tran_glyph conn="56,37,3,-1,12">
         <action box="0,-2,13,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="56,31,18,13">
+      <state_glyph node="56,29,18,13">
        <entry box="1,2,15,4"/>
       </state_glyph>
      </state>

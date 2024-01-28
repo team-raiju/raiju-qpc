@@ -2037,6 +2037,9 @@ static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     ble_service_send_string("state:RC");
     set_reference_voltage();
     me->step_counter = 0;
+
+    QEvt evt_restart_imu = { .sig = IMU_RESTART_SIG };
+    QHSM_DISPATCH(&imu_service_AO->super, &evt_restart_imu, SIMULATOR);
     return QM_ENTRY(&SumoHSM_RCWait_s);
 }
 /*${AOs::SumoHSM::SM::RCWait} */
@@ -2533,6 +2536,9 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     parameters.attack_when_near = false;
     start_module_enable();
     set_reference_voltage();
+
+    QEvt evt_restart_imu = { .sig = IMU_RESTART_SIG };
+    QHSM_DISPATCH(&imu_service_AO->super, &evt_restart_imu, SIMULATOR);
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
 /*${AOs::SumoHSM::SM::AutoWait} */
@@ -3072,6 +3078,9 @@ static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     radio_service_en_radio_data_sig(true);
     me->stuck_counter = 0;
     set_reference_voltage();
+
+    QEvt evt_restart_imu = { .sig = IMU_RESTART_SIG };
+    QHSM_DISPATCH(&imu_service_AO->super, &evt_restart_imu, SIMULATOR);
     return QM_ENTRY(&SumoHSM_CalibWait_s);
 }
 /*${AOs::SumoHSM::SM::CalibWait} */
@@ -5613,6 +5622,7 @@ static QState SumoHSM_PreStrategy_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->timeEvt_2);
     led_stripe_set_all_color(COLOR_RED);
+    reset_imu_angle_z();
     return QM_ENTRY(&SumoHSM_PreStrategy_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy} */
@@ -6010,8 +6020,7 @@ static QState SumoHSM_PreStrategy_PreStrategy__DiagRight(SumoHSM * const me, QEv
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DiagLeft} ...................*/
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_DiagLeft} */
 static QState SumoHSM_PreStrategy_PreStrategy_DiagLeft_e(SumoHSM * const me) {
-    reset_imu_angle_z();
-    imu_set_setpoint(-45);
+    imu_set_setpoint(315);
     imu_set_base_speed(0);
     (void)me; /* unused parameter */
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_DiagLeft_s);
@@ -6175,11 +6184,11 @@ static QState SumoHSM_PreStrategy_PreStrategy_2_sub2(SumoHSM * const me, QEvt co
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_sub1} .....................*/
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_sub1} */
 static QState SumoHSM_PreStrategy_PreStrategy_2_sub1_e(SumoHSM * const me) {
-    imu_set_setpoint(-45);
-    imu_set_base_speed(30);
+    imu_set_setpoint(315);
+    imu_set_base_speed(100);
 
     //uint16_t move_time_ms = get_time_to_move_ms(65, 100, &parameters);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 200);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 50);
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_2_sub1_s);
 }
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_2_sub1} */

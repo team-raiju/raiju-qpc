@@ -9,8 +9,13 @@
   <item name="backups">0</item>
  </group>
  <group name="windows">
-  <item id=".::inc::bsp.h">0,0,921,647,*</item>
-  <item id=".::src::sumo_hsm.c">325,347,596,300</item>
+  <item id=".::inc::bsp.h">-413,0,921,647</item>
+  <item id=".::src::sumo_hsm.c">0,0,596,300</item>
+  <item id="AOs::SumoHSM::SM">348,161,640,480</item>
+  <item id="AOs::SumoHSM::SM::StarStrategy">348,0,640,480</item>
+  <item id="AOs::SumoHSM::SM::LineFrontSubmachine">0,161,640,480</item>
+  <item id="AOs::SumoHSM::SM::LineBackSubmachine">348,0,640,480</item>
+  <item id="AOs::SumoHSM::SM::PreStrategy">0,0,988,646,*</item>
  </group>
  <group name="search">
   <item name="options">2032128</item>

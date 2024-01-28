@@ -258,10 +258,10 @@ static int8_t sensor_fusion()
     return 0;
 }
 
-// static void imu_deinit_motion_fx()
-// {
-//     memset(mfxstate, 0, sizeof(mfxstate));
-// }
+static void imu_deinit_motion_fx()
+{
+    memset(mfxstate, 0, sizeof(mfxstate));
+}
 
 static int8_t imu_init_motion_fx()
 {
@@ -308,14 +308,21 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
     switch (e->sig) {
     case Q_ENTRY_SIG: {
         imu_sensor_init();
-        imu_init_motion_fx();
-        QTimeEvt_armX(&me->timeEvt, 500 * BSP_TICKS_PER_MILISSEC, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
         status_ = Q_HANDLED();
         break;
     }
 
     case IMU_POLL_SIG: {
         sensor_fusion();
+        status_ = Q_HANDLED();
+        break;
+    }
+
+    case IMU_RESTART_SIG: {
+        QTimeEvt_disarm(&me->timeEvt);
+        imu_deinit_motion_fx();
+        imu_init_motion_fx();
+        QTimeEvt_armX(&me->timeEvt, 500 * BSP_TICKS_PER_MILISSEC, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
         status_ = Q_HANDLED();
         break;
     }
