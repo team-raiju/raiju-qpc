@@ -414,7 +414,8 @@ float imu_get_setpoint()
 
 bool near_set_point()
 {   
-    return calc_error_degree(angles.z) < NEAR_ANGLE_THRESHOLD_DEGREE;
+    float error = calc_error_degree(angles.z);
+    return fabsf(error) < NEAR_ANGLE_THRESHOLD_DEGREE;
 }
 
 int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
