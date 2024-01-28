@@ -16,9 +16,9 @@
  * LOCAL DEFINES
  **************************************************************************************************/
 #define WS2812_PACKET_SIZE    24
-#define WS2812_MAX_LED_AMOUNT 16
+#define FINAL_PADDING_SIZE 2 /* Used to guarantee that no extra bits will be sent at the final of the data stream */
+#define WS2812_PWM_SIZE ((WS2812_PACKET_SIZE * WS2812_MAX_LED_AMOUNT) + FINAL_PADDING_SIZE)
 
-#define WS2812_PWM_SIZE (24 * 16)
 
 #define PWM_BIT_1 12
 #define PWM_BIT_0 6
@@ -111,6 +111,10 @@ void BSP_ws2812_send()
                 pwm_data[(i * WS2812_PACKET_SIZE) + j] = PWM_BIT_0;
             }
         }
+    }
+
+    for (int i = 0; i < FINAL_PADDING_SIZE; i++) {
+        pwm_data[(WS2812_PACKET_SIZE * WS2812_MAX_LED_AMOUNT) + i] = 0;
     }
 
     HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)pwm_data, WS2812_PWM_SIZE);

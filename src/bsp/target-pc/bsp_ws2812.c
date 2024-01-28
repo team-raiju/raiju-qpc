@@ -9,7 +9,6 @@
 #include "qs_defines.h"
 #endif
 
-#define WS2812_MAX_LED_AMOUNT 16
 
 uint8_t led_stripe[WS2812_MAX_LED_AMOUNT][3];
 
