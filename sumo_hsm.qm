@@ -1063,7 +1063,8 @@ drive(100, 100);</entry>
     </state>
     <!--${AOs::SumoHSM::SM::RC_0_1}-->
     <state name="RC_0_1">
-     <entry>board_led_off();</entry>
+     <entry>board_led_off();
+led_stripe_set_all_color(COLOR_ORANGE);</entry>
      <!--${AOs::SumoHSM::SM::RC_0_1::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
       <action>int coord_x = radio_service_get_channel(RADIO_CH1);
@@ -1162,7 +1163,7 @@ QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);
      </xpseg>
      <!--${AOs::SumoHSM::SM::pre_strategy::STOP_XP}-->
      <xpseg xpref="../../40/21" target="../../9">
-      <xpseg_glyph conn="23,117,3,3,-18,109,-1,12,2">
+      <xpseg_glyph conn="23,117,3,3,-19,121,2">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -1542,7 +1543,8 @@ led_stripe_set_all_color(COLOR_RED);</exit>
     </smstate>
     <!--${AOs::SumoHSM::SM::RC_2}-->
     <state name="RC_2">
-     <entry>board_led_off();</entry>
+     <entry>board_led_off();
+led_stripe_set_all_color(COLOR_ORANGE);</entry>
      <!--${AOs::SumoHSM::SM::RC_2::RADIO_DATA}-->
      <tran trig="RADIO_DATA">
       <action>int coord_x = radio_service_get_channel(RADIO_CH1);
@@ -1891,7 +1893,10 @@ drive(0, 0);</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack}-->
      <state name="LineGoBack">
-      <entry brief="go_back">drive(-parameters.reverse_speed, -parameters.reverse_speed);
+      <entry brief="go_back">reset_imu_angle_z();
+
+imu_set_base_speed(-parameters.reverse_speed);
+imu_set_setpoint(0);
 
 uint32_t reverse_time = BSP_TICKS_PER_MILISSEC * parameters.reverse_time_ms;
 
@@ -1938,7 +1943,7 @@ led_stripe_set_all_color(COLOR_YELLOW);</entry>
          <action box="2,-2,10,2"/>
         </choice_glyph>
        </choice>
-       <tran_glyph conn="7,21,3,-1,38,17">
+       <tran_glyph conn="7,20,3,-1,38,18">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -1948,19 +1953,35 @@ led_stripe_set_all_color(COLOR_YELLOW);</entry>
         <action box="0,-2,19,5"/>
        </tran_glyph>
       </tran>
+      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::IMU_UPDATED}-->
+      <tran trig="IMU_UPDATED">
+       <action>int8_t l_speed = 0;
+int8_t r_speed = 0;
+
+int8_t ret = imu_pid_process(&amp;l_speed, &amp;r_speed);
+
+if (ret == 0){
+    drive(l_speed, r_speed);
+}</action>
+       <tran_glyph conn="7,22,3,-1,12">
+        <action box="0,-2,13,2"/>
+       </tran_glyph>
+      </tran>
       <state_glyph node="7,9,54,19">
        <entry box="1,2,16,3"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight}-->
      <state name="LineTurnRight">
-      <entry brief="turn right">drive(100, -100);
-uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-led_stripe_set_all_color(COLOR_PINK);</entry>
+      <entry brief="turn right">imu_set_setpoint(360 - parameters.line_seen_turn_angle);
+imu_set_base_speed(0);
+
+uint16_t max_turn_time_ms = 600;
+led_stripe_set_all_color(COLOR_PINK);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * max_turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::TIMEOUT, DIST_SENSOR_CHANGE}-->
       <tran trig="TIMEOUT, DIST_SENSOR_CHANGE" target="../../7">
-       <tran_glyph conn="11,56,3,0,19,17">
+       <tran_glyph conn="11,52,3,0,19,21">
         <action box="0,-2,22,6"/>
        </tran_glyph>
       </tran>
@@ -1969,12 +1990,33 @@ led_stripe_set_all_color(COLOR_PINK);</entry>
        <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::LINE_CHANGED_FL,~::[white]}-->
        <choice target="../../../7">
         <guard brief="white">(adc_line_get_all() != 0)</guard>
-        <choice_glyph conn="22,69,4,0,4">
+        <choice_glyph conn="20,69,4,0,4">
          <action box="1,0,10,2"/>
         </choice_glyph>
        </choice>
-       <tran_glyph conn="11,63,3,-1,11,6">
+       <tran_glyph conn="11,63,3,-1,9,6">
         <action box="0,-2,12,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::IMU_UPDATED}-->
+      <tran trig="IMU_UPDATED">
+       <action>int8_t l_speed = 0;
+int8_t r_speed = 0;
+
+int8_t ret = imu_pid_process(&amp;l_speed, &amp;r_speed);
+
+if (ret == 0){
+    drive(l_speed, r_speed);
+}</action>
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::IMU_UPDATED::[near_set_point]}-->
+       <choice target="../../../7">
+        <guard brief="near_set_point">near_set_point() == true</guard>
+        <choice_glyph conn="27,59,4,0,14">
+         <action box="-10,-4,12,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="11,59,3,-1,16">
+        <action box="0,-2,13,2"/>
        </tran_glyph>
       </tran>
       <state_glyph node="11,44,21,22">
@@ -1983,14 +2025,15 @@ led_stripe_set_all_color(COLOR_PINK);</entry>
      </state>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft}-->
      <state name="LineTurnLeft">
-      <entry brief="turn left">drive(-100, 100);
-uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_LEFT, &amp;parameters);
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
-led_stripe_set_all_color(COLOR_PINK);</entry>
-      <exit>drive(0,0);</exit>
+      <entry brief="turn left">imu_set_setpoint(parameters.line_seen_turn_angle);
+imu_set_base_speed(0);
+
+uint16_t max_turn_time_ms = 600;
+led_stripe_set_all_color(COLOR_PINK);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * max_turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::TIMEOUT, DIST_SENSOR_CHANGE}-->
       <tran trig="TIMEOUT, DIST_SENSOR_CHANGE" target="../../8">
-       <tran_glyph conn="38,60,3,0,19,13">
+       <tran_glyph conn="38,53,3,0,19,20">
         <action box="0,-2,21,6"/>
        </tran_glyph>
       </tran>
@@ -1999,23 +2042,43 @@ led_stripe_set_all_color(COLOR_PINK);</entry>
        <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::LINE_CHANGED_FL,~::[white]}-->
        <choice target="../../../8">
         <guard brief="white">(adc_line_get_all() != 0)</guard>
-        <choice_glyph conn="47,68,4,0,5">
+        <choice_glyph conn="45,68,4,0,5">
          <action box="1,0,10,2"/>
         </choice_glyph>
        </choice>
-       <tran_glyph conn="38,64,3,-1,9,4">
-        <action box="0,-2,10,2"/>
+       <tran_glyph conn="38,64,3,-1,7,4">
+        <action box="0,-2,12,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::IMU_UPDATED}-->
+      <tran trig="IMU_UPDATED">
+       <action>int8_t l_speed = 0;
+int8_t r_speed = 0;
+
+int8_t ret = imu_pid_process(&amp;l_speed, &amp;r_speed);
+
+if (ret == 0){
+    drive(l_speed, r_speed);
+}</action>
+       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::IMU_UPDATED::[near_set_point]}-->
+       <choice target="../../../8">
+        <guard brief="near_set_point">near_set_point() == true</guard>
+        <choice_glyph conn="54,60,4,0,13">
+         <action box="-10,-4,12,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="38,60,3,-1,16">
+        <action box="0,-2,13,2"/>
        </tran_glyph>
       </tran>
       <state_glyph node="38,44,21,22">
        <entry box="1,2,10,2"/>
-       <exit box="1,4,18,4"/>
       </state_glyph>
      </state>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRightBreak}-->
      <state name="LineTurnRightBreak">
-      <entry brief="turn left">drive(-100, 100);
-uint16_t turn_time_ms = 15;
+      <entry brief="turn left">drive(-20, 20);
+uint16_t turn_time_ms = 5;
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRightBre~::TIMEOUT, DIST_SENSOR_CHANGE}-->
       <tran trig="TIMEOUT, DIST_SENSOR_CHANGE">
@@ -2043,8 +2106,8 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
      </state>
      <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeftBreak}-->
      <state name="LineTurnLeftBreak">
-      <entry brief="turn right">drive(100, -100);
-uint16_t turn_time_ms = 15;
+      <entry brief="turn right">drive(20, -20);
+uint16_t turn_time_ms = 5;
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeftBrea~::TIMEOUT, DIST_SENSOR_CHANGE}-->
       <tran trig="TIMEOUT, DIST_SENSOR_CHANGE">

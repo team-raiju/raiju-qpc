@@ -614,12 +614,11 @@ static QMState const SumoHSM_LineFrontSubmachine_LineTurnRight_s = {
 };
 static QState SumoHSM_LineFrontSubmachine_LineTurnLeft  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_LineFrontSubmachine_LineTurnLeft_e(SumoHSM * const me);
-static QState SumoHSM_LineFrontSubmachine_LineTurnLeft_x(SumoHSM * const me);
 static QMState const SumoHSM_LineFrontSubmachine_LineTurnLeft_s = {
     &SumoHSM_LineFrontSubmachine_s, /* superstate */
     Q_STATE_CAST(&SumoHSM_LineFrontSubmachine_LineTurnLeft),
     Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_LineTurnLeft_e),
-    Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_LineTurnLeft_x),
+    Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
 static QState SumoHSM_LineFrontSubmachine_LineTurnRightBreak  (SumoHSM * const me, QEvt const * const e);
@@ -3294,6 +3293,7 @@ static QState SumoHSM_CalibFrontAt100(SumoHSM * const me, QEvt const * const e) 
 /*${AOs::SumoHSM::SM::RC_0_1} */
 static QState SumoHSM_RC_0_1_e(SumoHSM * const me) {
     board_led_off();
+    led_stripe_set_all_color(COLOR_ORANGE);
     (void)me; /* unused parameter */
     return QM_ENTRY(&SumoHSM_RC_0_1_s);
 }
@@ -4449,6 +4449,7 @@ static QState SumoHSM_StepsFL(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::RC_2} */
 static QState SumoHSM_RC_2_e(SumoHSM * const me) {
     board_led_off();
+    led_stripe_set_all_color(COLOR_ORANGE);
     (void)me; /* unused parameter */
     return QM_ENTRY(&SumoHSM_RC_2_s);
 }
@@ -5196,7 +5197,10 @@ static QState SumoHSM_LineFrontSubmachine(SumoHSM * const me, QEvt const * const
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack} .......................*/
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack} */
 static QState SumoHSM_LineFrontSubmachine_LineGoBack_e(SumoHSM * const me) {
-    drive(-parameters.reverse_speed, -parameters.reverse_speed);
+    reset_imu_angle_z();
+
+    imu_set_base_speed(-parameters.reverse_speed);
+    imu_set_setpoint(0);
 
     uint32_t reverse_time = BSP_TICKS_PER_MILISSEC * parameters.reverse_time_ms;
 
@@ -5281,21 +5285,37 @@ static QState SumoHSM_LineFrontSubmachine_LineGoBack(SumoHSM * const me, QEvt co
             status_ = QM_TRAN_XP(me->sub_LineFrontSubmachine->XP1, &tatbl_);
             break;
         }
+        /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack::IMU_UPDATED} */
+        case IMU_UPDATED_SIG: {
+            int8_t l_speed = 0;
+            int8_t r_speed = 0;
+
+            int8_t ret = imu_pid_process(&l_speed, &r_speed);
+
+            if (ret == 0){
+                drive(l_speed, r_speed);
+            }
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight} ....................*/
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight} */
 static QState SumoHSM_LineFrontSubmachine_LineTurnRight_e(SumoHSM * const me) {
-    drive(100, -100);
-    uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &parameters);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+    imu_set_setpoint(360 - parameters.line_seen_turn_angle);
+    imu_set_base_speed(0);
+
+    uint16_t max_turn_time_ms = 600;
     led_stripe_set_all_color(COLOR_PINK);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * max_turn_time_ms);
     return QM_ENTRY(&SumoHSM_LineFrontSubmachine_LineTurnRight_s);
 }
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight} */
@@ -5342,6 +5362,35 @@ static QState SumoHSM_LineFrontSubmachine_LineTurnRight(SumoHSM * const me, QEvt
             }
             break;
         }
+        /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::IMU_UPDATED} */
+        case IMU_UPDATED_SIG: {
+            int8_t l_speed = 0;
+            int8_t r_speed = 0;
+
+            int8_t ret = imu_pid_process(&l_speed, &r_speed);
+
+            if (ret == 0){
+                drive(l_speed, r_speed);
+            }
+            /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight::IMU_UPDATED::[near_set_point]} */
+            if (near_set_point() == true) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[2];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_LineFrontSubmachine_LineTurnRightBreak_s, /* target state */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_LineTurnRightBreak_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            else {
+                status_ = QM_UNHANDLED();
+            }
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
@@ -5353,17 +5402,13 @@ static QState SumoHSM_LineFrontSubmachine_LineTurnRight(SumoHSM * const me, QEvt
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft} .....................*/
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft} */
 static QState SumoHSM_LineFrontSubmachine_LineTurnLeft_e(SumoHSM * const me) {
-    drive(-100, 100);
-    uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_LEFT, &parameters);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+    imu_set_setpoint(parameters.line_seen_turn_angle);
+    imu_set_base_speed(0);
+
+    uint16_t max_turn_time_ms = 600;
     led_stripe_set_all_color(COLOR_PINK);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * max_turn_time_ms);
     return QM_ENTRY(&SumoHSM_LineFrontSubmachine_LineTurnLeft_s);
-}
-/*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft} */
-static QState SumoHSM_LineFrontSubmachine_LineTurnLeft_x(SumoHSM * const me) {
-    drive(0,0);
-    (void)me; /* unused parameter */
-    return QM_EXIT(&SumoHSM_LineFrontSubmachine_LineTurnLeft_s);
 }
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft} */
 static QState SumoHSM_LineFrontSubmachine_LineTurnLeft(SumoHSM * const me, QEvt const * const e) {
@@ -5374,11 +5419,10 @@ static QState SumoHSM_LineFrontSubmachine_LineTurnLeft(SumoHSM * const me, QEvt 
         case DIST_SENSOR_CHANGE_SIG: {
             static struct {
                 QMState const *target;
-                QActionHandler act[3];
+                QActionHandler act[2];
             } const tatbl_ = { /* tran-action table */
                 &SumoHSM_LineFrontSubmachine_LineTurnLeftBreak_s, /* target state */
                 {
-                    Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_LineTurnLeft_x), /* exit */
                     Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_LineTurnLeftBreak_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
@@ -5395,11 +5439,39 @@ static QState SumoHSM_LineFrontSubmachine_LineTurnLeft(SumoHSM * const me, QEvt 
             if ((adc_line_get_all() != 0)) {
                 static struct {
                     QMState const *target;
-                    QActionHandler act[3];
+                    QActionHandler act[2];
                 } const tatbl_ = { /* tran-action table */
                     &SumoHSM_LineFrontSubmachine_LineTurnLeftBreak_s, /* target state */
                     {
-                        Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_LineTurnLeft_x), /* exit */
+                        Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_LineTurnLeftBreak_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            else {
+                status_ = QM_UNHANDLED();
+            }
+            break;
+        }
+        /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::IMU_UPDATED} */
+        case IMU_UPDATED_SIG: {
+            int8_t l_speed = 0;
+            int8_t r_speed = 0;
+
+            int8_t ret = imu_pid_process(&l_speed, &r_speed);
+
+            if (ret == 0){
+                drive(l_speed, r_speed);
+            }
+            /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft::IMU_UPDATED::[near_set_point]} */
+            if (near_set_point() == true) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[2];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_LineFrontSubmachine_LineTurnLeftBreak_s, /* target state */
+                    {
                         Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_LineTurnLeftBreak_e), /* entry */
                         Q_ACTION_NULL /* zero terminator */
                     }
@@ -5422,8 +5494,8 @@ static QState SumoHSM_LineFrontSubmachine_LineTurnLeft(SumoHSM * const me, QEvt 
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRightBreak} ...............*/
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRightBreak} */
 static QState SumoHSM_LineFrontSubmachine_LineTurnRightBreak_e(SumoHSM * const me) {
-    drive(-100, 100);
-    uint16_t turn_time_ms = 15;
+    drive(-20, 20);
+    uint16_t turn_time_ms = 5;
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
     return QM_ENTRY(&SumoHSM_LineFrontSubmachine_LineTurnRightBreak_s);
 }
@@ -5471,8 +5543,8 @@ static QState SumoHSM_LineFrontSubmachine_LineTurnRightBreak(SumoHSM * const me,
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeftBreak} ................*/
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeftBreak} */
 static QState SumoHSM_LineFrontSubmachine_LineTurnLeftBreak_e(SumoHSM * const me) {
-    drive(100, -100);
-    uint16_t turn_time_ms = 15;
+    drive(20, -20);
+    uint16_t turn_time_ms = 5;
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
     return QM_ENTRY(&SumoHSM_LineFrontSubmachine_LineTurnLeftBreak_s);
 }
