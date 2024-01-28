@@ -48,6 +48,7 @@
 #include "bsp_uart_fake.h"
 #include "bsp_uart.h"
 #include "fake_start_module.h"
+#include "motion_fx.h"
 
 #ifdef Q_SPY
 
@@ -233,6 +234,12 @@ void QS_onCommand(uint8_t cmdId, uint32_t param1, uint32_t param2, uint32_t para
     case 11: {
         HAL_UART_Fake_UartData(UART_NUM_3, (int16_t *)ble_data);
 
+        break;
+    }
+
+    case 12: {
+        float val = param1 + (param2 / 1000.0f);
+        MotionFX_set_angle_z(val);
         break;
     }
 

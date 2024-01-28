@@ -4371,12 +4371,9 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 100);</entry>
 #include &quot;parameters.h&quot;
 #include &quot;custom_strategy.h&quot;
 #include &quot;start_module.h&quot;
-
+#include &quot;utils.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5
-#ifndef M_PI
-#define M_PI                3.14159265
-#endif
 
 static sumo_parameters_t parameters;
 

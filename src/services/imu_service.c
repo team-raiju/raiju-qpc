@@ -14,14 +14,16 @@
 #include "lsm6dsr.h"
 #include "lsm6dsr_reg.h"
 #include "bsp_crc.h"
+#include "utils.h"
+
 
 Q_DEFINE_THIS_FILE
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
 
-#define IMU_UPDATE_FREQUENCY_HZ 100
-#define IMU_POLL_PERIOD_MS      (1000 / IMU_UPDATE_FREQUENCY_HZ)
+#define IMU_POLL_PERIOD_MS  10
+#define OUTPUT_DATA_RATE_HZ 200
 
 #define MFX_STR_LENG 35
 #define STATE_SIZE   (size_t)(2450)
@@ -31,6 +33,11 @@ Q_DEFINE_THIS_FILE
 #define WHO_I_AM_VAL        0x6B
 
 #define INTIAL_VALUE_FLAG 0xffffffff
+
+#define STABLE_THRESHOLD 0.1
+#define RAD_90_DEGREES  M_PI_2
+#define RAD_360_DEGREES (2 * M_PI)
+
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -63,12 +70,18 @@ QActive *const imu_service_AO = &imu_inst.super;
 
 static char lib_version[MFX_STR_LENG];
 static uint8_t mfxstate[STATE_SIZE];
+static MFX_knobs_t iKnobs;
 
 static LSM6DSR_Object_t lsm6dsr_ctx;
 static LSM6DSR_IO_t lsm6dsr_io_ctx;
 static uint8_t who_i_am_val = 0;
-static axis_3x_data_t angles;
-
+static axis_3x_data_t angles = { 0.0, 0.0, 0.0 };
+static float ref_angle_z = 0.0;
+static float angle_z_raw;
+static float set_point = 0.0;
+static uint8_t base_speed = 0.0;
+static float z_angle_variation = 0.0;
+static float last_z_angle = 0.0;
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -192,6 +205,14 @@ static int imu_sensor_init()
         return -1;
     }
 
+    if (LSM6DSR_ACC_SetOutputDataRate(&lsm6dsr_ctx, OUTPUT_DATA_RATE_HZ) != LSM6DSR_OK) {
+        return -1;
+    }
+
+    if (LSM6DSR_GYRO_SetOutputDataRate(&lsm6dsr_ctx, OUTPUT_DATA_RATE_HZ) != LSM6DSR_OK) {
+        return -1;
+    }
+
     return 0;
 }
 
@@ -220,19 +241,40 @@ static int8_t sensor_fusion()
     MFX_output_t data_out_fx;
     update_sensor_fusion(&angular_rate_dps, &acceleration_g, &data_out_fx, delta_time);
 
-    angles.z = data_out_fx.rotation[0]; // yaw
+    angle_z_raw = (360 - data_out_fx.rotation[0]);
+    float temp_angle_z = angle_z_raw - ref_angle_z;
+
+    if (temp_angle_z < 0) {
+        temp_angle_z += 360;
+    }
+
+    angles.z = temp_angle_z;            // yaw
     angles.x = data_out_fx.rotation[1]; // pitch
     angles.y = data_out_fx.rotation[2]; // row
 
-    // printf("ANGLES: %ld, %ld, %ld\r\n", (int32_t) angles.x, (int32_t) angles.y, (int32_t) angles.z);
+    QEvt evt = { .sig = IMU_UPDATED_SIG };
+    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+
+    float angle_var = angles.z - last_z_angle;
+    if (angle_var > 180){
+        angle_var -= 360;
+    } else if (angle_var < -180){
+        angle_var += 360;
+    }
+
+    z_angle_variation = fabs(angle_var);
+    last_z_angle = angles.z;
 
     return 0;
 }
 
+// static void imu_deinit_motion_fx()
+// {
+//     memset(mfxstate, 0, sizeof(mfxstate));
+// }
+
 static int8_t imu_init_motion_fx()
 {
-    static MFX_knobs_t iKnobs;
-
     if (STATE_SIZE < MotionFX_GetStateSize()) {
         return -1;
     }
@@ -245,6 +287,14 @@ static int8_t imu_init_motion_fx()
 
     /* Modify knobs settings & set the knobs */
     MotionFX_getKnobs(mfxstate, &iKnobs);
+
+    // iKnobs.modx = 1;
+    // iKnobs.gbias_acc_th_sc = 0.015;
+    // iKnobs.gbias_gyro_th_sc = 0.028;
+    // iKnobs.gbias_mag_th_sc = 0;
+    // iKnobs.LMode = 2;
+    // iKnobs.ATime = 0.9;
+
     MotionFX_setKnobs(mfxstate, &iKnobs);
 
     MotionFX_enable_9X(mfxstate, MFX_ENGINE_DISABLE);
@@ -269,14 +319,13 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
     case Q_ENTRY_SIG: {
         imu_sensor_init();
         imu_init_motion_fx();
-        QTimeEvt_armX(&me->timeEvt, 3000 * BSP_TICKS_PER_MILISSEC, 0);
+        QTimeEvt_armX(&me->timeEvt, 500 * BSP_TICKS_PER_MILISSEC, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
         status_ = Q_HANDLED();
         break;
     }
 
     case IMU_POLL_SIG: {
         sensor_fusion();
-        QTimeEvt_rearm(&me->timeEvt, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
         status_ = Q_HANDLED();
         break;
     }
@@ -305,10 +354,96 @@ void imu_service_init()
     bsp_crc_init();
 
     /* statically allocate event queue buffer for the imu_ao_t AO */
-    static QEvt const *imu_service_queueSto[10];
+    static QEvt const *imu_service_queueSto[30];
 
     imu_service_ctor();                                                             /* explicitly call the "constructor" */
     QACTIVE_START(imu_service_AO, 3U,                                               /* priority */
                   imu_service_queueSto, Q_DIM(imu_service_queueSto), (void *)0, 0U, /* no stack */
                   (void *)0);                                                       /* no initialization parameter */
+}
+
+float get_imu_angle_z()
+{
+    return angles.z;
+}
+
+void reset_imu_angle_z()
+{
+    ref_angle_z = angle_z_raw;
+}
+
+void start_g_bias_calculation()
+{
+    MotionFX_getKnobs(mfxstate, &iKnobs);
+    iKnobs.start_automatic_gbias_calculation = 1;
+    MotionFX_setKnobs(mfxstate, &iKnobs);
+}
+
+void stop_g_bias_calculation()
+{
+    MotionFX_getKnobs(mfxstate, &iKnobs);
+    iKnobs.start_automatic_gbias_calculation = 0;
+    MotionFX_setKnobs(mfxstate, &iKnobs);
+}
+
+static float calc_error_rad(float current_angle_degrees)
+{
+    float error = 0;
+    float aux_error = set_point - current_angle_degrees;
+
+    if (aux_error > 180) {
+        error = aux_error - 360;
+    } else if (aux_error < -180) {
+        error = aux_error + 360;
+    } else {
+        error = aux_error;
+    }
+
+    return error * M_PI / 180.0;
+}
+
+bool get_imu_stable()
+{
+    return z_angle_variation < STABLE_THRESHOLD;
+}
+
+void imu_set_setpoint(float set_point_)
+{
+    set_point = set_point_;
+}
+
+void imu_set_base_speed(uint8_t base_speed_)
+{
+    base_speed = base_speed_;
+}
+
+
+int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
+{
+    static float last_error = 0;
+    float error = calc_error_rad(angles.z);
+
+    float derivative = 0;
+
+    if (error > RAD_90_DEGREES && last_error < -RAD_90_DEGREES){
+        derivative = (error - RAD_360_DEGREES) - last_error; 
+    } else if (error < -RAD_90_DEGREES && last_error > RAD_90_DEGREES){
+        derivative = (error + RAD_360_DEGREES) - last_error; 
+    } else {
+        derivative = error - last_error;
+    }
+
+    float kp = 15;
+    float kd = 15;
+
+
+    int32_t l_speed = base_speed - (error * kp + derivative * kd);
+    int32_t r_speed = base_speed + (error * kp + derivative * kd);
+
+    *left_speed = constrain((int8_t)l_speed, -35, 35);
+    *right_speed = constrain((int8_t)r_speed, -35, 35);
+
+    last_error = error;
+
+    return 0;
 }

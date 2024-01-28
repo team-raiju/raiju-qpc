@@ -51,12 +51,9 @@
 #include "parameters.h"
 #include "custom_strategy.h"
 #include "start_module.h"
-
+#include "utils.h"
 
 #define CALIB_ANGLE_MULT    2.5
-#ifndef M_PI
-#define M_PI                3.14159265
-#endif
 
 static sumo_parameters_t parameters;
 

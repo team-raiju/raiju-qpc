@@ -28,6 +28,7 @@ enum SumoHSMSignals {
     BLE_ATTACK_NEAR_SIG,
     START_MODULE_TEST_SIG,
     IMU_POLL_SIG,
+    IMU_UPDATED_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };
 

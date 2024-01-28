@@ -1,6 +1,11 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+/* Pi value */
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 /**
  * @brief Returns x absolute value.
  */

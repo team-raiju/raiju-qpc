@@ -302,7 +302,7 @@ def custom_on_poll():
         robot_pos_x, robot_pos_y = sumo_robot.get_position()
 
         # Line Sensor simulator
-        update_line_sensor(robot_pos_x, robot_pos_y,angle)
+        update_line_sensor(robot_pos_x, robot_pos_y, angle)
         if (line_sensor_changed()):
             adc_command(line_sensors["FL"]["active"], line_sensors["FR"]["active"], \
             line_sensors["BL"]["active"], line_sensors["BR"]["active"], ctrl_battery_full, pwr_battery_full)
@@ -313,6 +313,9 @@ def custom_on_poll():
             sensor_command(sensor_active)
 
         last_sensor_active = sensor_active
+
+        # IMU simulator
+        update_imu_command(angle)
 
         # radio Simulator
         if (USE_PS3_CONTROLLER):
@@ -348,6 +351,10 @@ def send_radio_command_ch1_ch2(ch1, ch2):
 def send_radio_command_ch3_ch6_ch7(ch3, ch7, ch6):
     qview_base.command(8, ch3, ch7, ch6)
 
+def update_imu_command(z_angle):
+    integer_part = int(z_angle)
+    decimal_part = int((z_angle - integer_part) * 1000)
+    qview_base.command(12, integer_part , decimal_part)
 
 def send_ble_command(ble_bytearray):
 
