@@ -38,6 +38,7 @@ Q_DEFINE_THIS_FILE
 #define RAD_90_DEGREES  M_PI_2
 #define RAD_360_DEGREES (2 * M_PI)
 
+#define NEAR_ANGLE_THRESHOLD_DEGREE 5.0f
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -81,7 +82,6 @@ static float angle_z_raw;
 static float set_point = 0.0;
 static uint8_t base_speed = 0.0;
 static float z_angle_variation = 0.0;
-static float last_z_angle = 0.0;
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -255,16 +255,6 @@ static int8_t sensor_fusion()
     QEvt evt = { .sig = IMU_UPDATED_SIG };
     QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
 
-    float angle_var = angles.z - last_z_angle;
-    if (angle_var > 180){
-        angle_var -= 360;
-    } else if (angle_var < -180){
-        angle_var += 360;
-    }
-
-    z_angle_variation = fabs(angle_var);
-    last_z_angle = angles.z;
-
     return 0;
 }
 
@@ -386,7 +376,7 @@ void stop_g_bias_calculation()
     MotionFX_setKnobs(mfxstate, &iKnobs);
 }
 
-static float calc_error_rad(float current_angle_degrees)
+static float calc_error_degree(float current_angle_degrees)
 {
     float error = 0;
     float aux_error = set_point - current_angle_degrees;
@@ -399,7 +389,7 @@ static float calc_error_rad(float current_angle_degrees)
         error = aux_error;
     }
 
-    return error * M_PI / 180.0;
+    return error;
 }
 
 bool get_imu_stable()
@@ -417,11 +407,22 @@ void imu_set_base_speed(uint8_t base_speed_)
     base_speed = base_speed_;
 }
 
+float imu_get_setpoint()
+{
+    return set_point;
+}
+
+bool near_set_point()
+{   
+    return calc_error_degree(angles.z) < NEAR_ANGLE_THRESHOLD_DEGREE;
+}
 
 int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
 {
     static float last_error = 0;
-    float error = calc_error_rad(angles.z);
+    float error = calc_error_degree(angles.z);
+
+    printf("angle: %f, setpoint = %f, error: %f\r\n", angles.z, set_point, error);
 
     float derivative = 0;
 
@@ -433,15 +434,15 @@ int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
         derivative = error - last_error;
     }
 
-    float kp = 15;
-    float kd = 15;
+    float kp = 1.48;
+    float kd = 0.52;
 
 
     int32_t l_speed = base_speed - (error * kp + derivative * kd);
     int32_t r_speed = base_speed + (error * kp + derivative * kd);
 
-    *left_speed = constrain((int8_t)l_speed, -35, 35);
-    *right_speed = constrain((int8_t)r_speed, -35, 35);
+    *left_speed = constrain(l_speed, -100, 100);
+    *right_speed = constrain(r_speed, -100, 100);
 
     last_error = error;
 
