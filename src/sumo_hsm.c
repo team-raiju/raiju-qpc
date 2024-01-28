@@ -5672,6 +5672,7 @@ static QState SumoHSM_LineFrontSubmachine_LineTurnLeftBreak(SumoHSM * const me, 
 static QState SumoHSM_PreStrategy_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->timeEvt_2);
+    QTimeEvt_disarm(&me->timeEvtStuck);
     led_stripe_set_all_color(COLOR_RED);
     reset_imu_angle_z();
     return QM_ENTRY(&SumoHSM_PreStrategy_s);
@@ -5680,6 +5681,7 @@ static QState SumoHSM_PreStrategy_e(SumoHSM * const me) {
 static QState SumoHSM_PreStrategy_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->timeEvt_2);
+    QTimeEvt_disarm(&me->timeEvtStuck);
     return QM_SM_EXIT(&me->sub_PreStrategy->super);
 }
 /*${AOs::SumoHSM::SM::PreStrategy} */
@@ -5713,6 +5715,17 @@ static QState SumoHSM_PreStrategy(SumoHSM * const me, QEvt const * const e) {
             else {
                 status_ = QM_UNHANDLED();
             }
+            break;
+        }
+        /*${AOs::SumoHSM::SM::PreStrategy::STUCK} */
+        case STUCK_SIG: {
+            static QMTranActTable const tatbl_ = { /* tran-action table */
+                &SumoHSM_PreStrategy_s, /* target submachine */
+                {
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN_XP(me->sub_PreStrategy->XP1, &tatbl_);
             break;
         }
         default: {
@@ -6286,6 +6299,8 @@ static QState SumoHSM_PreStrategy_PreStrategy_2_sub1(SumoHSM * const me, QEvt co
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Custom} .....................*/
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Custom} */
 static QState SumoHSM_PreStrategy_PreStrategy_Custom_e(SumoHSM * const me) {
+    // Max timeout to be in pre strategy state
+    QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
     cust_strategy_reset();
     SumoHSM_UpdateCustomStrategy(me);
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_Custom_s);
