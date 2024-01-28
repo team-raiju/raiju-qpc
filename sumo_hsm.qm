@@ -2328,7 +2328,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
      </tran>
      <!--${AOs::SumoHSM::SM::PreStrategy::STUCK}-->
      <tran trig="STUCK" target=".." cpref="../20">
-      <tran_glyph conn="2,118,3,2,89,5">
+      <tran_glyph conn="2,115,3,2,89,8">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -2645,7 +2645,7 @@ if (ret == 0){
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Turn180}-->
      <state name="PreStrategy_Turn180">
-      <entry brief="turn_left_180">QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 1000);
+      <entry brief="turn_left_180">QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
 imu_set_setpoint(180);
 imu_set_base_speed(0);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Turn~::IMU_UPDATED}-->
@@ -2675,16 +2675,33 @@ if (ret == 0){
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1_sub1}-->
      <state name="PreStrategy_1_sub1">
-      <entry brief="go_front">drive(100,100);
+      <entry brief="go_front">reset_imu_angle_z();
+imu_set_setpoint(0);
+imu_set_base_speed(100, 100);
+
 uint16_t move_time_ms = get_time_to_move_ms(15, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1_su~::TIMEOUT}-->
       <tran trig="TIMEOUT" target="../.." cpref="../../20">
-       <tran_glyph conn="32,52,3,2,8,63,51,8">
+       <tran_glyph conn="32,55,3,2,8,60,51,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="32,46,18,8">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_1_su~::IMU_UPDATED}-->
+      <tran trig="IMU_UPDATED">
+       <action>int8_t l_speed = 0;
+int8_t r_speed = 0;
+
+int8_t ret = imu_pid_process(&amp;l_speed, &amp;r_speed);
+
+if (ret == 0){
+    drive(l_speed, r_speed);
+}</action>
+       <tran_glyph conn="32,52,3,-1,12">
+        <action box="0,-2,13,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="32,46,18,10">
        <entry box="1,2,13,2"/>
       </state_glyph>
      </state>
@@ -2925,7 +2942,9 @@ if (ret == 0){
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_13_sub1}-->
      <state name="PreStrategy_13_sub1">
-      <entry brief="go_front">imu_set_base_speed(100);
+      <entry brief="go_front">reset_imu_angle_z();
+imu_set_base_speed(100);
+imu_set_setpoint(0);
 
 uint16_t move_time_ms = get_time_to_move_ms(20, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
@@ -3160,7 +3179,7 @@ if (ret == 0){
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_Attack}-->
      <state name="PreStrategy_Attack">
-      <entry brief="front">QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 1000);
+      <entry brief="front">QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 300);
 imu_set_base_speed(100);
 imu_set_setpoint(0);
 
@@ -4232,7 +4251,7 @@ int8_t ret = imu_pid_process(&amp;l_speed, &amp;r_speed);
 if (ret == 0){
     drive(l_speed, r_speed);
 }</action>
-       <tran_glyph conn="456,32,3,-1,12">
+       <tran_glyph conn="456,34,3,-1,12">
         <action box="0,-2,13,2"/>
        </tran_glyph>
       </tran>
@@ -4242,7 +4261,13 @@ if (ret == 0){
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="456,22,18,12">
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_s~::LINE_CHANGED_BL, LINE_CHANGED_BR}-->
+      <tran trig="LINE_CHANGED_BL, LINE_CHANGED_BR" target="../../91">
+       <tran_glyph conn="456,30,3,1,-2,43,-1">
+        <action box="0,-2,19,4"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="456,22,18,13">
        <entry box="1,2,13,2"/>
       </state_glyph>
      </state>
@@ -4332,6 +4357,38 @@ if (ret == 0){
       </tran>
       <state_glyph node="456,69,18,11">
        <entry box="1,2,12,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_sub5}-->
+     <state name="PreStrategy_19_sub5">
+      <entry brief="go_front">reset_imu_angle_z();
+imu_set_setpoint(0);
+imu_set_base_speed(100, 100);
+
+uint16_t move_time_ms = get_time_to_move_ms(15, 100, &amp;parameters);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_s~::TIMEOUT}-->
+      <tran trig="TIMEOUT" target="../.." cpref="../../20">
+       <tran_glyph conn="435,78,3,2,8,37,-352,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_19_s~::IMU_UPDATED}-->
+      <tran trig="IMU_UPDATED">
+       <action>int8_t l_speed = 0;
+int8_t r_speed = 0;
+
+int8_t ret = imu_pid_process(&amp;l_speed, &amp;r_speed);
+
+if (ret == 0){
+    drive(l_speed, r_speed);
+}</action>
+       <tran_glyph conn="435,75,3,-1,12">
+        <action box="0,-2,13,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="435,69,18,10">
+       <entry box="1,2,13,2"/>
       </state_glyph>
      </state>
      <submachine_diagram size="501,122">
