@@ -6500,7 +6500,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_Turn180(SumoHSM * const me, QEvt c
 static QState SumoHSM_PreStrategy_PreStrategy_1_sub1_e(SumoHSM * const me) {
     reset_imu_angle_z();
     imu_set_setpoint(0);
-    imu_set_base_speed(100, 100);
+    imu_set_base_speed(100);
 
     uint16_t move_time_ms = get_time_to_move_ms(15, 100, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);
@@ -9277,7 +9277,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_19_sub4(SumoHSM * const me, QEvt c
 static QState SumoHSM_PreStrategy_PreStrategy_19_sub5_e(SumoHSM * const me) {
     reset_imu_angle_z();
     imu_set_setpoint(0);
-    imu_set_base_speed(100, 100);
+    imu_set_base_speed(100);
 
     uint16_t move_time_ms = get_time_to_move_ms(15, 100, &parameters);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);

@@ -2677,7 +2677,7 @@ if (ret == 0){
      <state name="PreStrategy_1_sub1">
       <entry brief="go_front">reset_imu_angle_z();
 imu_set_setpoint(0);
-imu_set_base_speed(100, 100);
+imu_set_base_speed(100);
 
 uint16_t move_time_ms = get_time_to_move_ms(15, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
@@ -4363,7 +4363,7 @@ if (ret == 0){
      <state name="PreStrategy_19_sub5">
       <entry brief="go_front">reset_imu_angle_z();
 imu_set_setpoint(0);
-imu_set_base_speed(100, 100);
+imu_set_base_speed(100);
 
 uint16_t move_time_ms = get_time_to_move_ms(15, 100, &amp;parameters);
 QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * move_time_ms);</entry>
