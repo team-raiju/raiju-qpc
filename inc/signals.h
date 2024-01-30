@@ -31,6 +31,7 @@ enum SumoHSMSignals {
     IMU_RESTART_SIG,
     IMU_STOP_SIG,
     IMU_UPDATED_SIG,
+    IMU_INCLINATION_SIG,
     EXIT_CUSTOM_SIG,
     MAX_SIG, /* keep last (the number of signals) */
 };

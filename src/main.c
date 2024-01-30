@@ -44,7 +44,7 @@ Q_DEFINE_THIS_FILE
 
 /* the main function -------------------------------------------------------*/
 int main() {
-    static QEvt const *sumoHSM_queueSto[10]; /* event queue buffer for SumoHSM */
+    static QEvt const *sumoHSM_queueSto[30]; /* event queue buffer for SumoHSM */
 
     QF_init();  /* initialize the framework */
     BSP_init(); /* initialize the BSP */

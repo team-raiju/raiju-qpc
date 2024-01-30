@@ -34,11 +34,11 @@ Q_DEFINE_THIS_FILE
 
 #define INTIAL_VALUE_FLAG 0xffffffff
 
-#define STABLE_THRESHOLD 0.1
 #define RAD_90_DEGREES  M_PI_2
 #define RAD_360_DEGREES (2 * M_PI)
 
 #define NEAR_ANGLE_THRESHOLD_DEGREE 8.0f
+#define INCLINATION_THRESHOLD_DEGREE 15.0f
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -81,7 +81,9 @@ static float ref_angle_z = 0.0;
 static float angle_z_raw;
 static float set_point = 0.0;
 static int8_t base_speed = 0.0;
-static float z_angle_variation = 0.0;
+
+static bool last_inclination = false;
+static bool current_inclination = false;
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -252,6 +254,17 @@ static int8_t sensor_fusion()
     angles.x = data_out_fx.rotation[1]; // pitch
     angles.y = data_out_fx.rotation[2]; // row
 
+    bool angle_x_inclination = angles.x < -INCLINATION_THRESHOLD_DEGREE;
+    bool angle_y_inclination = angles.y > INCLINATION_THRESHOLD_DEGREE || angles.y < -INCLINATION_THRESHOLD_DEGREE;
+    current_inclination = angle_x_inclination || angle_y_inclination;
+
+    if (current_inclination && !last_inclination) {
+        QEvt evt = { .sig = IMU_INCLINATION_SIG };
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+    last_inclination = current_inclination;
+
     QEvt evt = { .sig = IMU_UPDATED_SIG };
     QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
 
@@ -278,7 +291,7 @@ static int8_t imu_init_motion_fx()
     /* Modify knobs settings & set the knobs */
     MotionFX_getKnobs(mfxstate, &iKnobs);
 
-    // iKnobs.modx = 1;
+    iKnobs.modx = 2;
     // iKnobs.gbias_acc_th_sc = 0.015;
     // iKnobs.gbias_gyro_th_sc = 0.028;
     // iKnobs.gbias_mag_th_sc = 0;
@@ -351,7 +364,7 @@ void imu_service_init()
     bsp_crc_init();
 
     /* statically allocate event queue buffer for the imu_ao_t AO */
-    static QEvt const *imu_service_queueSto[30];
+    static QEvt const *imu_service_queueSto[50];
 
     imu_service_ctor();                                                             /* explicitly call the "constructor" */
     QACTIVE_START(imu_service_AO, 3U,                                               /* priority */
@@ -397,11 +410,6 @@ static float calc_error_degree(float current_angle_degrees)
     }
 
     return error;
-}
-
-bool get_imu_stable()
-{
-    return z_angle_variation < STABLE_THRESHOLD;
 }
 
 void imu_set_setpoint(float set_point_)

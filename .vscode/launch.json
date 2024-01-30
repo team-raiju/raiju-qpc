@@ -31,13 +31,13 @@
 	        "device": "STM32F103RC",
 	        "v1": false,
 			"runToEntryPoint": "main",
-			"svdFile": "./STM32F103.svd"
+			"svdFile": "./STM32F103.svd",
 			// In cortex-debug extension current pre release version (1.11.2),
             // Remove next line comments to enable liveWatch viewer 
-            // "liveWatch": {
-            //     "enabled": true,
-            //     "samplesPerSecond": 4
-            // }
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            }
 	    },
 		{
             "name": "C/C++: GCC Debug",
