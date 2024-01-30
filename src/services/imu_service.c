@@ -77,8 +77,8 @@ static LSM6DSR_Object_t lsm6dsr_ctx;
 static LSM6DSR_IO_t lsm6dsr_io_ctx;
 static uint8_t who_i_am_val = 0;
 static axis_3x_data_t angles = { 0.0, 0.0, 0.0 };
-static float ref_angle_z = 0.0;
-static float angle_z_raw;
+static axis_3x_data_t ref_angles = { 0.0, 0.0, 0.0 };
+static axis_3x_data_t angles_raw = { 0.0, 0.0, 0.0 };
 static float set_point = 0.0;
 static int8_t base_speed = 0.0;
 
@@ -243,17 +243,21 @@ static int8_t sensor_fusion()
     MFX_output_t data_out_fx;
     update_sensor_fusion(&angular_rate_dps, &acceleration_g, &data_out_fx, delta_time);
 
-    angle_z_raw = (360 - data_out_fx.rotation[0]);
-    float temp_angle_z = angle_z_raw - ref_angle_z;
+    angles_raw.z = (360 - data_out_fx.rotation[0]);
+    float temp_angle_z = angles_raw.z - ref_angles.z;
 
     if (temp_angle_z < 0) {
         temp_angle_z += 360;
     }
 
-    angles.z = temp_angle_z;            // yaw
-    angles.x = data_out_fx.rotation[1]; // pitch
-    angles.y = data_out_fx.rotation[2]; // row
+    angles_raw.x = data_out_fx.rotation[1]; // pitch
+    angles_raw.y = data_out_fx.rotation[2]; // row
 
+    angles.z = temp_angle_z;            // yaw
+    angles.x = angles_raw.x - ref_angles.x; // pitch
+    angles.y = angles_raw.y - ref_angles.y; // row
+
+    /* Calc inclination */
     bool angle_x_inclination = angles.x < -INCLINATION_THRESHOLD_DEGREE;
     bool angle_y_inclination = angles.y > INCLINATION_THRESHOLD_DEGREE || angles.y < -INCLINATION_THRESHOLD_DEGREE;
     current_inclination = angle_x_inclination || angle_y_inclination;
@@ -263,11 +267,11 @@ static int8_t sensor_fusion()
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
     }
 
-    last_inclination = current_inclination;
-
+    /* Send event */
     QEvt evt = { .sig = IMU_UPDATED_SIG };
     QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
 
+    last_inclination = current_inclination;
     return 0;
 }
 
@@ -379,7 +383,15 @@ float get_imu_angle_z()
 
 void reset_imu_angle_z()
 {
-    ref_angle_z = angle_z_raw;
+    ref_angles.z = angles_raw.z;
+}
+
+void reset_inclination()
+{
+    last_inclination = false;
+    current_inclination = false;
+    ref_angles.x = angles_raw.x;
+    ref_angles.y = angles_raw.y;
 }
 
 void start_g_bias_calculation()
@@ -463,4 +475,9 @@ int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
     last_error = error;
 
     return 0;
+}
+
+bool get_imu_inclination_stat()
+{
+    return current_inclination;
 }

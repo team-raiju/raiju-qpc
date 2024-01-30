@@ -288,6 +288,7 @@ ble_service_send_string(&quot;state:RC&quot;);
 set_reference_voltage();
 me-&gt;step_counter = 0;
 
+
 QEvt evt_restart_imu = { .sig = IMU_RESTART_SIG };
 QHSM_DISPATCH(&amp;imu_service_AO-&gt;super, &amp;evt_restart_imu, SIMULATOR);</entry>
      <exit brief="StopTimer">QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
@@ -2144,6 +2145,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);</ent
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);
 led_stripe_set_all_color(COLOR_RED);
+reset_inclination();
 reset_imu_angle_z();
 QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);

@@ -1948,6 +1948,7 @@ static QState SumoHSM_RCWait_e(SumoHSM * const me) {
     set_reference_voltage();
     me->step_counter = 0;
 
+
     QEvt evt_restart_imu = { .sig = IMU_RESTART_SIG };
     QHSM_DISPATCH(&imu_service_AO->super, &evt_restart_imu, SIMULATOR);
     return QM_ENTRY(&SumoHSM_RCWait_s);
@@ -5606,6 +5607,7 @@ static QState SumoHSM_PreStrategy_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt_2);
     QTimeEvt_disarm(&me->timeEvtStuck);
     led_stripe_set_all_color(COLOR_RED);
+    reset_inclination();
     reset_imu_angle_z();
     QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
     return QM_ENTRY(&SumoHSM_PreStrategy_s);
