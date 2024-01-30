@@ -49,7 +49,9 @@ def custom_menu_command():
                      "RESET POSITION 4", 
                      "RESET POSITION 5", 
                      "SET_LOW_CTRL_BATTERY",
-                     "SET_LOW_PWR_BATTERY",]
+                     "SET_LOW_PWR_BATTERY",
+                     "SET_INCLINATION_ON",
+                     "SET_INCLINATION_OFF"]
     command_functions = [reset_position, 
                         reset_position_2, 
                         reset_position_3, 
@@ -57,6 +59,8 @@ def custom_menu_command():
                         reset_position_5, 
                         set_low_ctrl_battery,
                         set_low_pwr_battery,
+                        set_inclination_on,
+                        set_inclination_off
                         ]
 
     return (command_names, command_functions)
@@ -476,6 +480,12 @@ def set_low_pwr_battery():
             line_sensors["BL"]["active"], line_sensors["BR"]["active"], \
             ctrl_battery_full, pwr_battery_full)
 
+
+def set_inclination_on():
+    qview_base.command(13, 1)
+
+def set_inclination_off():
+    qview_base.command(13, 0)
 
 def set_position(x, y, theta):
     global image_dict, canvas_dict

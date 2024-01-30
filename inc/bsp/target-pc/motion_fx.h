@@ -239,8 +239,10 @@ void MotionFX_MagCal_getParams(MFX_MagCal_output_t *data_out);
  */
 uint8_t MotionFX_GetLibVersion(char *version);
 
-/* Fake funtion to set z angle */
+/* Fake funtion to set angles */
 void MotionFX_set_angle_z(float angle);
+void MotionFX_set_angle_x(float angle);
+void MotionFX_set_angle_y(float angle);
 
 /**
   * @}

@@ -243,6 +243,18 @@ void QS_onCommand(uint8_t cmdId, uint32_t param1, uint32_t param2, uint32_t para
         break;
     }
 
+    case 13: {
+        if (param1 == 0){
+            MotionFX_set_angle_x(0);
+            MotionFX_set_angle_y(0);
+        } else {
+            MotionFX_set_angle_x(-20);
+            MotionFX_set_angle_y(20);
+        }
+
+        break;
+    }
+
     default:
         break;
     }

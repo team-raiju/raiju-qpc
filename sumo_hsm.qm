@@ -1557,9 +1557,12 @@ int mot2 = coord_y - coord_x;
 
 // Auto if coord &gt; y
 if (coord_y &gt;= 60) {
-    bool seeing = SumoHSM_CheckDistAndMove(me);
-    if (!seeing){
-        drive(parameters.star_speed, parameters.star_speed);
+    // Only attack if it is not inclined
+    if (!get_imu_inclination_stat()){
+        bool seeing = SumoHSM_CheckDistAndMove(me);
+        if (!seeing){
+            drive(parameters.star_speed, parameters.star_speed);
+        }
     }
 } else {
     drive(mot1, mot2);
@@ -1623,6 +1626,13 @@ QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);</action>
      <tran trig="CHANGE_PRE_STRATEGY_EVT" target="../../10" cpref="../../40/2">
       <tran_glyph conn="168,134,1,0,16,-40,-55,5">
        <action box="-7,-2,25,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::RC_2::IMU_INCLINATION}-->
+     <tran trig="IMU_INCLINATION">
+      <action>drive(-100, -60);</action>
+      <tran_glyph conn="143,139,3,-1,15">
+       <action box="0,-2,16,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="143,125,25,42">
@@ -4534,10 +4544,10 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt);</exit>
         <action box="-7,4,20,4"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::StarStrategy::StarFullSpeed::STUCK}-->
-      <tran trig="STUCK" target="../../9">
+      <!--${AOs::SumoHSM::SM::StarStrategy::StarFullSpeed::STUCK, IMU_INCLINATION}-->
+      <tran trig="STUCK, IMU_INCLINATION" target="../../9">
        <tran_glyph conn="81,29,1,3,18">
-        <action box="5,-2,10,2"/>
+        <action box="1,-2,14,4"/>
        </tran_glyph>
       </tran>
       <state_glyph node="56,22,25,15">
@@ -4564,9 +4574,9 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_m
       <tran trig="STUCK_END">
        <!--${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END::[stuck<=1]}-->
        <choice target="../../../10">
-        <guard brief="stuck &lt;= 1">me-&gt;stuck_counter &lt;= 1</guard>
+        <guard brief="stuck &lt;= 1">me-&gt;stuck_counter &lt;= 1 &amp;&amp; !get_imu_inclination_stat()</guard>
         <choice_glyph conn="120,53,5,1,-19">
-         <action box="-16,-3,12,2"/>
+         <action box="-16,0,12,2"/>
         </choice_glyph>
        </choice>
        <!--${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END::[else]}-->
@@ -4574,6 +4584,13 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_m
         <guard brief="else">else</guard>
         <choice_glyph conn="120,53,5,3,12">
          <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END::[inclination_true]}-->
+       <choice target="../..">
+        <guard brief="inclination_true">get_imu_inclination_stat()</guard>
+        <choice_glyph conn="120,53,5,1,7,-21,-3">
+         <action box="5,-24,15,3"/>
         </choice_glyph>
        </choice>
        <tran_glyph conn="120,37,2,-1,16">
@@ -4602,10 +4619,10 @@ if (seeing) {
         <action box="-19,-3,21,2"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack::STUCK}-->
-      <tran trig="STUCK" target="../../9">
+      <!--${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack::STUCK, IMU_INCLINATION}-->
+      <tran trig="STUCK, IMU_INCLINATION" target="../../9">
        <tran_glyph conn="101,49,1,2,11,-12">
-        <action box="3,-2,10,2"/>
+        <action box="1,-2,14,4"/>
        </tran_glyph>
       </tran>
       <state_glyph node="76,42,25,15">
@@ -4849,10 +4866,10 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::SumoHSM::SM::StepsStrategy::SearchAndAttack::STUCK}-->
-      <tran trig="STUCK" target="../../10">
+      <!--${AOs::SumoHSM::SM::StepsStrategy::SearchAndAttack::STUCK, IMU_INCLINATION}-->
+      <tran trig="STUCK, IMU_INCLINATION" target="../../10">
        <tran_glyph conn="66,16,1,3,25">
-        <action box="9,-2,10,2"/>
+        <action box="0,-5,18,5"/>
        </tran_glyph>
       </tran>
       <!--${AOs::SumoHSM::SM::StepsStrategy::SearchAndAttack::DIST_SENSOR_CHANGE}-->
@@ -4914,7 +4931,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_m
       <tran trig="STUCK_END">
        <!--${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END::[stuck<=1]}-->
        <choice target="../../../11">
-        <guard brief="stuck &lt;= 1">me-&gt;stuck_counter &lt;= 1</guard>
+        <guard brief="stuck &lt;= 1">me-&gt;stuck_counter &lt;= 1 &amp;&amp; !get_imu_inclination_stat()</guard>
         <choice_glyph conn="122,26,4,1,10,-7">
          <action box="-9,0,10,2"/>
         </choice_glyph>
@@ -4924,6 +4941,13 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvtStuckEnd, BSP_TICKS_PER_MILISSEC * move_time_m
         <guard brief="else">else</guard>
         <choice_glyph conn="122,26,4,3,10,6">
          <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <!--${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END::[inclination_true]}-->
+       <choice target="../..">
+        <guard brief="inclination_true">get_imu_inclination_stat()</guard>
+        <choice_glyph conn="122,26,5,1,3,-11,-11">
+         <action box="-7,-14,14,2"/>
         </choice_glyph>
        </choice>
        <tran_glyph conn="114,21,1,-1,8,5">
@@ -4951,10 +4975,10 @@ if (seeing) {
 }
 </entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
-      <!--${AOs::SumoHSM::SM::StepsStrategy::StarSearch::STUCK}-->
-      <tran trig="STUCK" target="../../10">
+      <!--${AOs::SumoHSM::SM::StepsStrategy::StarSearch::STUCK, IMU_INCLINATION}-->
+      <tran trig="STUCK, IMU_INCLINATION" target="../../10">
        <tran_glyph conn="96,30,0,2,-5">
-        <action box="-7,-4,7,2"/>
+        <action box="-14,-5,17,6"/>
        </tran_glyph>
       </tran>
       <!--${AOs::SumoHSM::SM::StepsStrategy::StarSearch::DIST_SENSOR_CHANGE}-->

@@ -19,6 +19,8 @@
  * LOCAL VARIABLES
  **************************************************************************************************/
 static float angle_z_degrees = 0;
+static float angle_x_degrees = 0;
+static float angle_y_degrees = 0;
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -97,8 +99,8 @@ void MotionFX_update(MFXState_t mfxstate_pt, MFX_output_t *data_out, MFX_input_t
     (void)eml_q_update;
 
     data_out->rotation[0] = angle_z_degrees; /* Yaw */
-    data_out->rotation[1] = 0;               /* Pitch */
-    data_out->rotation[2] = 0;               /* Roll */
+    data_out->rotation[1] = angle_x_degrees; /* Pitch */
+    data_out->rotation[2] = angle_y_degrees; /* Roll */
 }
 
 void MotionFX_propagate(MFXState_t mfxstate_pt, MFX_output_t *data_out, MFX_input_t *data_in, float *eml_deltatime)
@@ -131,4 +133,14 @@ uint8_t MotionFX_GetLibVersion(char *version)
 void MotionFX_set_angle_z(float angle)
 {
     angle_z_degrees = angle;
+}
+
+void MotionFX_set_angle_x(float angle)
+{
+    angle_x_degrees = angle;
+}
+
+void MotionFX_set_angle_y(float angle)
+{
+    angle_y_degrees = angle;
 }

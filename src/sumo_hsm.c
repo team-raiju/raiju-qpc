@@ -4479,9 +4479,12 @@ static QState SumoHSM_RC_2(SumoHSM * const me, QEvt const * const e) {
 
             // Auto if coord > y
             if (coord_y >= 60) {
-                bool seeing = SumoHSM_CheckDistAndMove(me);
-                if (!seeing){
-                    drive(parameters.star_speed, parameters.star_speed);
+                // Only attack if it is not inclined
+                if (!get_imu_inclination_stat()){
+                    bool seeing = SumoHSM_CheckDistAndMove(me);
+                    if (!seeing){
+                        drive(parameters.star_speed, parameters.star_speed);
+                    }
                 }
             } else {
                 drive(mot1, mot2);
@@ -4583,11 +4586,18 @@ static QState SumoHSM_RC_2(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_TRAN_EP(&tatbl_);
             break;
         }
+        /*${AOs::SumoHSM::SM::RC_2::IMU_INCLINATION} */
+        case IMU_INCLINATION_SIG: {
+            drive(-100, -60);
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -9517,8 +9527,9 @@ static QState SumoHSM_StarStrategy_StarFullSpeed(SumoHSM * const me, QEvt const 
             status_ = QM_TRAN(&tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::StarStrategy::StarFullSpeed::STUCK} */
-        case STUCK_SIG: {
+        /*${AOs::SumoHSM::SM::StarStrategy::StarFullSpeed::STUCK, IMU_INCLINATION} */
+        case STUCK_SIG: /* intentionally fall through */
+        case IMU_INCLINATION_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[3];
@@ -9570,7 +9581,7 @@ static QState SumoHSM_StarStrategy_Stuck(SumoHSM * const me, QEvt const * const 
         /*${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END} */
         case STUCK_END_SIG: {
             /*${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END::[stuck<=1]} */
-            if (me->stuck_counter <= 1) {
+            if (me->stuck_counter <= 1 && !get_imu_inclination_stat()) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
@@ -9579,6 +9590,21 @@ static QState SumoHSM_StarStrategy_Stuck(SumoHSM * const me, QEvt const * const 
                     {
                         Q_ACTION_CAST(&SumoHSM_StarStrategy_Stuck_x), /* exit */
                         Q_ACTION_CAST(&SumoHSM_StarStrategy_SearchAndAttack_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            /*${AOs::SumoHSM::SM::StarStrategy::Stuck::STUCK_END::[inclination_true]} */
+            else if (get_imu_inclination_stat()) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[3];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_StarStrategy_Stuck_s, /* target state */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_StarStrategy_Stuck_x), /* exit */
+                        Q_ACTION_CAST(&SumoHSM_StarStrategy_Stuck_e), /* entry */
                         Q_ACTION_NULL /* zero terminator */
                     }
                 };
@@ -9647,8 +9673,9 @@ static QState SumoHSM_StarStrategy_SearchAndAttack(SumoHSM * const me, QEvt cons
             status_ = QM_TRAN(&tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack::STUCK} */
-        case STUCK_SIG: {
+        /*${AOs::SumoHSM::SM::StarStrategy::SearchAndAttack::STUCK, IMU_INCLINATION} */
+        case STUCK_SIG: /* intentionally fall through */
+        case IMU_INCLINATION_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[3];
@@ -10035,8 +10062,9 @@ static QState SumoHSM_StepsStrategy_SearchAndAttack(SumoHSM * const me, QEvt con
             status_ = QM_TRAN(&tatbl_);
             break;
         }
-        /*${AOs::SumoHSM::SM::StepsStrategy::SearchAndAttack::STUCK} */
-        case STUCK_SIG: {
+        /*${AOs::SumoHSM::SM::StepsStrategy::SearchAndAttack::STUCK, IMU_INCLINATION} */
+        case STUCK_SIG: /* intentionally fall through */
+        case IMU_INCLINATION_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[3];
@@ -10158,7 +10186,7 @@ static QState SumoHSM_StepsStrategy_Stuck(SumoHSM * const me, QEvt const * const
         /*${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END} */
         case STUCK_END_SIG: {
             /*${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END::[stuck<=1]} */
-            if (me->stuck_counter <= 1) {
+            if (me->stuck_counter <= 1 && !get_imu_inclination_stat()) {
                 static struct {
                     QMState const *target;
                     QActionHandler act[3];
@@ -10167,6 +10195,21 @@ static QState SumoHSM_StepsStrategy_Stuck(SumoHSM * const me, QEvt const * const
                     {
                         Q_ACTION_CAST(&SumoHSM_StepsStrategy_Stuck_x), /* exit */
                         Q_ACTION_CAST(&SumoHSM_StepsStrategy_StarSearch_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            /*${AOs::SumoHSM::SM::StepsStrategy::Stuck::STUCK_END::[inclination_true]} */
+            else if (get_imu_inclination_stat()) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[3];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_StepsStrategy_Stuck_s, /* target state */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_StepsStrategy_Stuck_x), /* exit */
+                        Q_ACTION_CAST(&SumoHSM_StepsStrategy_Stuck_e), /* entry */
                         Q_ACTION_NULL /* zero terminator */
                     }
                 };
@@ -10224,8 +10267,9 @@ static QState SumoHSM_StepsStrategy_StarSearch_x(SumoHSM * const me) {
 static QState SumoHSM_StepsStrategy_StarSearch(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::StepsStrategy::StarSearch::STUCK} */
-        case STUCK_SIG: {
+        /*${AOs::SumoHSM::SM::StepsStrategy::StarSearch::STUCK, IMU_INCLINATION} */
+        case STUCK_SIG: /* intentionally fall through */
+        case IMU_INCLINATION_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[3];
