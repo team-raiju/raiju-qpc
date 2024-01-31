@@ -110,7 +110,10 @@ typedef union {
         uint16_t ctrl_battery;
         uint16_t pwr_battery;
 
-        uint8_t empty[10];
+        uint32_t acc_g_bias;
+        uint32_t gyro_g_bias;
+        
+        uint8_t empty[2];
 
     } __attribute__((packed, scalar_storage_order("big-endian")));
 
@@ -365,6 +368,8 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num)
         packet_2.line_mask = adc_line_get_all();
         packet_2.ctrl_battery = adc_get_ctrl_bat_mv();
         packet_2.pwr_battery = adc_get_pwr_bat_mv();
+        packet_2.acc_g_bias = get_acc_gbias();
+        packet_2.gyro_g_bias = get_gyro_gbias();
 
         memcpy(buffer, packet_2._raw, BLE_PACKET_TRANSMIT_SIZE);
         break;
