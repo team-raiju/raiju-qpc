@@ -37,6 +37,12 @@ typedef enum eeprom_addresses {
 
     EE_CURRENT_STATE_ADDR,
 
+    EE_KP_ADDR,
+    EE_KD_ADDR,
+    EE_KI_ADDR,
+
+    EE_NEAR_ANGLE_TH_ADDR,
+    EE_INCLINATED_TH_ADDR,
 
 } eeprom_addresses_t;
 

@@ -85,7 +85,14 @@ typedef union {
         uint16_t is_stucked_timeout_ms;
 
         uint8_t attack_when_near;
-        uint8_t empty[9];
+
+        uint16_t kp;
+        uint16_t kd;
+        uint16_t ki;
+
+        uint8_t near_angle_th;
+        uint8_t inclinated_th;
+        uint8_t empty[1];
     } __attribute__((packed, scalar_storage_order("big-endian")));
 
 } ble_transmit_packet_1_t;
@@ -153,6 +160,7 @@ static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
 //     "defensive"
 // };
 
+#ifdef Q_SPY
 static sumo_parameters_t init_parameters_default = {
     .strategy = 0,
     .pre_strategy = 0,
@@ -173,7 +181,41 @@ static sumo_parameters_t init_parameters_default = {
     .is_stucked_timeout_ms = 1800,
     .attack_when_near = 0,
     .current_state = STATE_IDLE,
+    .kp = 1480,
+    .kd = 520,
+    .ki = 0,
+    .near_angle_th = 8,
+    .inclinated_th = 15,
 };
+#else
+static sumo_parameters_t init_parameters_default = {
+    .strategy = 0,
+    .pre_strategy = 0,
+    .calib_mode = 0,
+    .enabled_distance_sensors = 0b001111111,
+    .enabled_line_sensors = 0b001111,
+    .star_speed = 40,
+    .star_full_speed_time_ms = 40,
+    .max_speed = 100,
+    .reverse_speed = 100,
+    .reverse_time_ms = 140,
+    .line_seen_turn_angle = 135,
+    .turn_180_right_time_ms = 75,
+    .turn_180_left_time_ms = 75,
+    .step_wait_time_ms = 1500,
+    .step_advance_time_ms = 60,
+    .time_ms_to_cross_at_max_vel = 210,
+    .is_stucked_timeout_ms = 1800,
+    .attack_when_near = 0,
+    .current_state = STATE_IDLE,
+    .kp = 1000,
+    .kd = 0,
+    .ki = 0,
+    .near_angle_th = 8,
+    .inclinated_th = 10,
+};
+#endif
+
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -235,6 +277,13 @@ void parameters_init(sumo_parameters_t *params)
 
     read_and_update_parameter_8_bit(EE_CURRENT_STATE_ADDR, &temp_params.current_state);
 
+    read_and_update_parameter_16_bit(EE_KP_ADDR, &temp_params.kp);
+    read_and_update_parameter_16_bit(EE_KD_ADDR, &temp_params.kd);
+    read_and_update_parameter_16_bit(EE_KI_ADDR, &temp_params.ki);
+
+    read_and_update_parameter_8_bit(EE_NEAR_ANGLE_TH_ADDR, &temp_params.near_angle_th);
+    read_and_update_parameter_8_bit(EE_INCLINATED_TH_ADDR, &temp_params.inclinated_th);
+
     *params = temp_params;
 
     distance_service_set_mask(params->enabled_distance_sensors);
@@ -274,6 +323,11 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num)
         packet_1.time_ms_to_cross_at_max_vel = params.time_ms_to_cross_at_max_vel;
         packet_1.is_stucked_timeout_ms = params.is_stucked_timeout_ms;
         packet_1.attack_when_near = params.attack_when_near;
+        packet_1.kp = params.kp;
+        packet_1.kd = params.kd;
+        packet_1.ki = params.ki;
+        packet_1.near_angle_th = params.near_angle_th;
+        packet_1.inclinated_th = params.inclinated_th;
         memcpy(buffer, packet_1._raw, BLE_PACKET_TRANSMIT_SIZE);
         break;
     }

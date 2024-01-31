@@ -155,6 +155,56 @@ static param_error_t set_validate_attack_when_near(uint16_t new_data)
     return PARAM_ERROR;
 }
 
+static param_error_t set_validate_kp(sumo_parameters_t *params, uint16_t new_data)
+{
+    if (IS_BETWEEN(new_data, 100, 5000)) {
+        params->kp = new_data;
+        BSP_eeprom_write(EE_KP_ADDR, params->kp);
+        return PARAM_OK;
+    }
+    return PARAM_ERROR;
+}
+
+static param_error_t set_validate_kd(sumo_parameters_t *params, uint16_t new_data)
+{
+    if (IS_BETWEEN(new_data, 100, 5000)) {
+        params->kd = new_data;
+        BSP_eeprom_write(EE_KD_ADDR, params->kd);
+        return PARAM_OK;
+    }
+    return PARAM_ERROR;
+}
+
+static param_error_t set_validate_ki(sumo_parameters_t *params, uint16_t new_data)
+{
+    if (new_data <= 5000) {
+        params->ki = new_data;
+        BSP_eeprom_write(EE_KI_ADDR, params->ki);
+        return PARAM_OK;
+    }
+    return PARAM_ERROR;
+}
+
+static param_error_t set_validate_near_angle_th(sumo_parameters_t *params, uint16_t new_data)
+{
+    if (new_data <= 30) {
+        params->near_angle_th = new_data;
+        BSP_eeprom_write(EE_NEAR_ANGLE_TH_ADDR, params->near_angle_th);
+        return PARAM_OK;
+    }
+    return PARAM_ERROR;
+}
+
+static param_error_t set_validate_inclinated_th(sumo_parameters_t *params, uint16_t new_data)
+{
+    if (IS_BETWEEN(new_data, 1, 30)) {
+        params->inclinated_th = new_data;
+        BSP_eeprom_write(EE_INCLINATED_TH_ADDR, params->inclinated_th);
+        return PARAM_OK;
+    }
+    return PARAM_ERROR;
+}
+
 param_error_t set_validade_new_param_uint16_t(ble_data_header_t header, sumo_parameters_t *params, uint16_t new_data)
 {
     switch (header) {
@@ -188,6 +238,16 @@ param_error_t set_validade_new_param_uint16_t(ble_data_header_t header, sumo_par
         return set_validate_attack_when_near(new_data);
     case BLE_DATA_HDR_STAR_FULL_SPEED_TIME_MS:
         return set_validate_star_full_speed_timeout(params, new_data);
+    case BLE_DATA_HDR_KP:
+        return set_validate_kp(params, new_data);
+    case BLE_DATA_HDR_KD:
+        return set_validate_kd(params, new_data);
+    case BLE_DATA_HDR_KI:
+        return set_validate_ki(params, new_data);
+    case BLE_DATA_HDR_NEAR_ANGLE_TH:
+        return set_validate_near_angle_th(params, new_data);
+    case BLE_DATA_HDR_INCLINATED_TH:
+        return set_validate_inclinated_th(params, new_data);
     default:
         break;
     }

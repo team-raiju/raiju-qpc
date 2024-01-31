@@ -37,8 +37,6 @@ Q_DEFINE_THIS_FILE
 #define RAD_90_DEGREES  M_PI_2
 #define RAD_360_DEGREES (2 * M_PI)
 
-#define NEAR_ANGLE_THRESHOLD_DEGREE 8.0f
-#define INCLINATION_THRESHOLD_DEGREE 15.0f
 /***************************************************************************************************
  * LOCAL TYPEDEFS
  **************************************************************************************************/
@@ -81,6 +79,14 @@ static axis_3x_data_t ref_angles = { 0.0, 0.0, 0.0 };
 static axis_3x_data_t angles_raw = { 0.0, 0.0, 0.0 };
 static float set_point = 0.0;
 static int8_t base_speed = 0.0;
+
+static float kp;
+static float kd;
+static float ki;
+static float last_error;
+
+static uint8_t near_angle_th;
+static uint8_t inclinated_th;
 
 static bool last_inclination = false;
 static bool current_inclination = false;
@@ -258,8 +264,8 @@ static int8_t sensor_fusion()
     angles.y = angles_raw.y - ref_angles.y; // row
 
     /* Calc inclination */
-    bool angle_x_inclination = angles.x < -INCLINATION_THRESHOLD_DEGREE;
-    bool angle_y_inclination = angles.y > INCLINATION_THRESHOLD_DEGREE || angles.y < -INCLINATION_THRESHOLD_DEGREE;
+    bool angle_x_inclination = angles.x < -inclinated_th;
+    bool angle_y_inclination = angles.y > inclinated_th || angles.y < -inclinated_th;
     current_inclination = angle_x_inclination || angle_y_inclination;
 
     if (current_inclination && !last_inclination) {
@@ -376,6 +382,11 @@ void imu_service_init()
                   (void *)0);                                                       /* no initialization parameter */
 }
 
+void imu_reset_pid()
+{
+    last_error = 0;
+}
+
 float get_imu_angle_z()
 {
     return angles.z;
@@ -442,15 +453,13 @@ float imu_get_setpoint()
 bool near_set_point()
 {   
     float error = calc_error_degree(angles.z);
-    return fabsf(error) < NEAR_ANGLE_THRESHOLD_DEGREE;
+    return fabsf(error) < near_angle_th;
 }
 
 int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
 {
-    static float last_error = 0;
+    float last_error = 0;
     float error = calc_error_degree(angles.z);
-
-    // printf("angle: %f, setpoint = %f, error: %f\r\n", angles.z, set_point, error);
 
     float derivative = 0;
 
@@ -461,9 +470,6 @@ int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
     } else {
         derivative = error - last_error;
     }
-
-    float kp = 1.48;
-    float kd = 0.52;
 
 
     int32_t l_speed = base_speed - (error * kp + derivative * kd);
@@ -480,4 +486,29 @@ int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
 bool get_imu_inclination_stat()
 {
     return current_inclination;
+}
+
+void imu_set_kp(uint16_t kp_)
+{
+    kp = kp_ / 1000.0f;
+}
+
+void imu_set_kd(uint16_t kd_)
+{
+    kd = kd_ / 1000.0f;
+}
+
+void imu_set_ki(uint16_t ki_)
+{
+    ki = ki_ / 1000.0f;
+}
+
+void imu_set_near_angle_th(uint8_t near_angle_th_)
+{
+    near_angle_th = near_angle_th_;
+}
+
+void imu_set_inclinated_th(uint8_t inclinated_th_)
+{
+    inclinated_th = inclinated_th_;
 }

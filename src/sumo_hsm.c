@@ -5167,6 +5167,7 @@ static QState SumoHSM_state1(SumoHSM * const me, QEvt const * const e) {
 static QState SumoHSM_LineFrontSubmachine_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
     QTimeEvt_disarm(&me->timeEvt_2);
+    imu_reset_pid();
     return QM_ENTRY(&SumoHSM_LineFrontSubmachine_s);
 }
 /*${AOs::SumoHSM::SM::LineFrontSubmachine} */
@@ -5617,6 +5618,12 @@ static QState SumoHSM_PreStrategy_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt_2);
     QTimeEvt_disarm(&me->timeEvtStuck);
     led_stripe_set_all_color(COLOR_RED);
+    imu_reset_pid();
+    imu_set_kp(parameters.kp);
+    imu_set_kd(parameters.kd);
+    imu_set_ki(parameters.ki);
+    imu_set_near_angle_th(parameters.near_angle_th);
+    imu_set_inclinated_th(parameters.inclinated_th);
     reset_inclination();
     reset_imu_angle_z();
     QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
