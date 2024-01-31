@@ -84,6 +84,7 @@ static float kp;
 static float kd;
 static float ki;
 static float last_error;
+static float integral_error;
 
 static uint8_t near_angle_th;
 static uint8_t inclinated_th;
@@ -388,6 +389,7 @@ void imu_service_init()
 void imu_reset_pid()
 {
     last_error = 0;
+    integral_error = 0;
 }
 
 float get_imu_angle_z()
@@ -427,6 +429,7 @@ static float calc_error_degree(float current_angle_degrees)
 void imu_set_setpoint(float set_point_)
 {
     set_point = set_point_;
+    integral_error = 0;
 }
 
 void imu_set_base_speed(int8_t base_speed_)
@@ -451,6 +454,7 @@ int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
     float error = calc_error_degree(angles.z);
 
     float derivative = 0;
+    integral_error += error;
 
     if (error > RAD_90_DEGREES && last_error < -RAD_90_DEGREES){
         derivative = (error - RAD_360_DEGREES) - last_error; 
@@ -461,8 +465,8 @@ int8_t imu_pid_process(int8_t *left_speed, int8_t *right_speed)
     }
 
 
-    int32_t l_speed = base_speed - (error * kp + derivative * kd);
-    int32_t r_speed = base_speed + (error * kp + derivative * kd);
+    int32_t l_speed = base_speed - (error * kp + derivative * kd + integral_error * ki);
+    int32_t r_speed = base_speed + (error * kp + derivative * kd + integral_error * ki);
 
     *left_speed = constrain(l_speed, -100, 100);
     *right_speed = constrain(r_speed, -100, 100);
