@@ -3075,9 +3075,9 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
             board_led_toggle();
 
             if (time_long){
-                QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 150, 0);
+                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 150);
             } else {
-                QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 1000, 0);
+                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 1000);
             }
             time_long = !time_long;
 
