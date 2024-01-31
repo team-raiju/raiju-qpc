@@ -830,13 +830,42 @@ if (parameters.attack_when_near){
     </state>
     <!--${AOs::SumoHSM::SM::CalibTurnRight}-->
     <state name="CalibTurnRight">
-     <entry brief="turn_180_right">uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_right_time_ms;
+     <entry brief="turn_90_right">imu_reset_pid();
+imu_set_kp(parameters.kp);
+imu_set_kd(parameters.kd);
+imu_set_ki(parameters.ki);
+imu_set_near_angle_th(parameters.near_angle_th);
+imu_set_inclinated_th(parameters.inclinated_th);
+reset_inclination();
+reset_imu_angle_z();
+QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
 
-QTimeEvt_rearm(&amp;me-&gt;timeEvt,  turn_time);
-drive(100, -100);</entry>
-     <!--${AOs::SumoHSM::SM::CalibTurnRight::TIMEOUT}-->
-     <tran trig="TIMEOUT" target="../../19">
-      <tran_glyph conn="218,87,3,0,-2,50">
+imu_set_setpoint(270);
+imu_set_base_speed(0);</entry>
+     <!--${AOs::SumoHSM::SM::CalibTurnRight::IMU_UPDATED}-->
+     <tran trig="IMU_UPDATED">
+      <action>int8_t l_speed = 0;
+int8_t r_speed = 0;
+
+int8_t ret = imu_pid_process(&amp;l_speed, &amp;r_speed);
+
+if (ret == 0){
+    drive(l_speed, r_speed);
+}</action>
+      <!--${AOs::SumoHSM::SM::CalibTurnRight::IMU_UPDATED::[near_set_point]}-->
+      <choice target="../../../19">
+       <guard brief="near_set_point">near_set_point() == true</guard>
+       <choice_glyph conn="230,89,4,0,48">
+        <action box="-12,5,12,2"/>
+       </choice_glyph>
+      </choice>
+      <tran_glyph conn="218,89,3,-1,12">
+       <action box="0,-2,13,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::CalibTurnRight::STUCK}-->
+     <tran trig="STUCK" target="../../19">
+      <tran_glyph conn="218,86,3,0,-2,51">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -973,26 +1002,28 @@ led_stripe_set_all_color(COLOR_RED);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::CalibWait::CHANGE_PRE_STRATEGY_EVT}-->
      <tran trig="CHANGE_PRE_STRATEGY_EVT">
-      <action brief="update_parameters()">buzzer_start();
+      <action brief="update_parameters()">/*
+buzzer_start();
 QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
+
 
 switch (parameters.calib_mode)
 {
     case 0: {
-        parameters.turn_180_right_time_ms += 10;
-        if (parameters.turn_180_right_time_ms &gt; 300){
-            parameters.turn_180_right_time_ms = 30;
+        parameters.kp += 100;
+        if (parameters.kp &gt; 5000){
+            parameters.kp = 500;
         }
-        BSP_eeprom_write(TURN_180_RIGHT_TIME_ADDR, parameters.turn_180_right_time_ms);
+        BSP_eeprom_write(EE_KP_ADDR, parameters.kp);
         break;
     }
 
     case 1: {
-        parameters.turn_180_left_time_ms += 10;
-        if (parameters.turn_180_left_time_ms &gt; 300){
-            parameters.turn_180_left_time_ms = 30;
+        parameters.near_angle_th += 1;
+        if (parameters.near_angle_th &gt; 15){
+            parameters.near_angle_th = 0;
         }
-        BSP_eeprom_write(TURN_180_LEFT_TIME_ADDR, parameters.turn_180_left_time_ms);
+        BSP_eeprom_write(EE_NEAR_ANGLE_TH_ADDR, parameters.near_angle_th);
         break;
     }
 
@@ -1023,7 +1054,9 @@ switch (parameters.calib_mode)
         break;    
     }
 
-}</action>
+}
+*/
+</action>
       <tran_glyph conn="249,44,3,-1,18">
        <action box="0,-2,25,4"/>
       </tran_glyph>
@@ -1297,14 +1330,43 @@ BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</entry>
     </smstate>
     <!--${AOs::SumoHSM::SM::CalibTurnLeft}-->
     <state name="CalibTurnLeft">
-     <entry brief="turn_180_left">uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_left_time_ms;
+     <entry brief="turn_45_left">imu_reset_pid();
+imu_set_kp(parameters.kp);
+imu_set_kd(parameters.kd);
+imu_set_ki(parameters.ki);
+imu_set_near_angle_th(parameters.near_angle_th);
+imu_set_inclinated_th(parameters.inclinated_th);
+reset_inclination();
+reset_imu_angle_z();
+QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
 
-QTimeEvt_rearm(&amp;me-&gt;timeEvt,  turn_time);
-drive(-100, 100);</entry>
-     <!--${AOs::SumoHSM::SM::CalibTurnLeft::TIMEOUT}-->
-     <tran trig="TIMEOUT" target="../../19">
-      <tran_glyph conn="244,87,3,0,-3,50">
+imu_set_setpoint(45);
+imu_set_base_speed(0);</entry>
+     <!--${AOs::SumoHSM::SM::CalibTurnLeft::STUCK}-->
+     <tran trig="STUCK" target="../../19">
+      <tran_glyph conn="244,86,3,0,-2,51">
        <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::SumoHSM::SM::CalibTurnLeft::IMU_UPDATED}-->
+     <tran trig="IMU_UPDATED">
+      <action>int8_t l_speed = 0;
+int8_t r_speed = 0;
+
+int8_t ret = imu_pid_process(&amp;l_speed, &amp;r_speed);
+
+if (ret == 0){
+    drive(l_speed, r_speed);
+}</action>
+      <!--${AOs::SumoHSM::SM::CalibTurnLeft::IMU_UPDATED::[near_set_point]}-->
+      <choice target="../../../19">
+       <guard brief="near_set_point">near_set_point() == true</guard>
+       <choice_glyph conn="256,89,4,0,48">
+        <action box="-12,5,12,2"/>
+       </choice_glyph>
+      </choice>
+      <tran_glyph conn="244,89,3,-1,12">
+       <action box="0,-2,13,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="244,80,18,11">

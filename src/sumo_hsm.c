@@ -2942,18 +2942,55 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibTurnRight} ......................................*/
 /*${AOs::SumoHSM::SM::CalibTurnRight} */
 static QState SumoHSM_CalibTurnRight_e(SumoHSM * const me) {
-    uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_right_time_ms;
+    imu_reset_pid();
+    imu_set_kp(parameters.kp);
+    imu_set_kd(parameters.kd);
+    imu_set_ki(parameters.ki);
+    imu_set_near_angle_th(parameters.near_angle_th);
+    imu_set_inclinated_th(parameters.inclinated_th);
+    reset_inclination();
+    reset_imu_angle_z();
+    QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
 
-    QTimeEvt_rearm(&me->timeEvt,  turn_time);
-    drive(100, -100);
+    imu_set_setpoint(270);
+    imu_set_base_speed(0);
     return QM_ENTRY(&SumoHSM_CalibTurnRight_s);
 }
 /*${AOs::SumoHSM::SM::CalibTurnRight} */
 static QState SumoHSM_CalibTurnRight(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::CalibTurnRight::TIMEOUT} */
-        case TIMEOUT_SIG: {
+        /*${AOs::SumoHSM::SM::CalibTurnRight::IMU_UPDATED} */
+        case IMU_UPDATED_SIG: {
+            int8_t l_speed = 0;
+            int8_t r_speed = 0;
+
+            int8_t ret = imu_pid_process(&l_speed, &r_speed);
+
+            if (ret == 0){
+                drive(l_speed, r_speed);
+            }
+            /*${AOs::SumoHSM::SM::CalibTurnRight::IMU_UPDATED::[near_set_point]} */
+            if (near_set_point() == true) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[2];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_CalibStop_s, /* target state */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            else {
+                status_ = QM_UNHANDLED();
+            }
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibTurnRight::STUCK} */
+        case STUCK_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];
@@ -3180,26 +3217,28 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::CalibWait::CHANGE_PRE_STRATEGY_EVT} */
         case CHANGE_PRE_STRATEGY_EVT_SIG: {
+            /*
             buzzer_start();
             QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
+
 
             switch (parameters.calib_mode)
             {
                 case 0: {
-                    parameters.turn_180_right_time_ms += 10;
-                    if (parameters.turn_180_right_time_ms > 300){
-                        parameters.turn_180_right_time_ms = 30;
+                    parameters.kp += 100;
+                    if (parameters.kp > 5000){
+                        parameters.kp = 500;
                     }
-                    BSP_eeprom_write(TURN_180_RIGHT_TIME_ADDR, parameters.turn_180_right_time_ms);
+                    BSP_eeprom_write(EE_KP_ADDR, parameters.kp);
                     break;
                 }
 
                 case 1: {
-                    parameters.turn_180_left_time_ms += 10;
-                    if (parameters.turn_180_left_time_ms > 300){
-                        parameters.turn_180_left_time_ms = 30;
+                    parameters.near_angle_th += 1;
+                    if (parameters.near_angle_th > 15){
+                        parameters.near_angle_th = 0;
                     }
-                    BSP_eeprom_write(TURN_180_LEFT_TIME_ADDR, parameters.turn_180_left_time_ms);
+                    BSP_eeprom_write(EE_NEAR_ANGLE_TH_ADDR, parameters.near_angle_th);
                     break;
                 }
 
@@ -3231,6 +3270,8 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                 }
 
             }
+            */
+
             status_ = QM_HANDLED();
             break;
         }
@@ -3811,18 +3852,26 @@ static QState SumoHSM_ble4(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibTurnLeft} .......................................*/
 /*${AOs::SumoHSM::SM::CalibTurnLeft} */
 static QState SumoHSM_CalibTurnLeft_e(SumoHSM * const me) {
-    uint32_t turn_time = BSP_TICKS_PER_MILISSEC * parameters.turn_180_left_time_ms;
+    imu_reset_pid();
+    imu_set_kp(parameters.kp);
+    imu_set_kd(parameters.kd);
+    imu_set_ki(parameters.ki);
+    imu_set_near_angle_th(parameters.near_angle_th);
+    imu_set_inclinated_th(parameters.inclinated_th);
+    reset_inclination();
+    reset_imu_angle_z();
+    QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
 
-    QTimeEvt_rearm(&me->timeEvt,  turn_time);
-    drive(-100, 100);
+    imu_set_setpoint(45);
+    imu_set_base_speed(0);
     return QM_ENTRY(&SumoHSM_CalibTurnLeft_s);
 }
 /*${AOs::SumoHSM::SM::CalibTurnLeft} */
 static QState SumoHSM_CalibTurnLeft(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::CalibTurnLeft::TIMEOUT} */
-        case TIMEOUT_SIG: {
+        /*${AOs::SumoHSM::SM::CalibTurnLeft::STUCK} */
+        case STUCK_SIG: {
             static struct {
                 QMState const *target;
                 QActionHandler act[2];
@@ -3834,6 +3883,35 @@ static QState SumoHSM_CalibTurnLeft(SumoHSM * const me, QEvt const * const e) {
                 }
             };
             status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibTurnLeft::IMU_UPDATED} */
+        case IMU_UPDATED_SIG: {
+            int8_t l_speed = 0;
+            int8_t r_speed = 0;
+
+            int8_t ret = imu_pid_process(&l_speed, &r_speed);
+
+            if (ret == 0){
+                drive(l_speed, r_speed);
+            }
+            /*${AOs::SumoHSM::SM::CalibTurnLeft::IMU_UPDATED::[near_set_point]} */
+            if (near_set_point() == true) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[2];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_CalibStop_s, /* target state */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            else {
+                status_ = QM_UNHANDLED();
+            }
             break;
         }
         default: {
