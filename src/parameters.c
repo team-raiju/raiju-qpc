@@ -14,6 +14,7 @@
 #include "adc_service.h"
 #include "led_service.h"
 #include "custom_strategy.h"
+#include "imu_service.h"
 
 /***************************************************************************************************
  * LOCAL DEFINES
@@ -21,7 +22,7 @@
 
 #define NUM_OF_STRATEGIES     3
 #define NUM_OF_PRE_STRATEGIES 20
-#define NUM_OF_CALIB_MODES    6
+#define NUM_OF_CALIB_MODES    7
 
 #define ARENA_LENGHT_CM   154.0f
 #define SUMO_LENGHT_CM    20.0f
@@ -151,7 +152,7 @@ static color_name_t pre_strategy_colors[] = { COLOR_GREEN, COLOR_BLUE,   COLOR_O
                                               COLOR_WHITE, COLOR_PURPLE, COLOR_YELLOW };
 
 static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
-    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_PURPLE, COLOR_YELLOW,
+    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_WHITE, COLOR_PURPLE, COLOR_YELLOW,
 };
 
 // static const char * strategy_names[] = {
@@ -186,6 +187,8 @@ static sumo_parameters_t init_parameters_default = {
     .ki = 0,
     .near_angle_th = 8,
     .inclinated_th = 15,
+    .acc_gbias = 309,
+    .gyro_gbias = 282,
 };
 #else
 static sumo_parameters_t init_parameters_default = {
@@ -213,6 +216,8 @@ static sumo_parameters_t init_parameters_default = {
     .ki = 0,
     .near_angle_th = 8,
     .inclinated_th = 10,
+    .acc_gbias = 309,
+    .gyro_gbias = 282,
 };
 #endif
 
@@ -224,6 +229,22 @@ static sumo_parameters_t init_parameters_default = {
 /***************************************************************************************************
  * LOCAL FUNCTIONS
  **************************************************************************************************/
+static void read_and_update_parameter_32_bit(uint16_t eeprom_addr_1, uint16_t eeprom_addr_2 , uint32_t *updated_data)
+{
+    uint16_t eeprom_data_1;
+    uint16_t eeprom_data_2;
+
+    eeprom_result_t result_1 = BSP_eeprom_read(eeprom_addr_1, &eeprom_data_1);
+    eeprom_result_t result_2 = BSP_eeprom_read(eeprom_addr_2, &eeprom_data_2);
+
+    if (result_1 == EEPROM_OK && result_2 == EEPROM_OK) {
+        *updated_data = (eeprom_data_1 << 16) | eeprom_data_2;
+    } else {
+        BSP_eeprom_write(eeprom_addr_1, *updated_data >> 16);
+        BSP_eeprom_write(eeprom_addr_2, *updated_data & 0xFFFF);
+    }
+    
+}
 
 static void read_and_update_parameter_16_bit(uint16_t eeprom_addr, uint16_t *updated_data)
 {
@@ -284,10 +305,15 @@ void parameters_init(sumo_parameters_t *params)
     read_and_update_parameter_8_bit(EE_NEAR_ANGLE_TH_ADDR, &temp_params.near_angle_th);
     read_and_update_parameter_8_bit(EE_INCLINATED_TH_ADDR, &temp_params.inclinated_th);
 
+    read_and_update_parameter_32_bit(EE_ACC_BIAS_1_ADDR, EE_ACC_BIAS_2_ADDR, &temp_params.acc_gbias);
+    read_and_update_parameter_32_bit(EE_GYRO_BIAS_1_ADDR, EE_GYRO_BIAS_2_ADDR, &temp_params.gyro_gbias);
+
     *params = temp_params;
 
     distance_service_set_mask(params->enabled_distance_sensors);
     adc_line_set_mask(params->enabled_line_sensors);
+    set_gbias(params->acc_gbias, params->gyro_gbias);
+
 }
 
 void parameters_report(sumo_parameters_t params, uint8_t config_num)

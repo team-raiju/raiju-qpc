@@ -39,5 +39,16 @@ void imu_set_near_angle_th(uint8_t near_angle_th_);
 
 void imu_set_inclinated_th(uint8_t inclinated_th_);
 
+void start_g_bias_calculation();
+
+void stop_g_bias_calculation();
+
+void set_gbias(uint32_t set_acc_gbias, uint32_t set_gyro_gbias);
+
+uint32_t get_acc_gbias();
+
+uint32_t get_gyro_gbias();
+
+
 
 #endif /* IMU_SERVICE_H */

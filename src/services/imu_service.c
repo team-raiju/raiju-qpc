@@ -90,6 +90,9 @@ static uint8_t inclinated_th;
 
 static bool last_inclination = false;
 static bool current_inclination = false;
+
+static float acc_gbias = 0.000309;
+static float gyro_gbias = 0.000282;
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -302,10 +305,10 @@ static int8_t imu_init_motion_fx()
     MotionFX_getKnobs(mfxstate, &iKnobs);
 
     iKnobs.modx = 2;
-    // iKnobs.gbias_acc_th_sc = 0.015;
-    // iKnobs.gbias_gyro_th_sc = 0.028;
-    // iKnobs.gbias_mag_th_sc = 0;
-    // iKnobs.LMode = 2;
+    iKnobs.gbias_acc_th_sc = acc_gbias;
+    iKnobs.gbias_gyro_th_sc = gyro_gbias;
+    iKnobs.gbias_mag_th_sc = 0;
+    iKnobs.LMode = 2;
     // iKnobs.ATime = 0.9;
 
     MotionFX_setKnobs(mfxstate, &iKnobs);
@@ -405,20 +408,6 @@ void reset_inclination()
     ref_angles.y = angles_raw.y;
 }
 
-void start_g_bias_calculation()
-{
-    MotionFX_getKnobs(mfxstate, &iKnobs);
-    iKnobs.start_automatic_gbias_calculation = 1;
-    MotionFX_setKnobs(mfxstate, &iKnobs);
-}
-
-void stop_g_bias_calculation()
-{
-    MotionFX_getKnobs(mfxstate, &iKnobs);
-    iKnobs.start_automatic_gbias_calculation = 0;
-    MotionFX_setKnobs(mfxstate, &iKnobs);
-}
-
 static float calc_error_degree(float current_angle_degrees)
 {
     float error = 0;
@@ -511,4 +500,41 @@ void imu_set_near_angle_th(uint8_t near_angle_th_)
 void imu_set_inclinated_th(uint8_t inclinated_th_)
 {
     inclinated_th = inclinated_th_;
+}
+
+
+void start_g_bias_calculation()
+{
+    MotionFX_getKnobs(mfxstate, &iKnobs);
+
+    iKnobs.start_automatic_gbias_calculation = 1;
+
+    MotionFX_setKnobs(mfxstate, &iKnobs);
+}
+
+void stop_g_bias_calculation()
+{
+    MotionFX_getKnobs(mfxstate, &iKnobs);
+
+    acc_gbias = iKnobs.gbias_acc_th_sc;
+    gyro_gbias = iKnobs.gbias_gyro_th_sc;
+
+    iKnobs.start_automatic_gbias_calculation = 0;
+    MotionFX_setKnobs(mfxstate, &iKnobs);
+}
+
+void set_gbias(uint32_t set_acc_gbias, uint32_t set_gyro_gbias)
+{
+    acc_gbias = set_acc_gbias / 1000000.0f;
+    gyro_gbias = set_gyro_gbias / 1000000.0f;
+}
+
+uint32_t get_acc_gbias()
+{
+    return acc_gbias * 1000000.0f;
+}
+
+uint32_t get_gyro_gbias()
+{
+    return gyro_gbias * 1000000.0f;
 }

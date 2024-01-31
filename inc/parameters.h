@@ -43,6 +43,9 @@ typedef struct sumo_parameters {
     uint8_t near_angle_th; /* Angle to consider that the robot is near to the desired angle */
     uint8_t inclinated_th; /* Angle to consider that the robot is inclinated */
 
+    uint32_t acc_gbias; /* IMU bias */
+    uint32_t gyro_gbias; /* IMU bias */
+
 } sumo_parameters_t;
 
 typedef enum {

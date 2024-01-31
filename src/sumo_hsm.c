@@ -581,6 +581,15 @@ static struct SM_TestStartModule const SumoHSM_state1_s = {
     ,Q_ACTION_CAST(&SumoHSM_state1_START)
     ,Q_ACTION_CAST(&SumoHSM_state1_BLINK_END)
 };
+static QState SumoHSM_CalibImu  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_CalibImu_e(SumoHSM * const me);
+static QMState const SumoHSM_CalibImu_s = {
+    QM_STATE_NULL, /* superstate (top) */
+    Q_STATE_CAST(&SumoHSM_CalibImu),
+    Q_ACTION_CAST(&SumoHSM_CalibImu_e),
+    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_NULL  /* no initial tran. */
+};
 
 /* submachine ${AOs::SumoHSM::SM::LineFrontSubmachine} */
 static QState SumoHSM_LineFrontSubmachine  (SumoHSM * const me, QEvt const * const e);
@@ -1686,6 +1695,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_LineBackCalibStuck);
     QS_FUN_DICTIONARY(&SumoHSM_CalibFrontAt100_stop);
     QS_FUN_DICTIONARY(&SumoHSM_state1);
+    QS_FUN_DICTIONARY(&SumoHSM_CalibImu);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnLeft);
@@ -3201,6 +3211,21 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
                         {
                             Q_ACTION_CAST(&SumoHSM_CalibWait_x), /* exit */
                             Q_ACTION_CAST(&SumoHSM_CalibTurnSensors_e), /* entry */
+                            Q_ACTION_NULL /* zero terminator */
+                        }
+                    };
+                    status_ = QM_TRAN(&tatbl_);
+                }
+                /*${AOs::SumoHSM::SM::CalibWait::RADIO_DATA::[|ch1|or|ch2|>70~::[calib_mode_6]} */
+                else if (parameters.calib_mode == 6) {
+                    static struct {
+                        QMState const *target;
+                        QActionHandler act[3];
+                    } const tatbl_ = { /* tran-action table */
+                        &SumoHSM_CalibImu_s, /* target state */
+                        {
+                            Q_ACTION_CAST(&SumoHSM_CalibWait_x), /* exit */
+                            Q_ACTION_CAST(&SumoHSM_CalibImu_e), /* entry */
                             Q_ACTION_NULL /* zero terminator */
                         }
                     };
@@ -5237,6 +5262,58 @@ static QState SumoHSM_state1(SumoHSM * const me, QEvt const * const e) {
         }
     }
     (void)me; /* unused parameter */
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::CalibImu} ............................................*/
+/*${AOs::SumoHSM::SM::CalibImu} */
+static QState SumoHSM_CalibImu_e(SumoHSM * const me) {
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 12000);
+    return QM_ENTRY(&SumoHSM_CalibImu_s);
+}
+/*${AOs::SumoHSM::SM::CalibImu} */
+static QState SumoHSM_CalibImu(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::CalibImu::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            start_g_bias_calculation();
+
+            QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 12000);
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibImu::TIMEOUT_2} */
+        case TIMEOUT_2_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[2];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_CalibStop_s, /* target state */
+                {
+                    Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            stop_g_bias_calculation();
+
+            parameters.acc_gbias = get_acc_gbias();
+            parameters.gyro_gbias = get_gyro_gbias();
+
+            BSP_eeprom_write(EE_ACC_BIAS_1_ADDR, (parameters.acc_gbias >> 16));
+            BSP_eeprom_write(EE_ACC_BIAS_2_ADDR, (parameters.acc_gbias & 0xffff));
+
+
+            BSP_eeprom_write(EE_GYRO_BIAS_1_ADDR, (parameters.gyro_gbias >> 16));
+            BSP_eeprom_write(EE_GYRO_BIAS_2_ADDR, (parameters.gyro_gbias & 0xffff));
+            status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
     return status_;
 }
 

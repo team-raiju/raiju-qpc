@@ -44,6 +44,12 @@ typedef enum eeprom_addresses {
     EE_NEAR_ANGLE_TH_ADDR,
     EE_INCLINATED_TH_ADDR,
 
+    EE_ACC_BIAS_1_ADDR,
+    EE_ACC_BIAS_2_ADDR,
+
+    EE_GYRO_BIAS_1_ADDR,
+    EE_GYRO_BIAS_2_ADDR,
+
 } eeprom_addresses_t;
 
 eeprom_result_t BSP_eeprom_init();
