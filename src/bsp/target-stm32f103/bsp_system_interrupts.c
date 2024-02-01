@@ -1,7 +1,6 @@
 #include "main.h"
 #include "bsp_system_interrupts.h"
 #include "driving_service.h"
-#include "bsp_brushless.h"
 #include "buzzer_service.h"
 
 void HardFault_Handler(void)
