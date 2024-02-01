@@ -44,6 +44,7 @@ Q_DEFINE_THIS_FILE
 typedef struct imu_tag {
     QActive super;
     QTimeEvt timeEvt;
+    bool initialized;
 } imu_ao_t;
 
 typedef struct {
@@ -175,7 +176,7 @@ static void update_sensor_fusion(axis_3x_data_t *gyro_in_dps, axis_3x_data_t *ac
     MotionFX_update(mfxstate, data_out_fx, &data_in_fx, &delta_time_s, NULL);
 }
 
-static int imu_sensor_init()
+static int imu_sensor_init(imu_ao_t *const me)
 {
     lsm6dsr_io_ctx.Init = imu_init_peripheral;
     lsm6dsr_io_ctx.DeInit = imu_deinit_peripheral;
@@ -224,6 +225,8 @@ static int imu_sensor_init()
     if (LSM6DSR_GYRO_SetOutputDataRate(&lsm6dsr_ctx, OUTPUT_DATA_RATE_HZ) != LSM6DSR_OK) {
         return -1;
     }
+
+    me->initialized = true;
 
     return 0;
 }
@@ -334,13 +337,15 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
     QState status_;
     switch (e->sig) {
     case Q_ENTRY_SIG: {
-        imu_sensor_init();
+        imu_sensor_init(me);
         status_ = Q_HANDLED();
         break;
     }
 
     case IMU_POLL_SIG: {
-        sensor_fusion();
+        if (me->initialized) {
+            sensor_fusion();
+        }
         status_ = Q_HANDLED();
         break;
     }
@@ -365,6 +370,7 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
 static void imu_service_ctor(void)
 {
     imu_ao_t *me = &imu_inst;
+    me->initialized = false;
     QActive_ctor(&me->super, Q_STATE_CAST(&ImuService_Initial));
     QTimeEvt_ctorX(&me->timeEvt, &me->super, IMU_POLL_SIG, 0U);
 }
