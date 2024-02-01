@@ -91,7 +91,7 @@ Q_NORETURN Q_onAssert(char const *const module, int_t const loc)
     driving_disable();
     buzzer_start();
 
-    uint32_t timeout = 10000000;
+    volatile uint32_t timeout = 10000000;
     while (timeout > 0) {
         timeout--;
     }
