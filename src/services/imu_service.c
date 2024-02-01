@@ -22,7 +22,7 @@ Q_DEFINE_THIS_FILE
  * LOCAL DEFINES
  **************************************************************************************************/
 
-#define IMU_POLL_PERIOD_MS  10
+#define IMU_POLL_PERIOD_MS  15
 #define OUTPUT_DATA_RATE_HZ 200
 
 #define MFX_STR_LENG 35
