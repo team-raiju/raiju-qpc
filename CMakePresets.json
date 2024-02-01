@@ -17,7 +17,8 @@
             "cacheVariables": {
                 "LINKER_SCRIPT_SRC": "${sourceDir}/cube/STM32F103RCT6/STM32F103RCTx_FLASH.ld",
                 "STM32_BUILD": "true",
-                "UC_NAME": "STM32RFT6"
+                "UC_NAME": "STM32RFT6",
+                "OPT_LEVEL": "-O3"
             }
         },
         {
@@ -26,14 +27,27 @@
             "cacheVariables": {
                 "LINKER_SCRIPT_SRC": "${sourceDir}/cube/STM32F103RCT6/STM32F103RCTx_FLASH.ld",
                 "STM32_BUILD": "true",
-                "UC_NAME": "STM32RCT6"
+                "UC_NAME": "STM32RCT6",
+                "OPT_LEVEL": "-O3"
+            }
+        },
+        {
+            "name": "STM32RFT6-Release",
+            "inherits": "default",
+            "cacheVariables": {
+                "LINKER_SCRIPT_SRC": "${sourceDir}/cube/STM32F103RCT6/STM32F103RCTx_FLASH.ld",
+                "STM32_BUILD": "true",
+                "UC_NAME": "STM32RFT6",
+                "OPT_LEVEL": "-O3",
+                "QNASSERT": "-DQ_NASSERT",
+                "NDEBUG": "-DNDEBUG"
             }
         },
         {
             "name": "QSPY",
             "inherits": "default",
             "cacheVariables": {
-                
+                "OPT_LEVEL": "-O3"
             }
         }
     ]

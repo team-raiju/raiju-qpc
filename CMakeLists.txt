@@ -29,10 +29,13 @@ list(APPEND SYMBOLS_SYMB
     "QP_API_VERSION=9999"
     "RADIO_MODE_UART_CRSF"
     # "RADIO_MODE_UART"
-
-    #-DQ_NASSERT
-    #-DNDEBUG
 )
+
+if (RELEASE_BUILD STREQUAL "true")
+    list(APPEND SYMBOLS_SYMB
+        "RELEASE"
+    )
+endif()
 
 # Executable files
 add_executable(${EXECUTABLE} ${SRC_FILES})
@@ -43,6 +46,9 @@ target_include_directories(${EXECUTABLE} PRIVATE ${INCLUDE_DIRS})
 # Project symbols
 target_compile_definitions(${EXECUTABLE} PRIVATE ${SYMBOLS_SYMB})
 
+# Print compiler flags
+message(STATUS "CFLAGS: ${CFLAGS}")
+message(STATUS "SYMBOLS_SYMB: ${SYMBOLS_SYMB}")
 
 #### Compiler options ####
 target_compile_options(${EXECUTABLE} PRIVATE
