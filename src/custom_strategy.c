@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "custom_strategy.h"
+#include "utils.h"
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
@@ -116,7 +117,7 @@ int8_t cust_strategy_update_from_ble(uint8_t *strategy_data, uint8_t size)
                 return 0;
             }
         } else {
-            cust_strategy_movements[i] = strategy_data[2 + i];
+            cust_strategy_movements[i] = max((strategy_data[2 + i] * 2), 1);
         }
     }
 
