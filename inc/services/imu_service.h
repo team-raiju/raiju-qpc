@@ -49,6 +49,8 @@ uint32_t get_acc_gbias();
 
 uint32_t get_gyro_gbias();
 
+void imu_set_imu_enabled(uint8_t imu_enabled_);
+
 
 
 #endif /* IMU_SERVICE_H */

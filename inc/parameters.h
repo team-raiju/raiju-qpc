@@ -46,6 +46,8 @@ typedef struct sumo_parameters {
     uint32_t acc_gbias; /* IMU bias */
     uint32_t gyro_gbias; /* IMU bias */
 
+    uint8_t imu_enabled; /* Bool indicating if the IMU is enabled */
+
 } sumo_parameters_t;
 
 typedef enum {
@@ -88,6 +90,7 @@ typedef enum {
     BLE_DATA_HDR_KI,
     BLE_DATA_HDR_NEAR_ANGLE_TH,
     BLE_DATA_HDR_INCLINATED_TH,
+    BLE_DATA_HDR_IMU_ENABLED,
     BLE_DATA_MAX_HDR
 } ble_data_header_t;
 

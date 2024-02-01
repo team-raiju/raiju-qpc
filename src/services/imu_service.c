@@ -95,6 +95,8 @@ static bool current_inclination = false;
 
 static float acc_gbias = 0.000309;
 static float gyro_gbias = 0.000282;
+
+static bool imu_enabled = true;
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -343,7 +345,7 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
     }
 
     case IMU_POLL_SIG: {
-        if (me->initialized) {
+        if (me->initialized && imu_enabled) {
             sensor_fusion();
         }
         status_ = Q_HANDLED();
@@ -370,7 +372,11 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
 static void imu_service_ctor(void)
 {
     imu_ao_t *me = &imu_inst;
+    #ifdef Q_SPY
+    me->initialized = true;
+    #else
     me->initialized = false;
+    #endif
     QActive_ctor(&me->super, Q_STATE_CAST(&ImuService_Initial));
     QTimeEvt_ctorX(&me->timeEvt, &me->super, IMU_POLL_SIG, 0U);
 }
@@ -547,4 +553,9 @@ uint32_t get_acc_gbias()
 uint32_t get_gyro_gbias()
 {
     return gyro_gbias * 1000000.0f;
+}
+
+void imu_set_imu_enabled(uint8_t imu_enabled_)
+{
+    imu_enabled = imu_enabled_;
 }

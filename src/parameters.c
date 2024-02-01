@@ -69,7 +69,7 @@ typedef union {
         uint16_t turn_180_left_time_ms;
         uint8_t star_full_speed_time_ms;
 
-        uint8_t empty[1];
+        uint8_t imu_enabled;
     } __attribute__((packed, scalar_storage_order("big-endian")));
 
 } ble_transmit_packet_0_t;
@@ -192,6 +192,7 @@ static sumo_parameters_t init_parameters_default = {
     .inclinated_th = 15,
     .acc_gbias = 309,
     .gyro_gbias = 282,
+    .imu_enabled = 1,
 };
 #else
 static sumo_parameters_t init_parameters_default = {
@@ -221,6 +222,7 @@ static sumo_parameters_t init_parameters_default = {
     .inclinated_th = 10,
     .acc_gbias = 309,
     .gyro_gbias = 282,
+    .imu_enabled = 1,
 };
 #endif
 
@@ -311,6 +313,8 @@ void parameters_init(sumo_parameters_t *params)
     read_and_update_parameter_32_bit(EE_ACC_BIAS_1_ADDR, EE_ACC_BIAS_2_ADDR, &temp_params.acc_gbias);
     read_and_update_parameter_32_bit(EE_GYRO_BIAS_1_ADDR, EE_GYRO_BIAS_2_ADDR, &temp_params.gyro_gbias);
 
+    read_and_update_parameter_8_bit(EE_IMU_ENABLED_ADDR, &temp_params.imu_enabled);
+
     *params = temp_params;
 
     distance_service_set_mask(params->enabled_distance_sensors);
@@ -340,6 +344,7 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num)
         packet_0.line_seen_turn_angle = params.line_seen_turn_angle;
         packet_0.turn_180_right_time_ms = params.turn_180_right_time_ms;
         packet_0.turn_180_left_time_ms = params.turn_180_left_time_ms;
+        packet_0.imu_enabled = params.imu_enabled;
         memcpy(buffer, packet_0._raw, BLE_PACKET_TRANSMIT_SIZE);
         break;
     }

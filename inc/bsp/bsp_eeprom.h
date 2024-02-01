@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define EEPROM_NB_OF_VAR ((uint8_t)24)
+#define EEPROM_NB_OF_VAR ((uint8_t)32)
 
 typedef enum eeprom_result {
     EEPROM_OK,
@@ -49,6 +49,8 @@ typedef enum eeprom_addresses {
 
     EE_GYRO_BIAS_1_ADDR,
     EE_GYRO_BIAS_2_ADDR,
+
+    EE_IMU_ENABLED_ADDR
 
 } eeprom_addresses_t;
 

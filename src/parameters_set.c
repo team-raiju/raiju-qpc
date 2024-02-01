@@ -205,6 +205,16 @@ static param_error_t set_validate_inclinated_th(sumo_parameters_t *params, uint1
     return PARAM_ERROR;
 }
 
+static param_error_t set_validate_imu_enabled(sumo_parameters_t *params, uint16_t new_data)
+{
+    if (new_data == 0 || new_data == 1) {
+        params->imu_enabled = new_data;
+        BSP_eeprom_write(EE_IMU_ENABLED_ADDR, params->imu_enabled);
+        return PARAM_OK;
+    }
+    return PARAM_ERROR;
+}
+
 param_error_t set_validade_new_param_uint16_t(ble_data_header_t header, sumo_parameters_t *params, uint16_t new_data)
 {
     switch (header) {
@@ -248,6 +258,8 @@ param_error_t set_validade_new_param_uint16_t(ble_data_header_t header, sumo_par
         return set_validate_near_angle_th(params, new_data);
     case BLE_DATA_HDR_INCLINATED_TH:
         return set_validate_inclinated_th(params, new_data);
+    case BLE_DATA_HDR_IMU_ENABLED:
+        return set_validate_imu_enabled(params, new_data);
     default:
         break;
     }

@@ -2952,6 +2952,7 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibTurnRight} ......................................*/
 /*${AOs::SumoHSM::SM::CalibTurnRight} */
 static QState SumoHSM_CalibTurnRight_e(SumoHSM * const me) {
+    imu_set_imu_enabled(parameters.imu_enabled);
     imu_reset_pid();
     imu_set_kp(parameters.kp);
     imu_set_kd(parameters.kd);
@@ -2960,6 +2961,7 @@ static QState SumoHSM_CalibTurnRight_e(SumoHSM * const me) {
     imu_set_inclinated_th(parameters.inclinated_th);
     reset_inclination();
     reset_imu_angle_z();
+
     QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
 
     imu_set_setpoint(270);
@@ -3318,10 +3320,22 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibFrontAt100} .....................................*/
 /*${AOs::SumoHSM::SM::CalibFrontAt100} */
 static QState SumoHSM_CalibFrontAt100_e(SumoHSM * const me) {
+    imu_set_imu_enabled(parameters.imu_enabled);
+    imu_reset_pid();
+    imu_set_kp(parameters.kp);
+    imu_set_kd(parameters.kd);
+    imu_set_ki(parameters.ki);
+    imu_set_near_angle_th(parameters.near_angle_th);
+    imu_set_inclinated_th(parameters.inclinated_th);
+    reset_inclination();
+    reset_imu_angle_z();
+
+    imu_set_setpoint(0);
+    imu_set_base_speed(100);
+
     uint32_t move_time = BSP_TICKS_PER_MILISSEC * parameters.time_ms_to_cross_at_max_vel;
 
     QTimeEvt_rearm(&me->timeEvt,  move_time);
-    drive(100, 100);
     return QM_ENTRY(&SumoHSM_CalibFrontAt100_s);
 }
 /*${AOs::SumoHSM::SM::CalibFrontAt100} */
@@ -3358,11 +3372,25 @@ static QState SumoHSM_CalibFrontAt100(SumoHSM * const me, QEvt const * const e) 
             status_ = QM_TRAN(&tatbl_);
             break;
         }
+        /*${AOs::SumoHSM::SM::CalibFrontAt100::IMU_UPDATED} */
+        case IMU_UPDATED_SIG: {
+            int8_t l_speed = 0;
+            int8_t r_speed = 0;
+
+            int8_t ret = imu_pid_process(&l_speed, &r_speed);
+
+            if (ret == 0){
+                drive(l_speed, r_speed);
+            }
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -3877,6 +3905,7 @@ static QState SumoHSM_ble4(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibTurnLeft} .......................................*/
 /*${AOs::SumoHSM::SM::CalibTurnLeft} */
 static QState SumoHSM_CalibTurnLeft_e(SumoHSM * const me) {
+    imu_set_imu_enabled(parameters.imu_enabled);
     imu_reset_pid();
     imu_set_kp(parameters.kp);
     imu_set_kd(parameters.kd);
@@ -3885,6 +3914,7 @@ static QState SumoHSM_CalibTurnLeft_e(SumoHSM * const me) {
     imu_set_inclinated_th(parameters.inclinated_th);
     reset_inclination();
     reset_imu_angle_z();
+
     QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
 
     imu_set_setpoint(45);
@@ -3950,6 +3980,16 @@ static QState SumoHSM_CalibTurnLeft(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibStarTopSpeed} ...................................*/
 /*${AOs::SumoHSM::SM::CalibStarTopSpeed} */
 static QState SumoHSM_CalibStarTopSpeed_e(SumoHSM * const me) {
+    imu_set_imu_enabled(parameters.imu_enabled);
+    imu_reset_pid();
+    imu_set_kp(parameters.kp);
+    imu_set_kd(parameters.kd);
+    imu_set_ki(parameters.ki);
+    imu_set_near_angle_th(parameters.near_angle_th);
+    imu_set_inclinated_th(parameters.inclinated_th);
+    reset_inclination();
+    reset_imu_angle_z();
+
     drive(100, 100);
     QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * parameters.star_full_speed_time_ms);
     return QM_ENTRY(&SumoHSM_CalibStarTopSpeed_s);
@@ -4015,9 +4055,12 @@ static QState SumoHSM_CalibStarTopSpeed(SumoHSM * const me, QEvt const * const e
 /*${AOs::SumoHSM::SM::CalibStarGoBack} .....................................*/
 /*${AOs::SumoHSM::SM::CalibStarGoBack} */
 static QState SumoHSM_CalibStarGoBack_e(SumoHSM * const me) {
-    drive(-parameters.reverse_speed, -parameters.reverse_speed);
-    uint32_t reverse_time = BSP_TICKS_PER_MILISSEC * parameters.reverse_time_ms;
+    reset_imu_angle_z();
 
+    imu_set_base_speed(-parameters.reverse_speed);
+    imu_set_setpoint(0);
+
+    uint32_t reverse_time = BSP_TICKS_PER_MILISSEC * parameters.reverse_time_ms;
     QTimeEvt_rearm(&me->timeEvt, reverse_time);
     return QM_ENTRY(&SumoHSM_CalibStarGoBack_s);
 }
@@ -4040,20 +4083,36 @@ static QState SumoHSM_CalibStarGoBack(SumoHSM * const me, QEvt const * const e) 
             status_ = QM_TRAN(&tatbl_);
             break;
         }
+        /*${AOs::SumoHSM::SM::CalibStarGoBack::IMU_UPDATED} */
+        case IMU_UPDATED_SIG: {
+            int8_t l_speed = 0;
+            int8_t r_speed = 0;
+
+            int8_t ret = imu_pid_process(&l_speed, &r_speed);
+
+            if (ret == 0){
+                drive(l_speed, r_speed);
+            }
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
 /*${AOs::SumoHSM::SM::CalibeStarTurn} ......................................*/
 /*${AOs::SumoHSM::SM::CalibeStarTurn} */
 static QState SumoHSM_CalibeStarTurn_e(SumoHSM * const me) {
-    drive(100, -100);
-    uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &parameters);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+    imu_set_setpoint(360 - parameters.line_seen_turn_angle);
+    imu_set_base_speed(0);
+
+    uint16_t max_turn_time_ms = 600;
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * max_turn_time_ms);
     return QM_ENTRY(&SumoHSM_CalibeStarTurn_s);
 }
 /*${AOs::SumoHSM::SM::CalibeStarTurn} */
@@ -4073,6 +4132,35 @@ static QState SumoHSM_CalibeStarTurn(SumoHSM * const me, QEvt const * const e) {
                 }
             };
             status_ = QM_TRAN(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::CalibeStarTurn::IMU_UPDATED} */
+        case IMU_UPDATED_SIG: {
+            int8_t l_speed = 0;
+            int8_t r_speed = 0;
+
+            int8_t ret = imu_pid_process(&l_speed, &r_speed);
+
+            if (ret == 0){
+                drive(l_speed, r_speed);
+            }
+            /*${AOs::SumoHSM::SM::CalibeStarTurn::IMU_UPDATED::[near_set_point]} */
+            if (near_set_point() == true) {
+                static struct {
+                    QMState const *target;
+                    QActionHandler act[2];
+                } const tatbl_ = { /* tran-action table */
+                    &SumoHSM_CalibStop_s, /* target state */
+                    {
+                        Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
+                        Q_ACTION_NULL /* zero terminator */
+                    }
+                };
+                status_ = QM_TRAN(&tatbl_);
+            }
+            else {
+                status_ = QM_UNHANDLED();
+            }
             break;
         }
         default: {
@@ -4891,7 +4979,8 @@ static QState SumoHSM_LineF_RC(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibStarSpeed} ......................................*/
 /*${AOs::SumoHSM::SM::CalibStarSpeed} */
 static QState SumoHSM_CalibStarSpeed_e(SumoHSM * const me) {
-    drive(parameters.star_speed, parameters.star_speed);
+    imu_set_setpoint(0);
+    imu_set_base_speed(100);
     (void)me; /* unused parameter */
     return QM_ENTRY(&SumoHSM_CalibStarSpeed_s);
 }
@@ -4930,11 +5019,25 @@ static QState SumoHSM_CalibStarSpeed(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_TRAN(&tatbl_);
             break;
         }
+        /*${AOs::SumoHSM::SM::CalibStarSpeed::IMU_UPDATED} */
+        case IMU_UPDATED_SIG: {
+            int8_t l_speed = 0;
+            int8_t r_speed = 0;
+
+            int8_t ret = imu_pid_process(&l_speed, &r_speed);
+
+            if (ret == 0){
+                drive(l_speed, r_speed);
+            }
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -5374,10 +5477,14 @@ static QState SumoHSM_LineFrontSubmachine(SumoHSM * const me, QEvt const * const
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack} .......................*/
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineGoBack} */
 static QState SumoHSM_LineFrontSubmachine_LineGoBack_e(SumoHSM * const me) {
-    reset_imu_angle_z();
+    if (parameters.imu_enabled){
+        reset_imu_angle_z();
 
-    imu_set_base_speed(-parameters.reverse_speed);
-    imu_set_setpoint(0);
+        imu_set_base_speed(-parameters.reverse_speed);
+        imu_set_setpoint(0);
+    } else {
+        drive(-parameters.reverse_speed, -parameters.reverse_speed);
+    }
 
     uint32_t reverse_time = BSP_TICKS_PER_MILISSEC * parameters.reverse_time_ms;
 
@@ -5487,12 +5594,21 @@ static QState SumoHSM_LineFrontSubmachine_LineGoBack(SumoHSM * const me, QEvt co
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight} ....................*/
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight} */
 static QState SumoHSM_LineFrontSubmachine_LineTurnRight_e(SumoHSM * const me) {
-    imu_set_setpoint(360 - parameters.line_seen_turn_angle);
-    imu_set_base_speed(0);
+    if (parameters.imu_enabled){
+        imu_set_setpoint(360 - parameters.line_seen_turn_angle);
+        imu_set_base_speed(0);
 
-    uint16_t max_turn_time_ms = 600;
+        uint16_t max_turn_time_ms = 600;
+        QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * max_turn_time_ms);
+    } else {
+        drive(100, -100);
+        uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_RIGHT, &parameters);
+        QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+    }
+
     led_stripe_set_all_color(COLOR_PINK);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * max_turn_time_ms);
+
+
     return QM_ENTRY(&SumoHSM_LineFrontSubmachine_LineTurnRight_s);
 }
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnRight} */
@@ -5579,12 +5695,20 @@ static QState SumoHSM_LineFrontSubmachine_LineTurnRight(SumoHSM * const me, QEvt
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft} .....................*/
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft} */
 static QState SumoHSM_LineFrontSubmachine_LineTurnLeft_e(SumoHSM * const me) {
-    imu_set_setpoint(parameters.line_seen_turn_angle);
-    imu_set_base_speed(0);
+    if (parameters.imu_enabled){
+        imu_set_setpoint(parameters.line_seen_turn_angle);
+        imu_set_base_speed(0);
 
-    uint16_t max_turn_time_ms = 600;
+        uint16_t max_turn_time_ms = 600;
+        QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * max_turn_time_ms);
+    } else {
+        drive(-100, 100);
+        uint16_t turn_time_ms = get_time_to_turn_ms(parameters.line_seen_turn_angle, 100, SIDE_LEFT, &parameters);
+        QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * turn_time_ms);
+    }
+
     led_stripe_set_all_color(COLOR_PINK);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * max_turn_time_ms);
+
     return QM_ENTRY(&SumoHSM_LineFrontSubmachine_LineTurnLeft_s);
 }
 /*${AOs::SumoHSM::SM::LineFrontSubmach~::LineTurnLeft} */
@@ -5773,6 +5897,7 @@ static QState SumoHSM_PreStrategy_e(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt_2);
     QTimeEvt_disarm(&me->timeEvtStuck);
     led_stripe_set_all_color(COLOR_RED);
+    imu_set_imu_enabled(parameters.imu_enabled);
     imu_reset_pid();
     imu_set_kp(parameters.kp);
     imu_set_kd(parameters.kd);
