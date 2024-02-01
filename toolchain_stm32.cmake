@@ -32,6 +32,8 @@ endif()
 set(SYMBOLS_SYMB
     "USE_HAL_DRIVER"
     "${DEVICE_DEF}"
+    "${QNASSERT}"
+    "${NDEBUG}"
 )
 
 
@@ -54,7 +56,7 @@ set(CFLAGS
     -Wall
     -Wextra
     -Wno-unused-parameter
-    -O0 
+    ${OPT_LEVEL}
     -g3
     -ffunction-sections -fdata-sections -fstack-usage
     --specs=nano.specs

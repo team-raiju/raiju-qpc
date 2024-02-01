@@ -17,6 +17,7 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 #### Symbols definition ####
 set(SYMBOLS_SYMB
     "Q_SPY"
+    "${QNASSERT}"
 )
 
 
@@ -30,7 +31,7 @@ set(CFLAGS
     -Wno-unused-parameter
     -Wno-type-limits
     -Wno-unused-result
-    -O0 
+    ${OPT_LEVEL}
     -g3
     -fno-pie
 )
