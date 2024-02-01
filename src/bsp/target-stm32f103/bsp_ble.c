@@ -6,6 +6,9 @@
 #include "bsp_uart.h"
 #include "bsp_ble.h"
 #include "utils.h"
+
+#include "qpc.h"
+#include "qk_port.h"
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
@@ -79,7 +82,9 @@ void bsp_ble_stop(void)
 void bsp_ble_transmit(uint8_t *data, uint8_t size)
 {
     uint8_t size_to_send = min(size, BLE_MAX_PACKET_SIZE);
+    QF_CRIT_ENTRY();
     HAL_UART_Transmit(&huart3, data, size_to_send, UART_BLE_TIMEOUT);
+    QF_CRIT_EXIT();
 }
 
 void bsp_ble_register_callback(bsp_uart_ble_callback_t callback_function)
