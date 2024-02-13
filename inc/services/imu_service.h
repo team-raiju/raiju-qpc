@@ -37,7 +37,7 @@ void imu_set_ki(uint16_t ki_);
 
 void imu_set_near_angle_th(uint8_t near_angle_th_);
 
-void imu_set_inclinated_th(uint8_t inclinated_th_);
+void imu_set_inclinated_th_x10(uint8_t inclinated_th_);
 
 void start_g_bias_calculation();
 

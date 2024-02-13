@@ -810,7 +810,7 @@ imu_set_kp(parameters.kp);
 imu_set_kd(parameters.kd);
 imu_set_ki(parameters.ki);
 imu_set_near_angle_th(parameters.near_angle_th);
-imu_set_inclinated_th(parameters.inclinated_th);
+imu_set_inclinated_th_x10(parameters.inclinated_th);
 reset_inclination();
 reset_imu_angle_z();
 
@@ -1066,7 +1066,7 @@ imu_set_kp(parameters.kp);
 imu_set_kd(parameters.kd);
 imu_set_ki(parameters.ki);
 imu_set_near_angle_th(parameters.near_angle_th);
-imu_set_inclinated_th(parameters.inclinated_th);
+imu_set_inclinated_th_x10(parameters.inclinated_th);
 reset_inclination();
 reset_imu_angle_z();
 
@@ -1347,7 +1347,7 @@ imu_set_kp(parameters.kp);
 imu_set_kd(parameters.kd);
 imu_set_ki(parameters.ki);
 imu_set_near_angle_th(parameters.near_angle_th);
-imu_set_inclinated_th(parameters.inclinated_th);
+imu_set_inclinated_th_x10(parameters.inclinated_th);
 reset_inclination();
 reset_imu_angle_z();
 
@@ -1396,7 +1396,7 @@ imu_set_kp(parameters.kp);
 imu_set_kd(parameters.kd);
 imu_set_ki(parameters.ki);
 imu_set_near_angle_th(parameters.near_angle_th);
-imu_set_inclinated_th(parameters.inclinated_th);
+imu_set_inclinated_th_x10(parameters.inclinated_th);
 reset_inclination();
 reset_imu_angle_z();
 
@@ -2359,7 +2359,7 @@ imu_set_kp(parameters.kp);
 imu_set_kd(parameters.kd);
 imu_set_ki(parameters.ki);
 imu_set_near_angle_th(parameters.near_angle_th);
-imu_set_inclinated_th(parameters.inclinated_th);
+imu_set_inclinated_th_x10(parameters.inclinated_th);
 reset_inclination();
 reset_imu_angle_z();
 QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);</entry>

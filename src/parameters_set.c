@@ -197,7 +197,7 @@ static param_error_t set_validate_near_angle_th(sumo_parameters_t *params, uint1
 
 static param_error_t set_validate_inclinated_th(sumo_parameters_t *params, uint16_t new_data)
 {
-    if (IS_BETWEEN(new_data, 1, 30)) {
+    if (IS_BETWEEN(new_data, 10, 100)) {
         params->inclinated_th = new_data;
         BSP_eeprom_write(EE_INCLINATED_TH_ADDR, params->inclinated_th);
         return PARAM_OK;

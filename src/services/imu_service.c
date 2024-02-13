@@ -88,7 +88,7 @@ static float last_error;
 static float integral_error;
 
 static uint8_t near_angle_th;
-static uint8_t inclinated_th;
+static float inclinated_th;
 
 static bool last_inclination = false;
 static bool current_inclination = false;
@@ -514,9 +514,9 @@ void imu_set_near_angle_th(uint8_t near_angle_th_)
     near_angle_th = near_angle_th_;
 }
 
-void imu_set_inclinated_th(uint8_t inclinated_th_)
+void imu_set_inclinated_th_x10(uint8_t inclinated_th_x_10)
 {
-    inclinated_th = inclinated_th_;
+    inclinated_th = inclinated_th_x_10 / 10.0;
 }
 
 

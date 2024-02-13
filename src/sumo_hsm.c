@@ -2935,7 +2935,7 @@ static QState SumoHSM_CalibTurnRight_e(SumoHSM * const me) {
     imu_set_kd(parameters.kd);
     imu_set_ki(parameters.ki);
     imu_set_near_angle_th(parameters.near_angle_th);
-    imu_set_inclinated_th(parameters.inclinated_th);
+    imu_set_inclinated_th_x10(parameters.inclinated_th);
     reset_inclination();
     reset_imu_angle_z();
 
@@ -3310,7 +3310,7 @@ static QState SumoHSM_CalibFrontAt100_e(SumoHSM * const me) {
     imu_set_kd(parameters.kd);
     imu_set_ki(parameters.ki);
     imu_set_near_angle_th(parameters.near_angle_th);
-    imu_set_inclinated_th(parameters.inclinated_th);
+    imu_set_inclinated_th_x10(parameters.inclinated_th);
     reset_inclination();
     reset_imu_angle_z();
 
@@ -3895,7 +3895,7 @@ static QState SumoHSM_CalibTurnLeft_e(SumoHSM * const me) {
     imu_set_kd(parameters.kd);
     imu_set_ki(parameters.ki);
     imu_set_near_angle_th(parameters.near_angle_th);
-    imu_set_inclinated_th(parameters.inclinated_th);
+    imu_set_inclinated_th_x10(parameters.inclinated_th);
     reset_inclination();
     reset_imu_angle_z();
 
@@ -3977,7 +3977,7 @@ static QState SumoHSM_CalibStarTopSpeed_e(SumoHSM * const me) {
     imu_set_kd(parameters.kd);
     imu_set_ki(parameters.ki);
     imu_set_near_angle_th(parameters.near_angle_th);
-    imu_set_inclinated_th(parameters.inclinated_th);
+    imu_set_inclinated_th_x10(parameters.inclinated_th);
     reset_inclination();
     reset_imu_angle_z();
 
@@ -5895,7 +5895,7 @@ static QState SumoHSM_PreStrategy_e(SumoHSM * const me) {
     imu_set_kd(parameters.kd);
     imu_set_ki(parameters.ki);
     imu_set_near_angle_th(parameters.near_angle_th);
-    imu_set_inclinated_th(parameters.inclinated_th);
+    imu_set_inclinated_th_x10(parameters.inclinated_th);
     reset_inclination();
     reset_imu_angle_z();
     QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
