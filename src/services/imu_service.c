@@ -22,7 +22,7 @@ Q_DEFINE_THIS_FILE
  * LOCAL DEFINES
  **************************************************************************************************/
 
-#define IMU_POLL_PERIOD_MS  15
+#define IMU_POLL_PERIOD_MS  10
 #define OUTPUT_DATA_RATE_HZ 200
 
 #define MFX_STR_LENG 35
@@ -347,6 +347,7 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
     case IMU_POLL_SIG: {
         if (me->initialized && imu_enabled) {
             sensor_fusion();
+            QTimeEvt_rearm(&me->timeEvt, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
         }
         status_ = Q_HANDLED();
         break;
@@ -356,7 +357,7 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
         QTimeEvt_disarm(&me->timeEvt);
         imu_deinit_motion_fx();
         imu_init_motion_fx();
-        QTimeEvt_armX(&me->timeEvt, 500 * BSP_TICKS_PER_MILISSEC, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
+        QTimeEvt_rearm(&me->timeEvt, 250 * BSP_TICKS_PER_MILISSEC);
         status_ = Q_HANDLED();
         break;
     }

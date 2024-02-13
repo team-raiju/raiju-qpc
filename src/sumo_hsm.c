@@ -166,11 +166,12 @@ static QMState const SumoHSM_AutoWait_s = {
 };
 static QState SumoHSM_CalibTurnRight  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_CalibTurnRight_e(SumoHSM * const me);
+static QState SumoHSM_CalibTurnRight_x(SumoHSM * const me);
 static QMState const SumoHSM_CalibTurnRight_s = {
     QM_STATE_NULL, /* superstate (top) */
     Q_STATE_CAST(&SumoHSM_CalibTurnRight),
     Q_ACTION_CAST(&SumoHSM_CalibTurnRight_e),
-    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_CAST(&SumoHSM_CalibTurnRight_x),
     Q_ACTION_NULL  /* no initial tran. */
 };
 static QState SumoHSM_CalibWait  (SumoHSM * const me, QEvt const * const e);
@@ -298,11 +299,12 @@ static struct SM_BLESubmachine const SumoHSM_ble4_s = {
 };
 static QState SumoHSM_CalibTurnLeft  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_CalibTurnLeft_e(SumoHSM * const me);
+static QState SumoHSM_CalibTurnLeft_x(SumoHSM * const me);
 static QMState const SumoHSM_CalibTurnLeft_s = {
     QM_STATE_NULL, /* superstate (top) */
     Q_STATE_CAST(&SumoHSM_CalibTurnLeft),
     Q_ACTION_CAST(&SumoHSM_CalibTurnLeft_e),
-    Q_ACTION_NULL, /* no exit action */
+    Q_ACTION_CAST(&SumoHSM_CalibTurnLeft_x),
     Q_ACTION_NULL  /* no initial tran. */
 };
 static QState SumoHSM_CalibStarTopSpeed  (SumoHSM * const me, QEvt const * const e);
@@ -1804,15 +1806,7 @@ static QState SumoHSM_Idle_e(SumoHSM * const me) {
     board_led_off();
     driving_disable();
     drive(0,0);
-    QTimeEvt_disarm(&me->timeEvt);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
-
-    if (adc_get_low_pwr_bat()){
-        led_stripe_set_all_color(COLOR_RED);
-    } else if (adc_get_low_ctrl_bat()){
-        led_stripe_set_all_color(COLOR_ORANGE);
-    }
-
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500);
     return QM_ENTRY(&SumoHSM_Idle_s);
 }
 /*${AOs::SumoHSM::SM::Idle} */
@@ -1862,17 +1856,6 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::Idle::LOW_BATTERY} */
-        case LOW_BATTERY_SIG: {
-            if (adc_get_low_pwr_bat()){
-                led_stripe_set_all_color(COLOR_RED);
-            } else if (adc_get_low_ctrl_bat()){
-                led_stripe_set_all_color(COLOR_ORANGE);
-            }
-
-            status_ = QM_HANDLED();
-            break;
-        }
         /*${AOs::SumoHSM::SM::Idle::BLE_DATA_UPDATE} */
         case BLE_DATA_UPDATE_SIG: {
             ble_rcv_packet_t last_data;
@@ -1913,10 +1896,10 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
                 led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
                 QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
                 QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 200);
+                adc_service_start_callback();
             } else {
                 QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
                 bsp_ble_start();
-                adc_service_start_callback();
                 start_module_enable();
                 if (adc_get_low_pwr_bat()){
                     led_stripe_set_all_color(COLOR_RED);
@@ -1928,18 +1911,11 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
-        /*${AOs::SumoHSM::SM::Idle::BUTTON} */
-        case BUTTON_SIG: {
-            start_module_change_request();
-            status_ = QM_HANDLED();
-            break;
-        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
-    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -2962,11 +2938,16 @@ static QState SumoHSM_CalibTurnRight_e(SumoHSM * const me) {
     reset_inclination();
     reset_imu_angle_z();
 
-    QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
+    QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 1000);
 
     imu_set_setpoint(270);
     imu_set_base_speed(0);
     return QM_ENTRY(&SumoHSM_CalibTurnRight_s);
+}
+/*${AOs::SumoHSM::SM::CalibTurnRight} */
+static QState SumoHSM_CalibTurnRight_x(SumoHSM * const me) {
+    QTimeEvt_disarm(&me->timeEvtStuck);
+    return QM_EXIT(&SumoHSM_CalibTurnRight_s);
 }
 /*${AOs::SumoHSM::SM::CalibTurnRight} */
 static QState SumoHSM_CalibTurnRight(SumoHSM * const me, QEvt const * const e) {
@@ -2986,10 +2967,11 @@ static QState SumoHSM_CalibTurnRight(SumoHSM * const me, QEvt const * const e) {
             if (near_set_point() == true) {
                 static struct {
                     QMState const *target;
-                    QActionHandler act[2];
+                    QActionHandler act[3];
                 } const tatbl_ = { /* tran-action table */
                     &SumoHSM_CalibStop_s, /* target state */
                     {
+                        Q_ACTION_CAST(&SumoHSM_CalibTurnRight_x), /* exit */
                         Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
                         Q_ACTION_NULL /* zero terminator */
                     }
@@ -3005,10 +2987,11 @@ static QState SumoHSM_CalibTurnRight(SumoHSM * const me, QEvt const * const e) {
         case STUCK_SIG: {
             static struct {
                 QMState const *target;
-                QActionHandler act[2];
+                QActionHandler act[3];
             } const tatbl_ = { /* tran-action table */
                 &SumoHSM_CalibStop_s, /* target state */
                 {
+                    Q_ACTION_CAST(&SumoHSM_CalibTurnRight_x), /* exit */
                     Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
@@ -3033,7 +3016,7 @@ static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     parameters_set_calib_mode_led(&parameters);
     QTimeEvt_disarm(&me->timeEvt_2);
     QTimeEvt_disarm(&me->timeEvt);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250);
     ble_service_send_string("state:CALIB");
     radio_service_en_radio_data_sig(true);
     me->stuck_counter = 0;
@@ -3915,11 +3898,16 @@ static QState SumoHSM_CalibTurnLeft_e(SumoHSM * const me) {
     reset_inclination();
     reset_imu_angle_z();
 
-    QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
+    QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 1000);
 
     imu_set_setpoint(45);
     imu_set_base_speed(0);
     return QM_ENTRY(&SumoHSM_CalibTurnLeft_s);
+}
+/*${AOs::SumoHSM::SM::CalibTurnLeft} */
+static QState SumoHSM_CalibTurnLeft_x(SumoHSM * const me) {
+    QTimeEvt_disarm(&me->timeEvtStuck);
+    return QM_EXIT(&SumoHSM_CalibTurnLeft_s);
 }
 /*${AOs::SumoHSM::SM::CalibTurnLeft} */
 static QState SumoHSM_CalibTurnLeft(SumoHSM * const me, QEvt const * const e) {
@@ -3929,10 +3917,11 @@ static QState SumoHSM_CalibTurnLeft(SumoHSM * const me, QEvt const * const e) {
         case STUCK_SIG: {
             static struct {
                 QMState const *target;
-                QActionHandler act[2];
+                QActionHandler act[3];
             } const tatbl_ = { /* tran-action table */
                 &SumoHSM_CalibStop_s, /* target state */
                 {
+                    Q_ACTION_CAST(&SumoHSM_CalibTurnLeft_x), /* exit */
                     Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
@@ -3954,10 +3943,11 @@ static QState SumoHSM_CalibTurnLeft(SumoHSM * const me, QEvt const * const e) {
             if (near_set_point() == true) {
                 static struct {
                     QMState const *target;
-                    QActionHandler act[2];
+                    QActionHandler act[3];
                 } const tatbl_ = { /* tran-action table */
                     &SumoHSM_CalibStop_s, /* target state */
                     {
+                        Q_ACTION_CAST(&SumoHSM_CalibTurnLeft_x), /* exit */
                         Q_ACTION_CAST(&SumoHSM_CalibStop_e), /* entry */
                         Q_ACTION_NULL /* zero terminator */
                     }
@@ -4175,7 +4165,7 @@ static QState SumoHSM_CalibeStarTurn(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibStop} */
 static QState SumoHSM_CalibStop_e(SumoHSM * const me) {
     drive(0,0);
-    driving_disable();
+    //driving_disable();
     board_led_off();
     led_stripe_set_all_color(COLOR_BLACK);
     ble_service_send_string("state:CALIBEND");
@@ -4205,6 +4195,7 @@ static QState SumoHSM_CalibStop(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::CalibStop::STOP_BUZZER} */
         case STOP_BUZZER_SIG: {
             buzzer_stop();
+            drive(0,0);
             status_ = QM_HANDLED();
             break;
         }

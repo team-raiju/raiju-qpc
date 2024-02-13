@@ -163,15 +163,7 @@ me-&gt;buzzerCount = 0U;</action>
 board_led_off();
 driving_disable();
 drive(0,0);
-QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
-
-if (adc_get_low_pwr_bat()){
-    led_stripe_set_all_color(COLOR_RED);
-} else if (adc_get_low_ctrl_bat()){
-    led_stripe_set_all_color(COLOR_ORANGE);
-}
-</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 500);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
@@ -201,18 +193,6 @@ if (me-&gt;buzzerCount &lt;= 16){
       <action brief="buzzer_stop()">buzzer_stop();</action>
       <tran_glyph conn="41,24,3,-1,18">
        <action box="0,-2,26,2"/>
-      </tran_glyph>
-     </tran>
-     <!--${AOs::SumoHSM::SM::Idle::LOW_BATTERY}-->
-     <tran trig="LOW_BATTERY">
-      <action brief="led_color_red">if (adc_get_low_pwr_bat()){
-    led_stripe_set_all_color(COLOR_RED);
-} else if (adc_get_low_ctrl_bat()){
-    led_stripe_set_all_color(COLOR_ORANGE);
-}
-</action>
-      <tran_glyph conn="41,20,3,-1,18">
-       <action box="0,-2,22,4"/>
       </tran_glyph>
      </tran>
      <!--${AOs::SumoHSM::SM::Idle::BLE_DATA_UPDATE}-->
@@ -246,10 +226,10 @@ if (me-&gt;buzzerCount &lt; 15){
     led_stripe_set_color(me-&gt;buzzerCount, COLOR_PURPLE);
     QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
     QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 200);
+    adc_service_start_callback();
 } else {
     QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
     bsp_ble_start();
-    adc_service_start_callback();
     start_module_enable();
     if (adc_get_low_pwr_bat()){
         led_stripe_set_all_color(COLOR_RED);
@@ -260,13 +240,6 @@ if (me-&gt;buzzerCount &lt; 15){
 me-&gt;buzzerCount += 1;</action>
       <tran_glyph conn="41,27,3,-1,18">
        <action box="0,-2,32,2"/>
-      </tran_glyph>
-     </tran>
-     <!--${AOs::SumoHSM::SM::Idle::BUTTON}-->
-     <tran trig="BUTTON">
-      <action brief="start_module_change_request()">start_module_change_request();</action>
-      <tran_glyph conn="41,31,3,-1,14">
-       <action box="0,-2,28,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="41,1,43,43">
@@ -840,10 +813,11 @@ imu_set_inclinated_th(parameters.inclinated_th);
 reset_inclination();
 reset_imu_angle_z();
 
-QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
+QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 1000);
 
 imu_set_setpoint(270);
 imu_set_base_speed(0);</entry>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
      <!--${AOs::SumoHSM::SM::CalibTurnRight::IMU_UPDATED}-->
      <tran trig="IMU_UPDATED">
       <action>int8_t l_speed = 0;
@@ -873,6 +847,7 @@ if (ret == 0){
      </tran>
      <state_glyph node="218,80,19,11">
       <entry box="1,2,16,3"/>
+      <exit box="1,5,6,2"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::CalibWait}-->
@@ -883,7 +858,7 @@ driving_disable();
 parameters_set_calib_mode_led(&amp;parameters);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 250);
 ble_service_send_string(&quot;state:CALIB&quot;);
 radio_service_en_radio_data_sig(true);
 me-&gt;stuck_counter = 0;
@@ -1375,10 +1350,11 @@ imu_set_inclinated_th(parameters.inclinated_th);
 reset_inclination();
 reset_imu_angle_z();
 
-QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 400);
+QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 1000);
 
 imu_set_setpoint(45);
 imu_set_base_speed(0);</entry>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
      <!--${AOs::SumoHSM::SM::CalibTurnLeft::STUCK}-->
      <tran trig="STUCK" target="../../19">
       <tran_glyph conn="244,86,3,0,-2,61">
@@ -1408,6 +1384,7 @@ if (ret == 0){
      </tran>
      <state_glyph node="244,80,18,11">
       <entry box="1,2,16,3"/>
+      <exit box="1,5,6,2"/>
      </state_glyph>
     </state>
     <!--${AOs::SumoHSM::SM::CalibStarTopSpeed}-->
@@ -1520,7 +1497,7 @@ if (ret == 0){
     <!--${AOs::SumoHSM::SM::CalibStop}-->
     <state name="CalibStop">
      <entry>drive(0,0);
-driving_disable();
+//driving_disable();
 board_led_off();
 led_stripe_set_all_color(COLOR_BLACK);
 ble_service_send_string(&quot;state:CALIBEND&quot;);
@@ -1534,12 +1511,13 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);</entr
      </tran>
      <!--${AOs::SumoHSM::SM::CalibStop::STOP_BUZZER}-->
      <tran trig="STOP_BUZZER">
-      <action brief="buzzer_stop()">buzzer_stop();</action>
+      <action brief="buzzer_stop()">buzzer_stop();
+drive(0,0);</action>
       <tran_glyph conn="211,155,3,-1,25">
        <action box="0,-2,31,3"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="211,147,201,10">
+     <state_glyph node="211,147,201,12">
       <entry box="1,2,36,4"/>
      </state_glyph>
     </state>
