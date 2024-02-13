@@ -88,7 +88,7 @@ static float last_error;
 static float integral_error;
 
 static uint8_t near_angle_th;
-static float inclinated_th;
+static float inclinated_th = 20;
 
 static bool last_inclination = false;
 static bool current_inclination = false;
@@ -355,6 +355,7 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
 
     case IMU_RESTART_SIG: {
         QTimeEvt_disarm(&me->timeEvt);
+        inclinated_th = 20;
         imu_deinit_motion_fx();
         imu_init_motion_fx();
         QTimeEvt_rearm(&me->timeEvt, 250 * BSP_TICKS_PER_MILISSEC);
