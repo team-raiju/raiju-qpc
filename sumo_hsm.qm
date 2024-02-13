@@ -804,7 +804,7 @@ if (parameters.attack_when_near){
     </state>
     <!--${AOs::SumoHSM::SM::CalibTurnRight}-->
     <state name="CalibTurnRight">
-     <entry brief="turn_180_right">imu_set_imu_enabled(parameters.imu_enabled);
+     <entry brief="turn_90_right">imu_set_imu_enabled(parameters.imu_enabled);
 imu_reset_pid();
 imu_set_kp(parameters.kp);
 imu_set_kd(parameters.kd);
@@ -816,7 +816,7 @@ reset_imu_angle_z();
 
 QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 1000);
 
-imu_set_setpoint(180);
+imu_set_setpoint(270);
 imu_set_base_speed(0);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
      <!--${AOs::SumoHSM::SM::CalibTurnRight::IMU_UPDATED}-->
@@ -1353,7 +1353,7 @@ reset_imu_angle_z();
 
 QTimeEvt_rearm(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 1000);
 
-imu_set_setpoint(315);
+imu_set_setpoint(45);
 imu_set_base_speed(0);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
      <!--${AOs::SumoHSM::SM::CalibTurnLeft::STUCK}-->

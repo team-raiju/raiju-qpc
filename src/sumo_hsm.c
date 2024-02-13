@@ -2941,7 +2941,7 @@ static QState SumoHSM_CalibTurnRight_e(SumoHSM * const me) {
 
     QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 1000);
 
-    imu_set_setpoint(180);
+    imu_set_setpoint(270);
     imu_set_base_speed(0);
     return QM_ENTRY(&SumoHSM_CalibTurnRight_s);
 }
@@ -3901,7 +3901,7 @@ static QState SumoHSM_CalibTurnLeft_e(SumoHSM * const me) {
 
     QTimeEvt_rearm(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 1000);
 
-    imu_set_setpoint(315);
+    imu_set_setpoint(45);
     imu_set_base_speed(0);
     return QM_ENTRY(&SumoHSM_CalibTurnLeft_s);
 }
