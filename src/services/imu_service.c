@@ -145,7 +145,6 @@ static void transform_mg_to_g(LSM6DSR_Axes_t *mg, axis_3x_data_t *g)
     g->z = mg->z / 1000.0f;
 }
 
-volatile float delta_time_s;
 static float calculate_delta_time_s()
 {
     static uint32_t last_time = INTIAL_VALUE_FLAG;
@@ -157,7 +156,7 @@ static float calculate_delta_time_s()
 
     uint32_t delta_time_ticks = (current_time - last_time);
 
-    delta_time_s = delta_time_ticks / 1000.0f;
+    float delta_time_s = delta_time_ticks / 1000.0f;
     last_time = current_time;
 
     return delta_time_s;
