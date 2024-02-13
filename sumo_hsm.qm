@@ -1237,13 +1237,12 @@ QTimeEvt_rearm(&amp;me-&gt;timerFailSafe, 1 * BSP_TICKS_PER_SEC);
     <!--${AOs::SumoHSM::SM::AutoEnd}-->
     <state name="AutoEnd">
      <entry brief="Disable Motors">drive(0,0);
-driving_disable();
 radio_service_enable();
 board_led_off();
 led_stripe_set_all_color(COLOR_BLACK);
 ble_service_send_string(&quot;state:AUTOEND&quot;);
 buzzer_start();
-QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
+QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 400);
 start_module_disable();
 BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</entry>
      <!--${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT}-->
@@ -1254,9 +1253,11 @@ BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</entry>
      </tran>
      <!--${AOs::SumoHSM::SM::AutoEnd::STOP_BUZZER}-->
      <tran trig="STOP_BUZZER">
-      <action brief="buzzer_stop()">buzzer_stop();</action>
+      <action brief="buzzer_stop &amp;&amp; driving_disable">buzzer_stop();
+drive(0,0);
+driving_disable();</action>
       <tran_glyph conn="6,245,3,-1,24">
-       <action box="0,-2,31,3"/>
+       <action box="0,-2,43,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="6,233,183,15">
@@ -1497,12 +1498,11 @@ if (ret == 0){
     <!--${AOs::SumoHSM::SM::CalibStop}-->
     <state name="CalibStop">
      <entry>drive(0,0);
-//driving_disable();
 board_led_off();
 led_stripe_set_all_color(COLOR_BLACK);
 ble_service_send_string(&quot;state:CALIBEND&quot;);
 buzzer_start();
-QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);</entry>
+QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 400);</entry>
      <!--${AOs::SumoHSM::SM::CalibStop::CHANGE_STATE_EVT}-->
      <tran trig="CHANGE_STATE_EVT" target="../../14">
       <tran_glyph conn="412,152,1,1,68,-123,-163">
@@ -1511,10 +1511,11 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);</entr
      </tran>
      <!--${AOs::SumoHSM::SM::CalibStop::STOP_BUZZER}-->
      <tran trig="STOP_BUZZER">
-      <action brief="buzzer_stop()">buzzer_stop();
-drive(0,0);</action>
+      <action brief="buzzer_stop &amp;&amp; driving_disable">buzzer_stop();
+drive(0,0);
+driving_disable();</action>
       <tran_glyph conn="211,155,3,-1,25">
-       <action box="0,-2,31,3"/>
+       <action box="0,-2,46,3"/>
       </tran_glyph>
      </tran>
      <state_glyph node="211,147,201,12">

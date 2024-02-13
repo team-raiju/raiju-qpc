@@ -3614,13 +3614,12 @@ static QState SumoHSM_pre_strategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::AutoEnd} */
 static QState SumoHSM_AutoEnd_e(SumoHSM * const me) {
     drive(0,0);
-    driving_disable();
     radio_service_enable();
     board_led_off();
     led_stripe_set_all_color(COLOR_BLACK);
     ble_service_send_string("state:AUTOEND");
     buzzer_start();
-    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
+    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 400);
     start_module_disable();
     BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);
     return QM_ENTRY(&SumoHSM_AutoEnd_s);
@@ -3647,6 +3646,8 @@ static QState SumoHSM_AutoEnd(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::AutoEnd::STOP_BUZZER} */
         case STOP_BUZZER_SIG: {
             buzzer_stop();
+            drive(0,0);
+            driving_disable();
             status_ = QM_HANDLED();
             break;
         }
@@ -4165,12 +4166,11 @@ static QState SumoHSM_CalibeStarTurn(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibStop} */
 static QState SumoHSM_CalibStop_e(SumoHSM * const me) {
     drive(0,0);
-    //driving_disable();
     board_led_off();
     led_stripe_set_all_color(COLOR_BLACK);
     ble_service_send_string("state:CALIBEND");
     buzzer_start();
-    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
+    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 400);
     return QM_ENTRY(&SumoHSM_CalibStop_s);
 }
 /*${AOs::SumoHSM::SM::CalibStop} */
@@ -4196,6 +4196,7 @@ static QState SumoHSM_CalibStop(SumoHSM * const me, QEvt const * const e) {
         case STOP_BUZZER_SIG: {
             buzzer_stop();
             drive(0,0);
+            driving_disable();
             status_ = QM_HANDLED();
             break;
         }
