@@ -20,8 +20,10 @@ set(EXECUTABLE                      ${CMAKE_PROJECT_NAME})
 
 if (STM32_BUILD STREQUAL "true")
     include(toolchain_stm32.cmake)
+    message(STATUS "Building for STM32")
 else()
     include(toolchain_gcc.cmake)
+    message(STATUS "Building for generic GCC")
 endif()
 
 
