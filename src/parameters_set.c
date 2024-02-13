@@ -167,7 +167,7 @@ static param_error_t set_validate_kp(sumo_parameters_t *params, uint16_t new_dat
 
 static param_error_t set_validate_kd(sumo_parameters_t *params, uint16_t new_data)
 {
-    if (IS_BETWEEN(new_data, 100, 5000)) {
+    if (new_data <= 5000) {
         params->kd = new_data;
         BSP_eeprom_write(EE_KD_ADDR, params->kd);
         return PARAM_OK;

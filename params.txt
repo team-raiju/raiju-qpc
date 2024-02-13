@@ -1,0 +1,13 @@
+kp = 600
+kd = 500
+th = 15
+Bom para angulos até 90 graus
+
+------------------------------
+
+kp = 300
+kd = 500
+th = 7
+
+bom para angulos acima de 90 graus
+
