@@ -22,7 +22,7 @@ Q_DEFINE_THIS_FILE
  * LOCAL DEFINES
  **************************************************************************************************/
 
-#define IMU_POLL_PERIOD_MS  10
+#define IMU_POLL_PERIOD_MS  8
 #define OUTPUT_DATA_RATE_HZ 200
 
 #define MFX_STR_LENG 35
@@ -145,6 +145,7 @@ static void transform_mg_to_g(LSM6DSR_Axes_t *mg, axis_3x_data_t *g)
     g->z = mg->z / 1000.0f;
 }
 
+volatile float delta_time_s;
 static float calculate_delta_time_s()
 {
     static uint32_t last_time = INTIAL_VALUE_FLAG;
@@ -156,7 +157,7 @@ static float calculate_delta_time_s()
 
     uint32_t delta_time_ticks = (current_time - last_time);
 
-    float delta_time_s = delta_time_ticks / 1000.0f;
+    delta_time_s = delta_time_ticks / 1000.0f;
     last_time = current_time;
 
     return delta_time_s;
