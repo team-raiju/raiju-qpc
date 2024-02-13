@@ -125,12 +125,13 @@ file(GLOB_RECURSE HEADER_FILES
 
 
 # Exclude target-pc compilation files
-list(FILTER SRC_FILES EXCLUDE REGEX "${PROJ_PATH}/inc/bsp/target-pc/.*\.h$")
+list(FILTER HEADER_FILES EXCLUDE REGEX "${PROJ_PATH}/inc/bsp/target-pc/.*\.h$")
 
 # Append each directory path and then remove duplicates includes
 foreach(HEADER_FILE ${HEADER_FILES})
     get_filename_component(HEADER_DIRECTORY ${HEADER_FILE} DIRECTORY)
     list(APPEND INCLUDE_DIRS ${HEADER_DIRECTORY})
+    # message(STATUS "Header files: ${HEADER_FILE}")
 endforeach()
 
 list(REMOVE_DUPLICATES INCLUDE_DIRS)
