@@ -478,6 +478,7 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
 
 uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params)
 {
+    #ifndef Q_SPY
     // Find experimentally. Move 33.5cm, 67cm, 100.5, 134cm
     double distance_dividers[] = { 3.2, 1.875, 1.30, 1 };
 
@@ -495,7 +496,14 @@ uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameter
 
     double reference_move_time_ms = params->time_ms_to_cross_at_max_vel / distance_dividers[index];
     uint16_t move_time_ms = (distance_multiplicator * reference_move_time_ms) * speed_multiplicator * battery_multiplicator;
-    move_time_ms = constrain(move_time_ms, 1, 2000);
+    move_time_ms = constrain(move_time_ms, 2, 600);
+
+    #else
+    double reference_speed_cm_per_ms = REFERENCE_DIST_CM / (double) params->time_ms_to_cross_at_max_vel;
+    double speed_multiplicator = speed / REFERENCE_SPEED;
+    uint16_t move_time_ms = (distance_cm / (reference_speed_cm_per_ms * speed_multiplicator));
+    move_time_ms = constrain(move_time_ms, 2, 1200);
+    #endif
 
     return move_time_ms;
 }
