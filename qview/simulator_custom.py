@@ -49,7 +49,9 @@ def custom_menu_command():
                      "RESET POSITION 4", 
                      "RESET POSITION 5", 
                      "SET_LOW_CTRL_BATTERY",
-                     "SET_LOW_PWR_BATTERY",]
+                     "SET_LOW_PWR_BATTERY",
+                     "SET_INCLINATION_ON",
+                     "SET_INCLINATION_OFF"]
     command_functions = [reset_position, 
                         reset_position_2, 
                         reset_position_3, 
@@ -57,6 +59,8 @@ def custom_menu_command():
                         reset_position_5, 
                         set_low_ctrl_battery,
                         set_low_pwr_battery,
+                        set_inclination_on,
+                        set_inclination_off
                         ]
 
     return (command_names, command_functions)
@@ -315,7 +319,7 @@ def custom_on_poll():
         last_sensor_active = sensor_active
 
         # IMU simulator
-        update_imu_command(angle)
+        update_imu_command(360 - angle)
 
         # radio Simulator
         if (USE_PS3_CONTROLLER):
@@ -352,6 +356,8 @@ def send_radio_command_ch3_ch6_ch7(ch3, ch7, ch6):
     qview_base.command(8, ch3, ch7, ch6)
 
 def update_imu_command(z_angle):
+    if (z_angle < 0):
+        z_angle += 360
     integer_part = int(z_angle)
     decimal_part = int((z_angle - integer_part) * 1000)
     qview_base.command(12, integer_part , decimal_part)
@@ -474,6 +480,12 @@ def set_low_pwr_battery():
             line_sensors["BL"]["active"], line_sensors["BR"]["active"], \
             ctrl_battery_full, pwr_battery_full)
 
+
+def set_inclination_on():
+    qview_base.command(13, 1)
+
+def set_inclination_off():
+    qview_base.command(13, 0)
 
 def set_position(x, y, theta):
     global image_dict, canvas_dict

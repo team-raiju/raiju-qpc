@@ -34,7 +34,7 @@
         {
             "type": "shell",
             "label": "Prepare Cube Files - F103RFT6",
-            "command": "${workspaceFolder}/scripts/prepare-cube.sh", 
+            "command": "${workspaceFolder}/scripts/prepare_cube.sh", 
             "args": [
                 "${workspaceFolder}/cube/STM32F103RFT6",
             ],
@@ -46,7 +46,7 @@
         {
             "type": "shell",
             "label": "Prepare Cube Files - F103RCT6",
-            "command": "${workspaceFolder}/scripts/prepare-cube.sh", 
+            "command": "${workspaceFolder}/scripts/prepare_cube.sh", 
             "args": [
                 "${workspaceFolder}/cube/STM32F103RCT6",
             ],

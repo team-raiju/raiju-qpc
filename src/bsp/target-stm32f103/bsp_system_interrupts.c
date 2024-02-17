@@ -9,7 +9,7 @@ void HardFault_Handler(void)
     driving_disable();
     buzzer_start();
 
-    uint32_t timeout = 4000000;
+    volatile uint32_t timeout = 4000000;
     while (timeout > 0) {
         if (timeout % 100000 == 0) {
             buzzer_toggle();
