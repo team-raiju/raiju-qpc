@@ -472,7 +472,7 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
         turn_time_ms = (angle_multiplicator * reference_turn_time) * speed_multiplicator * battery_multiplicator;
     }
 
-    turn_time_ms = constrain(turn_time_ms, 1, 7000);
+    turn_time_ms = constrain(turn_time_ms, 1, 2000);
     return turn_time_ms;
 }
 
@@ -495,7 +495,7 @@ uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameter
 
     double reference_move_time_ms = params->time_ms_to_cross_at_max_vel / distance_dividers[index];
     uint16_t move_time_ms = (distance_multiplicator * reference_move_time_ms) * speed_multiplicator * battery_multiplicator;
-    move_time_ms = constrain(move_time_ms, 1, 7000);
+    move_time_ms = constrain(move_time_ms, 1, 2000);
 
     return move_time_ms;
 }
