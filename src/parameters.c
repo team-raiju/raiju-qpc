@@ -144,7 +144,7 @@ static color_name_t pre_strategy_colors[] = { COLOR_GREEN, COLOR_BLUE,   COLOR_O
                                               COLOR_WHITE, COLOR_PURPLE, COLOR_YELLOW };
 
 static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
-    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_PURPLE, COLOR_YELLOW,
+    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_WHITE, COLOR_PURPLE
 };
 
 // static const char * strategy_names[] = {
