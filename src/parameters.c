@@ -135,16 +135,16 @@ static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t *updat
 static double battery_multiplicator = 1.0;
 
 static color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
-    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE,
+    COLOR_BLUE, COLOR_GREEN, COLOR_ORANGE,
     // COLOR_PINK,
     // COLOR_YELLOW,
 };
 
-static color_name_t pre_strategy_colors[] = { COLOR_GREEN, COLOR_BLUE,   COLOR_ORANGE, COLOR_PINK,
-                                              COLOR_WHITE, COLOR_PURPLE, COLOR_YELLOW };
+static color_name_t pre_strategy_colors[] = { COLOR_BLUE, COLOR_GREEN,   COLOR_ORANGE, COLOR_PURPLE,
+                                              COLOR_WHITE, COLOR_PINK, COLOR_YELLOW };
 
 static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
-    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_WHITE, COLOR_PURPLE
+    COLOR_BLUE, COLOR_GREEN, COLOR_ORANGE, COLOR_PURPLE, COLOR_WHITE, COLOR_PINK
 };
 
 // static const char * strategy_names[] = {
