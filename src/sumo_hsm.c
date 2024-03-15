@@ -1673,9 +1673,9 @@ static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me) {
     } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
         drive(100,100);
     } else if (distance_is_active(DIST_SENSOR_FR)) {
-        drive(20,-20);
+        drive(30,-30);
     } else if (distance_is_active(DIST_SENSOR_FL)) {
-        drive(-20,20);
+        drive(-30,30);
     } else if (distance_is_active(DIST_SENSOR_DR)) {
         drive(40,-40);
     } else if (distance_is_active(DIST_SENSOR_DL)) {
@@ -1700,9 +1700,9 @@ static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me) {
         drive(0,0);
         return false;
     } else if (distance_is_active(DIST_SENSOR_FR)) {
-        drive(20,-20);
+        drive(30,-30);
     } else if (distance_is_active(DIST_SENSOR_FL)) {
-        drive(-20,20);
+        drive(-30,30);
     } else if (distance_is_active(DIST_SENSOR_DR)) {
         drive(40,-40);
     } else if (distance_is_active(DIST_SENSOR_DL)) {

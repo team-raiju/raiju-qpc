@@ -52,9 +52,9 @@ if (distance_is_active(DIST_SENSOR_F)){
 } else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(100,100);
 } else if (distance_is_active(DIST_SENSOR_FR)) {
-    drive(20,-20);
+    drive(30,-30);
 } else if (distance_is_active(DIST_SENSOR_FL)) {
-    drive(-20,20);
+    drive(-30,30);
 } else if (distance_is_active(DIST_SENSOR_DR)) {
     drive(40,-40);
 } else if (distance_is_active(DIST_SENSOR_DL)) {
@@ -78,9 +78,9 @@ if (distance_is_active(DIST_SENSOR_F)&amp;&amp;
     drive(0,0);
     return false;
 } else if (distance_is_active(DIST_SENSOR_FR)) {
-    drive(20,-20);
+    drive(30,-30);
 } else if (distance_is_active(DIST_SENSOR_FL)) {
-    drive(-20,20);
+    drive(-30,30);
 } else if (distance_is_active(DIST_SENSOR_DR)) {
     drive(40,-40);
 } else if (distance_is_active(DIST_SENSOR_DL)) {
