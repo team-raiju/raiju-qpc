@@ -108,24 +108,15 @@ me-&gt;buzzerCount = 0U;</action>
     </initial>
     <!--${AOs::SumoHSM::SM::Idle}-->
     <state name="Idle">
-     <entry brief="entry">if (parameters.current_state != STATE_IDLE){
-    start_module_enable();
-    driving_enable();
-    QTimeEvt_armX(&amp;me-&gt;timeEvtStuck, BSP_TICKS_PER_MILISSEC * 10, 0);
-} else {
+     <entry brief="entry">if (parameters.current_state == AUTO_RUNNING || parameters.current_state == RC_RUNNING){
+    parameters.current_state = STATE_IDLE;
+}
 
-    board_led_off();
-    driving_disable();
-    drive(0,0);
-    QTimeEvt_disarm(&amp;me-&gt;timeEvt);
-    QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
-
-    if (adc_get_low_pwr_bat()){
-        led_stripe_set_all_color(COLOR_RED);
-    } else if (adc_get_low_ctrl_bat()){
-        led_stripe_set_all_color(COLOR_ORANGE);
-    }
-}</entry>
+board_led_off();
+driving_disable();
+drive(0,0);
+QTimeEvt_disarm(&amp;me-&gt;timeEvt);
+QTimeEvt_armX(&amp;me-&gt;timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt);
 QTimeEvt_disarm(&amp;me-&gt;buzzerStopTimer);
 QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);
@@ -221,26 +212,6 @@ me-&gt;buzzerCount += 1;</action>
       <action brief="start_module_change_request()">start_module_change_request();</action>
       <tran_glyph conn="41,31,3,-1,14">
        <action box="0,-2,28,2"/>
-      </tran_glyph>
-     </tran>
-     <!--${AOs::SumoHSM::SM::Idle::STUCK}-->
-     <tran trig="STUCK">
-      <!--${AOs::SumoHSM::SM::Idle::STUCK::[runnig]}-->
-      <choice target="../../../22">
-       <guard brief="runnig">parameters.current_state == AUTO_RUNNING</guard>
-       <choice_glyph conn="94,130,5,0,-57,4">
-        <action box="-14,-3,10,2"/>
-       </choice_glyph>
-      </choice>
-      <!--${AOs::SumoHSM::SM::Idle::STUCK::[rc]}-->
-      <choice target="../../../28">
-       <guard brief="rc">parameters.current_state == RC_RUNNING</guard>
-       <choice_glyph conn="94,130,5,3,16,-10,28,10,5">
-        <action box="9,-3,5,2"/>
-       </choice_glyph>
-      </choice>
-      <tran_glyph conn="84,38,1,-1,10,92">
-       <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <state_glyph node="41,1,43,43">
