@@ -319,8 +319,6 @@ void parameters_init(sumo_parameters_t *params)
 
     distance_service_set_mask(params->enabled_distance_sensors);
     adc_line_set_mask(params->enabled_line_sensors);
-    set_gbias(params->acc_gbias, params->gyro_gbias);
-
 }
 
 void parameters_report(sumo_parameters_t params, uint8_t config_num)
@@ -373,8 +371,8 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num)
         packet_2.line_mask = adc_line_get_all();
         packet_2.ctrl_battery = adc_get_ctrl_bat_mv();
         packet_2.pwr_battery = adc_get_pwr_bat_mv();
-        packet_2.acc_g_bias = get_acc_gbias();
-        packet_2.gyro_g_bias = get_gyro_gbias();
+        packet_2.acc_g_bias = get_imu_z_bias();
+        packet_2.gyro_g_bias = get_imu_z_bias_signal_negative();
 
         memcpy(buffer, packet_2._raw, BLE_PACKET_TRANSMIT_SIZE);
         break;

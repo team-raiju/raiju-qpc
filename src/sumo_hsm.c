@@ -5372,8 +5372,7 @@ static QState SumoHSM_CalibImu(SumoHSM * const me, QEvt const * const e) {
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::CalibImu::TIMEOUT} */
         case TIMEOUT_SIG: {
-            start_g_bias_calculation();
-
+            //start_g_bias_calculation();
             QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 12000);
             status_ = QM_HANDLED();
             break;
@@ -5390,17 +5389,17 @@ static QState SumoHSM_CalibImu(SumoHSM * const me, QEvt const * const e) {
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
-            stop_g_bias_calculation();
+            //stop_g_bias_calculation();
 
-            parameters.acc_gbias = get_acc_gbias();
-            parameters.gyro_gbias = get_gyro_gbias();
+            //parameters.acc_gbias = get_acc_gbias();
+            //parameters.gyro_gbias = get_gyro_gbias();
 
-            BSP_eeprom_write(EE_ACC_BIAS_1_ADDR, (parameters.acc_gbias >> 16));
-            BSP_eeprom_write(EE_ACC_BIAS_2_ADDR, (parameters.acc_gbias & 0xffff));
+            //BSP_eeprom_write(EE_ACC_BIAS_1_ADDR, (parameters.acc_gbias >> 16));
+            //BSP_eeprom_write(EE_ACC_BIAS_2_ADDR, (parameters.acc_gbias & 0xffff));
 
 
-            BSP_eeprom_write(EE_GYRO_BIAS_1_ADDR, (parameters.gyro_gbias >> 16));
-            BSP_eeprom_write(EE_GYRO_BIAS_2_ADDR, (parameters.gyro_gbias & 0xffff));
+            //BSP_eeprom_write(EE_GYRO_BIAS_1_ADDR, (parameters.gyro_gbias >> 16));
+            //BSP_eeprom_write(EE_GYRO_BIAS_2_ADDR, (parameters.gyro_gbias & 0xffff));
             status_ = QM_TRAN(&tatbl_);
             break;
         }

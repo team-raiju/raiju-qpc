@@ -2019,8 +2019,7 @@ drive(0, 0);</entry>
      <entry>QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 12000);</entry>
      <!--${AOs::SumoHSM::SM::CalibImu::TIMEOUT}-->
      <tran trig="TIMEOUT">
-      <action>start_g_bias_calculation();
-
+      <action>//start_g_bias_calculation();
 QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 12000);</action>
       <tran_glyph conn="430,88,3,-1,13">
        <action box="0,-2,10,2"/>
@@ -2028,17 +2027,17 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 12000);</action>
      </tran>
      <!--${AOs::SumoHSM::SM::CalibImu::TIMEOUT_2}-->
      <tran trig="TIMEOUT_2" target="../../19">
-      <action>stop_g_bias_calculation();
+      <action>//stop_g_bias_calculation();
 
-parameters.acc_gbias = get_acc_gbias();
-parameters.gyro_gbias = get_gyro_gbias();
+//parameters.acc_gbias = get_acc_gbias();
+//parameters.gyro_gbias = get_gyro_gbias();
 
-BSP_eeprom_write(EE_ACC_BIAS_1_ADDR, (parameters.acc_gbias &gt;&gt; 16));
-BSP_eeprom_write(EE_ACC_BIAS_2_ADDR, (parameters.acc_gbias &amp; 0xffff));
+//BSP_eeprom_write(EE_ACC_BIAS_1_ADDR, (parameters.acc_gbias &gt;&gt; 16));
+//BSP_eeprom_write(EE_ACC_BIAS_2_ADDR, (parameters.acc_gbias &amp; 0xffff));
 
 
-BSP_eeprom_write(EE_GYRO_BIAS_1_ADDR, (parameters.gyro_gbias &gt;&gt; 16));
-BSP_eeprom_write(EE_GYRO_BIAS_2_ADDR, (parameters.gyro_gbias &amp; 0xffff));</action>
+//BSP_eeprom_write(EE_GYRO_BIAS_1_ADDR, (parameters.gyro_gbias &gt;&gt; 16));
+//BSP_eeprom_write(EE_GYRO_BIAS_2_ADDR, (parameters.gyro_gbias &amp; 0xffff));</action>
       <tran_glyph conn="430,93,3,1,24,57,-42">
        <action box="0,-2,10,2"/>
       </tran_glyph>

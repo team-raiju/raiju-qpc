@@ -319,7 +319,6 @@ def custom_on_poll():
         last_sensor_active = sensor_active
 
         # IMU simulator
-        update_imu_command(360 - angle)
 
         # radio Simulator
         if (USE_PS3_CONTROLLER):
@@ -328,6 +327,7 @@ def custom_on_poll():
         else:
             if (action_counter % 20 == 0):
                 send_keyboard()
+                update_imu_command(360 - angle)
 
 def start_command(*args):
     qview_base.command(0, 0)

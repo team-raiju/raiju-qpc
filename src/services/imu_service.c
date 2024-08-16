@@ -9,7 +9,7 @@
 #include "imu_service.h"
 #include "bsp.h"
 #include "bsp_gpio_mapping.h"
-#include "motion_fx.h"
+#include "motion_gc.h"
 #include "bsp_i2c.h"
 #include "lsm6dsr.h"
 #include "lsm6dsr_reg.h"
@@ -22,8 +22,10 @@ Q_DEFINE_THIS_FILE
  * LOCAL DEFINES
  **************************************************************************************************/
 
-#define IMU_POLL_PERIOD_MS  8
+#define SAMPLE_FREQ_HZ      125
 #define OUTPUT_DATA_RATE_HZ 200
+#define IMU_PERIOD_MS       (1000 / SAMPLE_FREQ_HZ)
+
 
 #define MFX_STR_LENG 35
 #define STATE_SIZE   (size_t)(2450)
@@ -59,7 +61,7 @@ typedef struct {
 static void imu_service_ctor(void);
 static QState ImuService_Initial(imu_ao_t *const me, void const *const par);
 static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e);
-static int8_t imu_init_motion_fx(void);
+static int8_t imu_init_motion_gc(void);
 
 /***************************************************************************************************
  * LOCAL VARIABLES
@@ -68,18 +70,15 @@ static int8_t imu_init_motion_fx(void);
 imu_ao_t imu_inst;
 QActive *const imu_service_AO = &imu_inst.super;
 
-static char lib_version[MFX_STR_LENG];
-static uint8_t mfxstate[STATE_SIZE];
-static MFX_knobs_t iKnobs;
 
 static LSM6DSR_Object_t lsm6dsr_ctx;
 static LSM6DSR_IO_t lsm6dsr_io_ctx;
 static uint8_t who_i_am_val = 0;
 static axis_3x_data_t angles = { 0.0, 0.0, 0.0 };
-static axis_3x_data_t ref_angles = { 0.0, 0.0, 0.0 };
-static axis_3x_data_t angles_raw = { 0.0, 0.0, 0.0 };
 static float set_point = 0.0;
 static int8_t base_speed = 0.0;
+static axis_3x_data_t angular_rate_dps;
+
 
 static float kp;
 static float kd;
@@ -93,10 +92,17 @@ static float inclinated_th = 20;
 static bool last_inclination = false;
 static bool current_inclination = false;
 
-static float acc_gbias = 0.000309;
-static float gyro_gbias = 0.000282;
-
 static bool imu_enabled = true;
+
+static float x_gbias = 0.33;
+static float y_gbias = -0.426;
+static float z_gbias = -0.13;
+
+static float sample_frequency = SAMPLE_FREQ_HZ;
+
+static const bool use_motion_gc = true;
+
+static uint32_t last_time_imu = INTIAL_VALUE_FLAG;
 /***************************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************************/
@@ -138,44 +144,20 @@ static void transform_mdps_to_dps(LSM6DSR_Axes_t *mdps, axis_3x_data_t *dps)
     dps->z = mdps->z / 1000.0f;
 }
 
-static void transform_mg_to_g(LSM6DSR_Axes_t *mg, axis_3x_data_t *g)
-{
-    g->x = mg->x / 1000.0f;
-    g->y = mg->y / 1000.0f;
-    g->z = mg->z / 1000.0f;
-}
-
 static float calculate_delta_time_s()
 {
-    static uint32_t last_time = INTIAL_VALUE_FLAG;
     uint32_t current_time = BSP_GetTick();
 
-    if (last_time == INTIAL_VALUE_FLAG) {
-        last_time = current_time;
+    if (last_time_imu == INTIAL_VALUE_FLAG) {
+        last_time_imu = current_time;
     }
 
-    uint32_t delta_time_ticks = (current_time - last_time);
+    uint32_t delta_time_ticks = (current_time - last_time_imu);
 
     float delta_time_s = delta_time_ticks / 1000.0f;
-    last_time = current_time;
+    last_time_imu = current_time;
 
     return delta_time_s;
-}
-
-static void update_sensor_fusion(axis_3x_data_t *gyro_in_dps, axis_3x_data_t *accel_in_g, MFX_output_t *data_out_fx,
-                                 float delta_time_s)
-{
-    MFX_input_t data_in_fx;
-    data_in_fx.acc[0] = accel_in_g->x;
-    data_in_fx.acc[1] = accel_in_g->y;
-    data_in_fx.acc[2] = accel_in_g->z;
-
-    data_in_fx.gyro[0] = gyro_in_dps->x;
-    data_in_fx.gyro[1] = gyro_in_dps->y;
-    data_in_fx.gyro[2] = gyro_in_dps->z;
-
-    MotionFX_propagate(mfxstate, data_out_fx, &data_in_fx, &delta_time_s);
-    MotionFX_update(mfxstate, data_out_fx, &data_in_fx, &delta_time_s, NULL);
 }
 
 static int imu_sensor_init(imu_ao_t *const me)
@@ -233,16 +215,30 @@ static int imu_sensor_init(imu_ao_t *const me)
     return 0;
 }
 
-static int8_t sensor_fusion()
+static float limit_angle(float angle)
 {
-    LSM6DSR_Axes_t acceleration_mg;
+    if (angle > 360.0f) {
+        angle -= 360.0f;
+    } else if (angle < 0.0f) {
+        angle += 360.0f;
+    }
+
+    return angle;
+}
+
+static int8_t imu_update()
+{
     LSM6DSR_Axes_t angular_rate_mdps;
-    axis_3x_data_t acceleration_g;
-    axis_3x_data_t angular_rate_dps;
+    LSM6DSR_Axes_t acceleration_mg;
+    MGC_input_t data_in_gc;
+    MGC_output_t data_out_gc;
+    int bias_update;
 
     /* Get raw data */
-    if (LSM6DSR_ACC_GetAxes(&lsm6dsr_ctx, &acceleration_mg) != LSM6DSR_OK) {
-        return -1;
+    if (use_motion_gc) {
+        if (LSM6DSR_ACC_GetAxes(&lsm6dsr_ctx, &acceleration_mg) != LSM6DSR_OK) {
+            return -1;
+        }
     }
 
     if (LSM6DSR_GYRO_GetAxes(&lsm6dsr_ctx, &angular_rate_mdps) != LSM6DSR_OK) {
@@ -251,26 +247,37 @@ static int8_t sensor_fusion()
 
     /* Transform to SI units */
     transform_mdps_to_dps(&angular_rate_mdps, &angular_rate_dps);
-    transform_mg_to_g(&acceleration_mg, &acceleration_g);
     float delta_time = calculate_delta_time_s();
 
-    /* Run Sensor Fusion algorithm */
-    MFX_output_t data_out_fx;
-    update_sensor_fusion(&angular_rate_dps, &acceleration_g, &data_out_fx, delta_time);
+    /* Apply calibration */
+    if (use_motion_gc) {
+        float new_frequency = 1.0f / delta_time;
+        MotionGC_SetFrequency(&new_frequency);
 
-    angles_raw.z = (360 - data_out_fx.rotation[0]);
-    float temp_angle_z = angles_raw.z - ref_angles.z;
+        data_in_gc.Acc[0] = (acceleration_mg.x / 1000.0f);
+        data_in_gc.Acc[1] = (acceleration_mg.y / 1000.0f);
+        data_in_gc.Acc[2] = (acceleration_mg.z / 1000.0f);
 
-    if (temp_angle_z < 0) {
-        temp_angle_z += 360;
+        data_in_gc.Gyro[0] = angular_rate_dps.x;
+        data_in_gc.Gyro[1] = angular_rate_dps.y;
+        data_in_gc.Gyro[2] = angular_rate_dps.z;
+        MotionGC_Update(&data_in_gc, &data_out_gc, &bias_update);
+
+        angular_rate_dps.x = (data_in_gc.Gyro[0] - data_out_gc.GyroBiasX);
+        angular_rate_dps.y = (data_in_gc.Gyro[1] - data_out_gc.GyroBiasY);
+        angular_rate_dps.z = (data_in_gc.Gyro[2] - data_out_gc.GyroBiasZ);
     }
 
-    angles_raw.x = data_out_fx.rotation[1]; // pitch
-    angles_raw.y = data_out_fx.rotation[2]; // row
+    /* Update angles */
+    float temp_angle_z = angles.z + angular_rate_dps.z * delta_time;
+    float temp_angle_x = angles.x + angular_rate_dps.x * delta_time;
+    float temp_angle_y = angles.y + angular_rate_dps.y * delta_time;
 
-    angles.z = temp_angle_z;            // yaw
-    angles.x = angles_raw.x - ref_angles.x; // pitch
-    angles.y = angles_raw.y - ref_angles.y; // row
+    /* Filter angle Z*/
+    angles.z = limit_angle(temp_angle_z);  // yaw
+    angles.x = limit_angle(temp_angle_x);  // pitch
+    angles.y = limit_angle(temp_angle_y);  // roll
+
 
     /* Calc inclination */
     bool angle_x_inclination = angles.x < -inclinated_th;
@@ -290,37 +297,26 @@ static int8_t sensor_fusion()
     return 0;
 }
 
-static void imu_deinit_motion_fx()
+static int8_t imu_init_motion_gc()
 {
-    memset(mfxstate, 0, sizeof(mfxstate));
-}
+    MotionGC_Initialize(MGC_MCU_STM32, &sample_frequency);
+    MGC_knobs_t knobs;
+    MotionGC_GetKnobs(&knobs);
 
-static int8_t imu_init_motion_fx()
-{
-    if (STATE_SIZE < MotionFX_GetStateSize()) {
-        return -1;
-    }
+    /* Experimentaly set */
+    knobs.AccThr = 0.05f;
+    knobs.GyroThr = 0.4f;
+    knobs.MaxGyro = 15.0f;
+    knobs.MaxAcc = 1.4f;
+    MotionGC_SetKnobs(&knobs);
 
-    /* Sensor Fusion API initialization function */
-    MotionFX_initialize((MFXState_t *)mfxstate);
+    MGC_output_t initial_calib = {
+        .GyroBiasX = x_gbias,
+        .GyroBiasY = y_gbias,
+        .GyroBiasZ = z_gbias,
+    };
 
-    /* Optional: Get version */
-    MotionFX_GetLibVersion(lib_version);
-
-    /* Modify knobs settings & set the knobs */
-    MotionFX_getKnobs(mfxstate, &iKnobs);
-
-    iKnobs.modx = 2;
-    iKnobs.gbias_acc_th_sc = acc_gbias;
-    iKnobs.gbias_gyro_th_sc = gyro_gbias;
-    iKnobs.gbias_mag_th_sc = 0;
-    iKnobs.LMode = 2;
-    // iKnobs.ATime = 0.9;
-
-    MotionFX_setKnobs(mfxstate, &iKnobs);
-
-    MotionFX_enable_9X(mfxstate, MFX_ENGINE_DISABLE);
-    MotionFX_enable_6X(mfxstate, MFX_ENGINE_ENABLE);
+    MotionGC_SetCalParams(&initial_calib);
 
     return 0;
 }
@@ -340,14 +336,15 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
     switch (e->sig) {
     case Q_ENTRY_SIG: {
         imu_sensor_init(me);
+        imu_init_motion_gc();
         status_ = Q_HANDLED();
         break;
     }
 
     case IMU_POLL_SIG: {
         if (me->initialized && imu_enabled) {
-            sensor_fusion();
-            QTimeEvt_rearm(&me->timeEvt, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
+            imu_update();
+            QTimeEvt_rearm(&me->timeEvt, IMU_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
         }
         status_ = Q_HANDLED();
         break;
@@ -356,8 +353,11 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
     case IMU_RESTART_SIG: {
         QTimeEvt_disarm(&me->timeEvt);
         inclinated_th = 20;
-        imu_deinit_motion_fx();
-        imu_init_motion_fx();
+        if (use_motion_gc) {    
+            reset_imu_angle_z();
+            reset_inclination();
+        }
+
         QTimeEvt_rearm(&me->timeEvt, 250 * BSP_TICKS_PER_MILISSEC);
         status_ = Q_HANDLED();
         break;
@@ -413,15 +413,17 @@ float get_imu_angle_z()
 
 void reset_imu_angle_z()
 {
-    ref_angles.z = angles_raw.z;
+    last_time_imu = INTIAL_VALUE_FLAG;
+    angles.z = 0;
 }
 
 void reset_inclination()
 {
     last_inclination = false;
     current_inclination = false;
-    ref_angles.x = angles_raw.x;
-    ref_angles.y = angles_raw.y;
+    angles.x = 0;
+    angles.y = 0;
+
 }
 
 static float calc_error_degree(float current_angle_degrees)
@@ -521,41 +523,49 @@ void imu_set_inclinated_th_x10(uint8_t inclinated_th_x_10)
 }
 
 
-void start_g_bias_calculation()
-{
-    MotionFX_getKnobs(mfxstate, &iKnobs);
-
-    iKnobs.start_automatic_gbias_calculation = 1;
-
-    MotionFX_setKnobs(mfxstate, &iKnobs);
-}
-
 void stop_g_bias_calculation()
 {
-    MotionFX_getKnobs(mfxstate, &iKnobs);
+    MGC_output_t gyro_bias;
+    MotionGC_GetCalParams(&gyro_bias);
 
-    acc_gbias = iKnobs.gbias_acc_th_sc;
-    gyro_gbias = iKnobs.gbias_gyro_th_sc;
+    //DEBUG_PRINT("Gyro bias: %f %f %f\r\n", gyro_bias.GyroBiasX, gyro_bias.GyroBiasY, gyro_bias.GyroBiasZ);
 
-    iKnobs.start_automatic_gbias_calculation = 0;
-    MotionFX_setKnobs(mfxstate, &iKnobs);
+    x_gbias = gyro_bias.GyroBiasX;
+    y_gbias = gyro_bias.GyroBiasY;
+    z_gbias = gyro_bias.GyroBiasZ;
 }
 
-void set_gbias(uint32_t set_acc_gbias, uint32_t set_gyro_gbias)
+
+void set_imu_z_bias(uint32_t set_z_bias, uint32_t signal_negative)
 {
-    acc_gbias = set_acc_gbias / 1000000.0f;
-    gyro_gbias = set_gyro_gbias / 1000000.0f;
+    if (signal_negative) {
+        z_gbias = -1.0 * (float)set_z_bias / 1000.0f;
+    } else {
+        z_gbias = set_z_bias / 1000.0f;
+    }
+
+    MGC_output_t gyro_bias = {
+        .GyroBiasX = x_gbias,
+        .GyroBiasY = y_gbias,
+        .GyroBiasZ = z_gbias,
+    };
+    MotionGC_SetCalParams(&gyro_bias);
 }
 
-uint32_t get_acc_gbias()
+uint32_t get_imu_z_bias()
 {
-    return acc_gbias * 1000000.0f;
+    if (z_gbias < 0) {
+        return -z_gbias * 1000;
+    } else {
+        return z_gbias * 1000;
+    }
 }
 
-uint32_t get_gyro_gbias()
+uint32_t get_imu_z_bias_signal_negative()
 {
-    return gyro_gbias * 1000000.0f;
+    return (z_gbias < 0);
 }
+
 
 void imu_set_imu_enabled(uint8_t imu_enabled_)
 {
