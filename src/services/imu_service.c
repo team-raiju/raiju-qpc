@@ -193,15 +193,6 @@ static int imu_sensor_init(imu_ao_t *const me)
 }
 
 
-#ifndef Q_SPY
-
-static void transform_mdps_to_dps(LSM6DSR_Axes_t *mdps, axis_3x_data_t *dps)
-{
-    dps->x = mdps->x / 1000.0f;
-    dps->y = mdps->y / 1000.0f;
-    dps->z = mdps->z / 1000.0f;
-}
-
 static float calculate_delta_time_s()
 {
     uint32_t current_time = BSP_GetTick();
@@ -227,6 +218,15 @@ static float limit_angle(float angle)
     }
 
     return angle;
+}
+
+#ifndef Q_SPY
+
+static void transform_mdps_to_dps(LSM6DSR_Axes_t *mdps, axis_3x_data_t *dps)
+{
+    dps->x = mdps->x / 1000.0f;
+    dps->y = mdps->y / 1000.0f;
+    dps->z = mdps->z / 1000.0f;
 }
 
 static int8_t imu_update()
@@ -303,9 +303,20 @@ static int8_t imu_update()
 #else
 static int8_t imu_update()
 {
-    angles.z = MotionGC_get_angle_z();
+    static float reference;
+    // Changes reference everytime last_time_imu is reseted
+    if (last_time_imu == INTIAL_VALUE_FLAG){
+        reference = MotionGC_get_angle_z();
+    }
+
+    angles.z = MotionGC_get_angle_z() - reference;
+    angles.z = limit_angle(angles.z);
+
+
     angles.x = MotionGC_get_angle_x();
     angles.y = MotionGC_get_angle_y();
+
+    calculate_delta_time_s();
 
 
     /* Calc inclination */
