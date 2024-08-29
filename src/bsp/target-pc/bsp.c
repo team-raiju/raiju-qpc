@@ -238,19 +238,19 @@ void QS_onCommand(uint8_t cmdId, uint32_t param1, uint32_t param2, uint32_t para
     }
 
     case 12: {
-        // float val = param1 + (param2 / 1000.0f);
-        // MotionFX_set_angle_z(val);
+        float val = param1 + (param2 / 1000.0f);
+        MotionGC_set_angle_z(val);
         break;
     }
 
     case 13: {
-        // if (param1 == 0){
-        //     MotionFX_set_angle_x(0);
-        //     MotionFX_set_angle_y(0);
-        // } else {
-        //     MotionFX_set_angle_x(-20);
-        //     MotionFX_set_angle_y(20);
-        // }
+        if (param1 == 0){
+            MotionGC_set_angle_x(0);
+            MotionGC_set_angle_y(0);
+        } else {
+            MotionGC_set_angle_x(-20);
+            MotionGC_set_angle_y(20);
+        }
 
         break;
     }

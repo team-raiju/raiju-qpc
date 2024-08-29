@@ -137,29 +137,6 @@ static int32_t imu_write_i2c(uint16_t addr, uint16_t mem_address, uint8_t *data,
     return bsp_i2c_write(LSM6DSR_I2C_CHANNEL, addr, mem_address, IO_I2C_MEM_SIZE_8BIT, data, len);
 }
 
-static void transform_mdps_to_dps(LSM6DSR_Axes_t *mdps, axis_3x_data_t *dps)
-{
-    dps->x = mdps->x / 1000.0f;
-    dps->y = mdps->y / 1000.0f;
-    dps->z = mdps->z / 1000.0f;
-}
-
-static float calculate_delta_time_s()
-{
-    uint32_t current_time = BSP_GetTick();
-
-    if (last_time_imu == INTIAL_VALUE_FLAG) {
-        last_time_imu = current_time;
-    }
-
-    uint32_t delta_time_ticks = (current_time - last_time_imu);
-
-    float delta_time_s = delta_time_ticks / 1000.0f;
-    last_time_imu = current_time;
-
-    return delta_time_s;
-}
-
 static int imu_sensor_init(imu_ao_t *const me)
 {
     lsm6dsr_io_ctx.Init = imu_init_peripheral;
@@ -213,6 +190,32 @@ static int imu_sensor_init(imu_ao_t *const me)
     me->initialized = true;
 
     return 0;
+}
+
+
+#ifndef Q_SPY
+
+static void transform_mdps_to_dps(LSM6DSR_Axes_t *mdps, axis_3x_data_t *dps)
+{
+    dps->x = mdps->x / 1000.0f;
+    dps->y = mdps->y / 1000.0f;
+    dps->z = mdps->z / 1000.0f;
+}
+
+static float calculate_delta_time_s()
+{
+    uint32_t current_time = BSP_GetTick();
+
+    if (last_time_imu == INTIAL_VALUE_FLAG) {
+        last_time_imu = current_time;
+    }
+
+    uint32_t delta_time_ticks = (current_time - last_time_imu);
+
+    float delta_time_s = delta_time_ticks / 1000.0f;
+    last_time_imu = current_time;
+
+    return delta_time_s;
 }
 
 static float limit_angle(float angle)
@@ -296,6 +299,36 @@ static int8_t imu_update()
     last_inclination = current_inclination;
     return 0;
 }
+
+#else
+static int8_t imu_update()
+{
+    angles.z = MotionGC_get_angle_z();
+    angles.x = MotionGC_get_angle_x();
+    angles.y = MotionGC_get_angle_y();
+
+
+    /* Calc inclination */
+    bool angle_x_inclination = angles.x < -inclinated_th;
+    bool angle_y_inclination = angles.y > inclinated_th || angles.y < -inclinated_th;
+    current_inclination = angle_x_inclination || angle_y_inclination;
+
+    if (current_inclination && !last_inclination) {
+        QEvt evt = { .sig = IMU_INCLINATION_SIG };
+        QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+    }
+
+    /* Send event */
+    QEvt evt = { .sig = IMU_UPDATED_SIG };
+    QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
+
+    angular_rate_dps.x = 0;
+    angular_rate_dps.y = 0;
+    angular_rate_dps.z = 0;
+
+    return 0;
+}
+#endif
 
 static int8_t imu_init_motion_gc()
 {

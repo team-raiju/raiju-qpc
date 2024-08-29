@@ -152,6 +152,17 @@ void MotionGC_SetFrequency(float *freq);
   */
 uint8_t MotionGC_GetLibVersion(char *version);
 
+/* Fake funtion to set angles */
+void MotionGC_set_angle_z(float angle);
+void MotionGC_set_angle_x(float angle);
+void MotionGC_set_angle_y(float angle);
+
+/* Fake funtion to get angles */
+float MotionGC_get_angle_z();
+float MotionGC_get_angle_x();
+float MotionGC_get_angle_y();
+
+
 /**
   * @}
   */

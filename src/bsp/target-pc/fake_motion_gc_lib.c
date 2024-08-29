@@ -18,9 +18,9 @@
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-// static float angle_z_degrees = 0;
-// static float angle_x_degrees = 0;
-// static float angle_y_degrees = 0;
+static float angle_z_degrees = 0;
+static float angle_x_degrees = 0;
+static float angle_y_degrees = 0;
 
 MGC_knobs_t default_knobs = {
     .AccThr = 0.004,
@@ -119,4 +119,35 @@ void MotionGC_SetFrequency(float *freq){
 uint8_t MotionGC_GetLibVersion(char *version){
     (void)version;
     return 0;
+}
+
+
+void MotionGC_set_angle_z(float angle)
+{
+    angle_z_degrees = angle;
+}
+
+void MotionGC_set_angle_x(float angle)
+{
+    angle_x_degrees = angle;
+}
+
+void MotionGC_set_angle_y(float angle)
+{
+    angle_y_degrees = angle;
+}
+
+float MotionGC_get_angle_z()
+{
+    return angle_z_degrees;
+}
+
+float MotionGC_get_angle_x()
+{
+    return angle_x_degrees;
+}
+
+float MotionGC_get_angle_y()
+{
+    return angle_y_degrees;
 }
