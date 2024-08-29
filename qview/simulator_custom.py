@@ -327,7 +327,7 @@ def custom_on_poll():
         else:
             if (action_counter % 20 == 0):
                 send_keyboard()
-                update_imu_command(360 - angle)
+                update_imu_command(angle)
 
 def start_command(*args):
     qview_base.command(0, 0)

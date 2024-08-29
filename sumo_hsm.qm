@@ -1836,7 +1836,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, reverse_time);</entry>
     <!--${AOs::SumoHSM::SM::CalibStarSpeed}-->
     <state name="CalibStarSpeed">
      <entry brief="star_speed">imu_set_setpoint(0);
-imu_set_base_speed(100);</entry>
+imu_set_base_speed(parameters.star_speed);</entry>
      <!--${AOs::SumoHSM::SM::CalibStarSpeed::LINE_CHANGED_FL, LINE_CHANGED_FR}-->
      <tran trig="LINE_CHANGED_FL, LINE_CHANGED_FR" target="../../17">
       <tran_glyph conn="305,105,3,3,-3,14,3">

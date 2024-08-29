@@ -4972,7 +4972,7 @@ static QState SumoHSM_LineF_RC(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibStarSpeed} */
 static QState SumoHSM_CalibStarSpeed_e(SumoHSM * const me) {
     imu_set_setpoint(0);
-    imu_set_base_speed(100);
+    imu_set_base_speed(parameters.star_speed);
     (void)me; /* unused parameter */
     return QM_ENTRY(&SumoHSM_CalibStarSpeed_s);
 }
