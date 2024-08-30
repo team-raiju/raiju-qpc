@@ -1887,23 +1887,13 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
 /*${AOs::SumoHSM::SM::Idle} */
 static QState SumoHSM_Idle_e(SumoHSM * const me) {
     if (parameters.current_state == AUTO_RUNNING || parameters.current_state == RC_RUNNING){
-        start_module_enable();
-        driving_enable();
-        QTimeEvt_armX(&me->timeEvtStuck, BSP_TICKS_PER_MILISSEC * 10, 0);
-    } else {
-
-        board_led_off();
-        driving_disable();
-        drive(0,0);
-        QTimeEvt_disarm(&me->timeEvt);
-        QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_SEC/2, BSP_TICKS_PER_SEC/2);
-
-        if (adc_get_low_pwr_bat()){
-            led_stripe_set_all_color(COLOR_RED);
-        } else if (adc_get_low_ctrl_bat()){
-            led_stripe_set_all_color(COLOR_ORANGE);
-        }
+        parameters.current_state = STATE_IDLE;
     }
+
+    board_led_off();
+    driving_disable();
+    drive(0,0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500);
     return QM_ENTRY(&SumoHSM_Idle_s);
 }
 /*${AOs::SumoHSM::SM::Idle} */
@@ -1928,6 +1918,7 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::Idle::TIMEOUT} */
         case TIMEOUT_SIG: {
             board_led_toggle();
+            QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 500);
             status_ = QM_HANDLED();
             break;
         }
@@ -1950,17 +1941,6 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::Idle::STOP_BUZZER} */
         case STOP_BUZZER_SIG: {
             buzzer_stop();
-            status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::Idle::LOW_BATTERY} */
-        case LOW_BATTERY_SIG: {
-            if (adc_get_low_pwr_bat()){
-                led_stripe_set_all_color(COLOR_RED);
-            } else if (adc_get_low_ctrl_bat()){
-                led_stripe_set_all_color(COLOR_ORANGE);
-            }
-
             status_ = QM_HANDLED();
             break;
         }
@@ -2004,10 +1984,10 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
                 led_stripe_set_color(me->buzzerCount, COLOR_PURPLE);
                 QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 42);
                 QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 200);
+                adc_service_start_callback();
             } else {
                 QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 600);
                 bsp_ble_start();
-                adc_service_start_callback();
                 start_module_enable();
                 if (adc_get_low_pwr_bat()){
                     led_stripe_set_all_color(COLOR_RED);
@@ -2017,50 +1997,6 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             }
             me->buzzerCount += 1;
             status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::Idle::BUTTON} */
-        case BUTTON_SIG: {
-            start_module_change_request();
-            status_ = QM_HANDLED();
-            break;
-        }
-        /*${AOs::SumoHSM::SM::Idle::STUCK} */
-        case STUCK_SIG: {
-            /*${AOs::SumoHSM::SM::Idle::STUCK::[runnig]} */
-            if (parameters.current_state == AUTO_RUNNING) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_StarStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_Idle_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_StarAuto_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_StarStrategy_i), /* initial tran. */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::Idle::STUCK::[rc]} */
-            else if (parameters.current_state == RC_RUNNING) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[3];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_RC_2_s, /* target state */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_Idle_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_RC_2_e), /* entry */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN(&tatbl_);
-            }
-            else {
-                status_ = QM_UNHANDLED();
-            }
             break;
         }
         default: {
@@ -3115,7 +3051,7 @@ static QState SumoHSM_CalibWait_e(SumoHSM * const me) {
     parameters_set_calib_mode_led(&parameters);
     QTimeEvt_disarm(&me->timeEvt_2);
     QTimeEvt_disarm(&me->timeEvt);
-    QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 250, 0);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 150);
     ble_service_send_string("state:CALIB");
     radio_service_en_radio_data_sig(true);
     me->stuck_counter = 0;
@@ -3156,9 +3092,9 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
             board_led_toggle();
 
             if (time_long){
-                QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 150, 0);
+                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 150);
             } else {
-                QTimeEvt_armX(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 1000, 0);
+                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 1000);
             }
             time_long = !time_long;
 
@@ -3304,62 +3240,6 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
             else {
                 status_ = QM_UNHANDLED();
             }
-            break;
-        }
-        /*${AOs::SumoHSM::SM::CalibWait::CHANGE_PRE_STRATEGY_EVT} */
-        case CHANGE_PRE_STRATEGY_EVT_SIG: {
-            buzzer_start();
-            QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
-
-            switch (parameters.calib_mode)
-            {
-                case 0: {
-                    parameters.turn_180_right_time_ms += 10;
-                    if (parameters.turn_180_right_time_ms > 300){
-                        parameters.turn_180_right_time_ms = 30;
-                    }
-                    BSP_eeprom_write(TURN_180_RIGHT_TIME_ADDR, parameters.turn_180_right_time_ms);
-                    break;
-                }
-
-                case 1: {
-                    parameters.turn_180_left_time_ms += 10;
-                    if (parameters.turn_180_left_time_ms > 300){
-                        parameters.turn_180_left_time_ms = 30;
-                    }
-                    BSP_eeprom_write(TURN_180_LEFT_TIME_ADDR, parameters.turn_180_left_time_ms);
-                    break;
-                }
-
-                case 2: {
-                    parameters.time_ms_to_cross_at_max_vel += 10;
-                    if (parameters.time_ms_to_cross_at_max_vel > 500){
-                        parameters.time_ms_to_cross_at_max_vel = 100;
-                    }
-                    BSP_eeprom_write(TIME_MS_TO_CROSS_AT_100_ADDR, parameters.time_ms_to_cross_at_max_vel);
-                    break;
-                }
-
-                case 3: {
-                     parameters.star_speed += 2;
-                    if (parameters.star_speed > 98){
-                        parameters.star_speed = 30;
-                    }
-                    BSP_eeprom_write(STAR_SPEED_ADDR, parameters.star_speed);
-                    break;
-                }
-
-                case 4: {
-                    // Not aplicable
-                    break;
-                }
-
-                default: {
-                    break;
-                }
-
-            }
-            status_ = QM_HANDLED();
             break;
         }
         /*${AOs::SumoHSM::SM::CalibWait::STOP_BUZZER} */
@@ -3663,13 +3543,12 @@ static QState SumoHSM_pre_strategy(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::AutoEnd} */
 static QState SumoHSM_AutoEnd_e(SumoHSM * const me) {
     drive(0,0);
-    driving_disable();
     radio_service_enable();
     board_led_off();
     led_stripe_set_all_color(COLOR_BLACK);
     ble_service_send_string("state:AUTOEND");
     buzzer_start();
-    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
+    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 400);
     start_module_disable();
     BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);
     return QM_ENTRY(&SumoHSM_AutoEnd_s);
@@ -3696,6 +3575,8 @@ static QState SumoHSM_AutoEnd(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::AutoEnd::STOP_BUZZER} */
         case STOP_BUZZER_SIG: {
             buzzer_stop();
+            drive(0,0);
+            driving_disable();
             status_ = QM_HANDLED();
             break;
         }
@@ -4111,12 +3992,11 @@ static QState SumoHSM_CalibeStarTurn(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibStop} */
 static QState SumoHSM_CalibStop_e(SumoHSM * const me) {
     drive(0,0);
-    driving_disable();
     board_led_off();
     led_stripe_set_all_color(COLOR_BLACK);
     ble_service_send_string("state:CALIBEND");
     buzzer_start();
-    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 300);
+    QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 400);
     return QM_ENTRY(&SumoHSM_CalibStop_s);
 }
 /*${AOs::SumoHSM::SM::CalibStop} */
@@ -4141,6 +4021,8 @@ static QState SumoHSM_CalibStop(SumoHSM * const me, QEvt const * const e) {
         /*${AOs::SumoHSM::SM::CalibStop::STOP_BUZZER} */
         case STOP_BUZZER_SIG: {
             buzzer_stop();
+            drive(0,0);
+            driving_disable();
             status_ = QM_HANDLED();
             break;
         }

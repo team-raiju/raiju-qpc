@@ -135,16 +135,16 @@ static void read_and_update_parameter_8_bit(uint16_t eeprom_addr, uint8_t *updat
 static double battery_multiplicator = 1.0;
 
 static color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
-    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE,
+    COLOR_BLUE, COLOR_GREEN, COLOR_ORANGE,
     // COLOR_PINK,
     // COLOR_YELLOW,
 };
 
-static color_name_t pre_strategy_colors[] = { COLOR_GREEN, COLOR_BLUE,   COLOR_ORANGE, COLOR_PINK,
-                                              COLOR_WHITE, COLOR_PURPLE, COLOR_YELLOW };
+static color_name_t pre_strategy_colors[] = { COLOR_BLUE, COLOR_GREEN,   COLOR_ORANGE, COLOR_PURPLE,
+                                              COLOR_WHITE, COLOR_PINK, COLOR_YELLOW };
 
 static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
-    COLOR_GREEN, COLOR_BLUE, COLOR_ORANGE, COLOR_PINK, COLOR_PURPLE, COLOR_YELLOW,
+    COLOR_BLUE, COLOR_GREEN, COLOR_ORANGE, COLOR_PURPLE, COLOR_WHITE, COLOR_PINK
 };
 
 // static const char * strategy_names[] = {
@@ -472,12 +472,13 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
         turn_time_ms = (angle_multiplicator * reference_turn_time) * speed_multiplicator * battery_multiplicator;
     }
 
-    turn_time_ms = constrain(turn_time_ms, 1, 7000);
+    turn_time_ms = constrain(turn_time_ms, 1, 1000);
     return turn_time_ms;
 }
 
 uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params)
 {
+    #ifndef Q_SPY
     // Find experimentally. Move 33.5cm, 67cm, 100.5, 134cm
     double distance_dividers[] = { 3.2, 1.875, 1.30, 1 };
 
@@ -495,7 +496,14 @@ uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameter
 
     double reference_move_time_ms = params->time_ms_to_cross_at_max_vel / distance_dividers[index];
     uint16_t move_time_ms = (distance_multiplicator * reference_move_time_ms) * speed_multiplicator * battery_multiplicator;
-    move_time_ms = constrain(move_time_ms, 1, 7000);
+    move_time_ms = constrain(move_time_ms, 2, 600);
+
+    #else
+    double reference_speed_cm_per_ms = REFERENCE_DIST_CM / (double) params->time_ms_to_cross_at_max_vel;
+    double speed_multiplicator = speed / REFERENCE_SPEED;
+    uint16_t move_time_ms = (distance_cm / (reference_speed_cm_per_ms * speed_multiplicator));
+    move_time_ms = constrain(move_time_ms, 2, 1200);
+    #endif
 
     return move_time_ms;
 }

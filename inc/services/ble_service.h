@@ -8,6 +8,8 @@ typedef enum {
     BLE_CHANGE_STATE,
     BLE_REQUEST_DATA,
     BLE_UPDATE_PARAMETERS,
+    BLE_CHANGE_STRATEGY,
+    BLE_CHANGE_PRE_STRATEGY,
 } ble_header_t;
 
 typedef union {

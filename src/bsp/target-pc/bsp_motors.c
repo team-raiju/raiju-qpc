@@ -29,7 +29,7 @@ void BSP_motors(int16_t vel_left, int16_t vel_right)
         vel_right = 0;
     }
 
-    printf("MOT %d,%d \n", vel_left, vel_right);
+    // printf("MOT %d,%d \n", vel_left, vel_right);
     QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio)
     QS_I8(1, QS_MOTOR_ID);
     QS_I8(1, vel_left);
