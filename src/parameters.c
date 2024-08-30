@@ -560,7 +560,7 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
         turn_time_ms = (angle_multiplicator * reference_turn_time) * speed_multiplicator * battery_multiplicator;
     }
 
-    turn_time_ms = constrain(turn_time_ms, 1, 2000);
+    turn_time_ms = constrain(turn_time_ms, 1, 1000);
     return turn_time_ms;
 }
 

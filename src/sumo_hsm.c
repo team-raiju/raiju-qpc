@@ -3226,66 +3226,6 @@ static QState SumoHSM_CalibWait(SumoHSM * const me, QEvt const * const e) {
             }
             break;
         }
-        /*${AOs::SumoHSM::SM::CalibWait::CHANGE_PRE_STRATEGY_EVT} */
-        case CHANGE_PRE_STRATEGY_EVT_SIG: {
-            /*
-            buzzer_start();
-            QTimeEvt_rearm(&me->buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 100);
-
-
-            switch (parameters.calib_mode)
-            {
-                case 0: {
-                    parameters.kp += 100;
-                    if (parameters.kp > 5000){
-                        parameters.kp = 500;
-                    }
-                    BSP_eeprom_write(EE_KP_ADDR, parameters.kp);
-                    break;
-                }
-
-                case 1: {
-                    parameters.near_angle_th += 1;
-                    if (parameters.near_angle_th > 15){
-                        parameters.near_angle_th = 0;
-                    }
-                    BSP_eeprom_write(EE_NEAR_ANGLE_TH_ADDR, parameters.near_angle_th);
-                    break;
-                }
-
-                case 2: {
-                    parameters.time_ms_to_cross_at_max_vel += 10;
-                    if (parameters.time_ms_to_cross_at_max_vel > 500){
-                        parameters.time_ms_to_cross_at_max_vel = 100;
-                    }
-                    BSP_eeprom_write(TIME_MS_TO_CROSS_AT_100_ADDR, parameters.time_ms_to_cross_at_max_vel);
-                    break;
-                }
-
-                case 3: {
-                     parameters.star_speed += 2;
-                    if (parameters.star_speed > 98){
-                        parameters.star_speed = 30;
-                    }
-                    BSP_eeprom_write(STAR_SPEED_ADDR, parameters.star_speed);
-                    break;
-                }
-
-                case 4: {
-                    // Not aplicable
-                    break;
-                }
-
-                default: {
-                    break;
-                }
-
-            }
-            */
-
-            status_ = QM_HANDLED();
-            break;
-        }
         /*${AOs::SumoHSM::SM::CalibWait::STOP_BUZZER} */
         case STOP_BUZZER_SIG: {
             buzzer_stop();
