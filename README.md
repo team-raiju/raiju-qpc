@@ -102,7 +102,7 @@ sudo apt-get install python3-pil python3-pil.imagetk
 pip install pynput
 pip install inputs
 pip install bluezero
-
+pip install Pillow
 ```
 
 #### Compilinig the code
@@ -124,7 +124,7 @@ python3 ./qview/simulator_base.py
 ```
 * Run the C code that will connect to the simulator on another terminal:
 ```
-./build_spy/sumo_hsm
+./build/QSPY/raiju.elf
 ```
 
 #### Usage

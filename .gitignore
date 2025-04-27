@@ -1,6 +1,8 @@
 build/
 build_spy/*
 
+.venv/*
+
 -g
 .jlink-flash
 .cube

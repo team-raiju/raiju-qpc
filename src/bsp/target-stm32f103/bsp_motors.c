@@ -40,7 +40,7 @@ typedef struct motor {
 /***************************************************************************************************
  * LOCAL VARIABLES
  **************************************************************************************************/
-static motor_t left_motor = {
+static motor_t right_motor = {
     .black_pwm = {
         .htim = &htim1,
         .channel = TIM_CHANNEL_3,
@@ -51,12 +51,12 @@ static motor_t left_motor = {
     },
 };
 
-static motor_t right_motor = {
-    .black_pwm = {
+static motor_t left_motor = {
+    .red_pwm = {
         .htim = &htim1,
         .channel = TIM_CHANNEL_1,
     },
-    .red_pwm = {
+    .black_pwm = {
         .htim = &htim1,
         .channel = TIM_CHANNEL_2,
     },
