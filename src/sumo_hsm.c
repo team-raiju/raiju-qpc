@@ -1665,22 +1665,20 @@ void SumoHSM_ctor(void) {
 /*${AOs::SumoHSM::CheckDistAndMove} ........................................*/
 static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me) {
     (void)me;
-    if (distance_is_active(DIST_SENSOR_F)){
-        drive(100,100);
-    } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
+    if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
         drive(100,100);
     } else if (distance_is_active(DIST_SENSOR_FR)) {
-        drive(20,-20);
+        drive(30,10);
     } else if (distance_is_active(DIST_SENSOR_FL)) {
-        drive(-20,20);
+        drive(10,30);
     } else if (distance_is_active(DIST_SENSOR_DR)) {
-        drive(40,-40);
+        drive(25,-25);
     } else if (distance_is_active(DIST_SENSOR_DL)) {
-        drive(-40,40);
+        drive(-25,25);
     } else if (distance_is_active(DIST_SENSOR_R)) {
-        drive(80,-80);
+        drive(60,-60);
     } else if (distance_is_active(DIST_SENSOR_L)) {
-        drive(-80,80);
+        drive(-60,60);
     } else {
        return false;
     }
@@ -1690,7 +1688,7 @@ static uint8_t SumoHSM_CheckDistAndMove(SumoHSM * const me) {
 /*${AOs::SumoHSM::CheckDistAndMoveDefense} .................................*/
 static uint8_t SumoHSM_CheckDistAndMoveDefense(SumoHSM * const me) {
     (void)me;
-    if (distance_is_active(DIST_SENSOR_F)&&
+    if ((distance_is_active(DIST_SENSOR_DR) || distance_is_active(DIST_SENSOR_DL)) &&
         distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
         drive(100,100);
     } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
@@ -4836,23 +4834,23 @@ static QState SumoHSM_CalibStarSpeed(SumoHSM * const me, QEvt const * const e) {
 /*${AOs::SumoHSM::SM::CalibTurnSensors} ....................................*/
 /*${AOs::SumoHSM::SM::CalibTurnSensors} */
 static QState SumoHSM_CalibTurnSensors_e(SumoHSM * const me) {
-    bool seeing = true;
+    bool seeing = false;
     if (distance_is_active(DIST_SENSOR_F)){
         drive(0,0);
     } else if (distance_is_active(DIST_SENSOR_FR) && distance_is_active(DIST_SENSOR_FL)){
         drive(0,0);
     } else if (distance_is_active(DIST_SENSOR_FR)) {
-        drive(20,-20);
+        drive(30,10);
     } else if (distance_is_active(DIST_SENSOR_FL)) {
-        drive(-20,20);
+        drive(10,30);
     } else if (distance_is_active(DIST_SENSOR_DR)) {
-        drive(40,-40);
+        drive(25,-25);
     } else if (distance_is_active(DIST_SENSOR_DL)) {
-        drive(-40,40);
+        drive(-25,25);
     } else if (distance_is_active(DIST_SENSOR_R)) {
-        drive(80,-80);
+        drive(60,-60);
     } else if (distance_is_active(DIST_SENSOR_L)) {
-        drive(-80,80);
+        drive(-60,60);
     } else {
        seeing = false;
        drive(0,0);

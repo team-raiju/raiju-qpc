@@ -24,11 +24,11 @@ void drive(int16_t left, int16_t right)
     left = constrain(left, -99, 99);
     right = constrain(right, -99, 99);
 
-    if (abs(left) < 10) {
+    if (abs(left) < 8) {
         left = 0;
     }
 
-    if (abs(right) < 10) {
+    if (abs(right) < 8) {
         right = 0;
     }
 

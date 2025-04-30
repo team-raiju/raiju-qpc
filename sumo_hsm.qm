@@ -47,22 +47,20 @@ me-&gt;step_counter = 0;</code>
    <!--${AOs::SumoHSM::CheckDistAndMove}-->
    <operation name="CheckDistAndMove" type="uint8_t" visibility="0x02" properties="0x00">
     <code>(void)me;
-if (distance_is_active(DIST_SENSOR_F)){
-    drive(100,100);
-} else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
+if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(100,100);
 } else if (distance_is_active(DIST_SENSOR_FR)) {
-    drive(20,-20);
+    drive(30,10);
 } else if (distance_is_active(DIST_SENSOR_FL)) {
-    drive(-20,20);
+    drive(10,30);
 } else if (distance_is_active(DIST_SENSOR_DR)) {
-    drive(40,-40);
+    drive(25,-25);
 } else if (distance_is_active(DIST_SENSOR_DL)) {
-    drive(-40,40);
+    drive(-25,25);
 } else if (distance_is_active(DIST_SENSOR_R)) {
-    drive(80,-80);
+    drive(60,-60);
 } else if (distance_is_active(DIST_SENSOR_L)) {
-    drive(-80,80);
+    drive(-60,60);
 } else {
    return false;
 }
@@ -71,7 +69,7 @@ return true;</code>
    <!--${AOs::SumoHSM::CheckDistAndMoveDefense}-->
    <operation name="CheckDistAndMoveDefense" type="uint8_t" visibility="0x02" properties="0x00">
     <code>(void)me;
-if (distance_is_active(DIST_SENSOR_F)&amp;&amp;
+if ((distance_is_active(DIST_SENSOR_DR) || distance_is_active(DIST_SENSOR_DL)) &amp;&amp; 
     distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(100,100);
 } else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
@@ -1575,23 +1573,23 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, reverse_time);</entry>
     </state>
     <!--${AOs::SumoHSM::SM::CalibTurnSensors}-->
     <state name="CalibTurnSensors">
-     <entry>bool seeing = true;
+     <entry>bool seeing = false;
 if (distance_is_active(DIST_SENSOR_F)){
     drive(0,0);
 } else if (distance_is_active(DIST_SENSOR_FR) &amp;&amp; distance_is_active(DIST_SENSOR_FL)){
     drive(0,0);
 } else if (distance_is_active(DIST_SENSOR_FR)) {
-    drive(20,-20);
+    drive(30,10);
 } else if (distance_is_active(DIST_SENSOR_FL)) {
-    drive(-20,20);
+    drive(10,30);
 } else if (distance_is_active(DIST_SENSOR_DR)) {
-    drive(40,-40);
+    drive(25,-25);
 } else if (distance_is_active(DIST_SENSOR_DL)) {
-    drive(-40,40);
+    drive(-25,25);
 } else if (distance_is_active(DIST_SENSOR_R)) {
-    drive(80,-80);
+    drive(60,-60);
 } else if (distance_is_active(DIST_SENSOR_L)) {
-    drive(-80,80);
+    drive(-60,60);
 } else {
    seeing = false;
    drive(0,0);
