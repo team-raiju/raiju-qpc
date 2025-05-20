@@ -11,7 +11,10 @@
  <group name="windows">
   <item id=".::inc::bsp.h">-131,0,921,647</item>
   <item id=".::src::sumo_hsm.c">0,0,596,300</item>
-  <item id="AOs::SumoHSM::SM">0,0,1030,651,*</item>
+  <item id="AOs::SumoHSM::SM">0,0,892,674,*</item>
+  <item id="AOs::SumoHSM::SM::StarStrategy">465,171,640,480</item>
+  <item id="AOs::SumoHSM::SM::LineFrontSubmachine">465,0,640,480</item>
+  <item id="AOs::SumoHSM::SM::LineBackSubmachine">0,171,640,480</item>
  </group>
  <group name="search">
   <item name="options">2032128</item>
