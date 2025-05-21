@@ -22,11 +22,9 @@ Q_DEFINE_THIS_FILE
  * LOCAL DEFINES
  **************************************************************************************************/
 
-#define IMU_POLL_PERIOD_MS  5
-#define OUTPUT_DATA_RATE_HZ 200
-
-#define MFX_STR_LENG 35
-#define STATE_SIZE   (size_t)(2450)
+#define IMU_POLL_PERIOD_MS  1
+#define SAMPLE_FREQ_HZ 1000
+#define OUTPUT_DATA_RATE_HZ 1000
 
 #define LSM6DSR_I2C_ADDR    0xD6
 #define LSM6DSR_I2C_CHANNEL IO_I2C_1
@@ -34,9 +32,6 @@ Q_DEFINE_THIS_FILE
 
 #define INTIAL_VALUE_FLAG 0xffffffff
 
-#define STABLE_THRESHOLD 0.1
-#define RAD_90_DEGREES  M_PI_2
-#define RAD_360_DEGREES (2 * M_PI)
 
 /***************************************************************************************************
  * LOCAL TYPEDEFS
@@ -299,7 +294,7 @@ static int8_t imu_update()
 
 static int8_t imu_init_motion_gc()
 {
-    float freq = OUTPUT_DATA_RATE_HZ;
+    float freq = SAMPLE_FREQ_HZ;
     MotionGC_Initialize(MGC_MCU_STM32, &freq);
     MGC_knobs_t knobs;
     MotionGC_GetKnobs(&knobs);
@@ -315,9 +310,9 @@ static int8_t imu_init_motion_gc()
     MotionGC_SetKnobs(&knobs);
 
     MGC_output_t initial_calib = {
-        .GyroBiasX = 0.33,
-        .GyroBiasY = -0.426,
-        .GyroBiasZ = -0.290,
+        .GyroBiasX = 0.122,
+        .GyroBiasY = -0.19,
+        .GyroBiasZ = 0.1,
     };
 
     MotionGC_SetCalParams(&initial_calib);
