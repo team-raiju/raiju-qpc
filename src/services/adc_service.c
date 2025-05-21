@@ -15,7 +15,7 @@
 #define ADC_MAX_VALUE      4095.0
 #define ADC_MAX_VOLTAGE_MV 3300
 
-#define WHITE_THRESHOLD 1000
+#define WHITE_THRESHOLD 650
 
 /* Vcc ---- R1 --- R2 --- GND*/
 #define CTRL_BATTERY_THRESHOLD_MV   14920.0
