@@ -27,7 +27,8 @@ static uint8_t current_step = 0;
 // If type of movement is turn the value represents degrees to turn
 static uint8_t cust_strategy_movements[STRATEGY_MAX_STEPS] = { 47, 55, 50, 105, 55, 30 };
 
-static movement_t type_of_movements[STRATEGY_MAX_STEPS] = { MOVE_LEFT, MOVE_BACK, MOVE_RIGHT, MOVE_FRONT, MOVE_LEFT, MOVE_RIGHT };
+static movement_t type_of_movements[STRATEGY_MAX_STEPS] = { MOVE_LEFT,  MOVE_BACK, MOVE_RIGHT,
+                                                            MOVE_FRONT, MOVE_LEFT, MOVE_RIGHT };
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
@@ -67,7 +68,7 @@ movement_t cust_strategy_move_type(uint8_t step)
         return MOVE_FRONT;
     }
 
-    if (step >= num_of_steps){
+    if (step >= num_of_steps) {
         return MOVE_FRONT;
     }
 
@@ -80,7 +81,7 @@ uint8_t cust_strategy_move(uint8_t step)
         return 10;
     }
 
-    if (step >= num_of_steps){
+    if (step >= num_of_steps) {
         return 10;
     }
 

@@ -16,14 +16,13 @@
 #include "bsp_crc.h"
 #include "utils.h"
 
-
 Q_DEFINE_THIS_FILE
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
 
 #define IMU_POLL_PERIOD_MS  1
-#define SAMPLE_FREQ_HZ 1000
+#define SAMPLE_FREQ_HZ      1000
 #define OUTPUT_DATA_RATE_HZ 1000
 
 #define LSM6DSR_I2C_ADDR    0xD6
@@ -31,7 +30,6 @@ Q_DEFINE_THIS_FILE
 #define WHO_I_AM_VAL        0x6B
 
 #define INTIAL_VALUE_FLAG 0xffffffff
-
 
 /***************************************************************************************************
  * LOCAL TYPEDEFS
@@ -77,7 +75,6 @@ static float a_z;
 imu_ao_t imu_inst;
 QActive *const imu_service_AO = &imu_inst.super;
 
-
 static LSM6DSR_Object_t lsm6dsr_ctx;
 static LSM6DSR_IO_t lsm6dsr_io_ctx;
 static uint8_t who_i_am_val = 0;
@@ -118,7 +115,24 @@ static int32_t imu_write_i2c(uint16_t addr, uint16_t mem_address, uint8_t *data,
     return bsp_i2c_write(LSM6DSR_I2C_CHANNEL, addr, mem_address, IO_I2C_MEM_SIZE_8BIT, data, len);
 }
 
+static float limit_angle(float angle)
+{
+    // Return to first revolution
+    while (angle > M_TWOPI) {
+        angle -= M_TWOPI;
+    }
 
+    while (angle < 0.0f) {
+        angle += M_TWOPI;
+    }
+
+    // Convert from 0-360 to -180-180
+    if (angle > M_PI) {
+        angle -= M_TWOPI;
+    }
+
+    return angle;
+}
 
 static float calculate_delta_time_s()
 {
@@ -195,7 +209,7 @@ static int8_t imu_update()
     LSM6DSR_Axes_t mω;
 
     // Gravity acceleration in mm/s²
-    LSM6DSR_Axes_t mg = {0, 0, 0};
+    LSM6DSR_Axes_t mg = { 0, 0, 0 };
 
     MGC_input_t data_in_gc;
     MGC_output_t data_out_gc;
@@ -220,7 +234,6 @@ static int8_t imu_update()
     a_z = mg.z / 1000.0f;
 
     if (enable_motion_gc) {
-
         float new_frequency = 1.0f / δt;
         MotionGC_SetFrequency(&new_frequency);
 
@@ -249,42 +262,9 @@ static int8_t imu_update()
     φ_y += ω_y * δt;
 
     // Return to first revolution
-    while (φ_z > M_TWOPI) {
-        φ_z -= M_TWOPI;
-    }
-
-    while (φ_x > M_TWOPI) {
-        φ_x -= M_TWOPI;
-    }
-
-    while (φ_y > M_TWOPI) {
-        φ_y -= M_TWOPI;
-    }
-
-    while (φ_z < 0.0f) {
-        φ_z += M_TWOPI;
-    }
-
-    while (φ_x < 0.0f) {
-        φ_x += M_TWOPI;
-    }
-
-    while (φ_y < 0.0f) {
-        φ_y += M_TWOPI;
-    }
-
-    // Convert from 0-360 to -180-180
-    if (φ_z > M_PI) {
-        φ_z -= M_TWOPI;
-    }
-
-    if (φ_x > M_PI) {
-        φ_x -= M_TWOPI;
-    }
-
-    if (φ_y > M_PI) {
-        φ_y -= M_TWOPI;
-    }
+    φ_z = limit_angle(φ_z);
+    φ_x = limit_angle(φ_x);
+    φ_y = limit_angle(φ_y);
 
     // QEvt evt = { .sig = IMU_UPDATED_SIG };
     // QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
@@ -389,9 +369,14 @@ void reset_imu_angle_z()
     last_time_imu = INTIAL_VALUE_FLAG;
 }
 
-MGC_output_t get_g_bias() {
+float get_imu_ang_vel_rad_s()
+{
+    return ω_z;
+}
+
+MGC_output_t get_g_bias()
+{
     MGC_output_t gyro_bias;
     MotionGC_GetCalParams(&gyro_bias);
     return gyro_bias;
 }
-

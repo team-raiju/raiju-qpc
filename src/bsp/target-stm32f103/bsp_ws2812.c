@@ -11,14 +11,12 @@
 #include "qpc.h"
 #include "qk_port.h"
 
-
 /***************************************************************************************************
  * LOCAL DEFINES
  **************************************************************************************************/
-#define WS2812_PACKET_SIZE    24
+#define WS2812_PACKET_SIZE 24
 #define FINAL_PADDING_SIZE 2 /* Used to guarantee that no extra bits will be sent at the final of the data stream */
-#define WS2812_PWM_SIZE ((WS2812_PACKET_SIZE * WS2812_MAX_LED_AMOUNT) + FINAL_PADDING_SIZE)
-
+#define WS2812_PWM_SIZE    ((WS2812_PACKET_SIZE * WS2812_MAX_LED_AMOUNT) + FINAL_PADDING_SIZE)
 
 #define PWM_BIT_1 12
 #define PWM_BIT_0 6

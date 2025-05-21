@@ -46,8 +46,6 @@ typedef union {
 
 } ble_update_param_packet_t;
 
-
-
 typedef union {
     uint8_t _raw[BLE_PACKET_TRANSMIT_SIZE];
     struct {
@@ -140,12 +138,11 @@ static color_name_t strategy_colors[NUM_OF_STRATEGIES] = {
     // COLOR_YELLOW,
 };
 
-static color_name_t pre_strategy_colors[] = { COLOR_BLUE, COLOR_GREEN,   COLOR_ORANGE, COLOR_PURPLE,
-                                              COLOR_WHITE, COLOR_PINK, COLOR_YELLOW };
+static color_name_t pre_strategy_colors[] = { COLOR_BLUE,  COLOR_GREEN, COLOR_ORANGE, COLOR_PURPLE,
+                                              COLOR_WHITE, COLOR_PINK,  COLOR_YELLOW };
 
-static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = {
-    COLOR_BLUE, COLOR_GREEN, COLOR_ORANGE, COLOR_PURPLE, COLOR_WHITE, COLOR_PINK
-};
+static color_name_t calib_mode_colors[NUM_OF_CALIB_MODES] = { COLOR_BLUE,   COLOR_GREEN, COLOR_ORANGE,
+                                                              COLOR_PURPLE, COLOR_WHITE, COLOR_PINK };
 
 // static const char * strategy_names[] = {
 //     "star",
@@ -388,7 +385,7 @@ void parameters_set_strategy_led(sumo_parameters_t *params)
 void parameters_set_pre_strategy_led(sumo_parameters_t *params)
 {
     uint8_t index;
-    uint8_t colors_arr_size = sizeof(pre_strategy_colors)/ sizeof(color_name_t);
+    uint8_t colors_arr_size = sizeof(pre_strategy_colors) / sizeof(color_name_t);
 
     /* Invalid param */
     if (params->pre_strategy >= NUM_OF_PRE_STRATEGIES) {
@@ -397,7 +394,7 @@ void parameters_set_pre_strategy_led(sumo_parameters_t *params)
         return;
     }
     /* Invalid param */
-    if (params->pre_strategy >= (3 * colors_arr_size)){
+    if (params->pre_strategy >= (3 * colors_arr_size)) {
         led_stripe_prepare_range_color((LED_STRIPE_NUM / 2), LED_STRIPE_NUM, COLOR_BLACK);
         led_stripe_send();
         return;
@@ -406,8 +403,7 @@ void parameters_set_pre_strategy_led(sumo_parameters_t *params)
     /* First Half Led RED and other half first color of "pre_strategy_colors" array */
     if (params->pre_strategy >= 2 * colors_arr_size) {
         index = (params->pre_strategy - 2 * colors_arr_size);
-        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3),
-                                       pre_strategy_colors[index]);
+        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3), pre_strategy_colors[index]);
         led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_RED);
         led_stripe_send();
         return;
@@ -417,12 +413,10 @@ void parameters_set_pre_strategy_led(sumo_parameters_t *params)
     /* For odd number all same color*/
     index = params->pre_strategy / 2;
     if (params->pre_strategy % 2 == 0) {
-        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3),
-                                       pre_strategy_colors[index]);
+        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 3), pre_strategy_colors[index]);
         led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 3), ((LED_STRIPE_NUM / 4) * 4), COLOR_BLACK);
     } else {
-        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4),
-                                       pre_strategy_colors[index]);
+        led_stripe_prepare_range_color(((LED_STRIPE_NUM / 4) * 2), ((LED_STRIPE_NUM / 4) * 4), pre_strategy_colors[index]);
     }
 
     led_stripe_send();
@@ -478,7 +472,7 @@ uint16_t get_time_to_turn_ms(uint16_t degrees, uint8_t turn_speed, side_t side, 
 
 uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameters_t *params)
 {
-    #ifndef Q_SPY
+#ifndef Q_SPY
     // Find experimentally. Move 33.5cm, 67cm, 100.5, 134cm
     double distance_dividers[] = { 3.2, 1.875, 1.30, 1 };
 
@@ -498,12 +492,12 @@ uint16_t get_time_to_move_ms(uint16_t distance_cm, uint8_t speed, sumo_parameter
     uint16_t move_time_ms = (distance_multiplicator * reference_move_time_ms) * speed_multiplicator * battery_multiplicator;
     move_time_ms = constrain(move_time_ms, 2, 600);
 
-    #else
-    double reference_speed_cm_per_ms = REFERENCE_DIST_CM / (double) params->time_ms_to_cross_at_max_vel;
+#else
+    double reference_speed_cm_per_ms = REFERENCE_DIST_CM / (double)params->time_ms_to_cross_at_max_vel;
     double speed_multiplicator = speed / REFERENCE_SPEED;
     uint16_t move_time_ms = (distance_cm / (reference_speed_cm_per_ms * speed_multiplicator));
     move_time_ms = constrain(move_time_ms, 2, 1200);
-    #endif
+#endif
 
     return move_time_ms;
 }

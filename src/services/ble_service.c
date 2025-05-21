@@ -55,38 +55,36 @@ static int8_t validate_data(uint8_t *data, uint8_t size)
 
 static void ble_process_events(ble_rcv_packet_t rcv_packet)
 {
-    switch (rcv_packet.header)
-    {
-    case BLE_CHANGE_STATE:{
+    switch (rcv_packet.header) {
+    case BLE_CHANGE_STATE: {
         QEvt evt = { .sig = CHANGE_STATE_EVT_SIG };
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         break;
     }
-    case BLE_REQUEST_DATA:{
+    case BLE_REQUEST_DATA: {
         QEvt evt = { .sig = BLE_DATA_REQUEST_SIG };
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         break;
     }
-    case BLE_UPDATE_PARAMETERS:{
+    case BLE_UPDATE_PARAMETERS: {
         QEvt evt = { .sig = BLE_DATA_UPDATE_SIG };
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         break;
     }
-    case BLE_CHANGE_STRATEGY:{
+    case BLE_CHANGE_STRATEGY: {
         QEvt evt = { .sig = CHANGE_STRATEGY_EVT_SIG };
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         break;
     }
-    case BLE_CHANGE_PRE_STRATEGY:{
+    case BLE_CHANGE_PRE_STRATEGY: {
         QEvt evt = { .sig = CHANGE_PRE_STRATEGY_EVT_SIG };
         QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         break;
     }
-    
+
     default:
         break;
     }
-    
 }
 
 static void ble_callback(uint8_t *ble_data, uint8_t rcv_size)

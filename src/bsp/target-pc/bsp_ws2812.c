@@ -9,7 +9,6 @@
 #include "qs_defines.h"
 #endif
 
-
 uint8_t led_stripe[WS2812_MAX_LED_AMOUNT][3];
 
 void BSP_ws2812_init()
@@ -30,24 +29,24 @@ void BSP_ws2812_send()
 
     bool all_same_color = true;
     for (int i = 1; i < WS2812_MAX_LED_AMOUNT; i++) {
-        if (led_stripe[i - 1][0] != led_stripe[i][0]){
+        if (led_stripe[i - 1][0] != led_stripe[i][0]) {
             all_same_color = false;
             break;
         }
-        if (led_stripe[i - 1][1] != led_stripe[i][1]){
+        if (led_stripe[i - 1][1] != led_stripe[i][1]) {
             all_same_color = false;
             break;
         }
-        if (led_stripe[i - 1][2] != led_stripe[i][2]){
+        if (led_stripe[i - 1][2] != led_stripe[i][2]) {
             all_same_color = false;
             break;
         }
     }
 
-    if (all_same_color){
+    if (all_same_color) {
         QS_BEGIN_ID(SIMULATOR, AO_SumoHSM->prio);
         QS_U8(1, QS_LED_STRIPE_ID);
-        QS_U8(1, 255);                // Index
+        QS_U8(1, 255);              // Index
         QS_U8(1, led_stripe[0][0]); // R
         QS_U8(1, led_stripe[0][1]); // G
         QS_U8(1, led_stripe[0][2]); // B
@@ -63,6 +62,4 @@ void BSP_ws2812_send()
             QS_END()
         }
     }
-
-
 }

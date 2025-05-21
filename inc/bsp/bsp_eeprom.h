@@ -37,7 +37,6 @@ typedef enum eeprom_addresses {
 
     EE_CURRENT_STATE_ADDR,
 
-
 } eeprom_addresses_t;
 
 eeprom_result_t BSP_eeprom_init();

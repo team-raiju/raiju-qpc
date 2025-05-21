@@ -8,6 +8,8 @@ void imu_service_init(void);
 
 float get_imu_angle_z();
 
+float get_imu_ang_vel_rad_s();
+
 void reset_imu_angle_z();
 
 MGC_output_t get_g_bias();

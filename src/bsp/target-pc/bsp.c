@@ -44,7 +44,6 @@
 #include "bsp_gpio_mapping.h"
 #include "bsp_eeprom.h"
 
-
 #include "bsp_uart_fake.h"
 #include "bsp_uart.h"
 #include "fake_start_module.h"
@@ -59,7 +58,6 @@ static QSpyId const l_clock_tick = { QS_AP_ID };
 
 uint8_t ble_data[20];
 static uint32_t ticks = 0;
-
 
 void BSP_init(void)
 {
@@ -86,7 +84,6 @@ void BSP_init(void)
 
 #endif
 }
-
 
 uint32_t BSP_GetTick()
 {

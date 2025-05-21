@@ -6,8 +6,7 @@
 
 #define NUM_OF_DIST_SENSORS 7
 
-typedef enum dist_sensor 
-{
+typedef enum dist_sensor {
     DIST_SENSOR_L,
     DIST_SENSOR_FL,
     DIST_SENSOR_DL,
@@ -16,8 +15,6 @@ typedef enum dist_sensor
     DIST_SENSOR_FR,
     DIST_SENSOR_R,
 } dist_sensor_t;
-
-
 
 void distance_service_init(void);
 bool distance_is_active(dist_sensor_t position);

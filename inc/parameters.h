@@ -14,8 +14,8 @@ typedef struct sumo_parameters {
     uint16_t enabled_distance_sensors; /* Bits corresponding to which dist sensors are enabled bit 6-0 -> R,FR,DR,F,DL,FL,L*/
     uint8_t enabled_line_sensors; /* Bits corresponding to which line sensors are enabled bit 3-0 -> BL[3],BR[2],FL[1],FR[0]*/
 
-    uint8_t star_speed; /* Velocity to look for opponents whiles not seeing */
-    uint8_t max_speed;  /* Max possible speed. Current UNUSED */
+    uint8_t star_speed;              /* Velocity to look for opponents whiles not seeing */
+    uint8_t max_speed;               /* Max possible speed. Current UNUSED */
     uint8_t star_full_speed_time_ms; /* Time that motors will be on max speed when making star */
 
     uint8_t reverse_speed;        /* When seeing line, absolute value of speed that will reverse the motor - default 100*/

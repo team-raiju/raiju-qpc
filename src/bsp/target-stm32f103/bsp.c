@@ -49,7 +49,6 @@ void QF_onStartup(void)
     /* set up the SysTick timer to fire at BSP_TICKS_PER_SEC rate */
     SysTick_Config(SystemCoreClock / BSP_TICKS_PER_SEC);
 
-
     /* All the code below is executed in HAL auto generated files */
 
     /* assing all priority bits for preemption-prio. and none to sub-prio. */
@@ -62,11 +61,9 @@ void QF_onStartup(void)
     * DO NOT LEAVE THE ISR PRIORITIES AT THE DEFAULT VALUE!
     */
     // HAL_NVIC_SetPriority(SysTick_IRQn, QF_AWARE_ISR_CMSIS_PRI + 1, 0U);
-    // Min possible value is QF_AWARE_ISR_CMSIS_PRI. Read 
+    // Min possible value is QF_AWARE_ISR_CMSIS_PRI. Read
     // https://www.state-machine.com/doc/AN_QP_and_ARM-Cortex-M.pdf
     // For more details about interupt configuration
-
-    
 }
 
 void QF_onCleanup(void)
@@ -95,7 +92,7 @@ Q_NORETURN Q_onAssert(char const *const module, int_t const loc)
     while (timeout > 0) {
         timeout--;
     }
-    
+
     NVIC_SystemReset();
 }
 

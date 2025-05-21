@@ -28,7 +28,7 @@
                 "LINKER_SCRIPT_SRC": "${sourceDir}/cube/STM32F103RCT6/STM32F103RCTx_FLASH.ld",
                 "STM32_BUILD": "true",
                 "UC_NAME": "STM32RCT6",
-                "OPT_LEVEL": "-O3"
+                "OPT_LEVEL": "-O0"
             }
         },
         {

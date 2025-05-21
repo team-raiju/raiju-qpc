@@ -23,7 +23,6 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
     QK_ISR_ENTRY();
     adc_dma_callback_function(&dma_buffer[0]);
     QK_ISR_EXIT();
-
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)

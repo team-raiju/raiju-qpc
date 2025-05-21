@@ -106,7 +106,7 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed)
         break;
     }
     case KEY_2: {
-        if (module_armed){
+        if (module_armed) {
             QEvt evt = { .sig = START_SIG };
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         }
@@ -122,7 +122,7 @@ static void gen_start_module_events(sirc_cmd_codes_t key_pressed)
         break;
     }
     case KEY_4: {
-        if (!module_armed){
+        if (!module_armed) {
             QEvt evt = { .sig = CHANGE_STATE_EVT_SIG };
             QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
         }
@@ -184,20 +184,21 @@ static void tim_capture_interrupt(uint16_t time_diff)
     }
 }
 
-static void set_jsumo_module(){
+static void set_jsumo_module()
+{
     current_edge = BSP_TIM_RISING_EDGE;
     module_armed = true;
     bsp_tim_set_capture_level(current_edge);
     bsp_tim_capture_register_callback(tim_capture_interrupt_jsumo);
 }
 
-static void set_ir_receiver_module(){
+static void set_ir_receiver_module()
+{
     module_armed = false;
     current_edge = BSP_TIM_FALLING_EDGE;
     bsp_tim_set_capture_level(current_edge);
     bsp_tim_capture_register_callback(tim_capture_interrupt);
 }
-
 
 /***************************************************************************************************
  * GLOBAL FUNCTIONS
@@ -222,9 +223,10 @@ void start_module_enable(void)
     BSP_GPIO_Write_Pin(GPIO_START_MODULE_EN_PORT, GPIO_START_MODULE_EN_PIN, IO_HIGH);
 }
 
-void start_module_change_request(void){
+void start_module_change_request(void)
+{
     /* Only change IR when there are 5 requests */
-    if (number_of_change_req >= 5){
+    if (number_of_change_req >= 5) {
         if (start_module_type == JSUMO) {
             start_module_type = IR_RECEIVER;
             set_ir_receiver_module();
