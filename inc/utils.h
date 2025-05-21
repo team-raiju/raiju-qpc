@@ -77,4 +77,10 @@ static inline uint16_t MAP_I16(int16_t x, int16_t in_min, int16_t in_max, int16_
     return constrain((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min, out_min, out_max);
 }
 
+static double deg2rad(double degrees) {
+    double pi_on_180 = M_PI / 180.0;
+    return degrees * pi_on_180;
+}
+
+
 #endif /* UTILS_H */

@@ -65,7 +65,7 @@ int main() {
         (void *)0, 0U,       /* private stack (not used) */
         (QEvt *)0);          /* initialization event (not used) */
 
-    // imu_service_init();
+    imu_service_init();
 
     return QF_run(); /* let the framework run the application */
 }

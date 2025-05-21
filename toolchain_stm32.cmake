@@ -79,7 +79,7 @@ set(LINKER_FLAGS
 
 #### LIBS ####
 set(SPECIFIC_LIBS     
-    ${PROJ_PATH}/cube/STM32F103RCT6/Middlewares/ST/STM32_MotionFX_Library/Lib/MotionFX_CM3_wc32_ot.a
+    ${PROJ_PATH}/cube/STM32F103RFT6/Middlewares/ST/STM32_MotionGC_Library/Lib/MotionGC_CM3_wc32_ot.a
 )
 
 
