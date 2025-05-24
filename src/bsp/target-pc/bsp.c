@@ -47,7 +47,7 @@
 #include "bsp_uart_fake.h"
 #include "bsp_uart.h"
 #include "fake_start_module.h"
-#include "motion_fx.h"
+#include "motion_gc.h"
 
 #ifdef Q_SPY
 
@@ -235,8 +235,15 @@ void QS_onCommand(uint8_t cmdId, uint32_t param1, uint32_t param2, uint32_t para
     }
 
     case 12: {
-        float val = param1 + (param2 / 1000.0f);
-        MotionFX_set_angle_z(val);
+        int signal = param1;
+        float val = param2 + (param3 / 1000.0f);
+
+        if (signal != 0) {
+            val = -val;
+        }
+
+        FakeMotionGC_SetAngularVelocity(val);
+
         break;
     }
 

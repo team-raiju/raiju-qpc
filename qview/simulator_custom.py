@@ -292,6 +292,8 @@ def custom_on_poll():
         angle += (rotation_vel / 10)
         sumo_robot.set_angle(angle % 360)
 
+        angular_vel_rad_s = (math.radians(rotation_vel / 10)) / 0.02
+
         vel = ((mot_esq + mot_dir) / 2)
         vel_x = int((vel * math.sin(angle * math.pi/180))/10)
         vel_y = int((vel * math.cos(angle * math.pi/180))/10)
@@ -319,7 +321,7 @@ def custom_on_poll():
         last_sensor_active = sensor_active
 
         # IMU simulator
-        update_imu_command(360 - angle)
+        update_imu_command(angular_vel_rad_s)
 
         # radio Simulator
         if (USE_PS3_CONTROLLER):
@@ -355,12 +357,14 @@ def send_radio_command_ch1_ch2(ch1, ch2):
 def send_radio_command_ch3_ch6_ch7(ch3, ch7, ch6):
     qview_base.command(8, ch3, ch7, ch6)
 
-def update_imu_command(z_angle):
-    if (z_angle < 0):
-        z_angle += 360
-    integer_part = int(z_angle)
-    decimal_part = int((z_angle - integer_part) * 1000)
-    qview_base.command(12, integer_part , decimal_part)
+def update_imu_command(angular_vel):
+    #print("angular vel = %f rad/s = %f deg/s"%(angular_vel, math.degrees(angular_vel)))
+
+    signal = angular_vel < 0
+    integer_part = int(abs(angular_vel))
+    decimal_part = int((abs(angular_vel) - integer_part) * 1000)
+
+    qview_base.command(12, signal, integer_part , decimal_part)
 
 def send_ble_command(ble_bytearray):
 

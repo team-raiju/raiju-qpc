@@ -371,7 +371,11 @@ void reset_imu_angle_z()
 
 float get_imu_ang_vel_rad_s()
 {
+    #ifdef Q_SPY
+    return FakeMotionGC_GetAngularVelocity();
+    #else
     return ω_z;
+    #endif
 }
 
 MGC_output_t get_g_bias()

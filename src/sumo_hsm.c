@@ -52,6 +52,8 @@
 #include "custom_strategy.h"
 #include "start_module.h"
 #include "utils.h"
+#include "navigation.h"
+#include "pre_strategies.h"
 
 #define CALIB_ANGLE_MULT    2.5
 
@@ -77,6 +79,7 @@ typedef struct {
     uint8_t ble_counter;
     uint8_t stuck_counter;
     uint8_t step_counter;
+    uint8_t movement_counter;
 
 /* private submachines */
     /* exit points for submachine ${AOs::SumoHSM::SM::LineFrontSubmachine} */
@@ -123,6 +126,11 @@ typedef struct {
         QActionHandler const START; /* eXit-Point segment */
         QActionHandler const BLINK_END; /* eXit-Point segment */
     } const *sub_TestStartModule;
+    /* exit points for submachine ${AOs::SumoHSM::SM::OdometryPreStrategy} */
+    struct SM_OdometryPreStrategy {
+        QMState super;
+        QActionHandler const XP1; /* eXit-Point segment */
+    } const *sub_OdometryPreStrategy;
 } SumoHSM;
 
 /* private: */
@@ -197,23 +205,6 @@ static QMState const SumoHSM_RC_0_1_s = {
     Q_ACTION_CAST(&SumoHSM_RC_0_1_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
-};
-static QState SumoHSM_pre_strategy  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_pre_strategy_e(SumoHSM * const me);
-static QState SumoHSM_pre_strategy_XP1(SumoHSM * const me);
-static QState SumoHSM_pre_strategy_STOP_XP(SumoHSM * const me);
-static QState SumoHSM_pre_strategy_F_LINE(SumoHSM * const me);
-static struct SM_PreStrategy const SumoHSM_pre_strategy_s = {
-    {
-        QM_STATE_NULL, /* superstate (top) */
-        Q_STATE_CAST(&SumoHSM_pre_strategy),
-        Q_ACTION_CAST(&SumoHSM_pre_strategy_e),
-        Q_ACTION_NULL, /* no exit action */
-        Q_ACTION_NULL  /* no initial tran. */
-    }
-    ,Q_ACTION_CAST(&SumoHSM_pre_strategy_XP1)
-    ,Q_ACTION_CAST(&SumoHSM_pre_strategy_STOP_XP)
-    ,Q_ACTION_CAST(&SumoHSM_pre_strategy_F_LINE)
 };
 static QState SumoHSM_AutoEnd  (SumoHSM * const me, QEvt const * const e);
 static QState SumoHSM_AutoEnd_e(SumoHSM * const me);
@@ -577,6 +568,19 @@ static struct SM_TestStartModule const SumoHSM_state1_s = {
     }
     ,Q_ACTION_CAST(&SumoHSM_state1_START)
     ,Q_ACTION_CAST(&SumoHSM_state1_BLINK_END)
+};
+static QState SumoHSM_PreStrategyAuto  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_PreStrategyAuto_e(SumoHSM * const me);
+static QState SumoHSM_PreStrategyAuto_XP1(SumoHSM * const me);
+static struct SM_OdometryPreStrategy const SumoHSM_PreStrategyAuto_s = {
+    {
+        QM_STATE_NULL, /* superstate (top) */
+        Q_STATE_CAST(&SumoHSM_PreStrategyAuto),
+        Q_ACTION_CAST(&SumoHSM_PreStrategyAuto_e),
+        Q_ACTION_NULL, /* no exit action */
+        Q_ACTION_NULL  /* no initial tran. */
+    }
+    ,Q_ACTION_CAST(&SumoHSM_PreStrategyAuto_XP1)
 };
 
 /* submachine ${AOs::SumoHSM::SM::LineFrontSubmachine} */
@@ -1616,6 +1620,18 @@ static QMState const SumoHSM_TestStartModule_led_black_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
+
+/* submachine ${AOs::SumoHSM::SM::OdometryPreStrategy} */
+static QState SumoHSM_OdometryPreStrategy  (SumoHSM * const me, QEvt const * const e);
+static QState SumoHSM_OdometryPreStrategy_e(SumoHSM * const me);
+static QState SumoHSM_OdometryPreStrategy_x(SumoHSM * const me);
+static QMState const SumoHSM_OdometryPreStrategy_s = {
+    QM_STATE_NULL, /* superstate unused */
+    Q_STATE_CAST(&SumoHSM_OdometryPreStrategy),
+    Q_ACTION_CAST(&SumoHSM_OdometryPreStrategy_e),
+    Q_ACTION_CAST(&SumoHSM_OdometryPreStrategy_x),
+    Q_ACTION_NULL  /* no initial tran. */
+};
 /*$enddecl${AOs::SumoHSM} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 
@@ -1737,7 +1753,6 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_CalibWait);
     QS_FUN_DICTIONARY(&SumoHSM_CalibFrontAt100);
     QS_FUN_DICTIONARY(&SumoHSM_RC_0_1);
-    QS_FUN_DICTIONARY(&SumoHSM_pre_strategy);
     QS_FUN_DICTIONARY(&SumoHSM_AutoEnd);
     QS_FUN_DICTIONARY(&SumoHSM_pre_strategy_rc);
     QS_FUN_DICTIONARY(&SumoHSM_ble1);
@@ -1768,6 +1783,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_LineBackCalibStuck);
     QS_FUN_DICTIONARY(&SumoHSM_CalibFrontAt100_stop);
     QS_FUN_DICTIONARY(&SumoHSM_state1);
+    QS_FUN_DICTIONARY(&SumoHSM_PreStrategyAuto);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnLeft);
@@ -1877,6 +1893,7 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_LineBackSubmachine);
     QS_FUN_DICTIONARY(&SumoHSM_StepsStrategy);
     QS_FUN_DICTIONARY(&SumoHSM_TestStartModule);
+    QS_FUN_DICTIONARY(&SumoHSM_OdometryPreStrategy);
 
     return QM_TRAN_INIT(&tatbl_);
 }
@@ -2526,336 +2543,6 @@ static QState SumoHSM_AutoWait_x(SumoHSM * const me) {
 static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /*${AOs::SumoHSM::SM::AutoWait::START} */
-        case START_SIG: {
-            driving_enable();
-            radio_service_disable();
-            BSP_eeprom_write(EE_CURRENT_STATE_ADDR, AUTO_RUNNING);
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_0]} */
-            if (parameters.pre_strategy == 0) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP0_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_1]} */
-            else if (parameters.pre_strategy == 1) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP1_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_2]} */
-            else if (parameters.pre_strategy == 2) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP2_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_3]} */
-            else if (parameters.pre_strategy == 3) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP3_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_4]} */
-            else if (parameters.pre_strategy == 4) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP4_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_5]} */
-            else if (parameters.pre_strategy == 5) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP5_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_6]} */
-            else if (parameters.pre_strategy == 6) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP6_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_7]} */
-            else if (parameters.pre_strategy == 7) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP7_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_8]} */
-            else if (parameters.pre_strategy == 8) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP8_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_9]} */
-            else if (parameters.pre_strategy == 9) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP9_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_10]} */
-            else if (parameters.pre_strategy == 10) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP10_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[ps_11]} */
-            else if (parameters.pre_strategy == 11) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP11_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[12]} */
-            else if (parameters.pre_strategy == 12) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP12_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[13]} */
-            else if (parameters.pre_strategy == 13) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP13_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[14]} */
-            else if (parameters.pre_strategy == 14) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP14_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[15]} */
-            else if (parameters.pre_strategy == 15) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP15_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[16]} */
-            else if (parameters.pre_strategy == 16) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP16_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[17]} */
-            else if (parameters.pre_strategy == 17) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP17_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[18]} */
-            else if (parameters.pre_strategy == 18) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP18_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            /*${AOs::SumoHSM::SM::AutoWait::START::[19]} */
-            else if (parameters.pre_strategy == 19) {
-                static struct {
-                    QMState const *target;
-                    QActionHandler act[4];
-                } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
-                    {
-                        Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP19_ep), /* EP */
-                        Q_ACTION_NULL /* zero terminator */
-                    }
-                };
-                status_ = QM_TRAN_EP(&tatbl_);
-            }
-            else {
-                status_ = QM_UNHANDLED();
-            }
-            break;
-        }
         /*${AOs::SumoHSM::SM::AutoWait::CHANGE_STATE_EVT} */
         case CHANGE_STATE_EVT_SIG: {
             static struct {
@@ -2938,20 +2625,19 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
             if (parameters.attack_when_near && (distance_is_active(DIST_SENSOR_F) || distance_is_active(DIST_SENSOR_DR) || distance_is_active(DIST_SENSOR_DL))) {
                 static struct {
                     QMState const *target;
-                    QActionHandler act[4];
+                    QActionHandler act[3];
                 } const tatbl_ = { /* tran-action table */
-                    &SumoHSM_PreStrategy_s, /* target submachine */
+                    &SumoHSM_OdometryPreStrategy_s, /* target submachine */
                     {
                         Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                        Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-                        Q_ACTION_CAST(&SumoHSM_PreStrategy_EP0_ep), /* EP */
+                        Q_ACTION_CAST(&SumoHSM_PreStrategyAuto_e), /* entry */
                         Q_ACTION_NULL /* zero terminator */
                     }
                 };
                 driving_enable();
                 radio_service_disable();
                 BSP_eeprom_write(EE_CURRENT_STATE_ADDR, AUTO_RUNNING);
-                status_ = QM_TRAN_EP(&tatbl_);
+                status_ = QM_TRAN(&tatbl_);
             }
             else {
                 status_ = QM_UNHANDLED();
@@ -2994,6 +2680,25 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
                 }
             };
             status_ = QM_TRAN_EP(&tatbl_);
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::START} */
+        case START_SIG: {
+            static struct {
+                QMState const *target;
+                QActionHandler act[3];
+            } const tatbl_ = { /* tran-action table */
+                &SumoHSM_OdometryPreStrategy_s, /* target submachine */
+                {
+                    Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
+                    Q_ACTION_CAST(&SumoHSM_PreStrategyAuto_e), /* entry */
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            driving_enable();
+            radio_service_disable();
+            BSP_eeprom_write(EE_CURRENT_STATE_ADDR, AUTO_RUNNING);
+            status_ = QM_TRAN(&tatbl_);
             break;
         }
         default: {
@@ -3409,131 +3114,6 @@ static QState SumoHSM_RC_0_1(SumoHSM * const me, QEvt const * const e) {
             break;
         }
     }
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::pre_strategy} ........................................*/
-/*${AOs::SumoHSM::SM::pre_strategy} */
-static QState SumoHSM_pre_strategy_e(SumoHSM * const me) {
-    me->sub_PreStrategy = &SumoHSM_pre_strategy_s; /* attach submachine */
-    return SumoHSM_PreStrategy_e(me); /* enter submachine */
-}
-/*${AOs::SumoHSM::SM::pre_strategy} */
-static QState SumoHSM_pre_strategy_XP1(SumoHSM * const me) {
-    QState status_;
-    /*${AOs::SumoHSM::SM::pre_strategy::XP1::[strategy_0]} */
-    if (parameters.strategy == 0) {
-        static struct {
-            QMState const *target;
-            QActionHandler act[4];
-        } const tatbl_ = { /* tran-action table */
-            &SumoHSM_StarStrategy_s, /* target submachine */
-            {
-                Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_StarAuto_e), /* entry */
-                Q_ACTION_CAST(&SumoHSM_StarStrategy_i), /* initial tran. */
-                Q_ACTION_NULL /* zero terminator */
-            }
-        };
-        status_ = QM_TRAN(&tatbl_);
-    }
-    /*${AOs::SumoHSM::SM::pre_strategy::XP1::[strategy_1]} */
-    else if (parameters.strategy == 1) {
-        static struct {
-            QMState const *target;
-            QActionHandler act[4];
-        } const tatbl_ = { /* tran-action table */
-            &SumoHSM_StepsStrategy_s, /* target submachine */
-            {
-                Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_StepsAuto_e), /* entry */
-                Q_ACTION_CAST(&SumoHSM_StepsStrategy_i), /* initial tran. */
-                Q_ACTION_NULL /* zero terminator */
-            }
-        };
-        status_ = QM_TRAN(&tatbl_);
-    }
-    /*${AOs::SumoHSM::SM::pre_strategy::XP1::[else]} */
-    else {
-        static struct {
-            QMState const *target;
-            QActionHandler act[4];
-        } const tatbl_ = { /* tran-action table */
-            &SumoHSM_StepsStrategy_s, /* target submachine */
-            {
-                Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_StepsAuto_e), /* entry */
-                Q_ACTION_CAST(&SumoHSM_StepsStrategy_i), /* initial tran. */
-                Q_ACTION_NULL /* zero terminator */
-            }
-        };
-        status_ = QM_TRAN(&tatbl_);
-    }
-    return status_;
-}
-/*${AOs::SumoHSM::SM::pre_strategy} */
-static QState SumoHSM_pre_strategy_STOP_XP(SumoHSM * const me) {
-    static struct {
-        QMState const *target;
-        QActionHandler act[3];
-    } const tatbl_ = { /* tran-action table */
-        &SumoHSM_AutoEnd_s, /* target state */
-        {
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
-            Q_ACTION_CAST(&SumoHSM_AutoEnd_e), /* entry */
-            Q_ACTION_NULL /* zero terminator */
-        }
-    };
-    (void)me; /* unused parameter */
-    return QM_TRAN(&tatbl_);
-}
-/*${AOs::SumoHSM::SM::pre_strategy} */
-static QState SumoHSM_pre_strategy_F_LINE(SumoHSM * const me) {
-    QState status_;
-    /*${AOs::SumoHSM::SM::pre_strategy::F_LINE::[strategy_0]} */
-    if (parameters.strategy == 0) {
-        static struct {
-            QMState const *target;
-            QActionHandler act[4];
-        } const tatbl_ = { /* tran-action table */
-            &SumoHSM_LineFrontSubmachine_s, /* target submachine */
-            {
-                Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_LineFStar_e), /* entry */
-                Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_i), /* initial tran. */
-                Q_ACTION_NULL /* zero terminator */
-            }
-        };
-        status_ = QM_TRAN(&tatbl_);
-    }
-    /*${AOs::SumoHSM::SM::pre_strategy::F_LINE::[else]} */
-    else {
-        static struct {
-            QMState const *target;
-            QActionHandler act[4];
-        } const tatbl_ = { /* tran-action table */
-            &SumoHSM_LineFrontSubmachine_s, /* target submachine */
-            {
-                Q_ACTION_CAST(&SumoHSM_PreStrategy_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_StepsFL_e), /* entry */
-                Q_ACTION_CAST(&SumoHSM_LineFrontSubmachine_i), /* initial tran. */
-                Q_ACTION_NULL /* zero terminator */
-            }
-        };
-        status_ = QM_TRAN(&tatbl_);
-    }
-    return status_;
-}
-/*${AOs::SumoHSM::SM::pre_strategy} */
-static QState SumoHSM_pre_strategy(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
-    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -5132,13 +4712,12 @@ static QState SumoHSM_state1_BLINK_END(SumoHSM * const me) {
 static QState SumoHSM_state1_START(SumoHSM * const me) {
     static struct {
         QMState const *target;
-        QActionHandler act[4];
+        QActionHandler act[3];
     } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_s, /* target submachine */
+        &SumoHSM_OdometryPreStrategy_s, /* target submachine */
         {
             Q_ACTION_CAST(&SumoHSM_TestStartModule_x), /* submachine exit */
-            Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_EP0_ep), /* EP */
+            Q_ACTION_CAST(&SumoHSM_PreStrategyAuto_e), /* entry */
             Q_ACTION_NULL /* zero terminator */
         }
     };
@@ -5147,6 +4726,62 @@ static QState SumoHSM_state1_START(SumoHSM * const me) {
 }
 /*${AOs::SumoHSM::SM::state1} */
 static QState SumoHSM_state1(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        default: {
+            status_ = QM_SUPER();
+            break;
+        }
+    }
+    (void)me; /* unused parameter */
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::PreStrategyAuto} .....................................*/
+/*${AOs::SumoHSM::SM::PreStrategyAuto} */
+static QState SumoHSM_PreStrategyAuto_e(SumoHSM * const me) {
+    me->sub_OdometryPreStrategy = &SumoHSM_PreStrategyAuto_s; /* attach submachine */
+    return SumoHSM_OdometryPreStrategy_e(me); /* enter submachine */
+}
+/*${AOs::SumoHSM::SM::PreStrategyAuto} */
+static QState SumoHSM_PreStrategyAuto_XP1(SumoHSM * const me) {
+    QState status_;
+    /*${AOs::SumoHSM::SM::PreStrategyAuto::XP1::[strategy==0]} */
+    if (parameters.strategy == 0) {
+        static struct {
+            QMState const *target;
+            QActionHandler act[4];
+        } const tatbl_ = { /* tran-action table */
+            &SumoHSM_StarStrategy_s, /* target submachine */
+            {
+                Q_ACTION_CAST(&SumoHSM_OdometryPreStrategy_x), /* submachine exit */
+                Q_ACTION_CAST(&SumoHSM_StarAuto_e), /* entry */
+                Q_ACTION_CAST(&SumoHSM_StarStrategy_i), /* initial tran. */
+                Q_ACTION_NULL /* zero terminator */
+            }
+        };
+        status_ = QM_TRAN(&tatbl_);
+    }
+    /*${AOs::SumoHSM::SM::PreStrategyAuto::XP1::[else]} */
+    else {
+        static struct {
+            QMState const *target;
+            QActionHandler act[4];
+        } const tatbl_ = { /* tran-action table */
+            &SumoHSM_StepsStrategy_s, /* target submachine */
+            {
+                Q_ACTION_CAST(&SumoHSM_OdometryPreStrategy_x), /* submachine exit */
+                Q_ACTION_CAST(&SumoHSM_StepsAuto_e), /* entry */
+                Q_ACTION_CAST(&SumoHSM_StepsStrategy_i), /* initial tran. */
+                Q_ACTION_NULL /* zero terminator */
+            }
+        };
+        status_ = QM_TRAN(&tatbl_);
+    }
+    return status_;
+}
+/*${AOs::SumoHSM::SM::PreStrategyAuto} */
+static QState SumoHSM_PreStrategyAuto(SumoHSM * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
         default: {
@@ -10113,6 +9748,66 @@ static QState SumoHSM_TestStartModule_led_black(SumoHSM * const me, QEvt const *
         }
         default: {
             status_ = QM_SUPER();
+            break;
+        }
+    }
+    return status_;
+}
+
+/*${AOs::SumoHSM::SM::OdometryPreStrategy} .................................*/
+/*${AOs::SumoHSM::SM::OdometryPreStrategy} */
+static QState SumoHSM_OdometryPreStrategy_e(SumoHSM * const me) {
+    me->movement_counter = 0;
+    control_reset();
+
+    strategy_movements_t first_movement = pre_strategies[PRE_STRATEGY_45_LEFT][me->movement_counter];
+    navigation_reset(first_movement);
+    navigation_step();
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 20);
+    return QM_ENTRY(&SumoHSM_OdometryPreStrategy_s);
+}
+/*${AOs::SumoHSM::SM::OdometryPreStrategy} */
+static QState SumoHSM_OdometryPreStrategy_x(SumoHSM * const me) {
+    return QM_SM_EXIT(&me->sub_OdometryPreStrategy->super);
+}
+/*${AOs::SumoHSM::SM::OdometryPreStrategy} */
+static QState SumoHSM_OdometryPreStrategy(SumoHSM * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /*${AOs::SumoHSM::SM::OdometryPreStrat~::TIMEOUT} */
+        case TIMEOUT_SIG: {
+
+
+
+            if(navigation_step()){
+                me->movement_counter++;
+                bool is_finished = (me->movement_counter >= pre_strategy_lenghts[PRE_STRATEGY_45_LEFT]);
+                if (is_finished){
+                    QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 20);
+                } else {
+                    strategy_movements_t strategy_movement = pre_strategies[PRE_STRATEGY_45_LEFT][me->movement_counter];
+                    navigation_reset(strategy_movement);
+                    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 20);
+                }
+            } else {
+                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 20);
+            }
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::OdometryPreStrat~::TIMEOUT_2} */
+        case TIMEOUT_2_SIG: {
+            static QMTranActTable const tatbl_ = { /* tran-action table */
+                &SumoHSM_OdometryPreStrategy_s, /* target submachine */
+                {
+                    Q_ACTION_NULL /* zero terminator */
+                }
+            };
+            status_ = QM_TRAN_XP(me->sub_OdometryPreStrategy->XP1, &tatbl_);
+            break;
+        }
+        default: {
+            status_ = QM_SUPER_SUB(&me->sub_OdometryPreStrategy->super);
             break;
         }
     }
