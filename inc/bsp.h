@@ -40,6 +40,7 @@
 
 #include "qpc.h"
 #include "signals.h"
+#include <stdint.h>
 
 /* a very simple Board Support Package (BSP) -------------------------------*/
 enum {
@@ -55,6 +56,7 @@ typedef enum {
 
 void BSP_init(void);
 uint32_t BSP_GetTick(void);
+void delay_ms(uint32_t delay);
 
 /* active object(s) used in this application -------------------------------*/
 extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */

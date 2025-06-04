@@ -195,6 +195,13 @@ me-&gt;buzzerCount += 1;</action>
        <action box="0,-2,32,2"/>
       </tran_glyph>
      </tran>
+     <!--${AOs::SumoHSM::SM::Idle::START}-->
+     <tran trig="START">
+      <action>logger_print();</action>
+      <tran_glyph conn="41,30,3,-1,12">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
      <state_glyph node="41,1,43,43">
       <entry box="1,2,24,6"/>
       <exit box="1,8,38,4"/>
@@ -4072,6 +4079,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 100);</entry>
     <submachine name="OdometryPreStrategy">
      <entry>me-&gt;movement_counter = 0;
 control_reset();
+logger_reset();
 
 strategy_movements_t first_movement = pre_strategies[PRE_STRATEGY_45_LEFT][me-&gt;movement_counter];
 navigation_reset(first_movement);
@@ -4085,10 +4093,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 20);</entry>
      </xp>
      <!--${AOs::SumoHSM::SM::OdometryPreStrat~::TIMEOUT}-->
      <tran trig="TIMEOUT">
-      <action>
-
-
-if(navigation_step()){
+      <action>if(navigation_step()){
     me-&gt;movement_counter++;
     bool is_finished = (me-&gt;movement_counter &gt;= pre_strategy_lenghts[PRE_STRATEGY_45_LEFT]);
     if (is_finished){
@@ -4100,7 +4105,9 @@ if(navigation_step()){
     }
 } else {
     QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 20);
-}</action>
+}
+
+logger_update();</action>
       <tran_glyph conn="2,21,3,-1,19">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -4144,6 +4151,7 @@ if(navigation_step()){
 #include &quot;utils.h&quot;
 #include &quot;navigation.h&quot;
 #include &quot;pre_strategies.h&quot;
+#include &quot;logger.h&quot;
 
 #define CALIB_ANGLE_MULT    2.5
 
@@ -4204,6 +4212,7 @@ void sumoHSM_update_qs_dict(){
 
 #include &quot;qpc.h&quot;
 #include &quot;signals.h&quot;
+#include &lt;stdint.h&gt;
 
 /* a very simple Board Support Package (BSP) -------------------------------*/
 enum { 
@@ -4219,6 +4228,7 @@ typedef enum {
 
 void BSP_init(void);
 uint32_t BSP_GetTick(void);
+void delay_ms(uint32_t delay);
 
 /* active object(s) used in this application -------------------------------*/
 extern QActive * const AO_SumoHSM; /* opaque pointer to the SumoHSM AO */

@@ -178,6 +178,19 @@ This will generate a compiled .elf and .hex file on "build" folder. This code ca
 $ make flash
 ```
 
+#### Printf
+To see printf output we can use opencd with an STLink connected to the SWO pin:
+
+```bash
+openocd -f interface/stlink.cfg -f target/stm32f1x.cfg  -c "stm32f1x.tpiu configure -protocol uart"  -c "stm32f1x.tpiu configure -traceclk 72000000" -c "stm32f1x.tpiu configure -output :22888"  -c "stm32f1x.tpiu enable" -c "itm port 0 on"
+```
+
+Then, in another terminal:
+
+```bash
+nc localhost 22888
+```
+
 #### Usage
 Same as on the simulator but now with real hardware
 

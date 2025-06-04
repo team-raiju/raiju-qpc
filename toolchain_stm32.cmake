@@ -66,6 +66,7 @@ set(CFLAGS
 set(LINKER_FLAGS     
     -T${LINKER_SCRIPT_SRC}
     ${MCU_PARAMETERS}
+    -u _printf_float
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
     --specs=nosys.specs
     -static 

@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdio.h>
 #include "bsp_led.h"
 #include "main.h"
 #include "gpio.h"

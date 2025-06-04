@@ -180,3 +180,27 @@ bool navigation_step()
 
     return is_finished;
 }
+
+float get_target_linear_speed_m_s(){
+    return target_linear_speed_m_s;
+}
+
+float get_target_angular_speed_rad_s(){
+    return target_angular_speed_rad_s;
+}
+
+int16_t get_pwm_duty_l() {
+    return pwm_duty_l;
+}
+
+int16_t get_pwm_duty_r() {
+    return pwm_duty_r;
+}
+
+float get_integral_vel() {
+    return linear_vel_pid.integral;
+}
+
+float get_integral_angular() {
+    return angular_vel_pid.integral;
+}

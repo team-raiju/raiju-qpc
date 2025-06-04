@@ -54,6 +54,7 @@
 #include "utils.h"
 #include "navigation.h"
 #include "pre_strategies.h"
+#include "logger.h"
 
 #define CALIB_ANGLE_MULT    2.5
 
@@ -2014,11 +2015,18 @@ static QState SumoHSM_Idle(SumoHSM * const me, QEvt const * const e) {
             status_ = QM_HANDLED();
             break;
         }
+        /*${AOs::SumoHSM::SM::Idle::START} */
+        case START_SIG: {
+            logger_print();
+            status_ = QM_HANDLED();
+            break;
+        }
         default: {
             status_ = QM_SUPER();
             break;
         }
     }
+    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -9759,6 +9767,7 @@ static QState SumoHSM_TestStartModule_led_black(SumoHSM * const me, QEvt const *
 static QState SumoHSM_OdometryPreStrategy_e(SumoHSM * const me) {
     me->movement_counter = 0;
     control_reset();
+    logger_reset();
 
     strategy_movements_t first_movement = pre_strategies[PRE_STRATEGY_45_LEFT][me->movement_counter];
     navigation_reset(first_movement);
@@ -9776,9 +9785,6 @@ static QState SumoHSM_OdometryPreStrategy(SumoHSM * const me, QEvt const * const
     switch (e->sig) {
         /*${AOs::SumoHSM::SM::OdometryPreStrat~::TIMEOUT} */
         case TIMEOUT_SIG: {
-
-
-
             if(navigation_step()){
                 me->movement_counter++;
                 bool is_finished = (me->movement_counter >= pre_strategy_lenghts[PRE_STRATEGY_45_LEFT]);
@@ -9792,6 +9798,8 @@ static QState SumoHSM_OdometryPreStrategy(SumoHSM * const me, QEvt const * const
             } else {
                 QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 20);
             }
+
+            logger_update();
             status_ = QM_HANDLED();
             break;
         }

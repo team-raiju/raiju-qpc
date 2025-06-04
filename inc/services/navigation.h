@@ -1,6 +1,8 @@
 #ifndef NAVIGATION_H
 #define NAVIGATION_H
 
+#include <stdbool.h>
+#include <stdint.h>
 
 typedef enum {
     FORWARD,
@@ -29,5 +31,15 @@ void control_update();
 void navigation_reset(strategy_movements_t strategy_movement);
 bool navigation_step();
 
+
+
+float get_target_linear_speed_m_s();
+float get_target_angular_speed_rad_s();
+
+int16_t get_pwm_duty_l();
+int16_t get_pwm_duty_r();
+
+float get_integral_vel();
+float get_integral_angular();
 
 #endif /* NAVIGATION_H */

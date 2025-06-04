@@ -1,4 +1,5 @@
 #include <stdlib.h> /* for exit() */
+#include <stdio.h>
 
 #include "qpc.h" /* QP/C framework API */
 #include "bsp.h" /* Board Support Package interface */
@@ -13,6 +14,15 @@
 #include "bsp_i2c.h"
 
 __weak void SystemClock_Config(void);
+
+int _write(int file, char *ptr, int len)
+{
+  /* Implement your write code here, this is used by puts and printf for example */
+  int i=0;
+  for(i=0 ; i<len ; i++)
+    ITM_SendChar((*ptr++));
+  return len;
+}
 
 void SysTick_Handler(void)
 { /* system clock tick ISR */
@@ -41,6 +51,10 @@ void BSP_init(void)
     HAL_Delay(20);
 
     BSP_eeprom_init();
+}
+
+void delay_ms(uint32_t delay){
+    HAL_Delay(delay);
 }
 
 /* callback functions needed by the framework ------------------------------*/

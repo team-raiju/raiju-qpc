@@ -13,9 +13,9 @@
   <item id=".::src::sumo_hsm.c">0,407,596,300</item>
   <item id="AOs::SumoHSM::SM">0,48,1041,659</item>
   <item id="AOs::SumoHSM::SM::OdometryPreStrategy">0,0,892,674,*</item>
-  <item id="AOs::SumoHSM::SM::StepsStrategy">0,0,640,480</item>
-  <item id="AOs::SumoHSM::SM::LineFrontSubmachine">252,194,640,480</item>
-  <item id="AOs::SumoHSM::SM::PreStrategy">0,0,892,674</item>
+  <item id="AOs::SumoHSM::SM::StepsStrategy">252,0,640,480</item>
+  <item id="AOs::SumoHSM::SM::LineFrontSubmachine">0,0,640,480</item>
+  <item id="AOs::SumoHSM::SM::PreStrategy">0,33,892,674</item>
  </group>
  <group name="search">
   <item name="options">2032128</item>
