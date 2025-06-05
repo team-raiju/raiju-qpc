@@ -133,8 +133,8 @@ void logger_save_to_memory() {
 }
 
 void logger_print() {
-    printf("t;Vel;TargetVel;AngVel;TargetAngrVel;angle;PWM_L;PWM_R,Bat,IntVel,IntW\r\n");
-    delay_ms(5);
+    printf("t;Vel;TargetVel;AngVel;TargetAngVel;Angle;PWM_L;PWM_R,Bat,IntVel,IntW\r\n");
+    delay_ms(100);
 
     uint32_t saved_size = addr_offset;
     // if (bsp::eeprom::read_u32(bsp::eeprom::ADDR_LOGGER_SIZE, &saved_size) != bsp::eeprom::OK) {
@@ -166,6 +166,6 @@ void logger_print() {
             (read_logdata.fields.integral_vel / paramInfoArray[8].scale) - abs(paramInfoArray[8].min_param_value),
             (read_logdata.fields.integral_angular / paramInfoArray[9].scale) - abs(paramInfoArray[9].min_param_value));
 
-        delay_ms(3);
+        delay_ms(25);
     }
 }

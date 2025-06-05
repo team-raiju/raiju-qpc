@@ -12,6 +12,11 @@
 #include "buzzer_service.h"
 #include "bsp_eeprom.h"
 #include "bsp_i2c.h"
+#include "bsp_gpio_mapping.h"
+#include "bsp_gpio.h"
+
+static uint32_t ms_counter = 0;
+static uint32_t BSP_GetTick_us(void);
 
 __weak void SystemClock_Config(void);
 
@@ -46,6 +51,9 @@ void BSP_init(void)
     MX_GPIO_Init();
     MX_DMA_Init();
 
+    MX_TIM6_Init();
+    HAL_TIM_Base_Start_IT(&htim6);
+
     bsp_i2c_init(IO_I2C_1);
 
     HAL_Delay(20);
@@ -53,8 +61,35 @@ void BSP_init(void)
     BSP_eeprom_init();
 }
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    // Buzzer interrupt
+    QK_ISR_ENTRY();
+    if (htim->Instance == TIM3) {
+        BSP_GPIO_Toggle_Pin(IO_PORTB, IO_PIN_14);
+    }
+
+    // 0.1ms Timer
+    if (htim->Instance == TIM6) {
+        ms_counter += 6554;
+    }
+
+    QK_ISR_EXIT();
+}
+
 void delay_ms(uint32_t delay){
-    HAL_Delay(delay);
+    uint32_t delay_us = 1000 * delay;
+
+    uint32_t start = BSP_GetTick_us();
+    volatile uint32_t wait = delay_us;
+
+    if (wait < HAL_MAX_DELAY) {
+        wait += 1;
+    }
+
+    while ((BSP_GetTick_us() - start) < wait) {
+        __NOP();
+    }
 }
 
 /* callback functions needed by the framework ------------------------------*/
@@ -113,4 +148,9 @@ Q_NORETURN Q_onAssert(char const *const module, int_t const loc)
 uint32_t BSP_GetTick(void)
 {
     return HAL_GetTick();
+}
+
+static uint32_t BSP_GetTick_us(void)
+{
+    return (ms_counter * 1000) + (__HAL_TIM_GET_COUNTER(&htim6) * 100);
 }

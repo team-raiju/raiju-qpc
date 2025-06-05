@@ -65,13 +65,4 @@ void BSP_buzzerSetFrequency(uint16_t frequency_hz)
     __HAL_TIM_SET_PRESCALER(&htim3, preescaler_value);
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    QK_ISR_ENTRY();
-    if (htim->Instance == TIM3) {
-        BSP_GPIO_Toggle_Pin(IO_PORTB, IO_PIN_14);
-    }
-    QK_ISR_EXIT();
-}
-
 #endif
