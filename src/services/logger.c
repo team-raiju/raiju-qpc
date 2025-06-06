@@ -76,7 +76,7 @@ void logger_update() {
     }
 
 
-    float param_velocity_ms = 0;
+    float param_velocity_ms = 0 + abs(paramInfoArray[0].min_param_value);;
     param_velocity_ms *= paramInfoArray[0].scale;
 
     float param_target_velocity_ms = get_target_linear_speed_m_s() + abs(paramInfoArray[1].min_param_value);

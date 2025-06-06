@@ -90,6 +90,11 @@ uint32_t BSP_GetTick()
     return ticks;
 }
 
+void delay_ms(uint32_t delay)
+{
+    
+}
+
 /* callback functions needed by the framework ------------------------------*/
 void QF_onStartup(void)
 {

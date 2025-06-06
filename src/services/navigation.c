@@ -10,6 +10,7 @@
 #include "bsp.h"
 #include "pid.h"
 #include "navigation.h"
+#include "parameters.h"
 
 #define MOTOR_COUNTER_PERIOD_MAX 100
 #define CONTROL_FREQUENCY_HZ     1000.0f
@@ -30,10 +31,10 @@ static float target_angular_speed_rad_s;
 static int16_t pwm_duty_l;
 static int16_t pwm_duty_r;
 
-void control_reset()
+void control_reset(sumo_parameters_t params)
 {
-    PID_init(&angular_vel_pid, 10.0, 0.2, 0.0, 200.0);
-    PID_init(&linear_vel_pid, 10.0, 0.2, 0.0, 200.0);
+    PID_init(&angular_vel_pid, params.kp, params.ki,  params.kd, 200.0);
+    PID_init(&linear_vel_pid, params.kp, params.ki,  params.kd, 200.0);
 }
 
 void control_update()

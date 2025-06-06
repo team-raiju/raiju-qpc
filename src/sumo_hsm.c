@@ -9766,7 +9766,7 @@ static QState SumoHSM_TestStartModule_led_black(SumoHSM * const me, QEvt const *
 /*${AOs::SumoHSM::SM::OdometryPreStrategy} */
 static QState SumoHSM_OdometryPreStrategy_e(SumoHSM * const me) {
     me->movement_counter = 0;
-    control_reset();
+    control_reset(parameters);
     logger_reset();
 
     strategy_movements_t first_movement = pre_strategies[PRE_STRATEGY_45_LEFT][me->movement_counter];

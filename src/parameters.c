@@ -83,7 +83,15 @@ typedef union {
         uint16_t is_stucked_timeout_ms;
 
         uint8_t attack_when_near;
-        uint8_t empty[9];
+
+        uint16_t kp;
+        uint16_t kd;
+        uint16_t ki;
+
+        uint8_t near_angle_th;
+        uint8_t inclinated_th;
+
+        uint8_t empty[1];
     } __attribute__((packed, scalar_storage_order("big-endian")));
 
 } ble_transmit_packet_1_t;
@@ -169,6 +177,11 @@ static sumo_parameters_t init_parameters_default = {
     .time_ms_to_cross_at_max_vel = 210,
     .is_stucked_timeout_ms = 1800,
     .attack_when_near = 0,
+    .kp = 0,
+    .kd = 0,
+    .ki = 0,
+    .near_angle_th = 0,
+    .inclinated_th = 10,
     .current_state = STATE_IDLE,
 };
 
@@ -230,6 +243,13 @@ void parameters_init(sumo_parameters_t *params)
 
     read_and_update_parameter_16_bit(TIMEOUT_IS_STUCKED_ADDR, &temp_params.is_stucked_timeout_ms);
 
+    read_and_update_parameter_16_bit(KP, &temp_params.kp);
+    read_and_update_parameter_16_bit(KD, &temp_params.kd);
+    read_and_update_parameter_16_bit(KI, &temp_params.ki);
+
+    read_and_update_parameter_8_bit(NEAR_ANGLE_TH, &temp_params.near_angle_th);
+    read_and_update_parameter_8_bit(INCLINATED_TH, &temp_params.inclinated_th);
+
     read_and_update_parameter_8_bit(EE_CURRENT_STATE_ADDR, &temp_params.current_state);
 
     *params = temp_params;
@@ -271,6 +291,11 @@ void parameters_report(sumo_parameters_t params, uint8_t config_num)
         packet_1.time_ms_to_cross_at_max_vel = params.time_ms_to_cross_at_max_vel;
         packet_1.is_stucked_timeout_ms = params.is_stucked_timeout_ms;
         packet_1.attack_when_near = params.attack_when_near;
+        packet_1.kp = params.kp;
+        packet_1.kd = params.kd;
+        packet_1.ki = params.ki;
+        packet_1.near_angle_th = params.near_angle_th;
+        packet_1.inclinated_th = params.inclinated_th;
         memcpy(buffer, packet_1._raw, BLE_PACKET_TRANSMIT_SIZE);
         break;
     }

@@ -4078,7 +4078,7 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 100);</entry>
     <!--${AOs::SumoHSM::SM::OdometryPreStrategy}-->
     <submachine name="OdometryPreStrategy">
      <entry>me-&gt;movement_counter = 0;
-control_reset();
+control_reset(parameters);
 logger_reset();
 
 strategy_movements_t first_movement = pre_strategies[PRE_STRATEGY_45_LEFT][me-&gt;movement_counter];

@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "parameters.h"
 
 typedef enum {
     FORWARD,
@@ -26,11 +27,10 @@ typedef struct strategy_movements {
     uint8_t lenght_cm;
 } strategy_movements_t;
 
-void control_reset();
+void control_reset(sumo_parameters_t params);
 void control_update();
 void navigation_reset(strategy_movements_t strategy_movement);
 bool navigation_step();
-
 
 
 float get_target_linear_speed_m_s();

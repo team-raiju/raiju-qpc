@@ -34,6 +34,13 @@ typedef struct sumo_parameters {
 
     uint8_t attack_when_near; /* Bool indicating if the robot must start auto when seeing near */
 
+    uint16_t kp;
+    uint16_t kd;
+    uint16_t ki;
+
+    uint8_t near_angle_th;
+    uint8_t inclinated_th;
+
     uint8_t current_state;
 
 } sumo_parameters_t;
@@ -73,6 +80,11 @@ typedef enum {
     BLE_DATA_HDR_IS_STUCKED_TIMEOUT,
     BLE_DATA_HDR_ATTACK_WHEN_NEAR,
     BLE_DATA_HDR_STAR_FULL_SPEED_TIME_MS,
+    BLE_DATA_HDR_KP,
+    BLE_DATA_HDR_KD,
+    BLE_DATA_HDR_KI,
+    BLE_DATA_HDR_NEAR_ANGLE_TH,
+    BLE_DATA_HDR_INCLINATED_TH,
     BLE_DATA_MAX_HDR
 } ble_data_header_t;
 

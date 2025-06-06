@@ -35,6 +35,13 @@ typedef enum eeprom_addresses {
 
     STAR_FULL_SPEED_TIME_MS_ADDR,
 
+    KP,
+    KD,
+    KI,
+
+    NEAR_ANGLE_TH,
+    INCLINATED_TH,
+
     EE_CURRENT_STATE_ADDR,
 
 } eeprom_addresses_t;
