@@ -199,9 +199,9 @@ int16_t get_pwm_duty_r() {
 }
 
 float get_integral_vel() {
-    return linear_vel_pid.integral;
+    return PID_get_integral(&linear_vel_pid);
 }
 
 float get_integral_angular() {
-    return angular_vel_pid.integral;
+    return PID_get_integral(&angular_vel_pid);
 }
