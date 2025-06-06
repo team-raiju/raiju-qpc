@@ -11,14 +11,14 @@ typedef enum {
 
 strategy_movements_t pre_strategy_45_left[] = {
     {TURN_LEFT_45_STATIC, 1},
-    {FORWARD, 45},
-    {TURN_RIGHT_45_STATIC,1}
+    // {FORWARD, 45},
+    // {TURN_RIGHT_45_STATIC,1}
 };
 
 strategy_movements_t pre_strategy_45_right[] = {
     {TURN_RIGHT_45_STATIC, 1},
-    {FORWARD, 45},
-    {TURN_LEFT_45_STATIC,1}
+    // {FORWARD, 45},
+    // {TURN_LEFT_45_STATIC,1}
 };
 
 strategy_movements_t* pre_strategies[] = {

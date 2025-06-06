@@ -314,8 +314,10 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
     switch (e->sig) {
     case Q_ENTRY_SIG: {
         imu_sensor_init();
+        // if (ret == 0 ) {
         imu_init_motion_gc();
         QTimeEvt_armX(&me->timeEvt, 500 * BSP_TICKS_PER_MILISSEC, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
+        // }
         status_ = Q_HANDLED();
         break;
     }

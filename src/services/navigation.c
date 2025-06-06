@@ -33,8 +33,8 @@ static int16_t pwm_duty_r;
 
 void control_reset(sumo_parameters_t params)
 {
-    PID_init(&angular_vel_pid, params.kp, params.ki,  params.kd, 200.0);
-    PID_init(&linear_vel_pid, params.kp, params.ki,  params.kd, 200.0);
+    PID_init(&angular_vel_pid, params.kp / 10000.0, params.ki / 10000.0,  params.kd / 10000.0, 200.0);
+    PID_init(&linear_vel_pid, 0, 0,  0, 200.0);
 }
 
 void control_update()
@@ -142,12 +142,12 @@ bool navigation_step()
 
             target_linear_speed_m_s = 0.0f;
 
-            float angular_acceleration = 100.00;
-            float angular_speed = 5.5850;
+            float angular_acceleration = 174.53;
+            float angular_speed = 13.08;
         
-            uint16_t elapsed_t_accel = 50;
-            uint16_t elapsed_t_max_ang_vel = elapsed_t_accel + 100;
-            uint16_t elapsed_t_decel = elapsed_t_max_ang_vel + 50;
+            uint16_t elapsed_t_accel = 75;
+            uint16_t elapsed_t_max_ang_vel = elapsed_t_accel + 165;
+            uint16_t elapsed_t_decel = elapsed_t_max_ang_vel + 75;
         
             int turn_sign = 1;
         

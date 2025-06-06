@@ -870,8 +870,8 @@ QTimeEvt_rearm(&amp;me-&gt;buzzerStopTimer, BSP_TICKS_PER_MILISSEC * 400);
 start_module_disable();
 BSP_eeprom_write(EE_CURRENT_STATE_ADDR, STATE_IDLE);</entry>
      <!--${AOs::SumoHSM::SM::AutoEnd::CHANGE_STATE_EVT}-->
-     <tran trig="CHANGE_STATE_EVT" target="../../3">
-      <tran_glyph conn="6,241,3,3,-4,-144,33">
+     <tran trig="CHANGE_STATE_EVT" target="../../1">
+      <tran_glyph conn="6,241,3,3,-4,-216,39">
        <action box="1,-1,23,2"/>
       </tran_glyph>
      </tran>
@@ -1533,22 +1533,8 @@ drive(0, 0);</entry>
     <!--${AOs::SumoHSM::SM::PreStrategyAuto}-->
     <smstate name="PreStrategyAuto" submachine="../46">
      <!--${AOs::SumoHSM::SM::PreStrategyAuto::XP1}-->
-     <xpseg xpref="../../46/0">
-      <!--${AOs::SumoHSM::SM::PreStrategyAuto::XP1::[strategy==0]}-->
-      <choice target="../../../21">
-       <guard brief="strategy == 0">parameters.strategy == 0</guard>
-       <choice_glyph conn="47,128,5,0,-15,6">
-        <action box="-15,-3,12,2"/>
-       </choice_glyph>
-      </choice>
-      <!--${AOs::SumoHSM::SM::PreStrategyAuto::XP1::[else]}-->
-      <choice target="../../../24">
-       <guard brief="else">else</guard>
-       <choice_glyph conn="47,128,5,0,19,6">
-        <action box="3,-3,6,2"/>
-       </choice_glyph>
-      </choice>
-      <xpseg_glyph conn="47,124,2,-1,4">
+     <xpseg xpref="../../46/0" target="../../8">
+      <xpseg_glyph conn="47,124,2,0,6,55,103">
        <action box="1,0,10,2"/>
       </xpseg_glyph>
      </xpseg>
@@ -4084,7 +4070,7 @@ logger_reset();
 strategy_movements_t first_movement = pre_strategies[PRE_STRATEGY_45_LEFT][me-&gt;movement_counter];
 navigation_reset(first_movement);
 navigation_step();
-QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 20);</entry>
+QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 1);</entry>
      <!--${AOs::SumoHSM::SM::OdometryPreStrat~::XP-XP1}-->
      <xp name="XP1">
       <xp_glyph point="24,43,2">
@@ -4097,14 +4083,14 @@ QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 20);</entry>
     me-&gt;movement_counter++;
     bool is_finished = (me-&gt;movement_counter &gt;= pre_strategy_lenghts[PRE_STRATEGY_45_LEFT]);
     if (is_finished){
-        QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 20);
+        QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, BSP_TICKS_PER_MILISSEC * 1);
     } else {
         strategy_movements_t strategy_movement = pre_strategies[PRE_STRATEGY_45_LEFT][me-&gt;movement_counter];
         navigation_reset(strategy_movement);
-        QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 20);
+        QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 1);
     }
 } else {
-    QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 20);
+    QTimeEvt_rearm(&amp;me-&gt;timeEvt, BSP_TICKS_PER_MILISSEC * 1);
 }
 
 logger_update();</action>

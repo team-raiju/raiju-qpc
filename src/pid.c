@@ -46,5 +46,5 @@ float PID_get_integral(PID_controller *pid)
     if (!pid) {
         return 0.0f;
     }
-    return pid->integral;
+    return pid->integral * pid->ki;
 }

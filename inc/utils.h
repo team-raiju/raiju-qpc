@@ -17,7 +17,7 @@
  * @brief Returns x absolute value.
  */
 #ifndef abs
-#define abs(x) ((x) > 0 ? (x) : (-x))
+#define abs(x) ((x) > 0 ? (x) : (-(x)))
 #endif
 /**
  * @brief Returns maximum value between x and y.

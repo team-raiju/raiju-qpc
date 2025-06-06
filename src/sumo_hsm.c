@@ -3149,9 +3149,9 @@ static QState SumoHSM_AutoEnd(SumoHSM * const me, QEvt const * const e) {
                 QMState const *target;
                 QActionHandler act[2];
             } const tatbl_ = { /* tran-action table */
-                &SumoHSM_AutoWait_s, /* target state */
+                &SumoHSM_Idle_s, /* target state */
                 {
-                    Q_ACTION_CAST(&SumoHSM_AutoWait_e), /* entry */
+                    Q_ACTION_CAST(&SumoHSM_Idle_e), /* entry */
                     Q_ACTION_NULL /* zero terminator */
                 }
             };
@@ -4753,40 +4753,19 @@ static QState SumoHSM_PreStrategyAuto_e(SumoHSM * const me) {
 }
 /*${AOs::SumoHSM::SM::PreStrategyAuto} */
 static QState SumoHSM_PreStrategyAuto_XP1(SumoHSM * const me) {
-    QState status_;
-    /*${AOs::SumoHSM::SM::PreStrategyAuto::XP1::[strategy==0]} */
-    if (parameters.strategy == 0) {
-        static struct {
-            QMState const *target;
-            QActionHandler act[4];
-        } const tatbl_ = { /* tran-action table */
-            &SumoHSM_StarStrategy_s, /* target submachine */
-            {
-                Q_ACTION_CAST(&SumoHSM_OdometryPreStrategy_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_StarAuto_e), /* entry */
-                Q_ACTION_CAST(&SumoHSM_StarStrategy_i), /* initial tran. */
-                Q_ACTION_NULL /* zero terminator */
-            }
-        };
-        status_ = QM_TRAN(&tatbl_);
-    }
-    /*${AOs::SumoHSM::SM::PreStrategyAuto::XP1::[else]} */
-    else {
-        static struct {
-            QMState const *target;
-            QActionHandler act[4];
-        } const tatbl_ = { /* tran-action table */
-            &SumoHSM_StepsStrategy_s, /* target submachine */
-            {
-                Q_ACTION_CAST(&SumoHSM_OdometryPreStrategy_x), /* submachine exit */
-                Q_ACTION_CAST(&SumoHSM_StepsAuto_e), /* entry */
-                Q_ACTION_CAST(&SumoHSM_StepsStrategy_i), /* initial tran. */
-                Q_ACTION_NULL /* zero terminator */
-            }
-        };
-        status_ = QM_TRAN(&tatbl_);
-    }
-    return status_;
+    static struct {
+        QMState const *target;
+        QActionHandler act[3];
+    } const tatbl_ = { /* tran-action table */
+        &SumoHSM_AutoEnd_s, /* target state */
+        {
+            Q_ACTION_CAST(&SumoHSM_OdometryPreStrategy_x), /* submachine exit */
+            Q_ACTION_CAST(&SumoHSM_AutoEnd_e), /* entry */
+            Q_ACTION_NULL /* zero terminator */
+        }
+    };
+    (void)me; /* unused parameter */
+    return QM_TRAN(&tatbl_);
 }
 /*${AOs::SumoHSM::SM::PreStrategyAuto} */
 static QState SumoHSM_PreStrategyAuto(SumoHSM * const me, QEvt const * const e) {
@@ -9772,7 +9751,7 @@ static QState SumoHSM_OdometryPreStrategy_e(SumoHSM * const me) {
     strategy_movements_t first_movement = pre_strategies[PRE_STRATEGY_45_LEFT][me->movement_counter];
     navigation_reset(first_movement);
     navigation_step();
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 20);
+    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 1);
     return QM_ENTRY(&SumoHSM_OdometryPreStrategy_s);
 }
 /*${AOs::SumoHSM::SM::OdometryPreStrategy} */
@@ -9789,14 +9768,14 @@ static QState SumoHSM_OdometryPreStrategy(SumoHSM * const me, QEvt const * const
                 me->movement_counter++;
                 bool is_finished = (me->movement_counter >= pre_strategy_lenghts[PRE_STRATEGY_45_LEFT]);
                 if (is_finished){
-                    QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 20);
+                    QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 1);
                 } else {
                     strategy_movements_t strategy_movement = pre_strategies[PRE_STRATEGY_45_LEFT][me->movement_counter];
                     navigation_reset(strategy_movement);
-                    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 20);
+                    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 1);
                 }
             } else {
-                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 20);
+                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 1);
             }
 
             logger_update();

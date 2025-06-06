@@ -76,34 +76,34 @@ void logger_update() {
     }
 
 
-    float param_velocity_ms = 0 + abs(paramInfoArray[0].min_param_value);;
+    float param_velocity_ms = 0 -(paramInfoArray[0].min_param_value);
     param_velocity_ms *= paramInfoArray[0].scale;
 
-    float param_target_velocity_ms = get_target_linear_speed_m_s() + abs(paramInfoArray[1].min_param_value);
+    float param_target_velocity_ms = get_target_linear_speed_m_s() -(paramInfoArray[1].min_param_value);
     param_target_velocity_ms *= paramInfoArray[1].scale;
 
-    float param_angular_speed_rad_s = get_imu_ang_vel_rad_s() + abs(paramInfoArray[2].min_param_value);
+    float param_angular_speed_rad_s = get_imu_ang_vel_rad_s() -(paramInfoArray[2].min_param_value);
     param_angular_speed_rad_s *= paramInfoArray[2].scale;
 
-    float param_target_rad_s = get_target_angular_speed_rad_s() + abs(paramInfoArray[3].min_param_value);
+    float param_target_rad_s = get_target_angular_speed_rad_s() -(paramInfoArray[3].min_param_value);
     param_target_rad_s *= paramInfoArray[3].scale;
 
-    float angle_rad = get_imu_angle_z() + abs(paramInfoArray[4].min_param_value);
+    float angle_rad = get_imu_angle_z() -(paramInfoArray[4].min_param_value);
     angle_rad *= paramInfoArray[4].scale;
 
-    float pwm_left = get_pwm_duty_l() + abs(paramInfoArray[5].min_param_value);
+    float pwm_left = get_pwm_duty_l() -(paramInfoArray[5].min_param_value);
     pwm_left *= paramInfoArray[5].scale;
 
-    float pwm_right = get_pwm_duty_r() + abs(paramInfoArray[6].min_param_value);
+    float pwm_right = get_pwm_duty_r() -(paramInfoArray[6].min_param_value);
     pwm_right *= paramInfoArray[6].scale;
 
-    float battery = adc_get_pwr_bat_mv() + abs(paramInfoArray[7].min_param_value);
+    float battery = adc_get_pwr_bat_mv() -(paramInfoArray[7].min_param_value);
     battery *= paramInfoArray[7].scale;
 
-    float integral_vel = get_integral_vel() + abs(paramInfoArray[8].min_param_value);
+    float integral_vel = get_integral_vel() -(paramInfoArray[8].min_param_value);
     integral_vel *= paramInfoArray[8].scale;
 
-    float integral_angular = get_integral_angular() + abs(paramInfoArray[9].min_param_value);
+    float integral_angular = get_integral_angular() -(paramInfoArray[9].min_param_value);
     integral_angular *= paramInfoArray[9].scale;
 
     logdata[log_data_idx].fields.velocity_ms = min(param_velocity_ms, (float)paramInfoArray[0].max_store_value);
@@ -115,7 +115,7 @@ void logger_update() {
     logdata[log_data_idx].fields.angle = min(angle_rad, (float)paramInfoArray[4].max_store_value);
     logdata[log_data_idx].fields.pwm_left = min(pwm_left, (float)paramInfoArray[5].max_store_value);
     logdata[log_data_idx].fields.pwm_right = min(pwm_right, (float)paramInfoArray[6].max_store_value);
-    logdata[log_data_idx].fields.battery = min(battery, (float)paramInfoArray[7].max_store_value);
+    logdata[log_data_idx].fields.battery = constrain(battery, 0, (float)paramInfoArray[7].max_store_value);
     logdata[log_data_idx].fields.integral_vel = min(integral_vel, (float)paramInfoArray[8].max_store_value);
     logdata[log_data_idx].fields.integral_angular =
         min(integral_angular, (float)paramInfoArray[9].max_store_value);
@@ -134,7 +134,7 @@ void logger_save_to_memory() {
 
 void logger_print() {
     printf("t;Vel;TargetVel;AngVel;TargetAngVel;Angle;PWM_L;PWM_R,Bat,IntVel,IntW\r\n");
-    delay_ms(100);
+    delay_ms(200);
 
     uint32_t saved_size = addr_offset;
     // if (bsp::eeprom::read_u32(bsp::eeprom::ADDR_LOGGER_SIZE, &saved_size) != bsp::eeprom::OK) {
@@ -155,17 +155,17 @@ void logger_print() {
 
         printf(
             "%d;%0.4f;%0.4f;%0.4f;%0.4f;%0.4f;%0.4f;%0.4f;%0.4f;%0.4f;%0.4f\r\n", idx,
-            (read_logdata.fields.velocity_ms / paramInfoArray[0].scale) - abs(paramInfoArray[0].min_param_value),
-            (read_logdata.fields.target_velocity_ms / paramInfoArray[1].scale) - abs(paramInfoArray[1].min_param_value),
-            (read_logdata.fields.angular_speed_rad_s / paramInfoArray[2].scale) - abs(paramInfoArray[2].min_param_value),
-            (read_logdata.fields.target_rad_s / paramInfoArray[3].scale) - abs(paramInfoArray[3].min_param_value),
-            (read_logdata.fields.angle / paramInfoArray[4].scale) - abs(paramInfoArray[4].min_param_value),
-            (read_logdata.fields.pwm_left / paramInfoArray[5].scale) - abs(paramInfoArray[5].min_param_value),
-            (read_logdata.fields.pwm_right / paramInfoArray[6].scale) - abs(paramInfoArray[6].min_param_value),
-            (read_logdata.fields.battery / paramInfoArray[7].scale) - abs(paramInfoArray[7].min_param_value),
-            (read_logdata.fields.integral_vel / paramInfoArray[8].scale) - abs(paramInfoArray[8].min_param_value),
-            (read_logdata.fields.integral_angular / paramInfoArray[9].scale) - abs(paramInfoArray[9].min_param_value));
+            (read_logdata.fields.velocity_ms / paramInfoArray[0].scale) + (paramInfoArray[0].min_param_value),
+            (read_logdata.fields.target_velocity_ms / paramInfoArray[1].scale) + (paramInfoArray[1].min_param_value),
+            (read_logdata.fields.angular_speed_rad_s / paramInfoArray[2].scale) + (paramInfoArray[2].min_param_value),
+            (read_logdata.fields.target_rad_s / paramInfoArray[3].scale) + (paramInfoArray[3].min_param_value),
+            (read_logdata.fields.angle / paramInfoArray[4].scale) + (paramInfoArray[4].min_param_value),
+            (read_logdata.fields.pwm_left / paramInfoArray[5].scale) + (paramInfoArray[5].min_param_value),
+            (read_logdata.fields.pwm_right / paramInfoArray[6].scale) + (paramInfoArray[6].min_param_value),
+            (read_logdata.fields.battery / paramInfoArray[7].scale) + (paramInfoArray[7].min_param_value),
+            (read_logdata.fields.integral_vel / paramInfoArray[8].scale) + (paramInfoArray[8].min_param_value),
+            (read_logdata.fields.integral_angular / paramInfoArray[9].scale) + (paramInfoArray[9].min_param_value));
 
-        delay_ms(25);
+        delay_ms(35);
     }
 }
