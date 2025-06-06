@@ -41,7 +41,11 @@ void control_update()
 {
     // float mean_velocity_m_s = bsp::encoders::get_filtered_velocity_m_s();
     // float linear_ratio = linear_vel_pid.calculate(target_linear_speed_m_s, mean_velocity_m_s);
-
+    if (get_imu_error()) {
+        drive(0, 0);
+        return;
+    }
+    
     float linear_ratio = 0;
     float rotation_ratio = -PID_calculate(&angular_vel_pid, target_angular_speed_rad_s, get_imu_ang_vel_rad_s());
 

@@ -12,6 +12,8 @@ float get_imu_ang_vel_rad_s();
 
 void reset_imu_angle_z();
 
+bool get_imu_error();
+
 MGC_output_t get_g_bias();
 
 #endif /* IMU_SERVICE_H */

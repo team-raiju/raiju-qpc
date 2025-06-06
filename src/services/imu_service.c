@@ -53,6 +53,10 @@ static void imu_service_ctor(void);
 static QState ImuService_Initial(imu_ao_t *const me, void const *const par);
 static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e);
 static int8_t imu_init_motion_gc(void);
+/***************************************************************************************************
+ * LOCAL VARIABLES
+ **************************************************************************************************/
+static bool imu_error = true;
 static bool enable_motion_gc = false;
 
 // Angular Velocity in rad/s
@@ -68,9 +72,6 @@ static float φ_y;
 // Vertical acceleration in m/s²
 static float a_z;
 
-/***************************************************************************************************
- * LOCAL VARIABLES
- **************************************************************************************************/
 
 imu_ao_t imu_inst;
 QActive *const imu_service_AO = &imu_inst.super;
@@ -200,13 +201,15 @@ static int imu_sensor_init()
         return -1;
     }
 
+    imu_error = false;
+
     return 0;
 }
 
 static int8_t imu_update()
 {
     // Angular Velocity in milidegrees per second
-    LSM6DSR_Axes_t mω;
+    LSM6DSR_Axes_t mω = { 0, 0, 0 };
 
     // Gravity acceleration in mm/s²
     LSM6DSR_Axes_t mg = { 0, 0, 0 };
@@ -217,11 +220,13 @@ static int8_t imu_update()
 
     if (enable_motion_gc) {
         if (LSM6DSR_ACC_GetAxes(&lsm6dsr_ctx, &mg) != LSM6DSR_OK) {
+            imu_error = true;
             return -1;
         }
     }
 
     if (LSM6DSR_GYRO_GetAxes(&lsm6dsr_ctx, &mω) != LSM6DSR_OK) {
+        imu_error = true;
         return -1;
     }
 
@@ -269,6 +274,7 @@ static int8_t imu_update()
     // QEvt evt = { .sig = IMU_UPDATED_SIG };
     // QHSM_DISPATCH(&AO_SumoHSM->super, &evt, SIMULATOR);
 
+    imu_error = false;
     return 0;
 }
 
@@ -316,7 +322,7 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
         imu_sensor_init();
         // if (ret == 0 ) {
         imu_init_motion_gc();
-        QTimeEvt_armX(&me->timeEvt, 500 * BSP_TICKS_PER_MILISSEC, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
+        QTimeEvt_rearm(&me->timeEvt, 500 * BSP_TICKS_PER_MILISSEC);
         // }
         status_ = Q_HANDLED();
         break;
@@ -324,6 +330,7 @@ static QState ImuService_Run(imu_ao_t *const me, QEvt const *const e)
 
     case IMU_POLL_SIG: {
         imu_update();
+        QTimeEvt_rearm(&me->timeEvt, IMU_POLL_PERIOD_MS * BSP_TICKS_PER_MILISSEC);
         status_ = Q_HANDLED();
         break;
     }
@@ -378,6 +385,11 @@ float get_imu_ang_vel_rad_s()
     #else
     return ω_z;
     #endif
+}
+
+bool get_imu_error()
+{
+    return imu_error;
 }
 
 MGC_output_t get_g_bias()

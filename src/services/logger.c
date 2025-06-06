@@ -39,7 +39,7 @@ static ParamInfo_t paramInfoArray[] = {
     {2048, -1000, 1000, 1.0f},  // pwm_left
     {2048, -1000, 1000, 1.0f},  // pwm_right
     {512, 35000, 51000, 0.032f},   // battery
-    {255, -100, 100, 1.274f},   // integral_vel
+    {255, -500, 500, 0.254f},   // integral_vel
     {255, -500, 500, 0.254f},   // integral_angular
 };
 
