@@ -41,9 +41,9 @@
 
 typedef enum line_position_in_adc {
     LINE_POS_FR = 5,
-    LINE_POS_FL = 2,
+    LINE_POS_FL = 1,
     LINE_POS_BR = 3,
-    LINE_POS_BL = 1,
+    LINE_POS_BL = 2,
 } line_position_in_adc_t;
 
 /***************************************************************************************************
