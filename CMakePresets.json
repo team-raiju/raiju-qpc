@@ -15,7 +15,7 @@
             "name": "STM32RFT6",
             "inherits": "default",
             "cacheVariables": {
-                "LINKER_SCRIPT_SRC": "${sourceDir}/cube/STM32F103RCT6/STM32F103RCTx_FLASH.ld",
+                "LINKER_SCRIPT_SRC": "${sourceDir}/cube/STM32F103RFT6/STM32F103RFTx_FLASH.ld",
                 "STM32_BUILD": "true",
                 "UC_NAME": "STM32RFT6",
                 "OPT_LEVEL": "-O3"
@@ -35,7 +35,7 @@
             "name": "STM32RFT6-Release",
             "inherits": "default",
             "cacheVariables": {
-                "LINKER_SCRIPT_SRC": "${sourceDir}/cube/STM32F103RCT6/STM32F103RCTx_FLASH.ld",
+                "LINKER_SCRIPT_SRC": "${sourceDir}/cube/STM32F103RFT6/STM32F103RFTx_FLASH.ld",
                 "STM32_BUILD": "true",
                 "UC_NAME": "STM32RFT6",
                 "OPT_LEVEL": "-O3",

@@ -33,7 +33,7 @@ static color_rgb_t orange = { 0x64, 0xC8, 0x00 };
 static color_rgb_t white = { 0x3F, 0x3F, 0x3F };
 static color_rgb_t black = { 0x00, 0x00, 0x00 };
 static color_rgb_t pink = { 0x1F, 0xC8, 0x64 };
-static color_rgb_t cyan = { 0xD2, 0x32, 0x12 };
+//static color_rgb_t cyan = { 0xD2, 0x32, 0x12 };
 
 /***************************************************************************************************
  * GLOBAL VARIABLES
