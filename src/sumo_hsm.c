@@ -7252,8 +7252,8 @@ static QState SumoHSM_PreStrategy_PreStrategy_DefenseLeft(SumoHSM * const me, QE
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub1} ....................*/
 /*${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub1} */
 static QState SumoHSM_PreStrategy_PreStrategy_10_sub1_e(SumoHSM * const me) {
-    drive(100,100);
-    uint32_t small_step_advance_time = 15 * BSP_TICKS_PER_MILISSEC;
+    drive(50,50);
+    uint32_t small_step_advance_time = 22 * BSP_TICKS_PER_MILISSEC;
     QTimeEvt_rearm(&me->timeEvt_2, small_step_advance_time);
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_10_sub1_s);
 }
@@ -8489,7 +8489,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_WaitDraw(SumoHSM * const me, QEvt 
 static QState SumoHSM_PreStrategy_PreStrategy_18_sub1_e(SumoHSM * const me) {
     me->step_counter++;
     if (me->step_counter < 8){
-        drive(100,100);
+        drive(50,50);
     } else {
         drive(-100,-100);
         if (me->step_counter > 12){
@@ -8497,7 +8497,7 @@ static QState SumoHSM_PreStrategy_PreStrategy_18_sub1_e(SumoHSM * const me) {
         }
     }
 
-    uint32_t small_step_advance_time = 15 * BSP_TICKS_PER_MILISSEC;
+    uint32_t small_step_advance_time = 22 * BSP_TICKS_PER_MILISSEC;
     QTimeEvt_rearm(&me->timeEvt_2, small_step_advance_time);
     return QM_ENTRY(&SumoHSM_PreStrategy_PreStrategy_18_sub1_s);
 }
@@ -9567,14 +9567,14 @@ static QState SumoHSM_StepsStrategy_StepAdvance_e(SumoHSM * const me) {
     if (parameters.strategy  == 2) {
 
         if (me->step_counter % 3 == 0){
-            drive(-100,-100);
+            drive(-50,-50);
         } else {
-            drive(100,100);
+            drive(50,50);
         }
         small_step_advance_time = 12 * BSP_TICKS_PER_MILISSEC;
         me->step_counter++;
     } else {
-        drive(100,100);
+        drive(50,50);
         small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
     }
     QTimeEvt_rearm(&me->timeEvt_2, small_step_advance_time);

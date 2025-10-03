@@ -2858,8 +2858,8 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      </state>
      <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_sub1}-->
      <state name="PreStrategy_10_sub1">
-      <entry brief="step_advance">drive(100,100);
-uint32_t small_step_advance_time = 15 * BSP_TICKS_PER_MILISSEC;
+      <entry brief="step_advance">drive(50,50);
+uint32_t small_step_advance_time = 22 * BSP_TICKS_PER_MILISSEC;
 QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_10_s~::TIMEOUT_2, DIST_SENSOR_CHANGE}-->
@@ -3409,7 +3409,7 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
      <state name="PreStrategy_18_sub1">
       <entry brief="step_advance">me-&gt;step_counter++;
 if (me-&gt;step_counter &lt; 8){
-    drive(100,100);
+    drive(50,50);
 } else {
     drive(-100,-100);
     if (me-&gt;step_counter &gt; 12){
@@ -3417,7 +3417,7 @@ if (me-&gt;step_counter &lt; 8){
     }
 }
 
-uint32_t small_step_advance_time = 15 * BSP_TICKS_PER_MILISSEC;
+uint32_t small_step_advance_time = 22 * BSP_TICKS_PER_MILISSEC;
 QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;timeEvt_2);</exit>
       <!--${AOs::SumoHSM::SM::PreStrategy::PreStrategy_18_s~::TIMEOUT_2, DIST_SENSOR_CHANGE}-->
@@ -4030,14 +4030,14 @@ QTimeEvt_disarm(&amp;me-&gt;timeEvtStuck);</exit>
 if (parameters.strategy  == 2) {
 
     if (me-&gt;step_counter % 3 == 0){
-        drive(-100,-100);
+        drive(-50,-50);
     } else {
-        drive(100,100);
+        drive(50,50);
     }
     small_step_advance_time = 12 * BSP_TICKS_PER_MILISSEC;
     me-&gt;step_counter++;
 } else {
-    drive(100,100);
+    drive(50,50);
     small_step_advance_time = parameters.step_advance_time_ms * BSP_TICKS_PER_MILISSEC;
 }
 QTimeEvt_rearm(&amp;me-&gt;timeEvt_2, small_step_advance_time);</entry>
