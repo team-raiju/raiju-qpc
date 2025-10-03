@@ -48,30 +48,30 @@ uint16_t pwm_data[WS2812_PWM_SIZE];
  **************************************************************************************************/
 static uint32_t color_to_bits(uint8_t r, uint8_t g, uint8_t b)
 {
-    uint32_t bits = 0;
+    // uint32_t bits = 0;
 
-    // blue
-    for (int8_t i = 7; i >= 0; i--) {
-        if (b & (1 << i)) {
-            bits |= (1 << (23 - (7 - i)));
-        }
-    }
+    // // blue
+    // for (int8_t i = 7; i >= 0; i--) {
+    //     if (b & (1 << i)) {
+    //         bits |= (1 << (23 - (7 - i)));
+    //     }
+    // }
 
-    // red
-    for (int8_t i = 7; i >= 0; i--) {
-        if (r & (1 << i)) {
-            bits |= (1 << (15 - (7 - i)));
-        }
-    }
+    // // red
+    // for (int8_t i = 7; i >= 0; i--) {
+    //     if (r & (1 << i)) {
+    //         bits |= (1 << (15 - (7 - i)));
+    //     }
+    // }
 
-    // green
-    for (int8_t i = 7; i >= 0; i--) {
-        if (g & (1 << i)) {
-            bits |= (1 << (7 - (7 - i)));
-        }
-    }
-
-    return bits;
+    // // green
+    // for (int8_t i = 7; i >= 0; i--) {
+    //     if (g & (1 << i)) {
+    //         bits |= (1 << (7 - (7 - i)));
+    //     }
+    // }
+    // return bits;
+    return  ((b) << 16) | ((r) << 8) | (g);
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
