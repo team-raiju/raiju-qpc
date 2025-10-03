@@ -77,6 +77,7 @@ typedef struct {
     uint8_t ble_counter;
     uint8_t stuck_counter;
     uint8_t step_counter;
+    uint8_t start_module_counter;
 
 /* private submachines */
     /* exit points for submachine ${AOs::SumoHSM::SM::LineFrontSubmachine} */
@@ -117,12 +118,6 @@ typedef struct {
         QActionHandler const LINE_FRONT; /* eXit-Point segment */
         QActionHandler const STOP_XP; /* eXit-Point segment */
     } const *sub_StepsStrategy;
-    /* exit points for submachine ${AOs::SumoHSM::SM::TestStartModule} */
-    struct SM_TestStartModule {
-        QMState super;
-        QActionHandler const START; /* eXit-Point segment */
-        QActionHandler const BLINK_END; /* eXit-Point segment */
-    } const *sub_TestStartModule;
 } SumoHSM;
 
 /* private: */
@@ -562,21 +557,6 @@ static QMState const SumoHSM_CalibFrontAt100_stop_s = {
     Q_ACTION_CAST(&SumoHSM_CalibFrontAt100_stop_e),
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
-};
-static QState SumoHSM_state1  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_state1_e(SumoHSM * const me);
-static QState SumoHSM_state1_START(SumoHSM * const me);
-static QState SumoHSM_state1_BLINK_END(SumoHSM * const me);
-static struct SM_TestStartModule const SumoHSM_state1_s = {
-    {
-        QM_STATE_NULL, /* superstate (top) */
-        Q_STATE_CAST(&SumoHSM_state1),
-        Q_ACTION_CAST(&SumoHSM_state1_e),
-        Q_ACTION_NULL, /* no exit action */
-        Q_ACTION_NULL  /* no initial tran. */
-    }
-    ,Q_ACTION_CAST(&SumoHSM_state1_START)
-    ,Q_ACTION_CAST(&SumoHSM_state1_BLINK_END)
 };
 
 /* submachine ${AOs::SumoHSM::SM::LineFrontSubmachine} */
@@ -1559,63 +1539,6 @@ static QMState const SumoHSM_StepsStrategy_StuckTurn_s = {
     Q_ACTION_NULL, /* no exit action */
     Q_ACTION_NULL  /* no initial tran. */
 };
-
-/* submachine ${AOs::SumoHSM::SM::TestStartModule} */
-static QState SumoHSM_TestStartModule  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_TestStartModule_x(SumoHSM * const me);
-static QMState const SumoHSM_TestStartModule_s = {
-    QM_STATE_NULL, /* superstate unused */
-    Q_STATE_CAST(&SumoHSM_TestStartModule),
-    Q_ACTION_NULL, /* no entry action */
-    Q_ACTION_CAST(&SumoHSM_TestStartModule_x),
-    Q_ACTION_NULL  /* no initial tran. */
-};
-static QState SumoHSM_TestStartModule_EP1_ep(SumoHSM * const me);
-static QState SumoHSM_TestStartModule_led_black_1  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_TestStartModule_led_black_1_e(SumoHSM * const me);
-static QMState const SumoHSM_TestStartModule_led_black_1_s = {
-    &SumoHSM_TestStartModule_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_TestStartModule_led_black_1),
-    Q_ACTION_CAST(&SumoHSM_TestStartModule_led_black_1_e),
-    Q_ACTION_NULL, /* no exit action */
-    Q_ACTION_NULL  /* no initial tran. */
-};
-static QState SumoHSM_TestStartModule_led_red  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_TestStartModule_led_red_e(SumoHSM * const me);
-static QMState const SumoHSM_TestStartModule_led_red_s = {
-    &SumoHSM_TestStartModule_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_TestStartModule_led_red),
-    Q_ACTION_CAST(&SumoHSM_TestStartModule_led_red_e),
-    Q_ACTION_NULL, /* no exit action */
-    Q_ACTION_NULL  /* no initial tran. */
-};
-static QState SumoHSM_TestStartModule_led_black_2  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_TestStartModule_led_black_2_e(SumoHSM * const me);
-static QMState const SumoHSM_TestStartModule_led_black_2_s = {
-    &SumoHSM_TestStartModule_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_TestStartModule_led_black_2),
-    Q_ACTION_CAST(&SumoHSM_TestStartModule_led_black_2_e),
-    Q_ACTION_NULL, /* no exit action */
-    Q_ACTION_NULL  /* no initial tran. */
-};
-static QState SumoHSM_TestStartModule_led_blue  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_TestStartModule_led_blue_e(SumoHSM * const me);
-static QMState const SumoHSM_TestStartModule_led_blue_s = {
-    &SumoHSM_TestStartModule_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_TestStartModule_led_blue),
-    Q_ACTION_CAST(&SumoHSM_TestStartModule_led_blue_e),
-    Q_ACTION_NULL, /* no exit action */
-    Q_ACTION_NULL  /* no initial tran. */
-};
-static QState SumoHSM_TestStartModule_led_black  (SumoHSM * const me, QEvt const * const e);
-static QState SumoHSM_TestStartModule_led_black_e(SumoHSM * const me);
-static QMState const SumoHSM_TestStartModule_led_black_s = {
-    &SumoHSM_TestStartModule_s, /* superstate */
-    Q_STATE_CAST(&SumoHSM_TestStartModule_led_black),
-    Q_ACTION_CAST(&SumoHSM_TestStartModule_led_black_e),
-    Q_ACTION_NULL, /* no exit action */
-    Q_ACTION_NULL  /* no initial tran. */
-};
 /*$enddecl${AOs::SumoHSM} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 
@@ -1653,6 +1576,7 @@ void SumoHSM_ctor(void) {
     me->ble_counter = 0;
     me->stuck_counter = 0;
     me->step_counter = 0;
+    me->start_module_counter = 0;
 }
 /*$enddef${AOs::SumoHSM_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
@@ -1767,7 +1691,6 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_CalibStuck);
     QS_FUN_DICTIONARY(&SumoHSM_LineBackCalibStuck);
     QS_FUN_DICTIONARY(&SumoHSM_CalibFrontAt100_stop);
-    QS_FUN_DICTIONARY(&SumoHSM_state1);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineGoBack);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnRight);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine_LineTurnLeft);
@@ -1865,18 +1788,12 @@ static QState SumoHSM_initial(SumoHSM * const me, void const * const par) {
     QS_FUN_DICTIONARY(&SumoHSM_StepsStrategy_Stuck);
     QS_FUN_DICTIONARY(&SumoHSM_StepsStrategy_StarSearch);
     QS_FUN_DICTIONARY(&SumoHSM_StepsStrategy_StuckTurn);
-    QS_FUN_DICTIONARY(&SumoHSM_TestStartModule_led_black_1);
-    QS_FUN_DICTIONARY(&SumoHSM_TestStartModule_led_red);
-    QS_FUN_DICTIONARY(&SumoHSM_TestStartModule_led_black_2);
-    QS_FUN_DICTIONARY(&SumoHSM_TestStartModule_led_blue);
-    QS_FUN_DICTIONARY(&SumoHSM_TestStartModule_led_black);
     QS_FUN_DICTIONARY(&SumoHSM_LineFrontSubmachine);
     QS_FUN_DICTIONARY(&SumoHSM_PreStrategy);
     QS_FUN_DICTIONARY(&SumoHSM_BLESubmachine);
     QS_FUN_DICTIONARY(&SumoHSM_StarStrategy);
     QS_FUN_DICTIONARY(&SumoHSM_LineBackSubmachine);
     QS_FUN_DICTIONARY(&SumoHSM_StepsStrategy);
-    QS_FUN_DICTIONARY(&SumoHSM_TestStartModule);
 
     return QM_TRAN_INIT(&tatbl_);
 }
@@ -2515,11 +2432,14 @@ static QState SumoHSM_AutoWait_e(SumoHSM * const me) {
     parameters.attack_when_near = false;
     start_module_enable();
     set_reference_voltage();
+    me->start_module_counter = 0;
     return QM_ENTRY(&SumoHSM_AutoWait_s);
 }
 /*${AOs::SumoHSM::SM::AutoWait} */
 static QState SumoHSM_AutoWait_x(SumoHSM * const me) {
     QTimeEvt_disarm(&me->timeEvt);
+    QTimeEvt_disarm(&me->timeEvt_2);
+    buzzer_stop();
     return QM_EXIT(&SumoHSM_AutoWait_s);
 }
 /*${AOs::SumoHSM::SM::AutoWait} */
@@ -2981,19 +2901,32 @@ static QState SumoHSM_AutoWait(SumoHSM * const me, QEvt const * const e) {
         }
         /*${AOs::SumoHSM::SM::AutoWait::START_MODULE_TEST} */
         case START_MODULE_TEST_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[4];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_TestStartModule_s, /* target submachine */
-                {
-                    Q_ACTION_CAST(&SumoHSM_AutoWait_x), /* exit */
-                    Q_ACTION_CAST(&SumoHSM_state1_e), /* entry */
-                    Q_ACTION_CAST(&SumoHSM_TestStartModule_EP1_ep), /* EP */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN_EP(&tatbl_);
+            buzzer_start();
+            led_stripe_set_all_color(COLOR_BLACK);
+            QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 100);
+            me->start_module_counter = 0;
+            status_ = QM_HANDLED();
+            break;
+        }
+        /*${AOs::SumoHSM::SM::AutoWait::TIMEOUT_2} */
+        case TIMEOUT_2_SIG: {
+            if (me->start_module_counter == 0){
+                led_stripe_set_all_color(COLOR_RED);
+                QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 100);
+            } else if (me->start_module_counter == 1) {
+                buzzer_stop();
+                led_stripe_set_all_color(COLOR_BLACK);
+                QTimeEvt_rearm(&me->timeEvt_2, BSP_TICKS_PER_MILISSEC * 100);
+            } else if (me->start_module_counter == 2) {
+                led_stripe_set_all_color(COLOR_BLUE);
+                QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
+            } else if (me->start_module_counter == 3) {
+                led_stripe_set_all_color(COLOR_BLACK);
+            }
+
+
+            me->start_module_counter++;
+            status_ = QM_HANDLED();
             break;
         }
         default: {
@@ -5103,58 +5036,6 @@ static QState SumoHSM_CalibFrontAt100_stop(SumoHSM * const me, QEvt const * cons
             break;
         }
     }
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::state1} ..............................................*/
-/*${AOs::SumoHSM::SM::state1} */
-static QState SumoHSM_state1_e(SumoHSM * const me) {
-    me->sub_TestStartModule = &SumoHSM_state1_s; /* attach submachine */
-    return QM_ENTRY(&SumoHSM_state1_s.super);
-}
-/*${AOs::SumoHSM::SM::state1} */
-static QState SumoHSM_state1_BLINK_END(SumoHSM * const me) {
-    static struct {
-        QMState const *target;
-        QActionHandler act[3];
-    } const tatbl_ = { /* tran-action table */
-        &SumoHSM_AutoWait_s, /* target state */
-        {
-            Q_ACTION_CAST(&SumoHSM_TestStartModule_x), /* submachine exit */
-            Q_ACTION_CAST(&SumoHSM_AutoWait_e), /* entry */
-            Q_ACTION_NULL /* zero terminator */
-        }
-    };
-    (void)me; /* unused parameter */
-    return QM_TRAN(&tatbl_);
-}
-/*${AOs::SumoHSM::SM::state1} */
-static QState SumoHSM_state1_START(SumoHSM * const me) {
-    static struct {
-        QMState const *target;
-        QActionHandler act[4];
-    } const tatbl_ = { /* tran-action table */
-        &SumoHSM_PreStrategy_s, /* target submachine */
-        {
-            Q_ACTION_CAST(&SumoHSM_TestStartModule_x), /* submachine exit */
-            Q_ACTION_CAST(&SumoHSM_pre_strategy_e), /* entry */
-            Q_ACTION_CAST(&SumoHSM_PreStrategy_EP0_ep), /* EP */
-            Q_ACTION_NULL /* zero terminator */
-        }
-    };
-    (void)me; /* unused parameter */
-    return QM_TRAN(&tatbl_);
-}
-/*${AOs::SumoHSM::SM::state1} */
-static QState SumoHSM_state1(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
-    (void)me; /* unused parameter */
     return status_;
 }
 
@@ -9897,218 +9778,6 @@ static QState SumoHSM_StepsStrategy_StuckTurn(SumoHSM * const me, QEvt const * c
                 }
             };
             status_ = QM_TRAN(&tatbl_);
-            break;
-        }
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::TestStartModule} .....................................*/
-/*${AOs::SumoHSM::SM::TestStartModule} */
-static QState SumoHSM_TestStartModule_x(SumoHSM * const me) {
-    QTimeEvt_disarm(&me->timeEvt);
-    buzzer_stop();
-    return QM_SM_EXIT(&me->sub_TestStartModule->super);
-}
-/*${AOs::SumoHSM::SM::TestStartModule} */
-static QState SumoHSM_TestStartModule(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::TestStartModule::START} */
-        case START_SIG: {
-            static QMTranActTable const tatbl_ = { /* tran-action table */
-                &SumoHSM_TestStartModule_s, /* target submachine */
-                {
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN_XP(me->sub_TestStartModule->START, &tatbl_);
-            break;
-        }
-        default: {
-            status_ = QM_SUPER_SUB(&me->sub_TestStartModule->super);
-            break;
-        }
-    }
-    return status_;
-}
-/*${AOs::SumoHSM::SM::TestStartModule::EP-EP1} */
-static QState SumoHSM_TestStartModule_EP1_ep(SumoHSM * const me) {
-    static struct {
-        QMState const *target;
-        QActionHandler act[2];
-    } const tatbl_ = { /* tran-action table */
-        &SumoHSM_TestStartModule_led_black_1_s, /* target state */
-        {
-            Q_ACTION_CAST(&SumoHSM_TestStartModule_led_black_1_e), /* entry */
-            Q_ACTION_NULL /* zero terminator */
-        }
-    };
-    return QM_TRAN_EP(&tatbl_);
-}
-
-/*${AOs::SumoHSM::SM::TestStartModule::led_black_1} ........................*/
-/*${AOs::SumoHSM::SM::TestStartModule::led_black_1} */
-static QState SumoHSM_TestStartModule_led_black_1_e(SumoHSM * const me) {
-    buzzer_start();
-    led_stripe_set_all_color(COLOR_BLACK);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
-    return QM_ENTRY(&SumoHSM_TestStartModule_led_black_1_s);
-}
-/*${AOs::SumoHSM::SM::TestStartModule::led_black_1} */
-static QState SumoHSM_TestStartModule_led_black_1(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::TestStartModule::led_black_1::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[2];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_TestStartModule_led_red_s, /* target state */
-                {
-                    Q_ACTION_CAST(&SumoHSM_TestStartModule_led_red_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN(&tatbl_);
-            break;
-        }
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::TestStartModule::led_red} ............................*/
-/*${AOs::SumoHSM::SM::TestStartModule::led_red} */
-static QState SumoHSM_TestStartModule_led_red_e(SumoHSM * const me) {
-    led_stripe_set_all_color(COLOR_RED);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
-    return QM_ENTRY(&SumoHSM_TestStartModule_led_red_s);
-}
-/*${AOs::SumoHSM::SM::TestStartModule::led_red} */
-static QState SumoHSM_TestStartModule_led_red(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::TestStartModule::led_red::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[2];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_TestStartModule_led_black_2_s, /* target state */
-                {
-                    Q_ACTION_CAST(&SumoHSM_TestStartModule_led_black_2_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN(&tatbl_);
-            break;
-        }
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::TestStartModule::led_black_2} ........................*/
-/*${AOs::SumoHSM::SM::TestStartModule::led_black_2} */
-static QState SumoHSM_TestStartModule_led_black_2_e(SumoHSM * const me) {
-    buzzer_stop();
-    led_stripe_set_all_color(COLOR_BLACK);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
-    return QM_ENTRY(&SumoHSM_TestStartModule_led_black_2_s);
-}
-/*${AOs::SumoHSM::SM::TestStartModule::led_black_2} */
-static QState SumoHSM_TestStartModule_led_black_2(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::TestStartModule::led_black_2::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[2];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_TestStartModule_led_blue_s, /* target state */
-                {
-                    Q_ACTION_CAST(&SumoHSM_TestStartModule_led_blue_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN(&tatbl_);
-            break;
-        }
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::TestStartModule::led_blue} ...........................*/
-/*${AOs::SumoHSM::SM::TestStartModule::led_blue} */
-static QState SumoHSM_TestStartModule_led_blue_e(SumoHSM * const me) {
-    led_stripe_set_all_color(COLOR_BLUE);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
-    return QM_ENTRY(&SumoHSM_TestStartModule_led_blue_s);
-}
-/*${AOs::SumoHSM::SM::TestStartModule::led_blue} */
-static QState SumoHSM_TestStartModule_led_blue(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::TestStartModule::led_blue::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            static struct {
-                QMState const *target;
-                QActionHandler act[2];
-            } const tatbl_ = { /* tran-action table */
-                &SumoHSM_TestStartModule_led_black_s, /* target state */
-                {
-                    Q_ACTION_CAST(&SumoHSM_TestStartModule_led_black_e), /* entry */
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN(&tatbl_);
-            break;
-        }
-        default: {
-            status_ = QM_SUPER();
-            break;
-        }
-    }
-    return status_;
-}
-
-/*${AOs::SumoHSM::SM::TestStartModule::led_black} ..........................*/
-/*${AOs::SumoHSM::SM::TestStartModule::led_black} */
-static QState SumoHSM_TestStartModule_led_black_e(SumoHSM * const me) {
-    led_stripe_set_all_color(COLOR_BLACK);
-    QTimeEvt_rearm(&me->timeEvt, BSP_TICKS_PER_MILISSEC * 100);
-    return QM_ENTRY(&SumoHSM_TestStartModule_led_black_s);
-}
-/*${AOs::SumoHSM::SM::TestStartModule::led_black} */
-static QState SumoHSM_TestStartModule_led_black(SumoHSM * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*${AOs::SumoHSM::SM::TestStartModule::led_black::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            static QMTranActTable const tatbl_ = { /* tran-action table */
-                &SumoHSM_TestStartModule_s, /* target submachine */
-                {
-                    Q_ACTION_NULL /* zero terminator */
-                }
-            };
-            status_ = QM_TRAN_XP(me->sub_TestStartModule->BLINK_END, &tatbl_);
             break;
         }
         default: {

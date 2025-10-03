@@ -3,6 +3,9 @@
 #include "bsp.h"
 #include "bsp_motors.h"
 #include "utils.h"
+#include "bsp_gpio.h"
+#include "bsp_gpio_mapping.h"
+
 
 #ifdef Q_SPY
 #include "qs_defines.h"
@@ -17,6 +20,11 @@ void BSP_motorsInit(void)
 
 void BSP_motors(int16_t vel_left, int16_t vel_right)
 {
+    if (BSP_GPIO_Read_Pin(GPIO_MOT_EN_PORT, GPIO_MOT_EN_PIN) == IO_HIGH) {
+        printf("Motors disabled, not sending commands \r\n");
+        return;
+    }
+
     vel_left = constrain(vel_left, -(MAX_SPEED - 1), (MAX_SPEED - 1));
     vel_right = constrain(vel_right, -(MAX_SPEED - 1), (MAX_SPEED - 1));
 
